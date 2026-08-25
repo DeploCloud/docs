@@ -6,11 +6,11 @@ import {
   DocsTitle,
   EditOnGitHub,
   MarkdownCopyButton,
-  ViewOptionsPopover,
 } from "fumadocs-ui/layouts/docs/page";
 import { getMDXComponents } from "@/mdx-components";
 import { source } from "@/lib/source";
 import { PageFeedback } from "@/components/page-feedback";
+import { ViewOptions } from "@/components/view-options";
 
 export default async function Page(props: PageProps<"/[[...slug]]">) {
   const params = await props.params;
@@ -24,7 +24,7 @@ export default async function Page(props: PageProps<"/[[...slug]]">) {
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <div className="flex items-center justify-end gap-2">
         <MarkdownCopyButton markdownUrl={markdownUrl} />
-        <ViewOptionsPopover
+        <ViewOptions
           markdownUrl={markdownUrl}
           githubUrl={`https://github.com/DeploCloud/docs/blob/main/content/docs/${page.path}`}
         />

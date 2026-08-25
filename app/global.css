@@ -81,3 +81,64 @@ summary,
 [role="switch"] {
   cursor: pointer;
 }
+
+/* "Did this page help you" card illustration: a page with a checkmark badge
+   that draws itself in on a loop, on a slow breathing halo behind it. Same
+   grammar as Deplo's own illustrations (DeploCloud/deplo): pure SVG + CSS
+   keyframes, nothing to script. Reduced motion holds the frame with the
+   check fully drawn, the state the drawing exists to show. */
+@keyframes deplo-feedback-check {
+  0%,
+  10% {
+    stroke-dashoffset: 29;
+    opacity: 0;
+  }
+  35%,
+  70% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  90%,
+  100% {
+    stroke-dashoffset: 29;
+    opacity: 0;
+  }
+}
+
+.animate-feedback-check {
+  stroke-dasharray: 29;
+  animation: deplo-feedback-check 4.5s ease-in-out infinite;
+}
+
+/* The halo behind the badge, breathing on the same clock as the check. */
+@keyframes deplo-feedback-halo {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.12);
+  }
+}
+
+.animate-feedback-halo {
+  /* without fill-box an SVG scale pivots on the viewBox origin, not the
+     circle's own center */
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: deplo-feedback-halo 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-feedback-check {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  .animate-feedback-halo {
+    animation: none;
+    opacity: 0.35;
+  }
+}
