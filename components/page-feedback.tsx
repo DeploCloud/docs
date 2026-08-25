@@ -9,10 +9,10 @@ export function PageFeedback() {
   const [vote, setVote] = useState<"up" | "down" | null>(null);
 
   return (
-    <div className="mt-8 flex flex-col items-center gap-3 rounded-xl border bg-fd-card p-6 text-center text-fd-card-foreground">
-      <FeedbackIllustration />
+    <div className="mt-8 flex items-center gap-3 rounded-xl border bg-fd-card p-3 text-fd-card-foreground">
+      <FeedbackIllustration className="size-10 shrink-0" />
       {vote === null ? (
-        <>
+        <div className="flex flex-1 flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-fd-muted-foreground">Did this page help you?</p>
           <div className="flex items-center gap-2">
             <button
@@ -32,7 +32,7 @@ export function PageFeedback() {
               <ThumbsDown className="size-4" />
             </button>
           </div>
-        </>
+        </div>
       ) : (
         <p className="text-sm text-fd-muted-foreground">
           {vote === "up"

@@ -13,9 +13,9 @@ import type { SVGProps } from "react";
  * Under `prefers-reduced-motion` it holds the frame with the check fully
  * drawn.
  */
-export function FeedbackIllustration({ className = "", ...props }: SVGProps<SVGSVGElement>) {
+export function FeedbackIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 120 120" fill="none" aria-hidden className={`size-20 ${className}`} {...props}>
+    <svg viewBox="0 0 120 120" fill="none" aria-hidden className={className} {...props}>
       {/* The page: never animated, so the eye goes to the badge, not the paper. */}
       <rect x="28" y="14" width="64" height="92" rx="8" className="stroke-fd-border" strokeWidth="2.5" />
       {/* Three lines of text, shorter each time, just enough to read as "a page". */}
