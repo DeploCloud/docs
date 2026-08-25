@@ -15,7 +15,7 @@ function DiscordIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 const items = [
-  { icon: Globe, label: "Website", href: "https://deplo.cloud" },
+  { icon: Globe, label: "Website", href: "https://deplo.build" },
   { icon: DiscordIcon, label: "Discord", href: "https://ds.deplo.build" },
   { icon: Mail, label: "Email", href: "mailto:info@deplo.build" },
 ];

@@ -21,7 +21,7 @@ GET /v1/deployments
 <Tab value="cURL">
 
 ```bash
-curl "https://api.deplo.cloud/v1/deployments?projectId=prj_4b91aa" \
+curl "https://api.deplo.build/v1/deployments?projectId=prj_4b91aa" \
   -H "Authorization: Bearer $DEPLO_API_KEY"
 ```
 
@@ -30,7 +30,7 @@ curl "https://api.deplo.cloud/v1/deployments?projectId=prj_4b91aa" \
 
 ```js
 const res = await fetch(
-  "https://api.deplo.cloud/v1/deployments?projectId=prj_4b91aa",
+  "https://api.deplo.build/v1/deployments?projectId=prj_4b91aa",
   { headers: { Authorization: `Bearer ${process.env.DEPLO_API_KEY}` } },
 );
 const { data } = await res.json();

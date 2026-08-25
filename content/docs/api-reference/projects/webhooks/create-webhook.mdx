@@ -15,7 +15,7 @@ POST /v1/projects/:id/webhooks
 />
 
 ```bash
-curl -X POST https://api.deplo.cloud/v1/projects/prj_4b91aa/webhooks \
+curl -X POST https://api.deplo.build/v1/projects/prj_4b91aa/webhooks \
   -H "Authorization: Bearer $DEPLO_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "url": "https://example.com/hooks/deplo", "events": ["deployment.ready"] }'
