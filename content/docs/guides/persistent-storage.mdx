@@ -132,7 +132,7 @@ The propagation choice is not cosmetic. Without `rslave`, a network share or a F
 
 - **The app writes and the data disappears on deploy** - the path it writes to is not mounted. Check what the framework actually uses.
 - **Permission denied inside the container** - the container's user does not own the directory. For a **Bind**, fix ownership on the server; for a **Volume**, make sure the image creates the directory as its own user.
-- **A Bind row will not save** - you do not hold the permission. Ask an administrator, and see [Host access and privileges](/advanced/host-access-and-privileges).
+- **A Bind row will not save** - you do not hold the permission. Ask an administrator, and see [Host access](/advanced/host-access-and-privileges).
 
 <Callout type="info">
 More in [Servers and agents](/troubleshooting/servers-and-agents).
@@ -144,5 +144,5 @@ More in [Servers and agents](/troubleshooting/servers-and-agents).
   <Card icon={<Database className="text-blue-400" />} title="Databases" description="Storage a managed database already handles for you" href="/guides/databases" />
   <Card icon={<Archive className="text-blue-400" />} title="Backups and restore" description="What gets copied off the volume" href="/guides/backups-and-restore" />
   <Card icon={<Terminal className="text-blue-400" />} title="Console and files" description="Browsing what is actually there" href="/guides/console-and-files" />
-  <Card icon={<Lock className="text-blue-400" />} title="Host access and privileges" description="Who can add a Bind mount" href="/advanced/host-access-and-privileges" />
+  <Card icon={<Lock className="text-blue-400" />} title="Host access" description="Who can add a Bind mount" href="/advanced/host-access-and-privileges" />
 </Cards>

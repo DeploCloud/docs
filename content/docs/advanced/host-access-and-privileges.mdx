@@ -1,10 +1,11 @@
 ---
-title: Host access and privileges
+title: Host access
 description: Why Deplo never exposes a Docker socket, and how one grant gates everything that reaches outside a container.
 icon: ShieldAlert
 ---
 
 import { Layers, HardDrive, Users, Library } from "lucide-react";
+import { ScopeGrantIllustration } from "@/components/illustrations/scope-grant-illustration";
 
 ## What it is
 
@@ -16,6 +17,8 @@ All of it sits behind one grant: **"Bind server folders"** in the
 permission picker, `canMountHostVolumes` in the API.
 
 ## Why one grant covers all of it
+
+<ScopeGrantIllustration className="w-full max-w-xs mx-auto h-auto not-prose" />
 
 A Compose file is user-written YAML that reaches the agent almost
 verbatim. Gating only the obvious bind mount would leave a plain member one

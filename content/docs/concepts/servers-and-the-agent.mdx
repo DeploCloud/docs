@@ -1,10 +1,11 @@
 ---
-title: Servers and the agent
+title: Servers and agents
 description: What a server is, how it joins the fleet, and what it can be for.
 icon: Server
 ---
 
 import { PlusCircle, Settings, ListTree, Trash2, LifeBuoy } from "lucide-react";
+import { ServerJoinIllustration } from "@/components/illustrations/server-join-illustration";
 
 A **server** is a machine you own that Deplo can deploy to. It becomes one
 by running a small Go program, the **server agent**, which is the only
@@ -17,6 +18,8 @@ teams, and one team can spread across several servers.
 
 The control plane never connects to your machine. Your machine connects to
 it.
+
+<ServerJoinIllustration className="w-full max-w-xs mx-auto h-auto not-prose" />
 
 <Steps>
 <Step>
@@ -175,7 +178,7 @@ silently left behind.
   />
   <Card
     icon={<Trash2 className="text-blue-400" />}
-    title="Remove a server or uninstall"
+    title="Remove or uninstall"
     description="The host-side script"
     href="/operations/remove-a-server-or-uninstall"
   />

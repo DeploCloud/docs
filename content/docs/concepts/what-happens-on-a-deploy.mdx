@@ -1,10 +1,11 @@
 ---
-title: What happens on a deploy
+title: The deploy trace
 description: The full trace of one deploy, from trigger to a container serving traffic.
 icon: Rocket
 ---
 
 import { Hammer, Zap, RotateCcw, Variable, LifeBuoy } from "lucide-react";
+import { EnvLayersIllustration } from "@/components/illustrations/env-layers-illustration";
 
 The full trace of one deploy, from the thing that triggered it to a
 container serving traffic. Reading it once makes most failure messages
@@ -98,14 +99,12 @@ a runaway build cannot fill the disk.
 <Step>
 ### The environment is resolved
 
-Four layers fold together, lowest priority first:
+Four layers fold together, lowest priority first: instance-wide variables,
+then the app's own variables, then a shared variable the app has linked,
+then a preview override (previews only). A name defined on more than one
+layer takes the value from the highest layer that defines it.
 
-```
-instance-wide variables
-  <  the app's own variables
-       <  a shared variable the app has linked
-            <  a preview override   (previews only)
-```
+<EnvLayersIllustration className="w-full max-w-xs mx-auto h-auto not-prose" />
 
 Every layer carries a type. A **secret**-typed value is write-only, and a
 preview of a **fork** never receives one, whatever the settings say.

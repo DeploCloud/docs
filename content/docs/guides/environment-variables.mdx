@@ -5,6 +5,7 @@ icon: SlidersHorizontal
 ---
 
 import { Share2, Database, GitPullRequest, ShieldCheck } from "lucide-react";
+import { EnvLayersIllustration } from "@/components/illustrations/env-layers-illustration";
 
 ## What it is
 
@@ -12,14 +13,12 @@ The configuration your app reads from its environment: API keys, database URLs, 
 
 ## How it works
 
-Four layers stack, and the deploy folds them together in this order, lowest priority first:
+Four layers stack, and the deploy folds them together in this order, lowest
+priority first: instance-wide variables (set by an instance admin, every
+team, every app), then the app's own variables, then a shared variable the
+app has linked, then a preview override (previews only).
 
-```
-instance-wide variables      set by an instance admin, every team, every app
-   <  the app's own variables
-        <  a shared variable the app has linked
-             <  a preview override           previews only
-```
+<EnvLayersIllustration className="w-full max-w-xs mx-auto h-auto not-prose" />
 
 A name defined twice takes the value from the highest layer that defines it.
 

@@ -5,10 +5,13 @@ icon: Download
 ---
 
 import { Rocket, Variable, Network, Terminal, Trash2 } from "lucide-react";
+import { InstallChecklistIllustration } from "@/components/illustrations/install-checklist-illustration";
 
 ## What it is
 
 One command on a fresh Linux server. It installs Docker if it is missing, Traefik with automatic HTTPS, a private Postgres, the Deplo control plane, and the server agent, all on that same machine, so you have somewhere to deploy the moment it finishes.
+
+<InstallChecklistIllustration className="w-full max-w-[220px] mx-auto h-auto not-prose" />
 
 ## How it works
 
@@ -166,8 +169,8 @@ Going this way, you enroll the host as a server yourself from **Settings -> Serv
 
 <Cards>
   <Card icon={<Rocket className="text-blue-400" />} title="Deploy your first app" description="From a repository to a running site." href="/getting-started/first-app" />
-  <Card icon={<Variable className="text-purple-400" />} title="Environment variables reference" description="Every variable the installer and the container read." href="/reference/environment-variables" />
-  <Card icon={<Network className="text-green-400" />} title="Ports, networks and files" description="What the installer opens and where it writes." href="/reference/ports-networks-and-files" />
+  <Card icon={<Variable className="text-purple-400" />} title="Platform variables" description="Every variable the installer and the container read." href="/reference/environment-variables" />
+  <Card icon={<Network className="text-green-400" />} title="Ports, networks, files" description="What the installer opens and where it writes." href="/reference/ports-networks-and-files" />
   <Card icon={<Terminal className="text-amber-400" />} title="Installers reference" description="Every flag of all three scripts." href="/reference/installers" />
-  <Card icon={<Trash2 className="text-red-400" />} title="Remove a server or uninstall" description="Undoing everything on this page." href="/operations/remove-a-server-or-uninstall" />
+  <Card icon={<Trash2 className="text-red-400" />} title="Remove or uninstall" description="Undoing everything on this page." href="/operations/remove-a-server-or-uninstall" />
 </Cards>

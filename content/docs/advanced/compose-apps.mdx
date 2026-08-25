@@ -5,6 +5,7 @@ icon: Layers
 ---
 
 import { Lock, Layers, HardDrive, Globe } from "lucide-react";
+import { ComposeFoldIllustration } from "@/components/illustrations/compose-fold-illustration";
 
 Paste a `docker-compose.yml` and let Deplo run it: several containers, a
 network between them, whatever the vendor's README told you to run. Deplo
@@ -15,6 +16,8 @@ multi-service setups. For a single container from one image,
 [Deploy a Docker image](/guides/deploy-a-docker-image) is simpler.
 
 ## How it works
+
+<ComposeFoldIllustration className="w-full max-w-xs mx-auto h-auto not-prose" />
 
 Your YAML is treated as **authored input, not a trusted document**. Deplo
 parses it, checks it, folds in what it must, and ships the result to the
@@ -105,7 +108,7 @@ stack again.
 - **A rendered stack is masked on display**, values and the basic-auth hash
   alike.
 - **Everything that reaches out of a container is gated.** See
-  [Host access and privileges](/advanced/host-access-and-privileges) for the
+  [Host access](/advanced/host-access-and-privileges) for the
   full list, which is longer than most people expect.
 - **The agent does not re-validate your YAML.** The checks that matter
   happen on save and on deploy, not on the agent.
@@ -129,7 +132,7 @@ Still stuck? See [Deploys and builds troubleshooting](/troubleshooting/deploys-a
 ## See also
 
 <Cards>
-  <Card icon={<Lock className="text-blue-400" />} title="Host access and privileges" description="What a Compose file is and is not allowed to reach" href="/advanced/host-access-and-privileges" />
+  <Card icon={<Lock className="text-blue-400" />} title="Host access" description="What a Compose file is and is not allowed to reach" href="/advanced/host-access-and-privileges" />
   <Card icon={<Layers className="text-blue-400" />} title="Deploy from a template" description="Compose stacks somebody already wrote" href="/guides/deploy-from-a-template" />
   <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="Volumes, mounted into a named service" href="/guides/persistent-storage" />
   <Card icon={<Globe className="text-blue-400" />} title="Domains and HTTPS" description="Routing and certificates" href="/guides/domains-and-https" />

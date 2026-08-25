@@ -5,6 +5,7 @@ icon: Users
 ---
 
 import { UserPlus, ShieldCheck, KeyRound, Lock } from "lucide-react";
+import { TeamGatesIllustration } from "@/components/illustrations/team-gates-illustration";
 
 Deplo assumes several people share one instance and that whoever takes an
 action is not the person who owns the box. Everything is scoped to a
@@ -60,7 +61,7 @@ Three grants sit slightly apart:
 - **`canMountHostVolumes`** allows every route out of a container: bind
   mounts, `privileged`, added kernel capabilities, devices, host
   namespaces, foreign networks and foreign volumes. See
-  [Host access and privileges](/advanced/host-access-and-privileges).
+  [Host access](/advanced/host-access-and-privileges).
 
 The full list is in [Capabilities](/reference/capabilities).
 
@@ -113,6 +114,8 @@ A passkey counts. Signing in with one satisfies the requirement for that
 session, because it is a full sign-in method rather than a second step.
 
 ## The two gates
+
+<TeamGatesIllustration className="w-full max-w-xs mx-auto h-auto not-prose" />
 
 Every mutating action is checked twice, and only one of them matters.
 

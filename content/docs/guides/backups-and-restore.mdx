@@ -5,10 +5,13 @@ icon: Archive
 ---
 
 import { LifeBuoy, Server, Database } from "lucide-react";
+import { BackupSnapshotIllustration } from "@/components/illustrations/backup-snapshot-illustration";
 
 ## What it is
 
 Scheduled, encrypted copies of a database or an app, sent to an S3 bucket **or to another server's disk**, with a restore that puts them back.
+
+<BackupSnapshotIllustration className="w-full max-w-[160px] mx-auto h-auto not-prose" />
 
 The second destination kind is the point: disaster recovery can use hardware you already own, instead of requiring a cloud account you were trying to leave.
 

@@ -5,12 +5,15 @@ icon: GitPullRequest
 ---
 
 import { GitBranch, Variable, Globe } from "lucide-react";
+import { PullRequestPreviewIllustration } from "@/components/illustrations/pull-request-preview-illustration";
 
 Every open pull request gets its own running copy of the app at its own
 URL, and it tears itself down when the pull request closes. Reviewers
 click a link instead of checking out a branch.
 
 ## How it works
+
+<PullRequestPreviewIllustration className="w-full max-w-[180px] mx-auto h-auto not-prose" />
 
 A preview is a separate stack, `deplo-<slug>__pr-<n>`, with its own
 containers, its own volumes and its own files directory. It inherits the

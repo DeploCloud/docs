@@ -5,6 +5,7 @@ icon: Timer
 ---
 
 import { Terminal, Bell, BookOpen } from "lucide-react";
+import { CronScheduleIllustration } from "@/components/illustrations/cron-schedule-illustration";
 
 <Callout type="info">Beta.</Callout>
 
@@ -12,6 +13,8 @@ A command run on a schedule **inside** one of your containers: a nightly
 cleanup, a report at 6am, a queue worker tick, `php artisan schedule:run`.
 
 ## How it works
+
+<CronScheduleIllustration className="w-full max-w-[160px] mx-auto h-auto not-prose" />
 
 The schedule is tracked by the **agent**, not by the control plane. That is
 the whole design decision: restarting the panel, upgrading Deplo or losing

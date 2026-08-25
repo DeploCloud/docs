@@ -5,10 +5,13 @@ icon: ShieldAlert
 ---
 
 import { Database, Layers, ArrowUpCircle, FileCode } from "lucide-react";
+import { RecoveryArcIllustration } from "@/components/illustrations/recovery-arc-illustration";
 
 ## What it is
 
 What to keep so that losing a machine is an afternoon rather than an ending, and the order to bring things back in.
+
+<RecoveryArcIllustration className="w-full max-w-[160px] mx-auto h-auto not-prose" />
 
 ## What actually matters
 
@@ -177,5 +180,5 @@ move: see
   <Card icon={<Database className="text-blue-400" />} title="Backups and restore" description="Schedules, destinations, and recovery keys" href="/guides/backups-and-restore" />
   <Card icon={<Layers className="text-blue-400" />} title="Server roles" description="A backups-only box, and why it exists" href="/advanced/server-roles" />
   <Card icon={<ArrowUpCircle className="text-blue-400" />} title="Upgrade" description="Control plane and agent versions" href="/operations/upgrade" />
-  <Card icon={<FileCode className="text-blue-400" />} title="Environment variables reference" description="Every variable in /opt/deplo/.env" href="/reference/environment-variables" />
+  <Card icon={<FileCode className="text-blue-400" />} title="Platform variables" description="Every variable in /opt/deplo/.env" href="/reference/environment-variables" />
 </Cards>

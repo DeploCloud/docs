@@ -5,6 +5,7 @@ icon: Network
 ---
 
 import { Server, Rocket, FolderTree } from "lucide-react";
+import { ControlPlaneIllustration } from "@/components/illustrations/control-plane-illustration";
 
 Deplo is two programs with one rule between them. Understanding that split
 explains almost every behavior in the product: why a deploy can fail with
@@ -14,26 +15,12 @@ not special.
 
 ## The two planes
 
-```
-                   +--------------------------------------------------+
-   Browser  <--->  |  Deplo control plane                             |
-                   |  UI - GraphQL API - auth - Postgres - rendering  |
-                   +----------------------+---------------------------+
-                                          |
-                                gRPC over mTLS, certificate pinned
-                                          |
-              +---------------------------+---------------------------+
-              |                           |                           |
-     +--------v--------+         +--------v--------+         +--------v--------+
-     |  deplo-agent    |         |  deplo-agent    |         |  deplo-agent    |
-     |  server 1       |         |  server 2       |         |  server 3       |
-     |  +-----------+  |         |                 |         |                 |
-     |  | Traefik   |  |         |   containers    |         |   containers    |
-     |  | :80 :443  |  |         |   volumes       |         |   volumes       |
-     |  +-----------+  |         |   builds        |         |   builds        |
-     |   containers    |         |                 |         |                 |
-     +-----------------+         +-----------------+         +-----------------+
-```
+<ControlPlaneIllustration className="w-full max-w-lg mx-auto h-auto not-prose" />
+
+The browser talks only to the control plane, over gRPC with mutual TLS and a
+pinned certificate. The control plane never talks to a server directly: every
+server runs its own agent, and that agent is the only thing that touches
+Docker.
 
 **The control plane decides.** It is the dashboard you log into, written in
 TypeScript. It:
@@ -53,13 +40,9 @@ browser, backups, restores, disk cleanup and volume copies all go through it.
 
 **The control plane never touches a Docker socket or a host directly.**
 
-Every host-coupled action takes the same path:
-
-```
-UI  ->  GraphQL  ->  the data layer  ->  connectAgent(serverId)  ->  the agent
-```
-
-There is exactly one way to dial an agent. It uses mutual TLS, and the
+Every host-coupled action takes the same path: the UI calls GraphQL, GraphQL
+calls the data layer, the data layer calls `connectAgent(serverId)`, and that
+is what reaches the agent. There is exactly one way to dial an agent. It uses mutual TLS, and the
 agent's certificate fingerprint is pinned when the server is enrolled.
 
 <Callout type="info" title="Three consequences worth knowing">
@@ -132,19 +115,19 @@ part of the rendered stack or as a `0600` environment file next to it.
 <Cards>
   <Card
     icon={<Server className="text-blue-400" />}
-    title="Servers and the agent"
+    title="Servers and agents"
     description="Enrollment, health, readiness, roles"
     href="/concepts/servers-and-the-agent"
   />
   <Card
     icon={<Rocket className="text-blue-400" />}
-    title="What happens on a deploy"
+    title="The deploy trace"
     description="The trace, step by step"
     href="/concepts/what-happens-on-a-deploy"
   />
   <Card
     icon={<FolderTree className="text-blue-400" />}
-    title="Ports, networks and files"
+    title="Ports, networks, files"
     description="Reference for the file layout on a host"
     href="/reference/ports-networks-and-files"
   />

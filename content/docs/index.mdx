@@ -1,10 +1,11 @@
 ---
 title: Deplo
 description: Push a repo, pick a server, get a deployment, on your own infrastructure.
-icon: Rocket
+icon: DeploMark
 ---
 
 import { Rocket, Compass, BookOpen, Sparkles, Server, Library, LifeBuoy } from "lucide-react";
+import { RequestFlowIllustration } from "@/components/illustrations/request-flow-illustration";
 
 Deplo runs your apps on servers you own, and does the operations work for you: push a repo, pick a server, get a deployment, on your own infrastructure.
 
@@ -31,9 +32,7 @@ You should not have to learn Docker or SSH to deploy your own app. The big cloud
 
 Deplo is two programs and one rule: the control plane decides, the agent executes, and only the agent ever touches Docker.
 
-```
-Browser -> Deplo control plane -> deplo-agent on each server -> Traefik + your containers
-```
+<RequestFlowIllustration className="w-full max-w-md mx-auto h-auto not-prose" />
 
 - **The control plane decides.** It renders the Compose file and the routing, resolves secrets, and never touches Docker or a host directly.
 - **The server agent executes.** One Go binary per host, the only thing that runs Docker anywhere, reached over mutual TLS.

@@ -5,12 +5,15 @@ icon: Rocket
 ---
 
 import { Globe, Settings2, Repeat, Compass } from "lucide-react";
+import { DeployFlowIllustration } from "@/components/illustrations/deploy-flow-illustration";
 
 ## What it is
 
 Going from a repository to a running site. This page uses GitHub because it's the shortest path, but the same wizard also takes a GitLab, Bitbucket or Gitea repository, a registry image, an uploaded archive or a Compose file.
 
 ## How it works
+
+<DeployFlowIllustration className="w-full max-w-sm mx-auto h-auto not-prose" />
 
 Creating an app writes one row and nothing else. The first deploy is what does the work, and it happens on the server you pick, never on the control plane:
 
@@ -130,5 +133,5 @@ Console, Files, Cron jobs and Pull requests appear once you turn them on or once
   <Card icon={<Globe className="text-blue-400" />} title="Add a domain" description="Your own hostname and a real certificate." href="/getting-started/add-a-domain" />
   <Card icon={<Settings2 className="text-purple-400" />} title="Build settings" description="Every build knob." href="/guides/build-settings" />
   <Card icon={<Repeat className="text-green-400" />} title="Automatic deployments" description="Triggers, watch paths, deploy hooks." href="/guides/automatic-deployments" />
-  <Card icon={<Compass className="text-amber-400" />} title="What happens on a deploy" description="The full trace." href="/concepts/what-happens-on-a-deploy" />
+  <Card icon={<Compass className="text-amber-400" />} title="The deploy trace" description="The full trace." href="/concepts/what-happens-on-a-deploy" />
 </Cards>

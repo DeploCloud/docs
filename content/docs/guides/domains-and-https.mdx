@@ -5,6 +5,7 @@ icon: Globe
 ---
 
 import { Globe, ShieldCheck, GitPullRequest, Terminal } from "lucide-react";
+import { PathRoutingIllustration } from "@/components/illustrations/path-routing-illustration";
 
 ## What it is
 
@@ -113,12 +114,11 @@ It talks HTTPS to the browser and plain HTTP to your server, so the padlock is r
   }}
 />
 
-A worked example. Two apps, one domain:
+A worked example. Two apps, one domain: `example.com/api` routes to the API
+app with internal path `/api` and strip path on, `example.com/` routes to
+the web app with no internal path.
 
-```
-example.com/api   ->  the API app,   Internal path /api,  Strip path ON
-example.com/      ->  the web app,   no internal path
-```
+<PathRoutingIllustration className="w-full max-w-xs mx-auto h-auto not-prose" />
 
 Traefik matches `/api` first because path routers outrank whole-host ones, and the API container receives `/users` rather than `/api/users` because stripping is on.
 
