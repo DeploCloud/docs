@@ -143,6 +143,9 @@ address** re-fills the connection details for another pass.
   instead.** Authored Compose is treated as hostile here exactly as it is
   everywhere else: host bind mounts, `privileged`, published ports and
   foreign networks or volumes each need their grant.
+- **A service that was never started comes across empty.** It has no data
+  on the source yet, so nothing is copied for it and nothing holds its
+  first deploy here - which is what creates its volumes.
 - **An app still being created refuses every action** and draws as
   pending until its run finishes.
 
@@ -166,6 +169,9 @@ address** re-fills the connection details for another pass.
   the source, or that machine cannot reach this one.
 - **A volume arrives empty**: the report will say so. Re-run just that
   item rather than the whole migration.
+- **The data step stops half way**: nothing is rolled back. Everything
+  already created here stays exactly as it is, and the report says what
+  is still missing. Fix the reason and run it again for the rest.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 </Callout>

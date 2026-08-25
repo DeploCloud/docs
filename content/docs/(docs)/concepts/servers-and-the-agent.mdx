@@ -29,9 +29,16 @@ install command containing a **one-time bootstrap token**.
 <Step>
 ### Run it on the server
 
-You paste that command on the server. It downloads the agent binary,
-verifies its SHA-256 (a mismatch is a hard refusal, not a warning),
-installs it as a systemd unit and starts it.
+You paste that command on the server. It installs Docker and git if the
+machine has neither, downloads the agent binary, verifies its SHA-256 (a
+mismatch is a hard refusal, not a warning), installs it as a systemd unit
+and starts it.
+
+<Callout title="git is what clones your repositories">
+The agent clones on the host, so a server without git cannot build an app
+from a repository. Backups-only and migration-only servers never build,
+so they are left as they are.
+</Callout>
 </Step>
 <Step>
 ### The agent requests a certificate
