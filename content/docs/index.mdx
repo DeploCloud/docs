@@ -40,6 +40,13 @@ Deplo is two programs and one rule: the control plane decides, the agent execute
 
 The box running Deplo itself is just another server in the fleet, no special shortcut.
 
+## What Deplo is not
+
+- **Not a hosting provider.** You bring the server. Deplo never bills you for compute, seats or build minutes.
+- **Not a DNS provider.** You keep your registrar. Deplo tells you which record to create and checks that it resolves.
+- **Not Kubernetes.** The unit is a Docker container on a host you picked, not a scheduled pod. There is no cluster to operate.
+- **Not a black box.** The rendered Compose file, the routing labels and the build logs are all readable from the dashboard.
+
 ## Where to go next
 
 <Cards>

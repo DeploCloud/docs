@@ -35,6 +35,15 @@ Three containers come up:
 
 Traefik never gets the Docker socket: it reads container events through a `docker-socket-proxy` sidecar on its own internal network, restricted to reads. The control plane doesn't get one either, and you should never give it one: it's the container reachable from the internet, and that mount is root on the box for whoever reaches it.
 
+## What you need
+
+| What             | Requirement                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| A server         | Linux, `x86-64` or `arm64`, and root access for the length of one install command. Docker is installed for you if it is missing. |
+| Ports            | `80` and `443` reachable from the internet, `3000` for the dashboard, `9443` on every server you add later.                      |
+| A domain         | Optional. Useful, not required: the generated `nip.io` hostname works from the first deploy.                                     |
+| Docker knowledge | None. It is available as an escape hatch, never as a prerequisite.                                                              |
+
 ## Install it
 
 <Steps>
