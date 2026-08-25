@@ -1,0 +1,5 @@
+{
+  "title": "Framework Guides",
+  "icon": "BookOpen",
+  "pages": ["nextjs", "astro", "vite-react", "docker"]
+}

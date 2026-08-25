@@ -1,0 +1,30 @@
+---
+title: Environments
+description: Production, staging, and per-branch previews.
+icon: GitBranch
+---
+
+Deplo separates environments automatically based on the branch.
+
+| Environment | Branch    | URL                                 |
+| ----------- | --------- | ------------------------------------ |
+| Production  | `main`    | `your-project.deplo.app`             |
+| Staging     | `staging` | `staging.your-project.deplo.app`     |
+| Preview     | any other | generated per commit                 |
+
+## Environment variables
+
+Variables are scoped per environment, from the dashboard or the CLI:
+
+```bash
+deplo env set DATABASE_URL "postgres://..." --env production
+deplo env set DATABASE_URL "postgres://..." --env staging
+```
+
+<Callout type="warning" title="Preview environments inherit staging">
+  Unless overridden, preview deployments reuse the `staging` variable set.
+  Never put production secrets there if previews are shared publicly.
+</Callout>
+
+See [Environment Variables](/integrations/environment-variables) for the
+full reference, including secret vs. plaintext values.

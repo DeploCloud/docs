@@ -1,0 +1,34 @@
+---
+title: Docker
+description: Deploy any project with a Dockerfile.
+icon: Container
+---
+
+If Deplo doesn't recognize your framework, or you'd rather control the build
+yourself, add a `Dockerfile` at the project root and Deplo builds and runs
+it directly.
+
+```dockerfile title="Dockerfile"
+FROM oven/bun:1 AS base
+WORKDIR /app
+
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+
+COPY . .
+RUN bun run build
+
+EXPOSE 3000
+CMD ["bun", "run", "start"]
+```
+
+<Callout type="info">
+  Deplo reads the `EXPOSE`d port to route traffic to your container. If none
+  is set, it defaults to `3000`.
+</Callout>
+
+<Callout type="error" title="Multi-stage builds and build context">
+  Make sure files referenced by earlier `COPY` layers (lockfiles, config)
+  are actually included in the build context, a `.dockerignore` that's too
+  aggressive is the most common cause of failed Docker builds.
+</Callout>

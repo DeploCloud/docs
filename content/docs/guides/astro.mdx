@@ -1,0 +1,37 @@
+---
+title: Astro
+description: Deploy an Astro site on Deplo, static or with SSR.
+icon: Sparkles
+---
+
+Deplo detects Astro from `astro` in your `package.json`. Both static builds
+and SSR (via `@astrojs/node`) are supported.
+
+## Static output
+
+No configuration needed, `astro build` runs and the `dist/` output is
+served from the edge.
+
+## Server-rendered (SSR)
+
+Add the Deplo adapter so `astro build` produces a Node entrypoint Deplo can
+run:
+
+```bash
+bunx astro add node
+```
+
+```js title="astro.config.mjs"
+import { defineConfig } from "astro/config";
+import node from "@astrojs/node";
+
+export default defineConfig({
+  output: "server",
+  adapter: node({ mode: "standalone" }),
+});
+```
+
+<Callout type="success">
+  Once the adapter is installed, `deplo up` picks up SSR mode automatically,
+  no extra flags required.
+</Callout>

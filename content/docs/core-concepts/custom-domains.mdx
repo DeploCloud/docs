@@ -1,0 +1,62 @@
+---
+title: Custom Domains
+description: Point your own domain at a Deplo project.
+icon: Globe
+---
+
+<Steps>
+<Step>
+
+### Add the domain
+
+```bash
+deplo domains add example.com
+```
+
+</Step>
+<Step>
+
+### Configure DNS
+
+<Tabs items={['Apex domain', 'Subdomain']}>
+<Tab value="Apex domain">
+
+Add an `A` record pointing to Deplo's edge IP:
+
+```
+A    @    76.76.21.21
+```
+
+</Tab>
+<Tab value="Subdomain">
+
+Add a `CNAME` record pointing to your project:
+
+```
+CNAME    app    cname.deplo.cloud
+```
+
+</Tab>
+</Tabs>
+
+</Step>
+<Step>
+
+### Wait for verification
+
+```bash
+deplo domains status example.com
+```
+
+</Step>
+</Steps>
+
+<Callout type="success">
+  TLS certificates are issued and renewed automatically once DNS verification
+  passes, no extra step required.
+</Callout>
+
+<Callout type="warning" title="Propagation delay">
+  DNS changes can take anywhere from a few minutes to 24 hours to propagate,
+  depending on your registrar's TTL settings.
+</Callout>

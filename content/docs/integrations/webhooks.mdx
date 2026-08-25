@@ -1,0 +1,54 @@
+---
+title: Webhooks
+description: Get notified when a deployment changes state.
+icon: Webhook
+---
+
+```bash
+deplo webhooks add https://example.com/hooks/deplo --event deployment.ready
+```
+
+## Events
+
+<TypeTable
+  type={{
+    "deployment.queued": {
+      description: "A new deployment was created and is waiting to build",
+      type: "event",
+    },
+    "deployment.building": {
+      description: "The build started",
+      type: "event",
+    },
+    "deployment.ready": {
+      description: "The deployment succeeded and is serving traffic",
+      type: "event",
+    },
+    "deployment.failed": {
+      description: "The build or deploy step failed",
+      type: "event",
+    },
+    "deployment.promoted": {
+      description: "A deployment was promoted to production",
+      type: "event",
+    },
+  }}
+/>
+
+## Payload
+
+```json
+{
+  "event": "deployment.ready",
+  "deploymentId": "dep_8f2a1c",
+  "project": "marketing-site",
+  "branch": "main",
+  "url": "https://marketing-site.deplo.app",
+  "createdAt": "2026-08-25T10:32:00Z"
+}
+```
+
+<Callout type="warning" title="Verify the signature">
+  Every webhook request includes an `X-Deplo-Signature` header, HMAC-signed
+  with your webhook secret. Always verify it before trusting the payload.
+</Callout>

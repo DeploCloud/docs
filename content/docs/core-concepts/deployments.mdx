@@ -1,0 +1,41 @@
+---
+title: Deployments
+description: How builds and releases work on Deplo.
+icon: Rocket
+---
+
+Every push to a connected branch creates a new deployment. Each deployment
+is immutable and gets its own unique preview URL, so you can share it before
+promoting anything to production.
+
+## Lifecycle of a deployment
+
+1. **Queued**: waiting for a build slot.
+2. **Building**: dependencies install, your build command runs.
+3. **Ready**: the preview URL is live.
+4. **Promoted** (optional): production traffic points at this deployment.
+
+<Callout type="info">
+  Deployments never change after they're marked **Ready**. Pushing new
+  commits always creates a new deployment, it never mutates an existing one.
+</Callout>
+
+## Rollbacks
+
+Because every deployment is immutable and kept around, a rollback is just a
+promote of an older deployment:
+
+```bash
+deplo rollback --to <deployment-id>
+```
+
+<Callout type="success">
+  Rollbacks take effect in under a second, nothing is rebuilt.
+</Callout>
+
+## Failed builds
+
+<Callout type="error" title="Build failed">
+  If a build fails, the previous production deployment keeps serving traffic
+  unchanged. A broken commit never takes your site down.
+</Callout>

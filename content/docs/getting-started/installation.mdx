@@ -1,0 +1,65 @@
+---
+title: Installation
+description: Install the Deplo CLI on macOS, Linux, or Windows.
+---
+
+<Tabs items={['macOS / Linux', 'Windows', 'npm', 'bun']}>
+<Tab value="macOS / Linux">
+
+```bash
+curl -fsSL https://deplo.cloud/install.sh | sh
+```
+
+</Tab>
+<Tab value="Windows">
+
+```powershell
+irm https://deplo.cloud/install.ps1 | iex
+```
+
+</Tab>
+<Tab value="npm">
+
+```bash
+npm install -g deplo
+```
+
+</Tab>
+<Tab value="bun">
+
+```bash
+bun add -g deplo
+```
+
+</Tab>
+</Tabs>
+
+## Verify the install
+
+```bash
+deplo --version
+```
+
+<Callout type="warning" title="PATH not updated">
+  If `deplo` isn't found after installing via the shell script, restart your
+  terminal or re-source your shell profile (`~/.zshrc`, `~/.bashrc`).
+</Callout>
+
+## Supported platforms
+
+<TypeTable
+  type={{
+    macOS: {
+      description: "Apple Silicon and Intel, via the install script or Homebrew",
+      type: "arm64 / x64",
+    },
+    Linux: {
+      description: "Any glibc-based distro, via the install script",
+      type: "x64 / arm64",
+    },
+    Windows: {
+      description: "Windows 10+, via PowerShell or WSL",
+      type: "x64",
+    },
+  }}
+/>

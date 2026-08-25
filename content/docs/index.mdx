@@ -1,0 +1,62 @@
+---
+title: Introduction
+description: What Deplo is, and where to start.
+icon: House
+---
+
+import { Rocket, Layers, BookOpen, Plug, Terminal } from "lucide-react";
+
+Deplo is a ridiculously good alternative to traditional cloud providers.
+Connect a repository, and Deplo builds, deploys, and scales it for you, no
+servers to configure and no YAML to write.
+
+<Callout type="idea" title="New here?">
+  Start with the [Quickstart](/getting-started/quickstart): your first
+  deployment takes less than 5 minutes.
+</Callout>
+
+## Explore the docs
+
+<Cards>
+  <Card
+    icon={<Rocket className="text-blue-400" />}
+    title="Getting Started"
+    description="Install the CLI and ship your first deployment"
+    href="/getting-started/quickstart"
+  />
+  <Card
+    icon={<Layers className="text-violet-400" />}
+    title="Core Concepts"
+    description="Deployments, environments, builds, and domains"
+    href="/core-concepts/deployments"
+  />
+  <Card
+    icon={<BookOpen className="text-emerald-400" />}
+    title="Framework Guides"
+    description="Next.js, Astro, Vite, and Docker walkthroughs"
+    href="/guides/nextjs"
+  />
+  <Card
+    icon={<Plug className="text-amber-400" />}
+    title="Integrations"
+    description="GitHub, environment variables, webhooks, databases"
+    href="/integrations/github"
+  />
+  <Card
+    icon={<Terminal className="text-rose-400" />}
+    title="CLI Reference"
+    description="Every command and config key, in one place"
+    href="/cli/overview"
+  />
+</Cards>
+
+## Why Deplo
+
+- **Zero config**: Deplo detects your framework and builds it correctly, every time.
+- **Preview by default**: every branch and pull request gets its own URL.
+- **Instant rollback**: any previous deployment can become production again in seconds.
+
+<Callout type="info">
+  Deplo is currently in public beta. Some features described in these docs
+  may change before the stable release.
+</Callout>

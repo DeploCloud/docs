@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/style.css";
+
+@theme inline {
+  --font-display: var(--font-funnel-display);
+  --font-sans: var(--font-funnel-sans);
+}
+
+/* Deplo e' un brand monocromatico: nero puro, bianco, grigio muto. Niente
+   colore accento, quindi primary/ring ricadono sul bianco come su deplo-web. */
+:root,
+.dark {
+  --color-fd-background: #000000;
+  --color-fd-foreground: #ffffff;
+  --color-fd-muted: #111111;
+  --color-fd-muted-foreground: #a2a2a2;
+  --color-fd-popover: #0a0a0a;
+  --color-fd-popover-foreground: #ffffff;
+  --color-fd-card: #0a0a0a;
+  --color-fd-card-foreground: #ffffff;
+  --color-fd-border: rgba(255, 255, 255, 0.1);
+  --color-fd-primary: #ffffff;
+  --color-fd-primary-foreground: #000000;
+  --color-fd-secondary: #111111;
+  --color-fd-secondary-foreground: #ffffff;
+  --color-fd-accent: #1a1a1a;
+  --color-fd-accent-foreground: #ffffff;
+  --color-fd-ring: rgba(255, 255, 255, 0.4);
+
+  /* semantic colors for Callout types, kept vivid against the monochrome UI */
+  --color-fd-info: #3b82f6;
+  --color-fd-warning: #f59e0b;
+  --color-fd-error: #ef4444;
+  --color-fd-success: #22c55e;
+  --color-fd-idea: #facc15;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+/* the desktop docs sidebar defaults to bg-fd-card (#0a0a0a); Deplo is pure
+   monochrome so it should sit flush with the #000 page background */
+#nd-sidebar {
+  background-color: var(--color-fd-background);
+}
+
+/* drop the icon fumadocs renders next to "On this page" in the TOC header */
+#toc-title svg {
+  display: none;
+}
+
+button:not(:disabled),
+a,
+summary,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+[role="switch"] {
+  cursor: pointer;
+}

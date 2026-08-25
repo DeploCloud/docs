@@ -1,0 +1,19 @@
+{
+  "title": "Deplo",
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Getting Started---",
+    "...getting-started",
+    "---Core Concepts---",
+    "...core-concepts",
+    "---Framework Guides---",
+    "...guides",
+    "---Integrations---",
+    "...integrations",
+    "---CLI Reference---",
+    "...cli",
+    "---More---",
+    "faq"
+  ]
+}

@@ -1,0 +1,51 @@
+---
+title: deplo.json
+description: Project configuration file reference.
+icon: Settings
+---
+
+An optional `deplo.json` at the project root overrides Deplo's automatic
+framework detection.
+
+```json title="deplo.json"
+{
+  "framework": "nextjs",
+  "build": "bun run build",
+  "output": ".next",
+  "installCommand": "bun install --frozen-lockfile",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
+
+## Keys
+
+<TypeTable
+  type={{
+    framework: {
+      description: "Overrides auto-detection: nextjs, astro, vite, static, docker",
+      type: "string",
+    },
+    build: {
+      description: "Command run to produce the build output",
+      type: "string",
+    },
+    output: {
+      description: "Directory containing the build output to deploy",
+      type: "string",
+    },
+    installCommand: {
+      description: "Command run to install dependencies before building",
+      type: "string",
+      default: "auto-detected from lockfile",
+    },
+    rewrites: {
+      description: "Array of { source, destination } path rewrites",
+      type: "Rewrite[]",
+    },
+  }}
+/>
+
+<Callout type="warning">
+  `deplo.json` is optional. Most Next.js, Astro, and Vite projects need none
+  of this, only add it when you need to override a default.
+</Callout>
