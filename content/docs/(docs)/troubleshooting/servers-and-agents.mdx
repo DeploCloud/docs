@@ -26,13 +26,9 @@ journalctl -u deplo-agent -f
 </Accordion>
 <Accordion title="Online, but every deploy fails">
 
-**This is the classic one.** The agent calls home outbound over 443, and
-that is what turns the card green. Deploying needs the control plane to
-dial **inbound** on `9443`.
-
-<Callout type="warn" title="No installer opens a firewall">
-If 9443 is firewalled, the server looks perfectly healthy and nothing works.
-</Callout>
+**This is the classic one.** Green only means outbound 443 works; deploys
+need inbound `9443`. See
+[ports, networks, and files](/reference/ports-networks-and-files).
 
 From the machine running the control plane:
 

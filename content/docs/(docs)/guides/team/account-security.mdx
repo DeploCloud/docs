@@ -5,9 +5,8 @@ description: Your password, two-factor authentication, passkeys and the devices 
 
 import { Users, KeyRound as KeyRoundIcon } from "lucide-react";
 
-Your own account: the password, two-factor authentication, passkeys, and
-the devices you are signed in on. All of it is in **Settings -> Security**,
-which is personal and has no team context.
+All of it is in **Settings -> Security**, which is personal and has no
+team context.
 
 ---
 
@@ -122,9 +121,6 @@ team through the interface, through the API, or through any token you
 created.
 
 <Callout type="warn" title="Limits and gotchas">
-- **The breach check fails open, deliberately.** An instance with no
-  internet should still let people sign up. It is a warning system, not a
-  gate.
 - **Recovery codes are shown once.**
 - **A password change does not revoke sessions.** Use **Sign out
   everywhere else**.

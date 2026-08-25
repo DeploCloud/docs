@@ -5,9 +5,6 @@ description: Connect Deplo to where your code lives, once per team, so every app
 
 import { GitCommit, Workflow, GitPullRequest } from "lucide-react";
 
-Connecting Deplo to where your code lives, once per team, so every app can
-clone it without anybody pasting a token into an app.
-
 **Settings -> Git**.
 
 ---
@@ -25,10 +22,8 @@ and mints short-lived tokens to list and clone them. See
 
 **Everything else** connects as a **git connection**, which is one stored
 credential per host, reused by every app that deploys from it. This
-covers [GitLab](/guides/git-providers/gitlab),
-[Bitbucket](/guides/git-providers/bitbucket) and
-[Gitea](/guides/git-providers/gitea), self-hosted included, and is marked
-**Beta**.
+covers [GitLab, Bitbucket and Gitea](/guides/git-providers/git-connections),
+self-hosted included, and is marked **Beta**.
 
 Tokens are encrypted at rest, never returned by the API, and decrypted
 only at the clone edge and when calling the provider's own API.

@@ -18,9 +18,7 @@ Asks the agent to actually try the destination and returns
 
 <Callout type="info" title="A verdict is a return value, not an error">
   `report.ok` is the verdict, `report.error` carries the agent's verbatim
-  message, `report.steps` the probe sequence. A client that treats "the
-  request succeeded" as "the destination works" will report success over
-  a bucket that just refused it.
+  message, `report.steps` the probe sequence.
 </Callout>
 
 Gated on `manage_backup_destinations`, see

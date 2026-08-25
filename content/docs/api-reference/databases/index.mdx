@@ -15,11 +15,7 @@ provisioned and versioned the same way an app is.
   resource usage).
 
 <Callout type="info" title="search(q) is not scoped to the active team">
-  Like `apps`, the `q` argument on `databases` answers across every team the
-  caller can reach, each hit carrying the team it lives in. It is a loop
-  over the ordinary per-team read, so a team the caller cannot enter right
-  now (unmet two-factor policy, a token scoped elsewhere) contributes
-  nothing. At most 50 results.
+  Same behavior as `apps`, see [Apps](/api-reference/apps).
 </Callout>
 
 ## Mutations

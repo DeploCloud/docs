@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | 
 
 ## What it is
 
-One command on a fresh Linux server. It installs Docker if it is missing, Traefik with automatic HTTPS, a private Postgres, the Deplo control plane, and the server agent, all on that same machine, so you have somewhere to deploy the moment it finishes.
+Docker installs only if it's missing, Traefik comes with automatic HTTPS, and Postgres stays private to the stack. Everything lands on the same machine, so you have somewhere to deploy the moment it finishes.
 
 ---
 
@@ -57,7 +57,7 @@ Three containers come up:
 - `ghcr.io/deplocloud/deplo`, publishing port `3000`.
 - `traefik:v3.7`, holding `80` and `443`.
 
-Traefik never gets the Docker socket: it reads container events through a `docker-socket-proxy` sidecar on its own internal network, restricted to reads. The control plane doesn't get one either, and you should never give it one: it's the container reachable from the internet, and that mount is root on the box for whoever reaches it.
+Neither Traefik nor the control plane ever gets the Docker socket. See [How Deplo works](/concepts/how-deplo-works#the-rule) for why.
 
 ---
 

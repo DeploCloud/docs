@@ -9,8 +9,6 @@ import { Terminal, Server, Layers, ShieldAlert } from "lucide-react";
 
 ## What it is
 
-Taking a machine out of the fleet, removing Deplo's agent from that machine, and removing Deplo itself from the machine it runs on.
-
 Three different acts, on purpose.
 
 ---
@@ -112,10 +110,8 @@ curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --purg
 Order matters, and the script handles it: the panel and its Postgres stop **before** Traefik and the `deplo` network go away under them.
 
 <Callout type="warn" title="--purge-data deletes DEPLO_SECRET">
-It deletes `/opt/deplo/.env`, and every backup artifact this instance ever
-wrote is encrypted with a key derived from it. Copy the file first if you
-might ever want to restore one, see [uninstall.sh](/reference/installers/uninstall)
-for the full warning.
+Copy `/opt/deplo/.env` first if you might ever want to restore a backup.
+Full warning: [uninstall.sh](/reference/installers/uninstall).
 </Callout>
 
 `--purge-backups` is separate for the same reason: everything else on the machine can be rebuilt from a backup, and those **are** the backups.

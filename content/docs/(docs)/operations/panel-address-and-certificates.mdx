@@ -9,7 +9,7 @@ import { Settings, Globe, KeyRound, ShieldAlert } from "lucide-react";
 
 ## What it is
 
-Where the dashboard itself answers, and the certificate it uses. Moving it is a real operation with real consequences, which is why it has its own page.
+Moving it is a real operation with real consequences, which is why it has its own page.
 
 **Settings -> Deplo**, instance admins only.
 
@@ -58,9 +58,8 @@ Use **Serve the panel over HTTPS** once the hostname resolves, so Traefik can ge
 </Steps>
 
 <Callout type="info">
-`http://<server-ip>:3000` keeps working throughout, and that is the point.
-It is the way back in when a domain, a certificate, or the proxy is what
-broke.
+`http://<server-ip>:3000` keeps working throughout. See
+[ports, networks, and files](/reference/ports-networks-and-files).
 </Callout>
 
 ---

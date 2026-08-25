@@ -35,16 +35,12 @@ curl https://your-host/api/graphql \
 A POST must be `Content-Type: application/json`; anything else is refused
 with **415**. GET still serves GraphiQL and query-over-GET.
 
-**Capabilities.** A token carries its own capabilities, chosen when you
-create it, the same fine-grained set a role is built from. Its effective
-power is capped by what its creator can still do in that team. The full
-lifecycle, creating, scoping, updating and revoking a token, is in
+**Capabilities.** Chosen at creation and capped by its creator's own
+access, the same fine-grained set a role is built from; full lifecycle in
 [API tokens](/api-reference/api-tokens).
 
-**A token is a principal, not a stand-in for its creator.** It never
-reaches their personal account: signed-in devices, the profile, passkeys
-and two-factor settings all answer `An API token can't access <that
-resource>`, however many capabilities the token holds, see
+**A token is a principal, not a stand-in for its creator.** It can never
+reach personal-account actions, see
 [API tokens](/api-reference/api-tokens) for the exact list.
 
 **Picking the team.** A request acts in exactly one team. Send

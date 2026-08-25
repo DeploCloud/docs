@@ -69,11 +69,9 @@ admin plus the host-volumes grant).
 ## The source machine
 
 The agent an import needs on the source machine is registered as a
-**migration source**: `addServer(input.importOnly)`, instance admin. The
-row is granted to the importing team alone, and the host is excluded from
-every deploy and build picker, from backup destinations, from the cleanup
-sweep and from monitoring, it is the other platform's machine, not a
-member of the fleet.
+**migration source**: `addServer(input.importOnly)`, instance admin. What
+that role excludes it from is covered in
+[Servers](/api-reference/servers).
 
 `setServerRole`, `removeServer` and `uninstallServerAgent` all apply to a
 migration-source server the same way they apply to any other, see

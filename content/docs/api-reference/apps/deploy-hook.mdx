@@ -3,9 +3,8 @@ title: Deploy hook
 description: The one REST endpoint that takes an API token instead of the session cookie, for git providers, CI and scripts.
 ---
 
-The one REST endpoint that takes an **API token** instead of the session
-cookie, so a git provider, a CI job or a script can deploy an app without
-composing a query. It stays REST because a webhook sender only posts a URL.
+A git provider, a CI job or a script can deploy an app without composing a
+query. It stays REST because a webhook sender only posts a URL.
 
 ```bash
 curl -X POST -H "Authorization: Bearer deplo_your_token" \

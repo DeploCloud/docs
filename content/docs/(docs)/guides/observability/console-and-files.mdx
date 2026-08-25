@@ -13,9 +13,8 @@ neither is required to use Deplo.
 
 ## How it works
 
-Both go through the agent on the server, over the same mutual TLS
-connection everything else uses. There is no SSH, no exposed Docker
-socket, and no port to open.
+Both go through the agent on the server. See
+[Observability](/guides/observability) for how that connection works.
 
 The console is a real terminal, not a command box: it runs `docker exec`
 in a container you pick, with a proper pseudo-terminal, so `top`, `vim`

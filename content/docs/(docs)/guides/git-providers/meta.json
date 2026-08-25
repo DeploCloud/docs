@@ -1,4 +1,4 @@
 {
   "title": "Git providers",
-  "pages": ["github", "gitlab", "bitbucket", "gitea"]
+  "pages": ["github", "git-connections"]
 }

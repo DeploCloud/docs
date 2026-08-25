@@ -1,0 +1,94 @@
+---
+title: Git connections
+description: Connect a GitLab, Bitbucket, or Gitea (Forgejo included) host as a stored git connection, cloud or self-hosted.
+---
+
+A git connection is one stored credential per host, reused by every app that
+deploys from it. GitLab, Bitbucket and Gitea connect this way, self-hosted or
+not, and are marked **Beta**. GitHub is different, see
+[GitHub](/guides/git-providers/github).
+
+## Connect it
+
+<Steps>
+<Step>
+
+### Add a connection
+
+**Settings -> Git**, then add a connection.
+
+</Step>
+<Step>
+
+### Pick the type and fill in the details
+
+Pick the provider as the **Type**, then set the **Address**, **Username** and
+token. The exact values differ per provider:
+
+<Tabs items={['GitLab', 'Bitbucket', 'Gitea']}>
+<Tab value="GitLab">
+
+- **Address**: leave the default for gitlab.com, or point it at your
+  self-hosted instance's base URL.
+- **Username**: **`oauth2`**, exactly. GitLab expects this value for token
+  authentication, not your account name.
+- **Token**: a GitLab personal or project access token with repository read
+  scope.
+
+GitLab reports token expiry, so an expiring token surfaces before it
+actually breaks a deploy.
+
+</Tab>
+<Tab value="Bitbucket">
+
+- **Address**: Bitbucket's base URL.
+- **Username**: **`x-token-auth`**, exactly. Bitbucket expects this value
+  for token authentication, not your account name.
+- **Token**: a Bitbucket app password or repository access token.
+
+</Tab>
+<Tab value="Gitea">
+
+- **Address**: your instance's base URL (Forgejo included).
+- **Username**: your Gitea account name.
+- **Token**: a Gitea access token with repository read scope.
+
+Gitea does not report token expiry. Unlike GitLab, there is no advance
+warning before a token dies, so **This connection stopped working** is the
+first signal you get.
+
+</Tab>
+</Tabs>
+
+</Step>
+<Step>
+
+### Test and save
+
+Click **Test connection**, then **Save**.
+
+</Step>
+</Steps>
+
+Later, **Replace the token** swaps it without recreating anything, and
+**This connection stopped working** appears when a background check finds
+it broken.
+
+For a self-hosted GitLab or Gitea address that is not publicly routable, an
+instance admin can tick **This git server is on my own network**. It is
+deliberately admin-only, because it turns off a guard that stops Deplo
+being used to probe your internal network.
+
+## If it does not work
+
+- **`Authentication failed` in a clone**: the token expired or was
+  revoked. **Test connection** confirms it.
+- **Saving a self-hosted address is refused**: it resolves to a private
+  address, and only an instance admin can allow that.
+
+## See also
+
+<Cards>
+  <Card title="Git providers" description="GitHub App vs. git connection" href="/guides/git-providers" />
+  <Card title="GitHub" description="Connects as a GitHub App instead" href="/guides/git-providers/github" />
+</Cards>

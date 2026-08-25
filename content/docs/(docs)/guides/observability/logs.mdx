@@ -15,7 +15,7 @@ What your containers are printing, live, plus the output of every build. No `doc
 
 ## How it works
 
-Logs are streamed from the agent that owns the container, over the same mutual TLS connection everything else uses. Nothing is copied into the control plane on a schedule: the stream is opened when you open the page.
+Logs are streamed from the agent that owns the container. See [Observability](/guides/observability) for how that connection works. Nothing is copied into the control plane on a schedule: the stream is opened when you open the page.
 
 <Tabs items={['Runtime logs', 'Build logs']}>
 <Tab value="Runtime logs">
