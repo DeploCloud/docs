@@ -1,0 +1,99 @@
+---
+title: REST and MCP
+description: "The handful of endpoints that stay outside GraphQL: binary upload, log streams, the MCP server and the deploy hook."
+---
+
+A few endpoints stay REST because GraphQL is the wrong transport for them:
+binary upload and long-lived byte streams.
+
+<TypeTable
+  type={{
+    "POST /api/apps/[id]/upload": {
+      type: "REST",
+      description: "Multipart archive upload.",
+    },
+    "GET /api/apps/[id]/logs": {
+      type: "REST",
+      description: "Server-Sent-Events log stream.",
+    },
+    "GET /api/apps/[id]/attach": {
+      type: "REST",
+      description: "Interactive console session.",
+    },
+    "GET /api/github/callback": {
+      type: "REST",
+      description: "GitHub App OAuth callback.",
+    },
+    "POST /api/github/webhook": {
+      type: "REST",
+      description: "GitHub webhook receiver.",
+    },
+    "POST /api/git/webhook/[token]": {
+      type: "REST",
+      description:
+        "Push receiver for every other provider. The token in the URL identifies the git connection, which says how to verify the delivery.",
+    },
+    "POST /api/apps/[id]/deploy-hook/[token]": {
+      type: "REST",
+      description: "Deploy hook. A webhook sender posts a URL, it can't compose a query.",
+    },
+    "POST /api/mcp": {
+      type: "JSON-RPC",
+      description: "The MCP server, not GraphQL. See below.",
+    },
+  }}
+/>
+
+## MCP server
+
+AI agents reach Deplo at `POST /api/mcp`, speaking the Model Context
+Protocol, **revision 2026-07-28**. This is the wire-protocol reference;
+for setup and the token-driven security model, see
+[MCP server](/advanced/mcp-server).
+
+<Callout type="info" title="Beta">
+  It works and is gated like everything else, but the spec revision is
+  new and the tool surface will move. It is a different framing of this
+  same API, not a second one: each tool runs a GraphQL document
+  in-process as the caller's own principal, so every capability gate,
+  folder grant, token scope and 2FA policy applies identically.
+</Callout>
+
+Authentication is the ordinary **API token**, there is no MCP-specific
+credential:
+
+```bash
+claude mcp add --transport http deplo https://deplo.example.com/api/mcp \
+  --header "Authorization: Bearer deplo_your_token" \
+  --header "X-Deplo-Team: acme"
+```
+
+The protocol is stateless (no session, no `initialize` handshake), so one
+endpoint serves **one team**, chosen by `X-Deplo-Team` when the agent is
+connected; connect a second server to work in another team. `tools/list`
+returns only the tools the token can actually call, so the "MCP & AI
+agents" template shows 34 of the 78. A `403` means the team has switched
+MCP off (Settings -> MCP Server, needs `manage_mcp`); a `429` means the
+per-token rate limit.
+
+<Callout type="warn">
+  **No tool can reveal a secret**, whatever capabilities the token holds:
+  `list_env` shows keys with masked values and there is no `reveal_env`.
+  Everything else the token's capabilities allow, it can do, Deplo adds
+  no confirmation step of its own. Destructive tools carry
+  `destructiveHint` in `tools/list`, which is what makes an MCP client ask
+  its own user first.
+</Callout>
+
+## Deploy hook
+
+The deploy hook (`POST /api/apps/[id]/deploy-hook/[token]`) has moved to its
+own page: see [Deploy hook](/api-reference/apps/deploy-hook) for the request,
+response and error codes.
+
+## See also
+
+<Cards>
+  <Card title="MCP server" description="Setup, connecting agents, the security model" href="/advanced/mcp-server" />
+  <Card title="Deploy hook" description="The full request/response reference" href="/api-reference/apps/deploy-hook" />
+</Cards>

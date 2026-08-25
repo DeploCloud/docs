@@ -1,0 +1,86 @@
+---
+title: uninstall.sh
+description: "Dry run, full removal, agent-only or purge-data: one script, four ways to run it."
+---
+
+<Tabs items={['Dry run', 'Full removal', 'Agent only', 'Purge data']}>
+  <Tab value="Dry run">
+    ```bash
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash
+    ```
+    Prints every command it would run. Changes nothing.
+  </Tab>
+  <Tab value="Full removal">
+    ```bash
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes
+    ```
+    Actually removes the control plane, the agent and everything Deplo
+    labelled.
+  </Tab>
+  <Tab value="Agent only">
+    ```bash
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --agent-only
+    ```
+    Leaves the control plane in `/opt/deplo` alone. This is the flag in
+    the command the dashboard prints for a server.
+  </Tab>
+  <Tab value="Purge data">
+    ```bash
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --purge-data
+    ```
+    Also deletes Deplo volumes, images Deplo built, the stacks directory
+    and `/opt/deplo` itself, `.env` included. **Irreversible.**
+  </Tab>
+</Tabs>
+
+<TypeTable
+  type={{
+    "--yes": {
+      type: "flag",
+      description: "Actually do it. Without it, everything is a dry run.",
+    },
+    "--agent-only": {
+      type: "flag",
+      description:
+        "Leave the control plane in /opt/deplo alone. This is the flag in the command the dashboard prints for a server.",
+    },
+    "--purge-data": {
+      type: "flag",
+      description:
+        "Also delete Deplo volumes, images Deplo built, the stacks directory and /opt/deplo itself, .env included. Irreversible.",
+    },
+    "--purge-backups": {
+      type: "flag",
+      description:
+        "Also delete /data/backups. Separate from --purge-data because everything else can be rebuilt from these. Irreversible.",
+    },
+  }}
+/>
+
+One script, three jobs. By default it removes the control plane in
+`/opt/deplo` (the panel, its Postgres, its Traefik), the agent, Deplo's
+named containers, every container labelled as Deplo-managed, the `deplo`
+network and `/var/lib/deplo-agent`. `--agent-only` stops at the agent. It
+never touches Docker Engine, never rewrites `/etc/docker/daemon.json` (the
+installer's backup stays as `daemon.json.deplo-bak`), and never touches a
+container it did not label. Safe on a machine that was never a Deplo host,
+and safe to run twice.
+
+<Callout type="warn">
+  **`--purge-data` deletes `/opt/deplo/.env`, and that holds
+  `DEPLO_SECRET`.** Every backup artifact this instance wrote is encrypted
+  with a key derived from it. Copy the file first if you may ever want to
+  restore one.
+</Callout>
+
+The older `/uninstall-agent.sh` URL still works and always will: it serves
+this same script with `--agent-only` already applied, so a command copied
+into a runbook before `uninstall.sh` existed still means what it meant
+then.
+
+## See also
+
+<Cards>
+  <Card title="Installers reference" description="All three scripts" href="/reference/installers" />
+  <Card title="Remove or uninstall" description="Choosing the right flags for a real removal" href="/operations/remove-a-server-or-uninstall" />
+</Cards>

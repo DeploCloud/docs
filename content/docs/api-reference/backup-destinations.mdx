@@ -1,0 +1,34 @@
+---
+title: Backup destinations
+description: "Testing a destination before you trust it: `testDestination` and the stored verdict."
+---
+
+## Queries
+
+### `destinationTestReport(id)`
+
+Reads the stored verdict without re-probing.
+
+## Mutations
+
+### `testDestination(id)`
+
+Asks the agent to actually try the destination and returns
+`DestinationTestResult { destination, report }`.
+
+<Callout type="info" title="A verdict is a return value, not an error">
+  `report.ok` is the verdict, `report.error` carries the agent's verbatim
+  message, `report.steps` the probe sequence. A client that treats "the
+  request succeeded" as "the destination works" will report success over
+  a bucket that just refused it.
+</Callout>
+
+Gated on `manage_backup_destinations`, see
+[Capabilities](/reference/capabilities).
+
+## See also
+
+<Cards>
+  <Card title="Authorization" description="The capability model" href="/api-reference/authorization" />
+  <Card title="Backups and restore" description="Destinations, in the dashboard" href="/guides/data/backups-and-restore" />
+</Cards>

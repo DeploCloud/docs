@@ -1,0 +1,38 @@
+---
+title: Teams and members
+description: Who is on the team, what role they hold, and the team itself.
+---
+
+Membership and team-level settings, queried and changed the same way any
+other entity is.
+
+## Queries
+
+`members` lists everyone on the active team with their role. `teamRoles`
+returns the team's roles and exactly what each one grants. `viewerTeam`
+answers "which team is this request acting in", the same team every other
+query and mutation is filtered to.
+
+## Mutations
+
+`updateTeam` changes the team's own settings (name and the like).
+
+`addExistingMember` puts an account already known to the instance onto the
+team, `updateMember` changes a member already on it. Both take a `roleId`.
+The older `role` + `capabilities` pair still works and lands on the
+matching role when there is one, never a role limited to part of the team,
+since that shape says nothing about reach.
+
+<Callout type="info" title="Inviting somebody new is not a mutation">
+  Registering an account that does not exist yet goes through a
+  registration link, not the GraphQL API. See
+  [Members](/guides/team/members) for that flow.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="Roles" description="Build, edit and retire a role" href="/api-reference/teams-and-members/roles" />
+  <Card title="Authorization" description="The capability model a role is built from" href="/api-reference/authorization" />
+  <Card title="Members" description="Adding and removing people, in the dashboard" href="/guides/team/members" />
+</Cards>

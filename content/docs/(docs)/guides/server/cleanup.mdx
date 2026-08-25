@@ -1,0 +1,108 @@
+---
+title: Server cleanup
+description: Reclaiming disk on a server. One schedule for the instance, individual hosts opt out.
+---
+
+import { RotateCcw, ServerCog } from "lucide-react";
+
+Reclaiming disk. This is the setting people wish they had found earlier.
+
+---
+
+## How it works
+
+**Settings -> Servers -> the server -> Cleanup.** One schedule for the
+whole instance, and individual hosts opt **out** of it, so a server you
+add tomorrow can never silently go unswept.
+
+## What gets cleaned
+
+<TypeTable
+  type={{
+    "Build cache": {
+      type: "scope",
+      description: "BuildKit cache older than the minimum age.",
+    },
+    "Dangling images": {
+      type: "scope",
+      description: "Untagged layers nothing references.",
+    },
+    "Orphaned build caches": {
+      type: "scope",
+      description: "Cache from builders that no longer exist.",
+    },
+    "Unused app images": {
+      type: "scope",
+      description: "Old images of your apps, past Images kept per app.",
+    },
+    "Leftover app files": {
+      type: "scope",
+      description: "Directories of apps that no longer exist.",
+    },
+  }}
+/>
+
+## Settings
+
+<TypeTable
+  type={{
+    Schedule: {
+      type: "cron",
+      description: "In UTC.",
+    },
+    "Minimum age (hours)": {
+      type: "number",
+      description: "Gates the cache scopes only.",
+    },
+    "Images kept per app": {
+      type: "number",
+      description:
+        "Interacts directly with rollbacks: a pruned image cannot be rolled back to.",
+    },
+    "Reclaim disk now": {
+      type: "action",
+      description: "Runs immediately and ignores the opt-out list.",
+    },
+    "Recent cleanups": {
+      type: "history",
+      description: "History, with what each run actually freed.",
+    },
+  }}
+/>
+
+<Callout type="info">
+What it deliberately never does: `system prune`, container prune, volume
+prune, network prune. On a Deplo host a *stopped* app is a live app, and
+a dangling volume may hold somebody's data.
+</Callout>
+
+<Callout type="warn" title="Limits and gotchas">
+- **Cleanup and rollbacks fight over the same images.** If rollbacks stop
+  working, **Images kept per app** is too low for the app's **Keep**.
+</Callout>
+
+<Callout type="error" title="If it does not work">
+- **Cleanup frees nothing**: the minimum age is protecting everything, or
+  the only large thing on disk is images your apps still use.
+
+See [Servers and agents](/troubleshooting/servers-and-agents) for more.
+</Callout>
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<RotateCcw className="text-blue-400" />}
+    title="Rollbacks"
+    description="Images kept per app interacts with this"
+    href="/guides/releases/rollbacks"
+  />
+  <Card
+    icon={<ServerCog className="text-blue-400" />}
+    title="Server"
+    description="Everything else about one machine"
+    href="/guides/server"
+  />
+</Cards>

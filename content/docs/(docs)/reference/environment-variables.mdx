@@ -1,0 +1,214 @@
+---
+title: Platform variables
+description: Every variable Deplo itself reads, to configure the platform.
+---
+
+import { Rocket, Terminal, FolderTree } from "lucide-react";
+
+Every variable Deplo itself reads, to configure the **platform**. For the
+variables your apps read at runtime, see
+[Environment variables](/guides/config/environment-variables).
+
+---
+
+## The control plane
+
+Read by the Deplo container. The canonical list is `.env.example` at the
+repo root.
+
+<TypeTable
+  type={{
+    DEPLO_DATABASE_URL: {
+      type: "connection string",
+      required: true,
+      description:
+        "Postgres connection string, and the only control-plane store. Also backs the auth tables. The app fails at startup without it. DATABASE_URL is accepted as a fallback.",
+    },
+    DEPLO_SECRET: {
+      type: "string, 16+ chars",
+      required: true,
+      description:
+        "Root secret. Derives every session signature, every AES-256-GCM encryption key and the agent certificate authority. Rotating it is destructive and there is no key versioning. Required in production.",
+    },
+    DEPLO_PUBLIC_URL: {
+      type: "url",
+      description:
+        "The public URL the dashboard is served from. Sets the cookie secure flag, the auth layer's https mode, and the install command printed for new servers. Effectively required in production.",
+    },
+    DEPLO_SERVER_IP: {
+      type: "IPv4 dotted quad",
+      default: "first non-internal NIC IPv4, then 127.0.0.1",
+      description:
+        "The literal public IPv4 baked into generated nip.io hostnames and their Traefik rules. Must be a dotted quad, never a hostname.",
+    },
+    DEPLO_HOST_BOOTSTRAP_TOKEN: {
+      type: "string",
+      default: "unset, meaning do not enroll",
+      description:
+        "One-time token that lets the machine running Deplo enroll itself as a server. The installer generates it. A development run wants it unset.",
+    },
+    DEPLO_HOST_NAME: {
+      type: "string",
+      default: "falls back to DEPLO_SERVER_IP",
+      description:
+        "The name shown on that server's card. Deplo runs in a container and would otherwise read a random container id as its hostname.",
+    },
+    DEPLO_TEMPLATES_API_URL: {
+      type: "url",
+      default: "the public catalogue",
+      description:
+        "Where the template catalogue is fetched from. Point it at your own mirror to self-host it.",
+    },
+    DEPLO_ACME_EMAIL: {
+      type: "email",
+      description:
+        "The Let's Encrypt email baked into the agent installer this instance generates.",
+    },
+    DEPLO_CERT_RESOLVER: {
+      type: "string",
+      default: "letsencrypt",
+      description:
+        "The name of the Traefik ACME resolver put on every router. A nip.io host needs an HTTP-01 resolver; point this at one if your default uses DNS-01.",
+    },
+    DEPLO_CLOUDFLARE_CERT_RESOLVER: {
+      type: "string",
+      default: "cloudflare",
+      description:
+        "The resolver name used by domains whose certificate provider is Cloudflare, which validates over DNS-01.",
+    },
+    DEPLO_DATABASE_POOL_MAX: {
+      type: "number",
+      default: "10",
+      description: "Cap on the Postgres connection pool.",
+    },
+    DEPLO_DATA_DIR: {
+      type: "path",
+      default: "/data in the container, ./.deplo locally",
+      description:
+        "Host-visible staging directory for builds and uploads. Not a data store.",
+    },
+  }}
+/>
+
+---
+
+## The installer
+
+Written into `/opt/deplo/.env` and read by `docker compose --env-file`. Set
+them in front of the install command.
+
+<TypeTable
+  type={{
+    DEPLO_DOMAIN: {
+      type: "domain",
+      default: "empty, meaning IP mode",
+      description:
+        "The domain the panel is served on. Must contain a dot and cannot be localhost or a .local name. Set means HTTPS through Traefik; unset means http://<ip>:3000 only.",
+    },
+    ACME_EMAIL: {
+      type: "email",
+      default: "admin@example.com",
+      description:
+        "The Let's Encrypt registration email for that host's Traefik. Note the name: the container's own variable is DEPLO_ACME_EMAIL.",
+    },
+    DEPLO_DB_PASSWORD: {
+      type: "string",
+      default: "generated, openssl rand -base64 24",
+      description: "The Postgres password. Feeds both the database and the connection string.",
+    },
+    DEPLO_VERSION: {
+      type: "image tag",
+      default: "latest",
+      description: "The image tag pulled: ghcr.io/deplocloud/deplo:<version>.",
+    },
+    DEPLO_SECRET: {
+      type: "string",
+      default: "generated, openssl rand -base64 48",
+      description: "As above. Generated once and never rotated by a re-run.",
+    },
+  }}
+/>
+
+---
+
+## The agent installer
+
+Set in front of `install-agent.sh`. See [Server roles](/advanced/server-roles)
+for what each role changes on the host.
+
+<TypeTable
+  type={{
+    DEPLO_AGENT_PORT: {
+      type: "port",
+      default: "9443",
+      description: "The gRPC and mutual TLS listen port.",
+    },
+    DEPLO_STORAGE_ONLY: {
+      type: "0 | 1",
+      default: "0",
+      description: "Backups-only role: no Docker, no Traefik, no shared network.",
+    },
+    DEPLO_BUILD_ONLY: {
+      type: "0 | 1",
+      default: "0",
+      description: "Build-only role: Docker and address pools, no Traefik, never a deploy target.",
+    },
+    DEPLO_IMPORT_ONLY: {
+      type: "0 | 1",
+      default: "0",
+      description:
+        "Migration source: Docker must already exist, nothing else is set up. Created by the migration wizard, not by hand.",
+    },
+    "DEPLO_BOOTSTRAP_URL / DEPLO_BOOTSTRAP_TOKEN / DEPLO_BOOTSTRAP_FINGERPRINT": {
+      type: "written by the installer",
+      description:
+        "First-run enrollment, kept in a 0600 environment file rather than on the command line, where any user could read them from /proc.",
+    },
+  }}
+/>
+
+---
+
+## Notes worth reading before you change anything
+
+<Callout type="warn" title="DEPLO_SECRET is permanent">
+  There is no rotation and no key versioning. Back up `/opt/deplo/.env`. See
+  [Disaster recovery](/operations/disaster-recovery).
+</Callout>
+
+- **`DEPLO_SERVER_IP` must be a real, internet-reachable IPv4.** Generated
+  hostnames encode it in hexadecimal, so a private or loopback address
+  produces URLs that only work from that machine.
+- **A hostname in `DEPLO_PUBLIC_URL` cannot seed a `nip.io` name**, so
+  Deplo falls through to interface detection for the IP. Set
+  `DEPLO_SERVER_IP` explicitly on a multi-homed box.
+- **`DEPLO_DATA_DIR` is staging, not storage.** Nothing durable lives
+  there.
+- **Build-time placeholders exist in the Dockerfile** for the database URL
+  and the secret. They never reach the runtime image and are not usable
+  values.
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<Rocket className="text-blue-400" />}
+    title="Installation"
+    description="The install.sh walkthrough"
+    href="/getting-started/install"
+  />
+  <Card
+    icon={<Terminal className="text-blue-400" />}
+    title="Installers reference"
+    description="Every flag on every script"
+    href="/reference/installers"
+  />
+  <Card
+    icon={<FolderTree className="text-blue-400" />}
+    title="Ports, networks, files"
+    description="Where everything lives on disk"
+    href="/reference/ports-networks-and-files"
+  />
+</Cards>

@@ -1,0 +1,26 @@
+{
+  "title": "API Reference",
+  "icon": "Webhook",
+  "description": "GraphQL, tokens, webhooks and the MCP server",
+  "root": true,
+  "pages": [
+    "index",
+    "authentication",
+    "api-tokens",
+    "session-and-login",
+    "authorization",
+    "instance-admin-operations",
+    "conventions",
+    "apps",
+    "environment-variables",
+    "domains-and-tls",
+    "projects-and-environments",
+    "databases",
+    "servers",
+    "teams-and-members",
+    "activity",
+    "backup-destinations",
+    "dokploy-import",
+    "rest-and-mcp"
+  ]
+}

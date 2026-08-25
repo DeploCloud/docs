@@ -1,0 +1,32 @@
+---
+title: Database operations
+description: Restart, redeploy, rebuild, resize and rotate credentials on an existing database.
+---
+
+Mutations on a database that already exists, gated by the Databases
+capabilities (`configure_databases`, `control_databases`), see
+[Authorization](/api-reference/authorization).
+
+- `restartDatabase` restarts the container without changing its image or
+  configuration.
+- `redeployDatabase` re-applies its current configuration, the database
+  equivalent of an app redeploy.
+- `rebuildDatabase` rebuilds the container from scratch, use it when a
+  configuration change needs a fresh container rather than a restart.
+- `updateDatabaseResources` changes its CPU, memory and disk limits.
+- `updateDatabaseImage` moves it to a different image or version.
+- `rotateDatabasePassword` issues new credentials.
+
+<Callout type="warn" title="rotateDatabasePassword returns the connection string, not the entity">
+  Unlike the other mutations here, which return the updated `Database`, this
+  one returns a `String`: the new connection string, shown once. Anything
+  still using the old credentials loses its connection the moment this
+  call succeeds.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="Databases" description="Read, create and update" href="/api-reference/databases" />
+  <Card title="Console and logs" description="Open a shell and read live output" href="/api-reference/databases/console-and-logs" />
+</Cards>

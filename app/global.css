@@ -33,6 +33,35 @@
   --color-fd-error: #ef4444;
   --color-fd-success: #22c55e;
   --color-fd-idea: #facc15;
+
+  /* the one deliberate break from monochrome: inline links stay recognizable
+     as links (light blue) instead of blending into bold white text */
+  --color-fd-link: #7dd3fc;
+}
+
+/* fumadocs-ui's own .prose rule redeclares --tw-prose-links locally, which
+   shadows a :root-level override, so it has to be set here too. Its link
+   rule also hardcodes the underline to --color-fd-primary independently of
+   --tw-prose-links, so the underline needs its own override too. */
+.prose {
+  --tw-prose-links: var(--color-fd-link);
+  /* fumadocs' own base line-height (1.75) reads too tight for long-form
+     docs prose. Set here so it inherits into every paragraph and list
+     item; headings/table/figcaption keep their own explicit values. */
+  line-height: 1.85;
+}
+
+.prose a:not([data-card]) {
+  text-decoration-color: var(--color-fd-link);
+}
+
+/* Callout: fumadocs always paints it bg-fd-card regardless of type, only
+   tinting the accent bar and icon. This selector matches the container's
+   exact utility-class signature (no dedicated class of its own to hook
+   into) and washes the background in the callout's own color instead. */
+.rounded-xl.border.bg-fd-card.p-3.ps-1 {
+  background-color: color-mix(in srgb, var(--callout-color) 12%, var(--color-fd-background));
+  border-color: color-mix(in srgb, var(--callout-color) 30%, var(--color-fd-border));
 }
 
 html {

@@ -1,0 +1,69 @@
+---
+title: Environment variables
+description: Read and write app-level variables and team-owned shared variables.
+---
+
+App-level variables and the team-owned shared variables that link into
+several apps at once.
+
+## Queries
+
+`sharedVars` lists every shared variable the team owns. `sharedVarsForApp(appId)`
+lists the shared variables linked to one app.
+
+## Mutations
+
+`upsertEnv` creates or updates a single app-level variable, keyed by
+`appId` and `key`, typed `plain` or `secret`, and scoped to one or more
+`targets` (`production`, `preview`).
+
+`saveSharedVar` creates or updates a team-owned shared variable, the same
+`plain`/`secret` typing applies, linking it to an app is a separate step
+in the dashboard, not part of this mutation.
+
+`renameEnv`, `setAppEnv` and `importEnv` are the other ways to write app
+variables (rename a key, write several at once, bulk import). All five of
+these mutations share the same rule once a variable is typed `secret`, see
+[Secret variables](/api-reference/environment-variables/secret-variables).
+
+## Example
+
+Create an app environment variable:
+
+```graphql
+mutation {
+  upsertEnv(
+    input: {
+      appId: "prj_123"
+      key: "DATABASE_URL"
+      value: "postgres://user:pass@db-orders:5432/orders"
+      targets: [production, preview]
+      type: secret
+    }
+  ) {
+    id
+    key
+    isMasked
+  }
+}
+```
+
+Share a variable with several apps at once (the link is what injects it,
+the scope only suggests):
+
+```graphql
+mutation {
+  saveSharedVar(input: { key: "API_BASE_URL", value: "https://api.example.com", type: plain }) {
+    id
+    key
+  }
+}
+```
+
+## See also
+
+<Cards>
+  <Card title="Secret variables" description="The immutability rules for a secret row" href="/api-reference/environment-variables/secret-variables" />
+  <Card title="Environment variables" description="The dashboard guide" href="/guides/config/environment-variables" />
+  <Card title="Shared variables" description="The dashboard guide" href="/guides/config/shared-variables" />
+</Cards>

@@ -1,0 +1,207 @@
+---
+title: Backups and restore
+description: Scheduled, encrypted copies of a database or an app, sent to S3 or to another server's disk.
+---
+
+import { LifeBuoy, Server, Database } from "lucide-react";
+import { BackupSnapshotIllustration } from "@/components/illustrations/backup-snapshot-illustration";
+
+---
+
+## What it is
+
+Scheduled, encrypted copies of a database or an app, sent to an S3 bucket **or to another server's disk**, with a restore that puts them back.
+
+<div className="not-prose mx-auto w-full max-w-[220px] rounded-xl border border-fd-border bg-fd-card p-6">
+  <BackupSnapshotIllustration className="h-auto w-full" />
+</div>
+
+The second destination kind is the point: disaster recovery can use hardware you already own, instead of requiring a cloud account you were trying to leave.
+
+---
+
+## How it works
+
+A **destination** is where artifacts go. A **schedule** says what to copy, where, how often and how many to keep. A **run** is one execution, producing one artifact.
+
+The work happens on the agent that stands on the data. For a database it is a dump; for an app it is its data and its configuration. The stream is compressed and **encrypted before it leaves the process**, with `age`, using one key pair per destination. The agent only ever receives the public half, so a server acting as a backup store produces artifacts it cannot itself read.
+
+When the destination lives on a different host than the workload, the bytes relay through the control plane, because agents cannot dial each other. They relay as ciphertext: nothing in the middle ever holds your plaintext.
+
+---
+
+## Add a destination
+
+**Storage -> Destinations -> Add Destination**.
+
+<Tabs items={['A folder on a server', 'An S3-compatible bucket']}>
+<Tab value="A folder on a server">
+
+Pick any server in the fleet, including a [storage-only](/advanced/server-roles) box that runs nothing else. Leave the path empty to use the agent's own managed store.
+
+</Tab>
+<Tab value="An S3-compatible bucket">
+
+<TypeTable
+  type={{
+    Provider: {
+      type: "select",
+      description: "AWS, Cloudflare R2, Backblaze B2, MinIO, DigitalOcean, Wasabi, or other",
+    },
+    "Endpoint, Region, bucket, folder": {
+      type: "text",
+      description: "As your provider documents them",
+    },
+    "Access key, secret key": {
+      type: "secret",
+      description: "Encrypted, never returned",
+    },
+    Advanced: {
+      type: "text",
+      description: "Extra provider quirk flags, and an instance-admin-only option for an endpoint inside your own network",
+    },
+  }}
+/>
+
+</Tab>
+</Tabs>
+
+Then click **Test connection**. It is a real probe run by an agent: a bucket gets a head request, a zero-byte write and a delete, so a read-only key is correctly reported as failed. A folder gets a resolve, a probe write and a free-space check.
+
+A failed probe is a normal result, not an error dialog. **Connection log** in the destination's menu shows the whole sequence, the agent's own message, and the equivalent commands to reproduce it by hand.
+
+---
+
+## Save the recovery key
+
+Every destination has one, and the card keeps nudging you until somebody downloads it. **Download recovery key** in the destination's menu.
+
+It is the private half of the encryption key pair. Two situations make it the only thing standing between you and permanent loss:
+
+- `DEPLO_SECRET` was rotated or lost, so the stored copy cannot be decrypted.
+- The control plane itself is gone, which is exactly the disaster the backups were for.
+
+With the file, any artifact from that destination can be decrypted anywhere:
+
+```bash
+age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
+```
+
+<Callout type="info">
+Fetching the key is recorded in the activity trail. It is one of only two places in Deplo where a secret is deliberately shown.
+</Callout>
+
+---
+
+## Schedule a backup
+
+<Steps>
+<Step>
+
+### Start a new backup
+
+**Storage -> Backups -> New Backup**, or the **Backups** tab of an app or a database.
+
+</Step>
+<Step>
+
+### Pick the target
+
+Pick the target: one app or one database.
+
+</Step>
+<Step>
+
+### Pick the destination
+
+Pick the **Destination**.
+
+</Step>
+<Step>
+
+### Name it
+
+Name it. A name is suggested from the schedule.
+
+</Step>
+<Step>
+
+### Set the schedule
+
+Set the schedule and its **Timezone**.
+
+</Step>
+<Step>
+
+### Set retention
+
+Set **Keep**.
+
+</Step>
+</Steps>
+
+<Callout type="info">
+**Keep is a count, not a number of days.** "Keep 7" means the seven most recent successful artifacts, whether they were taken over a week or a year. Older ones are removed after each successful run, and the newest successful artifact is never removed.
+</Callout>
+
+**Back up now** runs one immediately without touching the schedule.
+
+---
+
+## Restore
+
+**In place and destructive.** It asks you to type the target's name.
+
+<Tabs items={['Database', 'App']}>
+<Tab value="Database">
+
+Drops and recreates, per engine.
+
+</Tab>
+<Tab value="App">
+
+Stops it, wipes its data, unpacks the artifact and brings it back up. The app shows a `restoring` status throughout, so the host truthfully reporting "nothing running" does not read as a failure.
+
+</Tab>
+</Tabs>
+
+The artifact's checksum is verified before a single byte is fed to anything. An artifact taken before checksumming existed says so out loud rather than skipping the check quietly.
+
+**Restore from file** takes an artifact you are holding yourself. If it is encrypted, you paste the recovery key.
+
+---
+
+## Download an artifact
+
+Only from a **server** destination, and it is decrypted on the way out. Bucket artifacts are not downloadable through Deplo: you already have credentials for that bucket.
+
+<Callout type="warn" title="Limits and gotchas">
+- **An app schedule does not include its databases.** Schedule the database separately. This trips people up more than anything else here.
+- **Retention counts successes.** Failed runs do not consume a slot.
+- **A skipped hour on a DST change raises a warning** rather than silently missing a run.
+- **Deleting runs can leave a target with no restore point.** That is why `delete_backups` is a separate, flagged capability.
+- **A destination on the same server as the workload survives everything except losing that server**, which is the failure people actually have. Put at least one copy elsewhere.
+- **Backups are encrypted, always, both kinds.** There is no plaintext mode.
+</Callout>
+
+---
+
+## If it does not work
+
+- **Test connection fails on a bucket** - most often the key is read-only, or the endpoint and region do not match the bucket. Read the **Connection log**.
+- **Runs fail with no space** - the destination server's disk is full. The probe reports free space; check it there.
+- **Restore refuses** - the checksum did not match, or the artifact is encrypted with a key this destination does not hold. Use **Restore from file** with the recovery key.
+
+<Callout type="info">
+More in [Databases and backups](/troubleshooting/databases-and-backups).
+</Callout>
+
+---
+
+## See also
+
+<Cards>
+  <Card icon={<LifeBuoy className="text-blue-400" />} title="Disaster recovery" description="The whole picture, including the control plane itself" href="/operations/disaster-recovery" />
+  <Card icon={<Server className="text-blue-400" />} title="Server roles" description="A storage-only box" href="/advanced/server-roles" />
+  <Card icon={<Database className="text-blue-400" />} title="Databases" description="What gets dumped and how" href="/guides/data/databases" />
+</Cards>

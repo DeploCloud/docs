@@ -1,0 +1,123 @@
+---
+title: Deploy a Docker image
+description: Run an image that is already built, with no build step and no rollback.
+---
+
+import { Container, LayoutTemplate, Layers, HardDrive, Upload } from "lucide-react";
+
+---
+
+## What it is
+
+Running an image that is already built, from Docker Hub, GitHub Container Registry, or any registry you can reach. There is no build step at all: Deplo pulls the image and runs it.
+
+Use it for:
+
+- Software you did not write (a database viewer, a metrics dashboard, a game server).
+- Images your own CI already builds and pushes.
+
+---
+
+## How it works
+
+The app stores an image reference such as `nginx:1.27-alpine` or `ghcr.io/acme/api:v2.3.1`.
+
+On deploy, the control plane renders a Compose file with that image, the Traefik routing labels and your variables, and the agent pulls and starts it.
+
+Because nothing is built, several features simply do not apply:
+
+- No build log worth reading.
+- No build cache.
+- No build server.
+- **No rollback**, because a rollback re-runs an image Deplo built and kept. Moving the tag is your version control here.
+
+---
+
+## Deploy one
+
+<Steps>
+<Step>
+
+### Start a new app
+
+**Add new**, then **New app**, then **From Scratch**.
+
+</Step>
+<Step>
+
+### Pick the image
+
+In the **Source** card pick the **Docker Image** tab. Type the image reference: the field autocompletes from public registries and from any private registry you have added.
+
+</Step>
+<Step>
+
+### Name it
+
+Set **App Name**.
+
+</Step>
+<Step>
+
+### Set the container port
+
+Deplo cannot detect it from an image it has not built. If the software listens on something other than `80`, say so now or fix it later in **Domains**.
+
+</Step>
+<Step>
+
+### Pick a server and deploy
+
+Pick the server, then **Deploy**.
+
+</Step>
+</Steps>
+
+---
+
+## Private registries
+
+Add credentials once in **Settings -> Registries** and every app on the team can pull from that registry, the password is encrypted and never returned. See [Container registries](/guides/server/container-registries) for the full setup.
+
+---
+
+## Settings that matter for an image app
+
+| Setting | Where | Note |
+| --- | --- | --- |
+| Image reference | **Settings -> Deployments** | Change it and redeploy to move versions |
+| Container port | **Settings -> Deployments** | Required, since nothing detected it |
+| Environment variables | **Environment** | The normal way to configure this kind of software |
+| Volumes | **Settings -> Storage** | A prebuilt image must name the mount path itself |
+| Resource limits | **Settings -> Resources** | Worth setting for software you did not write |
+
+<Callout type="warn" title="Limits and gotchas">
+- **No rollback.** There is no image Deplo owns to go back to. Pin a specific tag or a digest rather than `latest` if you care about reproducibility.
+- **`latest` does not re-pull by itself.** Redeploying pulls again; nothing watches the registry for you.
+- **The mount path is not derived.** For a built app Deplo can infer that `uploads` means `/app/uploads`. For a prebuilt image it cannot, so you type the full path.
+- **Multi-container software wants Compose, not this.** If the vendor ships a `docker-compose.yml`, use [Compose apps](/advanced/compose-apps) or look for it in [Templates](/guides/deploy/from-template).
+</Callout>
+
+---
+
+## If it does not work
+
+- **`pull access denied`** - the image is private and no registry credential matches its host. Add it in **Settings -> Registries**.
+- **The container starts and exits immediately** - it usually needs a variable or a volume. Read [Logs](/guides/observability/logs); the exit reason is in there.
+- **The URL times out** - wrong port. Check what the image documents and set it in **Settings -> Deployments**.
+
+<Callout type="info">
+More in [Deploys and builds](/troubleshooting/deploys-and-builds).
+</Callout>
+
+---
+
+## See also
+
+<Cards>
+  <Card icon={<Container className="text-blue-400" />} title="Container registries" description="Add a private registry" href="/guides/server/container-registries" />
+  <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="The same idea, preconfigured" href="/guides/deploy/from-template" />
+  <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="More than one container" href="/advanced/compose-apps" />
+  <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="Mount a path in a prebuilt image" href="/guides/data/persistent-storage" />
+  <Card icon={<Upload className="text-blue-400" />} title="Upload your code" description="When you have source but no repository" href="/guides/deploy/upload-code" />
+</Cards>

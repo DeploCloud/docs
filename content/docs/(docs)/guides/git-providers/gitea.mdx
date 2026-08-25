@@ -1,0 +1,85 @@
+---
+title: Gitea
+description: Connect a self-hosted Gitea or Forgejo instance as a git connection.
+---
+
+Gitea (Forgejo included) connects as a **git connection**: one stored
+credential per host, reused by every app that deploys from it. It is
+marked **Beta**.
+
+## Connect it
+
+<Steps>
+<Step>
+
+### Add a connection
+
+**Settings -> Git**, then add a connection.
+
+</Step>
+<Step>
+
+### Pick the type
+
+Pick **Gitea** as the **Type**.
+
+</Step>
+<Step>
+
+### Set the address
+
+Fill in the **Address**, your instance's base URL.
+
+</Step>
+<Step>
+
+### Set the username
+
+Fill in the **Username** with your Gitea account name.
+
+</Step>
+<Step>
+
+### Paste the token
+
+Paste a Gitea access token with repository read scope.
+
+</Step>
+<Step>
+
+### Test and save
+
+Click **Test connection**, then **Save**.
+
+</Step>
+</Steps>
+
+Later, **Replace the token** swaps it without recreating anything.
+
+<Callout type="warn">
+  **Gitea does not report token expiry.** Unlike GitLab, there is no
+  advance warning before a token dies. Deplo's background check is what
+  tells you a connection stopped working, so **This connection stopped
+  working** is the first signal you get.
+</Callout>
+
+An instance admin can also tick **This git server is on my own network**
+for an address that is not publicly routable. It is deliberately
+admin-only, because it turns off a guard that stops Deplo being used to
+probe your internal network.
+
+## If it does not work
+
+- **`Authentication failed` in a clone**: the token expired or was
+  revoked. **Test connection** confirms it.
+- **Saving a self-hosted address is refused**: it resolves to a private
+  address, and only an instance admin can allow that.
+
+## See also
+
+<Cards>
+  <Card title="Git providers" description="GitHub App vs. git connection" href="/guides/git-providers" />
+  <Card title="GitHub" description="Connects as a GitHub App instead" href="/guides/git-providers/github" />
+  <Card title="GitLab" description="Self-hosted or gitlab.com" href="/guides/git-providers/gitlab" />
+  <Card title="Bitbucket" description="Cloud or self-hosted" href="/guides/git-providers/bitbucket" />
+</Cards>

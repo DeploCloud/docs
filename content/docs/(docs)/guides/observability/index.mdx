@@ -1,0 +1,40 @@
+---
+title: Observability
+description: What is happening in your fleet right now, logs, metrics, alerts, a shell into a container, and scheduled jobs.
+---
+
+import { ScrollText, Activity, Bell, Terminal, Timer } from "lucide-react";
+
+What is happening in your fleet right now: what a container is printing,
+what it is using, whether something needs your attention, a shell into it
+when a log is not enough, and the jobs running on a schedule inside it.
+
+---
+
+## How it works
+
+Five windows onto the same running fleet, all sourced live from the agent
+over the same mutual TLS connection everything else uses. Nothing is
+scraped on a schedule: the data is already flowing, or the agent answers
+the moment you open the page. No SSH, no exposed Docker socket.
+
+---
+
+## In this section
+
+<Cards>
+  <Card icon={<ScrollText className="text-blue-400" />} title="Logs" description="Live container output and build output" href="/guides/observability/logs" />
+  <Card icon={<Activity className="text-blue-400" />} title="Monitoring" description="CPU, memory, disk and network, with a short history" href="/guides/observability/monitoring" />
+  <Card icon={<Bell className="text-blue-400" />} title="Notifications and alerts" description="Get told when something happens instead of watching a tail" href="/guides/observability/notifications-and-alerts" />
+  <Card icon={<Terminal className="text-blue-400" />} title="Console and files" description="A shell and a file browser inside a running container" href="/guides/observability/console-and-files" />
+  <Card icon={<Timer className="text-blue-400" />} title="Cron jobs" description="Run a command on a schedule inside a container" href="/guides/observability/cron-jobs" />
+</Cards>
+
+---
+
+## See also
+
+<Cards>
+  <Card title="Persistent storage" description="The files directory a console can browse" href="/guides/data/persistent-storage" />
+  <Card title="Troubleshooting" description="Symptom index when something looks broken" href="/troubleshooting" />
+</Cards>

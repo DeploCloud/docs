@@ -1,0 +1,25 @@
+---
+title: Roles
+description: Name a set of capabilities, then hand it to whoever needs it.
+---
+
+A role is a named set of capabilities, owned by the team, that any number
+of members can hold.
+
+`createRole` makes one. `updateRole` edits a live role, and the edit
+applies to every member holding it. `resetRole` and `deleteRole` clear or
+remove one.
+
+<Callout type="warn" title="On updateRole, every optional field means leave it as it is">
+  Omit `capabilities`, `requireTwoFactor` or `scope` and they are
+  untouched, so a bare rename is a bare rename. Send the field to replace
+  it, or `clearScope: true` to make the role reach the whole team again.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="Teams and members" description="Members, viewerTeam and updateTeam" href="/api-reference/teams-and-members" />
+  <Card title="Authorization" description="The full capability model" href="/api-reference/authorization" />
+  <Card title="Roles and permissions" description="Building a role, in the dashboard" href="/guides/roles-and-permissions" />
+</Cards>

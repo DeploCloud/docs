@@ -1,0 +1,90 @@
+---
+title: Importing from Dokploy
+description: Five mutations plus two queries that migrate a Dokploy instance into Deplo, project by project.
+---
+
+Five mutations plus two queries, all gated on `create_projects` and
+refused to a narrowed principal, since an import writes across the whole
+team.
+
+<Steps>
+<Step>
+### `scanDokploy(input)`
+Reads the source instance and returns the plan. Writes nothing.
+</Step>
+<Step>
+### `beginDokployImport(url, orgName)`
+Opens a run.
+</Step>
+<Step>
+### `importDokployProject(input, runId, projectId, ...)`
+Imports **one project per call**, that is the unit on purpose, so
+progress is real and a re-run resumes instead of duplicating. Its
+optional `serviceIds` narrows that call to named services (omit it for
+all of them). Anything left out produces no report line: not picking
+something is a choice rather than an outcome, and an environment nothing
+was picked from is not created empty.
+</Step>
+<Step>
+### `finishDokployImport(runId)`
+Closes the run.
+</Step>
+<Step>
+### `importDokployMembers(input, runId)`
+Instance admin. Turns the other platform's members into registration
+links.
+</Step>
+</Steps>
+
+`dokployImports` / `dokployImport(id)` read the kept report. Nothing is
+deployed by an import, and the source API key is never stored: it rides
+each call. `input.allowPrivate` reaches a private address (the
+same-machine case) and is instance-admin only, like `allowPrivateEndpoint`
+on a git connection.
+
+## Moving the data
+
+A separate step in the same run: `planDokployDataMove(input, runId)`
+lists what that run imported and pairs each source volume with the Deplo
+one that would receive it (by container path, read from the source's own
+`docker inspect`), and `moveDokployServiceData(input, runId, sourceKind,
+sourceId)` stops that one service on Dokploy, copies its volumes and its
+bind-mounted host directories over, then starts a database again and
+checks the engine reads what landed. Additionally gated on
+`restore_backups` on the target (and, for a host directory, on instance
+admin plus the host-volumes grant).
+
+<Callout type="warn">
+  Neither data-move call accepts a volume name, a path, or a source host.
+  Naming any of them would be an instruction to copy any volume on any
+  host over any other one, so all three are derived: the volumes from the
+  service and the app, the target from the run's own record of what it
+  created, and the source machine from its address. The source was once a
+  caller's input, and every wizard-filled Dokploy machine landed on the
+  Deplo host itself, so every export read a volume that was not there and
+  Docker created an empty one, and every copy overwrote real data with
+  nothing and reported success.
+</Callout>
+
+## The source machine
+
+The agent an import needs on the source machine is registered as a
+**migration source**: `addServer(input.importOnly)`, instance admin. The
+row is granted to the importing team alone, and the host is excluded from
+every deploy and build picker, from backup destinations, from the cleanup
+sweep and from monitoring, it is the other platform's machine, not a
+member of the fleet.
+
+`setServerRole`, `removeServer` and `uninstallServerAgent` all apply to a
+migration-source server the same way they apply to any other, see
+[Servers](/api-reference/servers) for the full operation reference. The
+one migration-specific rule: `setServerRole` refuses to move a server into
+or out of the `import` role in either direction, re-running the install
+command is the only way in or out.
+
+## See also
+
+<Cards>
+  <Card title="Servers" description="Registering, roles and removal" href="/api-reference/servers" />
+  <Card title="Move from Dokploy" description="The dashboard wizard for this same flow" href="/guides/move-from-dokploy" />
+</Cards>

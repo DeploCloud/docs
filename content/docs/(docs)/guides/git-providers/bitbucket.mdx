@@ -1,0 +1,75 @@
+---
+title: Bitbucket
+description: Connect a Bitbucket workspace, cloud or self-hosted, as a git connection.
+---
+
+Bitbucket connects as a **git connection**: one stored credential per
+host, reused by every app that deploys from it. It is marked **Beta**.
+
+## Connect it
+
+<Steps>
+<Step>
+
+### Add a connection
+
+**Settings -> Git**, then add a connection.
+
+</Step>
+<Step>
+
+### Pick the type
+
+Pick **Bitbucket** as the **Type**.
+
+</Step>
+<Step>
+
+### Set the address
+
+Fill in the **Address**, Bitbucket's base URL.
+
+</Step>
+<Step>
+
+### Set the username
+
+Fill in the **Username** as **`x-token-auth`**. Bitbucket expects this
+exact value for token authentication, not your account name.
+
+</Step>
+<Step>
+
+### Paste the token
+
+Paste a Bitbucket app password or repository access token.
+
+</Step>
+<Step>
+
+### Test and save
+
+Click **Test connection**, then **Save**.
+
+</Step>
+</Steps>
+
+Later, **Replace the token** swaps it without recreating anything, and
+**This connection stopped working** appears when a background check finds
+it broken.
+
+## If it does not work
+
+- **`Authentication failed` in a clone**: the token expired or was
+  revoked. **Test connection** confirms it.
+- **Saving a self-hosted address is refused**: it resolves to a private
+  address, and only an instance admin can allow that.
+
+## See also
+
+<Cards>
+  <Card title="Git providers" description="GitHub App vs. git connection" href="/guides/git-providers" />
+  <Card title="GitHub" description="Connects as a GitHub App instead" href="/guides/git-providers/github" />
+  <Card title="GitLab" description="Self-hosted or gitlab.com" href="/guides/git-providers/gitlab" />
+  <Card title="Gitea" description="Self-hosted, Forgejo included" href="/guides/git-providers/gitea" />
+</Cards>

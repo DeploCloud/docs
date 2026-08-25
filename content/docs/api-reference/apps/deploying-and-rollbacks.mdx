@@ -1,0 +1,44 @@
+---
+title: Deploying and rollbacks
+description: createApp, redeploy, rollbackDeployment and the subscription that tracks a deploy live.
+---
+
+Every write that moves an app between states.
+
+## Mutations
+
+`createApp` makes the app. `redeploy` re-runs its build and release from the
+current source. `stopApp` takes it down without deleting it.
+
+`rollbackDeployment(deploymentId)` re-runs the image that build already
+produced, no rebuild. Ask `Deployment.canRollback` first: only the code goes
+back, variables, domains, storage and limits stay current.
+`setAppRollbackKeep(id, count)` sets how many past deployments stay
+rollback-eligible, `0` to `20`, needs `configure_apps`.
+
+## Subscription
+
+`appStatus(slug)` is a Server-Sent-Events stream, via graphql-yoga: it emits
+the app on every state change (an initial snapshot, then live), so a client
+tracks provisioning, start, stop and deploy with no polling.
+
+## Example
+
+Redeploy an app:
+
+```graphql
+mutation {
+  redeploy(appId: "prj_123") {
+    id
+    status
+  }
+}
+```
+
+## See also
+
+<Cards>
+  <Card title="Apps" description="Reading the catalogue and deployment history" href="/api-reference/apps" />
+  <Card title="Deploy hook" description="Trigger the same redeploy from a webhook sender" href="/api-reference/apps/deploy-hook" />
+  <Card title="Rollbacks" description="The same flow from the dashboard" href="/guides/releases/rollbacks" />
+</Cards>

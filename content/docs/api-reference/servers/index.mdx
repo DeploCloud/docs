@@ -1,0 +1,50 @@
+---
+title: Servers
+description: The servers query, and the mutations that add, role and remove a machine from the fleet.
+---
+
+`servers` lists every machine enrolled in the fleet, each carrying its
+current `Server.role`.
+
+## Registering a server
+
+`addServer` enrolls a new machine. The one fully documented shape today is
+the migration-source case, `addServer(input.importOnly)`, instance admin
+only, which sets `Server.role` to `"import"` and grants the row to the
+importing team alone; an import-role server is excluded from every deploy
+and build picker, from backup destinations, from the cleanup sweep and from
+monitoring, since it is the other platform's machine, not a member of the
+fleet. Enrolling an ordinary server happens through the bootstrap-token
+install flow instead, see [Add a server](/guides/server/add-a-server).
+
+`setServerRole` changes a server's role after enrollment, except it refuses
+to move a server into or out of the `import` role in either direction,
+re-running the install command is the only way in or out of that one.
+
+`removeServer` is trust revocation: it drops the row and stops trusting the
+machine, without touching anything on the host itself.
+
+`uninstallServerAgent(id)` (instance admin) goes further: it asks the agent
+to remove itself from the host first (systemd unit, binary, state
+directory, never Docker), and only then forgets the server. `removed:
+false` means the host still has the agent and the row was kept;
+`uninstallCommand` comes back either way, since an unreachable or
+already-de-trusted host will always need the host-side fallback. It
+refuses an ordinary server, that removal is `removeServer` above, which
+leaves the host alone.
+
+<Callout type="info" title="Migration source servers are a special case">
+  The full detail on `import`-role servers, why they exist, what excludes
+  them from the fleet, lives in
+  [Importing from Dokploy](/api-reference/dokploy-import). This page
+  documents the operations, that page documents the migration flow they
+  support.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="Metrics" description="Live and historical resource usage" href="/api-reference/servers/metrics" />
+  <Card title="Importing from Dokploy" description="The migration flow that uses these operations" href="/api-reference/dokploy-import" />
+  <Card title="Add a server" description="The dashboard flow for ordinary enrollment" href="/guides/server/add-a-server" />
+</Cards>

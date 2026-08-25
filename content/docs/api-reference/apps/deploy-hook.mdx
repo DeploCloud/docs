@@ -1,0 +1,58 @@
+---
+title: Deploy hook
+description: The one REST endpoint that takes an API token instead of the session cookie, for git providers, CI and scripts.
+---
+
+The one REST endpoint that takes an **API token** instead of the session
+cookie, so a git provider, a CI job or a script can deploy an app without
+composing a query. It stays REST because a webhook sender only posts a URL.
+
+```bash
+curl -X POST -H "Authorization: Bearer deplo_your_token" \
+  https://deplo.example.com/api/apps/prj_123/deploy-hook/<token>
+```
+
+Both secrets are required. The URL's `<token>` says which app: read it back
+with `revealAppDeployHook`, replace it with `rotateAppDeployHook`, switch the
+hook off entirely with `setAppDeployHookEnabled`. The bearer token says who,
+and must itself hold `deploy_apps` in that app's team (the **Deploy hook &
+CI** template is exactly this set). The deploy runs through exactly the
+gates the dashboard button does.
+
+Answers `200` with the queued deployment:
+
+```json
+{
+  "deploymentId": "dpl_1a2b3c",
+  "appId": "prj_123",
+  "status": "queued",
+  "url": "https://shop.example.com"
+}
+```
+
+<TypeTable
+  type={{
+    "401": {
+      type: "Unauthorized",
+      description: "No or invalid API token.",
+    },
+    "403": {
+      type: "Forbidden",
+      description:
+        "The hook is switched off, or the token (or the member it acts as) may not deploy this app.",
+    },
+    "404": {
+      type: "Not found",
+      description:
+        "No such app, wrong URL token, the app belongs to another team, or it is outside the token's scope.",
+    },
+  }}
+/>
+
+## See also
+
+<Cards>
+  <Card title="Deploying and rollbacks" description="The GraphQL side of moving an app between states" href="/api-reference/apps/deploying-and-rollbacks" />
+  <Card title="Automatic deployments" description="The deploy hook in context" href="/guides/releases/automatic-deployments" />
+  <Card title="API tokens" description="Creating and scoping the credential this hook needs" href="/api-reference/api-tokens" />
+</Cards>

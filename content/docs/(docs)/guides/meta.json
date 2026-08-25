@@ -1,0 +1,17 @@
+{
+  "title": "Guides",
+  "icon": "BookOpen",
+  "pages": [
+    "deploy",
+    "git-providers",
+    "releases",
+    "networking",
+    "config",
+    "data",
+    "observability",
+    "team",
+    "roles-and-permissions",
+    "server",
+    "move-from-dokploy"
+  ]
+}

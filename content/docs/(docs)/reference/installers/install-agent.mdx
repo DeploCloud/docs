@@ -1,0 +1,111 @@
+---
+title: install-agent.sh
+description: Brings one more server into the fleet, verifies its checksum and enrolls it over mutual TLS.
+---
+
+```bash
+curl -fsSL https://<deplo>/install-agent.sh | sudo bash -s -- <TOKEN> <URL> [FINGERPRINT]
+```
+
+The three role flags below pick what the server is for, see
+[Server roles](/advanced/server-roles) for the full comparison.
+
+<Callout type="warn" title="Always take this command from the dashboard">
+  The copy in the repository has placeholders that the running instance
+  substitutes with the release's per-architecture URL and its checksum,
+  and it refuses to run unsubstituted.
+</Callout>
+
+<TypeTable
+  type={{
+    "$1": {
+      type: "bootstrap token",
+      description: "The one-time bootstrap token. Single-use, hashed at rest, about an hour.",
+    },
+    "$2": {
+      type: "url",
+      description: "The control plane's URL, http(s)://host[:port].",
+    },
+    "$3": {
+      type: "certificate fingerprint (optional)",
+      description:
+        "Pins the control plane over HTTPS. Over plain HTTP the token authenticates the response instead.",
+    },
+  }}
+/>
+
+<TypeTable
+  type={{
+    DEPLO_AGENT_PORT: {
+      type: "port",
+      default: "9443",
+      description: "Listen port.",
+    },
+    "DEPLO_STORAGE_ONLY=1": {
+      type: "flag",
+      description:
+        "Backups only: no Docker, no Traefik, no shared network, and the unit is installed without the docker group.",
+    },
+    "DEPLO_BUILD_ONLY=1": {
+      type: "flag",
+      description: "Build only: Docker and address pools, no Traefik.",
+    },
+    "DEPLO_IMPORT_ONLY=1": {
+      type: "flag",
+      description:
+        "Migration source: Docker must already exist, address pools untouched, no Traefik, no network, no backup store.",
+    },
+  }}
+/>
+
+<Steps>
+<Step>
+### Refuse unsubstituted placeholders
+Refuses to run if the placeholders were not substituted.
+</Step>
+<Step>
+### Install Docker
+Installs Docker if absent, and applies the address pools.
+</Step>
+<Step>
+### Pick the binary
+Picks the binary by architecture, `linux/amd64` or `linux/arm64` only.
+</Step>
+<Step>
+### Verify the checksum
+**Verifies the SHA-256 and refuses to run an unverified binary.**
+</Step>
+<Step>
+### Install the agent
+Installs to `/usr/local/bin/deplo-agent` and creates `/var/lib/deplo-agent`
+at `0700`, **deleting any existing certificate files** so a reinstall
+genuinely re-enrolls.
+</Step>
+<Step>
+### Install Traefik
+Creates the `deplo` network and installs Traefik, unless one is running or
+80 and 443 are taken.
+</Step>
+<Step>
+### Write bootstrap.env
+Writes `bootstrap.env` at `0600`, never on the command line.
+</Step>
+<Step>
+### Start the service
+Writes the systemd unit at `0600` and starts it.
+</Step>
+</Steps>
+
+The agent then calls home, sends a certificate signing request, and
+receives a signed certificate. **The control plane never connects to your
+machine to set this up.**
+
+Logs: `journalctl -u deplo-agent -f`.
+
+## See also
+
+<Cards>
+  <Card title="Installers reference" description="All three scripts" href="/reference/installers" />
+  <Card title="install.sh" description="The platform installer" href="/reference/installers/install" />
+  <Card title="Add a server" description="Running this from the dashboard" href="/guides/server/add-a-server" />
+</Cards>

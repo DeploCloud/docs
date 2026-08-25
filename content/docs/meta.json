@@ -1,20 +1,3 @@
 {
-  "title": "Deplo",
-  "pages": [
-    "index",
-    "---Getting Started---",
-    "...getting-started",
-    "---Concepts---",
-    "...concepts",
-    "---Guides---",
-    "...guides",
-    "---Advanced---",
-    "...advanced",
-    "---Operations---",
-    "...operations",
-    "---Reference---",
-    "...reference",
-    "---Troubleshooting---",
-    "...troubleshooting"
-  ]
+  "pages": ["(docs)", "api-reference"]
 }

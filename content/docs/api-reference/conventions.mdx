@@ -1,0 +1,39 @@
+---
+title: Conventions
+description: How mutations return data, and how subscriptions stream it, across the whole schema.
+---
+
+Two patterns repeat across every domain in this reference, worth reading
+once instead of re-explained on every page.
+
+## Return shapes
+
+A mutation returns the affected entity where natural, so a client needs no
+second fetch. It returns `Boolean` for deletes and toggles, and a `String`
+for reveal-secret operations, `revealConnection` and
+`rotateDatabasePassword` both return the connection string.
+
+<Callout type="info" title="A verdict is a return value, not an error">
+  Where a mutation asks another system whether something works, the answer
+  comes back in the payload and a failure resolves normally. A client that
+  treats "the request succeeded" as "the thing it tested actually works"
+  will report success over a check that just failed. See
+  [Backup destinations](/api-reference/backup-destinations) for the
+  concrete example.
+</Callout>
+
+## Subscriptions
+
+Server-Sent Events, via graphql-yoga, not WebSockets. Each subscription
+emits the entity on every state change: an initial snapshot, then live
+updates, so a client tracks state with no polling. `appStatus` and
+`databaseStatus` are the two subscriptions in the schema today, see
+[Apps](/api-reference/apps) and [Databases](/api-reference/databases).
+
+## See also
+
+<Cards>
+  <Card title="Apps" description="createApp, redeploy, appStatus" href="/api-reference/apps" />
+  <Card title="Databases" description="createDatabase, databaseStatus" href="/api-reference/databases" />
+  <Card title="Servers" description="Registration and fleet operations" href="/api-reference/servers" />
+</Cards>

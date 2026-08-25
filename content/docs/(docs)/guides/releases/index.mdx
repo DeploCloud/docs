@@ -1,0 +1,47 @@
+---
+title: Releases
+description: How your source becomes an image, what triggers a new one, and how to undo it.
+---
+
+import { Hammer, Webhook, Undo2 } from "lucide-react";
+
+Turning your source into a running container, again and again: what
+**[build settings](/guides/releases/build-settings)** control, what makes a
+new build happen without you clicking anything
+(**[automatic deployments](/guides/releases/automatic-deployments)**), and
+how to go back to one that worked
+(**[rollbacks](/guides/releases/rollbacks)**).
+
+---
+
+## How it works
+
+Every deploy runs through the same three concerns, in order.
+
+**Build settings** decide how your source becomes an image: which builder
+runs, what commands it runs, and which port the result listens on. Most
+apps never touch this, detection handles it.
+
+**Automatic deployments** decide what makes a *new* build happen: a push to
+a tracked branch, a new tag, or a call to a deploy hook URL you hold.
+
+**Rollbacks** decide what happens when a build was wrong: go back to an
+image that already worked, in seconds, with no rebuild.
+
+<Callout type="warn" title="Limits and gotchas">
+- **Only sources Deplo builds have any of this.** A Docker image app skips
+  build settings entirely, and neither a Docker image nor a Compose stack
+  can roll back, there is no single image Deplo owns for either.
+- **A rollback does not undo a deploy trigger.** Turn off deploy on push
+  first if you are rolling back because the branch itself is broken.
+</Callout>
+
+---
+
+## See also
+
+<Cards>
+  <Card icon={<Hammer className="text-blue-400" />} title="Deploy from Git" description="Connect the source that gets built" href="/guides/deploy/from-git" />
+  <Card icon={<Webhook className="text-blue-400" />} title="The deploy trace" description="The full pipeline, end to end" href="/concepts/what-happens-on-a-deploy" />
+  <Card icon={<Undo2 className="text-blue-400" />} title="Server" description="Where images live, and how they get cleaned up" href="/guides/server" />
+</Cards>

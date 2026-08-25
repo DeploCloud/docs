@@ -1,0 +1,47 @@
+---
+title: Session and login
+description: "`me`, `login`, `logout` and the account actions only a signed-in person can take, never an API token."
+---
+
+The operations behind the browser session cookie. For how the cookie
+itself works, see [Authentication](/api-reference/authentication).
+
+## Queries
+
+`me` resolves the signed-in identity. Unauthenticated, it resolves `null`
+rather than erroring.
+
+`mySessions` lists the devices currently signed in.
+
+## Mutations
+
+### `login`
+
+If the account has two-factor authentication enabled, this returns
+`requiresTwoFactor: true` and no session.
+
+### `verifyTwoFactorLogin`
+
+Completes a login that `login` left pending on two-factor.
+
+### `logout`
+
+Ends the current session.
+
+### `revokeSession` / `revokeOtherSessions`
+
+Sign a specific device out, or every device except the current one.
+
+<Callout type="info">
+  These are personal-account actions: an API token can never call them,
+  however many capabilities it holds, since a token is a principal in its
+  own right, not a stand-in for the person who created it. See
+  [API tokens](/api-reference/api-tokens).
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="Authentication" description="The session cookie mechanism" href="/api-reference/authentication" />
+  <Card title="API tokens" description="Credentials for scripts and CI" href="/api-reference/api-tokens" />
+</Cards>

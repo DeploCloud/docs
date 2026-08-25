@@ -1,0 +1,219 @@
+---
+title: What is Deplo?
+description: Push a repo, pick a server, get a deployment, on your own infrastructure.
+icon: DeploMark
+full: true
+---
+
+import { GitBranch, Globe, Database, Archive, SlidersHorizontal, Users, Server, Coins, UploadCloud, Terminal, LayoutTemplate, Link2, Cpu, Bot, Route } from "lucide-react";
+import Image from "next/image";
+
+<div className="not-prose grid grid-cols-1 items-center gap-10 pt-4 pb-16 lg:grid-cols-[2fr_3fr] lg:gap-16">
+  <div className="flex flex-col gap-6">
+    <h1 className="font-display text-4xl leading-[1.15] font-bold tracking-tighter sm:text-5xl">
+      Deplo
+    </h1>
+
+    <div className="max-w-lg text-base leading-[1.85] text-fd-muted-foreground">
+      <strong className="text-fd-foreground">Deplo is an open-source alternative</strong> to
+      Vercel, Railway and Cloudflare: push a repo, pick a server, get a deployment, on your own
+      infrastructure.
+    </div>
+
+    <div className="flex flex-wrap items-center gap-3">
+      <a
+        href="/getting-started/install"
+        className="inline-flex items-center justify-center rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-semibold text-fd-primary-foreground transition-opacity hover:opacity-90"
+      >
+        Install Deplo
+      </a>
+      <a
+        href="https://github.com/DeploCloud/deplo"
+        className="inline-flex items-center justify-center rounded-lg border border-fd-border px-5 py-2.5 text-sm font-semibold text-fd-foreground transition-colors hover:bg-fd-accent"
+      >
+        View on GitHub
+      </a>
+    </div>
+  </div>
+
+  <div className="relative">
+    <div
+      aria-hidden="true"
+      className="absolute -inset-x-12 -top-16 -bottom-24 -z-10 bg-gradient-to-b from-purple-600/50 via-blue-600/30 to-transparent blur-3xl"
+    />
+    <Image
+      src="/deplo_screenshot.png"
+      alt="The Deplo dashboard"
+      width={4217}
+      height={2470}
+      className="w-full rounded-lg"
+      priority
+    />
+  </div>
+</div>
+
+<div className="not-prose mx-auto mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
+  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">Why Deplo</h2>
+  <div className="text-fd-muted-foreground">
+    Push, and it's live: on hardware you own, a bill you control.
+  </div>
+</div>
+
+<div className="not-prose mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+    <Server className="mb-3 size-5 text-fd-muted-foreground" />
+    <p className="font-medium text-fd-foreground">A VPS and a domain is enough</p>
+    <p className="mt-1 text-sm text-fd-muted-foreground">Builds, routing, TLS, backups, monitoring, rollbacks.</p>
+  </div>
+  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+    <Coins className="mb-3 size-5 text-fd-muted-foreground" />
+    <p className="font-medium text-fd-foreground">No per-seat pricing, no lock-in</p>
+    <p className="mt-1 text-sm text-fd-muted-foreground">You pay your host, not Deplo.</p>
+  </div>
+  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+    <UploadCloud className="mb-3 size-5 text-fd-muted-foreground" />
+    <p className="font-medium text-fd-foreground">Deploy from anything</p>
+    <p className="mt-1 text-sm text-fd-muted-foreground">A Git repo, an image, a Dockerfile, Compose, or a plain upload.</p>
+  </div>
+  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+    <Terminal className="mb-3 size-5 text-fd-muted-foreground" />
+    <p className="font-medium text-fd-foreground">The shell is optional</p>
+    <p className="mt-1 text-sm text-fd-muted-foreground">An escape hatch for experts, never a requirement.</p>
+  </div>
+  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+    <LayoutTemplate className="mb-3 size-5 text-fd-muted-foreground" />
+    <p className="font-medium text-fd-foreground">Familiar by design</p>
+    <p className="mt-1 text-sm text-fd-muted-foreground">Shaped by a dedicated UX/UI team, not reinvented.</p>
+  </div>
+  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+    <Link2 className="mb-3 size-5 text-fd-muted-foreground" />
+    <p className="font-medium text-fd-foreground">A free URL from the first deploy</p>
+    <p className="mt-1 text-sm text-fd-muted-foreground">Before you even own a domain.</p>
+  </div>
+</div>
+
+<div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
+  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">Popular features</h2>
+  <div className="text-fd-muted-foreground">The parts people reach for first.</div>
+</div>
+
+<div className="not-prose mx-auto grid max-w-4xl grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-3">
+  <a
+    href="/guides/deploy/from-git"
+    className="flex flex-col justify-between gap-8 rounded-xl border border-fd-border p-6 transition-colors hover:bg-fd-accent/50 lg:col-start-1 lg:row-span-3 lg:row-start-1"
+  >
+    <GitBranch className="size-6 text-blue-400" />
+    <div>
+      <p className="text-lg font-medium text-fd-foreground">Deploy from Git</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Push, and the build runs itself. GitHub, GitLab, Bitbucket or Gitea.</p>
+    </div>
+  </a>
+  <a
+    href="/guides/networking/domains-and-https"
+    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-start-2 lg:row-start-1"
+  >
+    <Globe className="size-5 text-purple-400" />
+    <div>
+      <p className="font-medium text-fd-foreground">Domains and HTTPS</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Your own hostname, a certificate Deplo gets for you.</p>
+    </div>
+  </a>
+  <a
+    href="/guides/data/databases"
+    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-start-3 lg:row-start-1"
+  >
+    <Database className="size-5 text-green-400" />
+    <div>
+      <p className="font-medium text-fd-foreground">Databases</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Postgres, MySQL, MariaDB, MongoDB, Redis, ClickHouse.</p>
+    </div>
+  </a>
+  <a
+    href="/guides/data/backups-and-restore"
+    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-start-2 lg:row-start-2"
+  >
+    <Archive className="size-5 text-amber-400" />
+    <div>
+      <p className="font-medium text-fd-foreground">Backups and restore</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Encrypted, scheduled, sent to storage you already own.</p>
+    </div>
+  </a>
+  <a
+    href="/guides/config/environment-variables"
+    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-start-3 lg:row-start-2"
+  >
+    <SlidersHorizontal className="size-5 text-cyan-400" />
+    <div>
+      <p className="font-medium text-fd-foreground">Environment variables</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Layered, encrypted, injected at build and run time.</p>
+    </div>
+  </a>
+  <a
+    href="/concepts/teams-and-capabilities"
+    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-span-2 lg:col-start-2 lg:row-start-3 lg:flex-row lg:items-center"
+  >
+    <Users className="size-5 text-pink-400" />
+    <div>
+      <p className="font-medium text-fd-foreground">Teams and capabilities</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Fine-grained access for everyone on the account.</p>
+    </div>
+  </a>
+</div>
+
+<div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
+  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">How it works</h2>
+  <div className="text-fd-muted-foreground">
+    Two programs, one rule: the control plane decides, the agent executes.
+  </div>
+</div>
+
+<div className="not-prose mx-auto grid max-w-2xl grid-cols-1 gap-5 sm:grid-cols-2">
+  <div className="flex items-start gap-3">
+    <Cpu className="mt-0.5 size-5 shrink-0 text-fd-muted-foreground" />
+    <div>
+      <p className="font-medium text-fd-foreground">The control plane decides</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Renders the Compose file and the routing, resolves secrets, never touches Docker directly.</p>
+    </div>
+  </div>
+  <div className="flex items-start gap-3">
+    <Bot className="mt-0.5 size-5 shrink-0 text-fd-muted-foreground" />
+    <div>
+      <p className="font-medium text-fd-foreground">The server agent executes</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">One Go binary per host, the only thing that runs Docker, reached over mutual TLS.</p>
+    </div>
+  </div>
+  <div className="flex items-start gap-3">
+    <Route className="mt-0.5 size-5 shrink-0 text-fd-muted-foreground" />
+    <div>
+      <p className="font-medium text-fd-foreground">Traefik routes and issues certificates</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Automatic HTTPS for every domain you add.</p>
+    </div>
+  </div>
+  <div className="flex items-start gap-3">
+    <Database className="mt-0.5 size-5 shrink-0 text-fd-muted-foreground" />
+    <div>
+      <p className="font-medium text-fd-foreground">Postgres remembers</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">The single source of truth for the whole control plane.</p>
+    </div>
+  </div>
+</div>
+
+<div className="not-prose mx-auto mt-6 max-w-2xl text-center text-sm text-fd-muted-foreground">
+  The box running Deplo itself is just another server in the fleet, no special shortcut.
+</div>
+
+<div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
+  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">Explore the rest</h2>
+</div>
+
+<div className="mx-auto max-w-2xl">
+
+- [Getting Started](/getting-started/install): install Deplo and deploy your first app.
+- [Concepts](/concepts/how-deplo-works): how Deplo works, under the hood.
+- [Guides](/guides/deploy/from-git): every day-to-day task.
+- [Advanced](/advanced/compose-apps): Compose apps, build servers, custom certificates.
+- [Operations](/operations/upgrade): upgrade, back up and administer your instance.
+- [Reference](/reference/glossary): glossary, environment variables, the API.
+- [Troubleshooting](/troubleshooting): fix deploys, domains, servers and access.
+
+</div>

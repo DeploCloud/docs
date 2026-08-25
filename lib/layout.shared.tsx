@@ -9,6 +9,7 @@ export function baseOptions(): BaseLayoutProps {
       title: NavTitle,
       children: <SidebarMenu />,
     },
+    themeSwitch: { enabled: false },
     githubUrl: "https://github.com/DeploCloud/deplo",
     links: [
       {

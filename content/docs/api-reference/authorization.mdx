@@ -1,0 +1,97 @@
+---
+title: Authorization
+description: Fields are gated by the same fine-grained capability model as the dashboard.
+---
+
+Fields are gated by the same capability model as the dashboard. Capabilities
+are fine-grained, one action each, not bundles, so a role can ship apps
+without being able to delete them, or read files without writing them. The
+full list is the `Capability` enum in `schema.graphql`; the ones you will
+meet most:
+
+<TypeTable
+  type={{
+    "create_apps · deploy_apps · control_apps": {
+      type: "Apps",
+      description: "Create an app · deploy/redeploy/cancel · start/stop.",
+    },
+    rollback_apps: {
+      type: "Apps",
+      description: "Put an app back on a previous deployment.",
+    },
+    "configure_apps · delete_apps · move_apps": {
+      type: "Apps",
+      description: "Build & source settings · delete · folder/project/team.",
+    },
+    open_app_console: {
+      type: "Apps",
+      description: "Shell into a running container.",
+    },
+    "manage_domains · manage_basic_auth": {
+      type: "App configuration",
+      description: "Custom domains & routing · the edge password gate.",
+    },
+    "manage_env · reveal_secrets": {
+      type: "App configuration",
+      description:
+        "Variables · reading back a database or basic-auth credential (an env secret has no reveal at all).",
+    },
+    "read_app_files · write_app_files": {
+      type: "App configuration",
+      description: "Browse/download · edit/upload/delete.",
+    },
+    "create_folders · organize_folders · delete_folders": {
+      type: "Folders & projects",
+      description: "The overview's folders.",
+    },
+    "create_projects · organize_projects · delete_projects · manage_environments": {
+      type: "Folders & projects",
+      description: "Projects & their environments.",
+    },
+    "create_databases · configure_databases · control_databases · delete_databases · open_database_console": {
+      type: "Databases",
+      description: "Managed databases.",
+    },
+    "manage_backups · restore_backups · manage_backup_destinations": {
+      type: "Backups",
+      description: "Schedules & runs · restoring over live data · where backups are kept.",
+    },
+    "manage_registries · manage_git · manage_tokens · manage_mcp · manage_notifications": {
+      type: "Integrations",
+      description: "Integrations & API access · whether AI agents may drive the team.",
+    },
+    "view_logs · view_metrics · manage_monitoring · view_activity": {
+      type: "Logs & monitoring",
+      description: "Logs, monitoring, the audit trail.",
+    },
+    "manage_members · manage_roles": {
+      type: "Team",
+      description: "Who is in the team · what each role grants.",
+    },
+    "manage_team · delete_team": {
+      type: "Team",
+      description: "Team settings · deleting the team.",
+    },
+  }}
+/>
+
+Three names from the old coarse model, `deploy`, `manage_infra` and
+`manage_files`, are still **accepted** on input (marked deprecated in the
+schema): each expands to exactly the permissions it used to imply, so an
+existing script keeps working unchanged. They are never returned. The
+other five old names (`view`, `manage_domains`, `manage_env`,
+`manage_members`, `manage_team`) survived the split as capabilities in
+their own right and mean exactly themselves.
+
+Some operations are gated on **instance admin** (global) instead of a
+team capability: user management, Docker cleanup, the panel's own
+address, and a host's own TLS certificates.
+
+## See also
+
+<Cards>
+  <Card title="Instance-admin operations" description="Users, Docker cleanup, the panel's own address" href="/api-reference/instance-admin-operations" />
+  <Card title="Certificates" description="A host's own TLS certificates" href="/api-reference/domains-and-tls/certificates" />
+  <Card title="Authentication" description="Session cookie, API token, OAuth" href="/api-reference/authentication" />
+  <Card title="Capabilities" description="The full list of 46" href="/reference/capabilities" />
+</Cards>

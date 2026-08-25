@@ -1,0 +1,78 @@
+---
+title: API tokens
+description: Creating, scoping, updating and revoking a token, the full lifecycle behind Settings -> API tokens.
+---
+
+The token lifecycle. For how a token authenticates a request and what it
+can never reach, see [Authentication](/api-reference/authentication).
+
+## Queries
+
+`apiTokens` lists the tokens visible in the active team.
+
+## Mutations
+
+### `createToken`
+
+```graphql
+mutation {
+  createToken(input: { name: "ci", capabilities: [deploy_apps, view_logs] }) {
+    id
+    token
+  }
+}
+```
+
+The token is returned **once**, store it securely. There is no default: a
+token that names no capabilities is view-only. The scope is four optional
+lists on the same input (`teamIds`, `projectIds`, `folderIds`, `appIds`):
+
+- Ticking a node grants everything under it, now and later.
+- Ticking nothing means every team its creator belongs to.
+- Filing an app into a folder clears its project link, so a folder is
+  where most apps actually live. A project scope also covers the folders
+  filed under it.
+- Naming anything below a team narrows the token inside that team, and
+  the team-wide permissions it holds (managing members, roles,
+  registries, databases) stop applying there. Naming several whole teams
+  restricts nothing inside them.
+
+<Callout type="info">
+  A token's effective power is the **intersection** of two things: what
+  the token was granted, and what its creator can still do in that team.
+  Revoking a person's access also blunts every token they minted.
+</Callout>
+
+Settings -> API tokens ships templates that pre-fill common capability
+sets: Read only, Deploy hook & CI, MCP & AI agents, App automation, Root
+access, or start from scratch.
+
+### `updateToken`
+
+Changes a live token's permissions or scope without re-minting it.
+
+### `revokeToken`
+
+Ends the credential. For a token minted by an OAuth consent (see
+[Authentication](/api-reference/authentication)), this also clears the
+consent and its refresh token together, so the client is disconnected
+everywhere it reached and has to be authorized again.
+
+## A token is a principal, not a stand-in for its creator
+
+It never reaches its creator's personal account: signed-in devices
+(`mySessions`, `revokeSession`, `revokeOtherSessions`), the profile
+(`updateProfile`, `updateEmail`, `changePassword`), passkeys
+(`myPasskeys`, `startPasskeyRegistration`, `deletePasskey`) and
+two-factor settings all answer `An API token can't access <that
+resource>`, however many capabilities the token holds. Those are
+dashboard actions taken by a person at a keyboard, see
+[Session and login](/api-reference/session-and-login).
+
+## See also
+
+<Cards>
+  <Card title="Authentication" description="Sending a token on a request" href="/api-reference/authentication" />
+  <Card title="Session and login" description="What only a person can do" href="/api-reference/session-and-login" />
+  <Card title="Authorization" description="The capability model tokens draw from" href="/api-reference/authorization" />
+</Cards>

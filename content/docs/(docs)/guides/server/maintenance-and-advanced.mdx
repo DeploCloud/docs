@@ -1,0 +1,141 @@
+---
+title: Maintenance and advanced
+description: Restarts, timezone, the server's address, the Traefik dashboard, and removing a server.
+---
+
+import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
+
+Restarts, the host's timezone, its address, the Traefik dashboard, and
+the danger zone.
+
+---
+
+## How it works
+
+**Settings -> Servers -> the server -> Maintenance** and **Advanced**.
+
+## Maintenance
+
+<TypeTable
+  type={{
+    "Restart Traefik": {
+      type: "action",
+      description: "Restarts the proxy on this host.",
+    },
+    Restart: {
+      type: "action",
+      description: "Restarts the workloads.",
+    },
+    "Restart all": {
+      type: "action",
+      description: "Both.",
+    },
+    "Restart Deplo": {
+      type: "action",
+      description:
+        "Only on the host running the control plane. It restarts the panel itself.",
+    },
+    Timezone: {
+      type: "select",
+      description:
+        "The host's timezone, with Save timezone. Cron jobs use their own zone, so this is for the host's own clock.",
+    },
+  }}
+/>
+
+## Advanced
+
+<TypeTable
+  type={{
+    "Host details": {
+      type: "read-only",
+      description: "What the agent reports about the machine.",
+    },
+    "Change address": {
+      type: "text",
+      description: "The address the control plane dials. Use it when the IP changes.",
+    },
+    "Agent port": {
+      type: "number",
+      default: "9443",
+      description: "Default 9443.",
+    },
+    "Install command": {
+      type: "text",
+      description:
+        "The command to re-run on the host, for reinstalling or repairing the agent.",
+    },
+    "Domain, Password, Generate": {
+      type: "text",
+      description:
+        "Publish that host's Traefik dashboard on a domain behind basic auth. Turning it on recreates the Traefik container, because it is static configuration.",
+    },
+    "Docker data": {
+      type: "read-only",
+      description: "Where Docker keeps its data on this host.",
+    },
+    "Remove server": {
+      type: "danger",
+      description: "Danger zone. See below.",
+    },
+  }}
+/>
+
+---
+
+## Removing a server
+
+**Removing is trust revocation, not an uninstall.** The pinned
+certificate is cleared and Deplo never talks to that machine again. It
+does not reach in and remove containers, because by then it may not be
+able to.
+
+Deplo prints a one-line uninstall command to run on the host if you want
+the agent, its Traefik and its state directory gone. See
+[Remove or uninstall](/operations/remove-a-server-or-uninstall).
+
+The machine running the control plane cannot remove itself.
+
+<Callout type="warn" title="Limits and gotchas">
+- **Health is a cache, not a gate.** Past a staleness window the page
+  shows **Unknown** rather than a stale green. Deploys gate on a live
+  handshake.
+- **Restarting Traefik drops connections** for a moment on every app on
+  that host.
+- **Changing the address does not move anything.** It only changes how
+  Deplo dials.
+</Callout>
+
+<Callout type="error" title="If it does not work">
+- **The card says warning**: the agent is up, Docker is not answering
+  there. Check the Docker service on the host.
+- **A restart action fails**: the agent is unreachable. Health and
+  readiness will say so.
+
+See [Servers and agents](/troubleshooting/servers-and-agents) for more.
+</Callout>
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<RotateCcw className="text-blue-400" />}
+    title="Server cleanup"
+    description="Reclaiming disk"
+    href="/guides/server/cleanup"
+  />
+  <Card
+    icon={<ArrowLeftRight className="text-blue-400" />}
+    title="Upgrade"
+    description="Agent updates"
+    href="/operations/upgrade"
+  />
+  <Card
+    icon={<AlertTriangle className="text-blue-400" />}
+    title="Remove or uninstall"
+    description="The three different acts"
+    href="/operations/remove-a-server-or-uninstall"
+  />
+</Cards>

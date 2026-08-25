@@ -1,0 +1,44 @@
+---
+title: Activity
+description: Every meaningful action on your team, grouped by day, with who did it.
+---
+
+import { UserPlus, Users } from "lucide-react";
+
+**Activity**, in the sidebar, is the trail of who did what on your team,
+and when.
+
+---
+
+## How it works
+
+Every meaningful action is recorded, grouped by day, with the actor's
+avatar: deployments, apps, projects, databases, domains, variables,
+members, backups, destinations, cron jobs, cleanups, monitoring changes
+and MCP access.
+
+Actions taken by the system or by a git provider are attributed to
+`system` or `github`, never to a person who happened to be nearby.
+
+If an entry could not be written, the next successful write says so in the
+trail, out loud, rather than leaving a silent gap. A hole in an audit log
+has to be visible in the audit log.
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<UserPlus className="text-blue-400" />}
+    title="Members"
+    description="Add, invite and remove people"
+    href="/guides/team/members"
+  />
+  <Card
+    icon={<Users className="text-blue-400" />}
+    title="Teams and capabilities"
+    description="How teams, roles and capabilities fit together"
+    href="/concepts/teams-and-capabilities"
+  />
+</Cards>

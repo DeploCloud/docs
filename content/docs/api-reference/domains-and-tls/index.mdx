@@ -1,0 +1,23 @@
+---
+title: Domains
+description: Reading and adding hostnames on an app, and the capabilities that gate them.
+---
+
+`domains` reads the hostnames attached to an app. `addDomain` attaches a
+new one.
+
+Both are gated by `manage_domains`; the edge password gate on a domain is
+a separate grant, `manage_basic_auth`. See
+[Capabilities](/reference/capabilities) for the full list, this page only
+names the two that apply here.
+
+For the concepts behind a domain (DNS states, path routing, redirects),
+see the [Domains and HTTPS guide](/guides/networking/domains-and-https).
+This page only covers the two schema operations.
+
+## See also
+
+<Cards>
+  <Card title="Certificates" description="A host's own TLS certificates, outside Let's Encrypt" href="/api-reference/domains-and-tls/certificates" />
+  <Card title="Domains and HTTPS" description="DNS, routing and redirects, the dashboard view" href="/guides/networking/domains-and-https" />
+</Cards>

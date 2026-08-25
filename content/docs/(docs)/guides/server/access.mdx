@@ -1,0 +1,55 @@
+---
+title: Server access
+description: Which teams may use a server, and what changes when you narrow it.
+---
+
+import { ServerCog, Layers, KeyRound } from "lucide-react";
+
+Deciding which teams may deploy to a server. New servers are open to
+every team by default, so a team that adds an app can pick any of them.
+
+---
+
+## How it works
+
+**Settings -> Servers -> the server -> Access.** Team access is either
+every team, or a chosen list. Pick the teams, then **Save access**.
+
+<Callout type="warn" title="Limits and gotchas">
+- **Narrowing access does not move anything already deployed there.**
+  Apps already on that server keep running; only new placements are
+  affected.
+- **A team can only pick a server it has access to** when adding an app.
+</Callout>
+
+---
+
+## If it does not work
+
+See [Servers and agents](/troubleshooting/servers-and-agents) for
+anything not covered here.
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<ServerCog className="text-blue-400" />}
+    title="Add a server"
+    description="Enrollment and the bootstrap command"
+    href="/guides/server/add-a-server"
+  />
+  <Card
+    icon={<Layers className="text-blue-400" />}
+    title="Roles and permissions"
+    description="What a team member can do once they have access"
+    href="/guides/roles-and-permissions"
+  />
+  <Card
+    icon={<KeyRound className="text-blue-400" />}
+    title="Capabilities"
+    description="The full list of gated actions"
+    href="/reference/capabilities"
+  />
+</Cards>

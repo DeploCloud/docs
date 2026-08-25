@@ -1,0 +1,22 @@
+---
+title: Certificates
+description: A host's own TLS certificates, installed once, outside Let's Encrypt.
+---
+
+`serverCertificates`, `addServerCertificate` and `removeServerCertificate`
+manage a host's own TLS certificates: instance-admin only, since they
+front whatever any team runs on that server. They live in that host's
+proxy rather than in Deplo, and the private key is write-only, there is no
+read path back.
+
+A domain reaches a custom certificate by setting `Domain.certProvider` to
+`custom`, HTTPS with no ACME resolver named. Unlike `letsencrypt`, that
+draws on no shared account and is therefore not capped per team.
+
+## See also
+
+<Cards>
+  <Card title="Domains" description="The domains query and addDomain mutation" href="/api-reference/domains-and-tls" />
+  <Card title="Instance-admin operations" description="Everything else gated on instance admin" href="/api-reference/instance-admin-operations" />
+  <Card title="Custom certificates" description="Installing one from the dashboard" href="/advanced/custom-certificates" />
+</Cards>

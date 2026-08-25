@@ -1,0 +1,73 @@
+---
+title: install.sh
+description: Installs the whole platform, Docker, Traefik, Postgres, the control plane and the agent, on a fresh server.
+---
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | bash
+```
+
+Configured entirely by environment variables in front of the command. See
+[Environment variables](/reference/environment-variables) for the table.
+
+<Callout type="info" title="Requires">
+  Root, `curl`, `openssl`, and Docker Compose v2. Docker itself is
+  installed if missing.
+</Callout>
+
+<Steps>
+<Step>
+### Preflight checks
+</Step>
+<Step>
+### Install Docker
+Installs Docker if absent, and enables the service.
+</Step>
+<Step>
+### Write the address pools
+Writes Docker's `default-address-pools`, never clobbering an existing one,
+backing up the old file and validating the new one.
+</Step>
+<Step>
+### Create the layout
+Creates `/opt/deplo/{traefik,data,acme}`, the `deplo` network, and
+`acme.json` at `0600`.
+</Step>
+<Step>
+### Generate secrets
+Generates secrets into `/opt/deplo/.env` at `0600`, **once**.
+</Step>
+<Step>
+### Start Traefik
+Writes and starts the Traefik stack, with a read-only socket proxy sidecar.
+</Step>
+<Step>
+### Symlink the proxy
+Symlinks `/var/lib/deplo-agent/traefik` to it, so the local agent manages
+the panel's own proxy.
+</Step>
+<Step>
+### Start Deplo
+Writes and starts the Deplo stack: Postgres on an internal network, and the
+control plane publishing `3000`.
+</Step>
+<Step>
+### Enroll this machine
+Waits up to two minutes for `/api/health`, then enrolls this machine as a
+server.
+</Step>
+</Steps>
+
+<Callout type="info" title="Re-running it is the update path">
+  It detects `/opt/deplo/.env`, switches to update mode, and never rotates
+  a secret. The last step failing is a warning, not a fatal error: the
+  panel stays up and a re-run retries it.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="Installers reference" description="All three scripts" href="/reference/installers" />
+  <Card title="install-agent.sh" description="Bring another machine into the fleet" href="/reference/installers/install-agent" />
+  <Card title="uninstall.sh" description="Removing what this installs" href="/reference/installers/uninstall" />
+</Cards>

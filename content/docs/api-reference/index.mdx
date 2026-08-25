@@ -1,0 +1,79 @@
+---
+title: API reference
+description: GraphQL, the REST exceptions, the deploy hook and the MCP server.
+---
+
+GraphQL, the REST exceptions, the deploy hook and the MCP server. There is
+no separate REST resource API: everything routes through one GraphQL
+endpoint, except a handful of transports GraphQL is the wrong shape for.
+If you are looking for how to create and scope a credential first, read
+[API tokens](/api-reference/api-tokens).
+
+---
+
+## GraphQL
+
+Deplo exposes a single GraphQL endpoint that is the canonical way to drive
+the platform. The dashboard UI and any external client (CI, a script, your
+own tooling) speak the same API.
+
+```
+POST  https://<your-deplo-host>/api/graphql
+GET   https://<your-deplo-host>/api/graphql      # GraphiQL explorer (in a browser)
+```
+
+The full schema is published as `schema.graphql` at the repo root, and
+browsable interactively via GraphiQL at the endpoint above. Read
+[Conventions](/api-reference/conventions) once before the domain pages
+below, it covers what every mutation and subscription has in common so
+each domain page doesn't have to repeat it.
+
+---
+
+## Identity and access
+
+<Cards>
+  <Card title="Authentication" description="Session cookie, API token, OAuth" href="/api-reference/authentication" />
+  <Card title="API tokens" description="Creating, scoping and revoking a token" href="/api-reference/api-tokens" />
+  <Card title="Session and login" description="What only a signed-in person can do" href="/api-reference/session-and-login" />
+  <Card title="Authorization" description="The capability model" href="/api-reference/authorization" />
+  <Card title="Instance-admin operations" description="Users, Docker cleanup, the panel's own address" href="/api-reference/instance-admin-operations" />
+</Cards>
+
+## The platform
+
+<Cards>
+  <Card title="Apps" description="Catalogue, deployments, framework detection" href="/api-reference/apps" />
+  <Card title="Environment variables" description="App-level and team-owned shared variables" href="/api-reference/environment-variables" />
+  <Card title="Domains and TLS" description="Hostnames and a host's own certificates" href="/api-reference/domains-and-tls" />
+  <Card title="Projects and environments" description="The containers apps live in" href="/api-reference/projects-and-environments" />
+  <Card title="Databases" description="Managed Postgres, MySQL, MongoDB and more" href="/api-reference/databases" />
+  <Card title="Servers" description="Enrolling, roling and removing a machine" href="/api-reference/servers" />
+  <Card title="Teams and members" description="Membership, roles and the team itself" href="/api-reference/teams-and-members" />
+  <Card title="Activity" description="The read-only audit trail" href="/api-reference/activity" />
+  <Card title="Backup destinations" description="Testing a destination before you trust it" href="/api-reference/backup-destinations" />
+</Cards>
+
+## Migration and other transports
+
+<Cards>
+  <Card title="Importing from Dokploy" description="The migration API" href="/api-reference/dokploy-import" />
+  <Card title="REST and MCP" description="What stays outside GraphQL" href="/api-reference/rest-and-mcp" />
+</Cards>
+
+---
+
+## Errors
+
+Errors come back in the standard GraphQL `errors[]` array. The `message`
+is safe to show a user (e.g. `"You don't have permission to deploy"`);
+internal stack traces are never leaked.
+
+---
+
+## See also
+
+<Cards>
+  <Card title="API tokens and OAuth" description="Creating and scoping a credential, from the dashboard" href="/advanced/api-tokens-and-oauth" />
+  <Card title="Automatic deployments" description="The deploy hook in context" href="/guides/releases/automatic-deployments" />
+</Cards>

@@ -1,0 +1,90 @@
+---
+title: Server
+description: Which teams may use a server, how many deploys run at once, disk cleanup, restarts, its address and its certificates.
+---
+
+import { ServerCog, UserCheck, ShieldCheck, Trash2, Wrench, Container } from "lucide-react";
+
+Everything you can change about one machine in the fleet: which teams may
+use it, how many deploys run at once, disk cleanup, restarts, its address
+and its certificates.
+
+**Settings -> Servers**, then open a server. Instance admins only.
+
+---
+
+## How it works
+
+Each page here talks to that server's agent. Nothing reaches into the host
+any other way, and the control plane never opens a shell.
+
+---
+
+## Overview
+
+Specifications (CPU, memory, disk, Docker version), the health chip, the
+agent version, and:
+
+<TypeTable
+  type={{
+    "Concurrent deployments": {
+      type: "number",
+      default: "1",
+      description:
+        "How many deploys may run at once on this host. Default 1, so they serialize.",
+    },
+    "Build concurrency": {
+      type: "number",
+      description: "The same for builds when this machine is a build server.",
+    },
+  }}
+/>
+
+Raising concurrency past what the machine can take makes every deploy
+slower, not faster. One is a sane default for a small VPS.
+
+---
+
+## In this section
+
+<Cards>
+  <Card
+    icon={<ServerCog className="text-blue-400" />}
+    title="Add a server"
+    description="Enrollment and the bootstrap command"
+    href="/guides/server/add-a-server"
+  />
+  <Card
+    icon={<UserCheck className="text-blue-400" />}
+    title="Access"
+    description="Which teams may use this server"
+    href="/guides/server/access"
+  />
+  <Card
+    icon={<ShieldCheck className="text-blue-400" />}
+    title="Certificates"
+    description="Certificates you installed yourself"
+    href="/guides/server/certificates"
+  />
+  <Card
+    icon={<Trash2 className="text-blue-400" />}
+    title="Cleanup"
+    description="Reclaiming disk, on a schedule"
+    href="/guides/server/cleanup"
+  />
+  <Card
+    icon={<Wrench className="text-blue-400" />}
+    title="Maintenance and advanced"
+    description="Restarts, address, danger zone"
+    href="/guides/server/maintenance-and-advanced"
+  />
+  <Card
+    icon={<Container className="text-blue-400" />}
+    title="Container registries"
+    description="Credentials for pulling private images"
+    href="/guides/server/container-registries"
+  />
+</Cards>
+
+Need the concepts first? See [Servers and agents](/concepts/servers-and-the-agent)
+and [Server roles](/advanced/server-roles).

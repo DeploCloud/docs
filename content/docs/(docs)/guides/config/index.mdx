@@ -1,0 +1,34 @@
+---
+title: Config
+description: Variables your app reads from its environment, and variables your team shares across several apps.
+---
+
+import { SlidersHorizontal, Share2 } from "lucide-react";
+
+Two kinds of configuration value, both encrypted, both typed `plain` or
+`secret`, both injected at build time and at run time.
+
+---
+
+## How it works
+
+**[Environment variables](/guides/config/environment-variables)** are set
+directly on one app, with instance-wide and preview-only layers folding in
+around them.
+
+**[Shared variables](/guides/config/shared-variables)** are owned by the
+team and linked into several apps at once, so one change reaches every app
+that uses it.
+
+A linked shared variable folds in above an app's own variable of the same
+name. See [Environment variables](/guides/config/environment-variables) for
+the full layering order.
+
+---
+
+## See also
+
+<Cards>
+  <Card icon={<SlidersHorizontal className="text-blue-400" />} title="Environment variables" description="Layers, plain vs secret, preview overrides" href="/guides/config/environment-variables" />
+  <Card icon={<Share2 className="text-blue-400" />} title="Shared variables" description="One variable, several apps" href="/guides/config/shared-variables" />
+</Cards>

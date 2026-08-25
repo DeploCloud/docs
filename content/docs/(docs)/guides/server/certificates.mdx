@@ -1,0 +1,46 @@
+---
+title: Server certificates
+description: Certificates you installed yourself, for wildcards, a company CA, or names no HTTP challenge can reach.
+---
+
+import { ShieldCheck, ServerCog } from "lucide-react";
+
+Certificates you installed yourself: wildcards, a company CA, or a name
+no HTTP challenge can reach.
+
+---
+
+## How it works
+
+**Settings -> Servers -> the server -> Certificates.** They live in that
+host's Traefik stack. Deplo keeps no copy, and the private key has no
+read path. **Nothing renews them.**
+
+See [Custom certificates](/advanced/custom-certificates) for how to
+install one.
+
+---
+
+## If it does not work
+
+See [Domains and TLS](/troubleshooting/domains-and-tls) for certificate
+warnings and related symptoms.
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<ShieldCheck className="text-blue-400" />}
+    title="Custom certificates"
+    description="Install one"
+    href="/advanced/custom-certificates"
+  />
+  <Card
+    icon={<ServerCog className="text-blue-400" />}
+    title="Server"
+    description="Everything else about one machine"
+    href="/guides/server"
+  />
+</Cards>

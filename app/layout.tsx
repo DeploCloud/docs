@@ -2,6 +2,7 @@ import "./global.css";
 import type { Metadata } from "next";
 import { Funnel_Display, Funnel_Sans } from "next/font/google";
 import { RootProvider } from "fumadocs-ui/provider/next";
+import { ScrollToTop } from "@/components/scroll-to-top";
 
 const funnelDisplay = Funnel_Display({
   variable: "--font-funnel-display",
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-screen flex-col font-sans">
         <RootProvider theme={{ defaultTheme: "dark", forcedTheme: "dark" }}>
+          <ScrollToTop />
           {children}
         </RootProvider>
       </body>

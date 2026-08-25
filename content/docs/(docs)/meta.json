@@ -1,0 +1,23 @@
+{
+  "title": "Docs",
+  "icon": "BookOpen",
+  "description": "Guides, concepts and day-to-day tasks",
+  "root": true,
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "...getting-started",
+    "---Concepts---",
+    "...concepts",
+    "---Guides---",
+    "...guides",
+    "---Advanced---",
+    "...advanced",
+    "---Operations---",
+    "...operations",
+    "---Reference---",
+    "...reference",
+    "---Troubleshooting---",
+    "...troubleshooting"
+  ]
+}

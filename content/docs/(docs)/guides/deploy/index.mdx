@@ -1,0 +1,31 @@
+---
+title: Deploy
+description: Four ways to get code onto Deplo, a repository, a prebuilt image, a template, or a plain archive.
+---
+
+import { GitBranch, Container, LayoutTemplate, Upload } from "lucide-react";
+
+Every app starts from one of four sources. Pick the one that matches what you already have.
+
+---
+
+## The four sources
+
+| Source | What it needs | Builds an image | Rollback |
+| --- | --- | --- | --- |
+| [Git](/guides/deploy/from-git) | A repository, connected once per team | yes | yes |
+| [Docker image](/guides/deploy/docker-image) | An image reference | no, already built | no |
+| [Template](/guides/deploy/from-template) | Nothing, pick one from the catalogue | yes, it is a Compose stack | no |
+| [Upload](/guides/deploy/upload-code) | A compressed archive of the project | yes | yes |
+
+---
+
+## See also
+
+<Cards>
+  <Card icon={<GitBranch className="text-blue-400" />} title="Deploy from Git" description="Point an app at a repository" href="/guides/deploy/from-git" />
+  <Card icon={<Container className="text-blue-400" />} title="Deploy a Docker image" description="Run something already built" href="/guides/deploy/docker-image" />
+  <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="One click, preconfigured" href="/guides/deploy/from-template" />
+  <Card icon={<Upload className="text-blue-400" />} title="Upload your code" description="No repository required" href="/guides/deploy/upload-code" />
+  <Card title="Git providers" description="Connect GitHub, GitLab, Bitbucket or Gitea" href="/guides/git-providers" />
+</Cards>

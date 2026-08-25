@@ -1,0 +1,55 @@
+---
+title: Instance-admin operations
+description: Queries and mutations gated on instance admin rather than a team capability, users, Docker cleanup, and the panel's own address.
+---
+
+Some queries and mutations require **instance admin** (global), not a team
+capability.
+
+## Users and accounts
+
+Managing all users, minting registration links, the per-user admin editor.
+
+## Docker cleanup
+
+One instance-wide policy over hosts every team shares: `dockerCleanupPolicy`,
+`dockerCleanupRuns`, `updateDockerCleanupPolicy`, `setServerCleanupExcluded`,
+`runDockerCleanupNow`.
+
+## Instance settings and the panel's own address
+
+`instanceSettings`, `setPanelUrl`, `panelAddressImpact`, `panelHttps`,
+`setPanelHttps`, `serverCertificateAccounts`, `setCertificateEmail`. The
+panel publishes *itself* through its host's proxy, so both the address it
+answers on and the Let's Encrypt account its proxy issues certificates
+under are settings, not install-time facts.
+
+- `setPanelUrl` moves the panel's route with the address, and puts the old
+  one back if the new address does not answer.
+- `setPanelHttps(enabled: false)` serves the panel over plain HTTP, for an
+  address that cannot get a certificate yet, where HTTPS would just mean a
+  browser warning on a page nobody has logged into. Turning it off moves
+  the route, the stored address and the session cookie together, a
+  `__Secure-` cookie is one a browser will not send over HTTP.
+- On a Deplo installed before it published its own route, the first
+  change adopts that route instead of requiring a re-install.
+- `instanceSettings.panelIpUrl` is the address every instance also
+  answers on, straight on its own machine: not a setting, cannot be
+  turned off, and the way back in when a domain, a certificate or a
+  proxy is what broke.
+
+<Callout type="warn">
+  Both moves are destructive in ways a text field does not show: passkeys
+  welded to the current hostname, live sessions, deploy hooks already
+  pasted into someone's CI, connected AI clients. `panelAddressImpact(url)`
+  counts what a given address would cost, and the UI puts those numbers in
+  front of the change.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="Authorization" description="The capability model for everything else" href="/api-reference/authorization" />
+  <Card title="Certificates" description="A host's own TLS certificates" href="/api-reference/domains-and-tls/certificates" />
+  <Card title="Instance administration" description="The dashboard view of these surfaces" href="/operations/instance-administration" />
+</Cards>

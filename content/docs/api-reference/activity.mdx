@@ -1,0 +1,15 @@
+---
+title: Activity
+description: The `activity` query, a read-only trail of who did what.
+---
+
+`activity` is the single query behind the team's activity trail, gated on
+`view_activity`. It is read-only: nothing in this API writes to it
+directly, every mutation that changes state is what populates a row.
+
+## See also
+
+<Cards>
+  <Card title="Authorization" description="The full capability list" href="/api-reference/authorization" />
+  <Card title="Activity" description="The same trail, in the dashboard" href="/guides/team/activity" />
+</Cards>

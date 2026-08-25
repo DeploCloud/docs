@@ -1,0 +1,28 @@
+---
+title: Database console and logs
+description: Open a shell into a database container and read its live output.
+---
+
+The queries and mutation behind a database's Console tab, the same live
+access the dashboard uses, no SSH.
+
+- `databaseConsoleInfo` returns what a client needs to open a console for
+  one database.
+- `databaseShellLabel` names the shell command the console runs (it
+  differs by engine, `psql` for Postgres, `mongosh` for MongoDB, and so
+  on).
+- `execDatabaseConsole` is the mutation that actually runs a command in
+  that console.
+- `databaseLogsInfo` returns what a client needs to open the live log
+  stream for one database.
+
+Opening a console is gated on `open_database_console`, see
+[Authorization](/api-reference/authorization).
+
+## See also
+
+<Cards>
+  <Card title="Databases" description="Read, create and update" href="/api-reference/databases" />
+  <Card title="Database operations" description="Restart, redeploy, rebuild, resize and rotate credentials" href="/api-reference/databases/operations" />
+  <Card title="REST and MCP" description="The transports that stay outside GraphQL" href="/api-reference/rest-and-mcp" />
+</Cards>

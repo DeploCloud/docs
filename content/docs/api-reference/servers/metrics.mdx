@@ -1,0 +1,21 @@
+---
+title: Metrics
+description: Live and historical resource usage for servers, apps and databases, and the switch that turns history on.
+---
+
+`serverMetrics` reads live CPU, memory, disk and network for one server.
+`appMetrics(appId)` and `databaseMetrics(databaseId)` read the same live
+numbers per container, what the dashboard's Monitoring tab shows. Each has a
+`*MetricsHistory` counterpart that seeds the same view with a short rolling
+history instead of just the current sample.
+
+`setSaveMetrics` is the instance-wide "Save metrics" switch: turning it off
+stops history from accumulating for every server, app and database at once.
+Needs `manage_monitoring`.
+
+## See also
+
+<Cards>
+  <Card title="Servers" description="Registering and managing fleet machines" href="/api-reference/servers" />
+  <Card title="Authorization" description="The capability model" href="/api-reference/authorization" />
+</Cards>

@@ -1,0 +1,44 @@
+---
+title: Databases
+description: Read, create and update a managed database, and track its state as it changes.
+---
+
+A managed Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse instance,
+provisioned and versioned the same way an app is.
+
+## Queries
+
+- `databases` lists them, and takes an optional `q` search argument that
+  keeps only the ones whose name, slug or id contains it.
+- `database(id)` reads one.
+- `databaseRuntime(databaseId)` reads its live runtime state (image, ports,
+  resource usage).
+
+<Callout type="info" title="search(q) is not scoped to the active team">
+  Like `apps`, the `q` argument on `databases` answers across every team the
+  caller can reach, each hit carrying the team it lives in. It is a loop
+  over the ordinary per-team read, so a team the caller cannot enter right
+  now (unmet two-factor policy, a token scoped elsewhere) contributes
+  nothing. At most 50 results.
+</Callout>
+
+## Mutations
+
+- `createDatabase` provisions a new instance.
+- `updateDatabase` changes its settings (name, version, and the fields that
+  do not require a rebuild).
+
+## Subscriptions
+
+`databaseStatus(id)` is a Server-Sent Events stream: it emits the entity on
+every state change, an initial snapshot then live updates, so a client
+tracks provisioning, start, stop and redeploy with no polling.
+
+## See also
+
+<Cards>
+  <Card title="Database operations" description="Restart, redeploy, rebuild, resize and rotate credentials" href="/api-reference/databases/operations" />
+  <Card title="Console and logs" description="Open a shell and read live output" href="/api-reference/databases/console-and-logs" />
+  <Card title="Servers" description="Server metrics, including per-database resource usage" href="/api-reference/servers/metrics" />
+  <Card title="Authorization" description="The capability model that gates these operations" href="/api-reference/authorization" />
+</Cards>

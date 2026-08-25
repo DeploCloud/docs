@@ -1,0 +1,60 @@
+---
+title: Installers reference
+description: The three shell scripts, what each one does, and every flag.
+---
+
+import { Rocket, Server, ShieldCheck, Trash2 } from "lucide-react";
+
+Deplo has no standalone CLI binary. These three shell scripts,
+[`install.sh`](/reference/installers/install),
+[`install-agent.sh`](/reference/installers/install-agent) and
+[`uninstall.sh`](/reference/installers/uninstall), are the closest thing
+to one.
+
+---
+
+## Verifying before you pipe to a shell
+
+Every one of these is a `curl | bash`. If that makes you uneasy, and it
+reasonably might, download and read first:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh -o install.sh
+less install.sh
+sudo bash install.sh
+```
+
+The agent installer is worth reading for a different reason: it is where
+the checksum verification lives, and seeing it refuse an unverified binary
+is more convincing than being told it does.
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<Rocket className="text-blue-400" />}
+    title="Installation"
+    description="The install.sh walkthrough"
+    href="/getting-started/install"
+  />
+  <Card
+    icon={<Server className="text-blue-400" />}
+    title="Add a server"
+    description="Running install-agent.sh from the dashboard"
+    href="/guides/server/add-a-server"
+  />
+  <Card
+    icon={<ShieldCheck className="text-blue-400" />}
+    title="Server roles"
+    description="Storage-only, build-only, migration source"
+    href="/advanced/server-roles"
+  />
+  <Card
+    icon={<Trash2 className="text-blue-400" />}
+    title="Remove or uninstall"
+    description="Choosing the right uninstall.sh flags"
+    href="/operations/remove-a-server-or-uninstall"
+  />
+</Cards>

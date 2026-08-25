@@ -1,0 +1,57 @@
+---
+title: Apps
+description: Read the app catalogue, its deployment history, and detected framework.
+---
+
+The read side of an app: the catalogue, its deployments and the framework
+Deplo detected for it.
+
+## Queries
+
+`apps` lists the caller's apps, `app(slug)` reads one. Both take an optional
+`q`, which keeps only apps whose name, slug or id contains it (case and
+separators ignored).
+
+`deployments` reads deployment history directly; the same list is also
+navigable from the entity, `App.deployments` and `App.latestDeployment`.
+
+`App.framework` names the JavaScript framework Deplo detected for the app,
+re-derived on every deploy. Before an app exists, the same detection runs as
+`detectRepoFramework(repo, buildMethod, ...)`, which is what the new-app
+wizard shows while you pick a repository.
+
+<Callout type="info" title="search(q) is not scoped to the active team">
+  It answers with the apps and databases matching `q` in every team the
+  caller can reach, each hit carrying the team it lives in, so a client that
+  has an app's name but not its team can find it and then work there, with
+  `X-Deplo-Team` for an API token, or the `team` argument of an MCP tool
+  call. It is a loop over the ordinary per-team reads, so a team the caller
+  cannot enter right now (an unmet two-factor policy, a token scoped
+  elsewhere) simply contributes nothing. At most 50 of each kind.
+</Callout>
+
+## Example
+
+List apps with their latest deployment:
+
+```graphql
+query {
+  apps {
+    name
+    status
+    latestDeployment {
+      status
+      createdAt
+      commitMessage
+    }
+  }
+}
+```
+
+## See also
+
+<Cards>
+  <Card title="Deploying and rollbacks" description="createApp, redeploy, rollbackDeployment and stopApp" href="/api-reference/apps/deploying-and-rollbacks" />
+  <Card title="Deploy hook" description="The REST endpoint a webhook sender can call" href="/api-reference/apps/deploy-hook" />
+  <Card title="Databases" description="The same catalogue/search shape for databases" href="/api-reference/databases" />
+</Cards>

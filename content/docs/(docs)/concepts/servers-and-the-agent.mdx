@@ -1,0 +1,200 @@
+---
+title: Servers and agents
+description: What a server is, how it joins the fleet, and what it can be for.
+---
+
+import { PlusCircle, Settings, ListTree, Trash2, LifeBuoy } from "lucide-react";
+import { ServerJoinIllustration } from "@/components/illustrations/server-join-illustration";
+
+A **server** is a machine you own that Deplo can deploy to. It becomes one
+by running a small Go program, the **server agent**, which is the only
+thing in the entire system that runs Docker.
+
+Servers are instance-wide, not team-owned. One server can serve several
+teams, and one team can spread across several servers.
+
+---
+
+## How a server joins
+
+The control plane never connects to your machine. Your machine connects to
+it.
+
+<div className="not-prose mx-auto w-full max-w-sm rounded-xl border border-fd-border bg-fd-card p-6">
+  <ServerJoinIllustration className="h-auto w-full" />
+</div>
+
+<Steps>
+<Step>
+### Ask for an install command
+
+In **Settings -> Servers** you click **Add server** and Deplo prints an
+install command containing a **one-time bootstrap token**.
+</Step>
+<Step>
+### Run it on the server
+
+You paste that command on the server. It downloads the agent binary,
+verifies its SHA-256 (a mismatch is a hard refusal, not a warning),
+installs it as a systemd unit and starts it.
+</Step>
+<Step>
+### The agent requests a certificate
+
+The agent generates its own private key, sends a certificate signing
+request and calls home with the token.
+</Step>
+<Step>
+### The control plane signs and pins
+
+The control plane is a private certificate authority, derived from
+`DEPLO_SECRET`. It signs the certificate and **pins the fingerprint**.
+</Step>
+<Step>
+### Online
+
+The server flips to online.
+</Step>
+</Steps>
+
+The token is single-use, stored only as a hash, and expires in about an
+hour. Over HTTPS the agent also pins the control plane by certificate
+fingerprint; over a bare-IP install with no TLS, the token authenticates
+the response instead.
+
+From then on the two talk over gRPC with mutual TLS on port **9443**.
+
+---
+
+## What a server can be for
+
+The role is chosen when you install it, and it changes what gets set up:
+Everything, Build only, Backups only, or the migration-only role created by
+the Dokploy import wizard. See [Server roles](/advanced/server-roles) for
+the full comparison and what each one changes on the host.
+
+---
+
+## Health is not readiness
+
+Two different questions, two different answers, and it is worth keeping
+them apart because the interface does.
+
+**Health** answers "can we reach and trust this agent right now?". It is
+an observation from the last handshake, stamped with when it was taken.
+Five values:
+
+<TypeTable
+  type={{
+    provisioning: {
+      description: "No agent has called home yet. Never dialled, never demoted",
+      type: "string",
+    },
+    online: {
+      description: "The handshake answered and Docker is reachable",
+      type: "string",
+    },
+    warning: {
+      description: "The agent is up and trusted, but Docker is not answering, so nothing can deploy there",
+      type: "string",
+    },
+    error: {
+      description: "Something answered, but its agent is wrong: untrusted certificate, unsupported contract, or an application error",
+      type: "string",
+    },
+    offline: {
+      description: "Nothing answered, confirmed by a retry",
+      type: "string",
+    },
+  }}
+/>
+
+<Callout type="info" title="The stored value is a cache, not a gate">
+Past a staleness window the Servers page shows **Unknown** rather than a
+confident stale green, and nothing in the deploy path consults it. A
+deploy gates on a live handshake taken at that moment.
+</Callout>
+
+**Readiness** answers a different question: "is this host's installation
+complete enough to deploy apps to?". It is a live report, run from the
+server's menu, never stored, and nothing gates on it either. Rows are
+grouped as agent, docker, routing, capacity, build methods and Deplo
+configuration, and each row is `pass`, `info`, `warn`, `fail` or `skip`.
+**`skip` means it could not be evaluated**, which is deliberately
+different from a pass.
+
+---
+
+## The Deplo host is a server too
+
+The machine running the control plane enrolls itself during installation
+and appears in the list like any other. Deploying to it uses the same
+network path, the same certificates and the same code as deploying to a
+machine on another continent. There is no local shortcut, which is why
+the everyday path is also the well-tested one.
+
+The one thing it cannot do is remove itself from the fleet.
+
+---
+
+## Removing a server is trust revocation
+
+Removing a server **clears the pinned certificate** so Deplo will never
+talk to it again. It does not reach into the host and uninstall anything,
+because by that point it may not be able to.
+
+Deplo prints a one-line uninstall command for you to run on the machine if
+you want the agent, its Traefik and its state directory gone. The only
+exception is a migration source, which Deplo does uninstall itself from
+once you are done with it.
+
+---
+
+## Two behaviours worth knowing
+
+**Deploy concurrency.** Each server has a slot count, default `1`, so
+deploys to one machine serialize. Other servers keep working in parallel,
+and two deploys of the same app never overlap regardless.
+
+**Pending teardowns.** If Deplo tells a host to destroy a stack and the
+host does not confirm, the instruction is kept and retried on a backoff
+ladder from one minute up to a day, eight times. Giving up writes an
+activity entry and raises an alert, so an orphaned container is never
+silently left behind.
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<PlusCircle className="text-blue-400" />}
+    title="Add a server"
+    description="The procedure"
+    href="/guides/server/add-a-server"
+  />
+  <Card
+    icon={<Settings className="text-blue-400" />}
+    title="Server settings"
+    description="Access, cleanup, maintenance"
+    href="/guides/server"
+  />
+  <Card
+    icon={<ListTree className="text-blue-400" />}
+    title="Server roles"
+    description="Everything, build, storage, migration source"
+    href="/advanced/server-roles"
+  />
+  <Card
+    icon={<Trash2 className="text-blue-400" />}
+    title="Remove or uninstall"
+    description="The host-side script"
+    href="/operations/remove-a-server-or-uninstall"
+  />
+  <Card
+    icon={<LifeBuoy className="text-blue-400" />}
+    title="Servers and agents troubleshooting"
+    description="When enrollment or health goes wrong"
+    href="/troubleshooting/servers-and-agents"
+  />
+</Cards>

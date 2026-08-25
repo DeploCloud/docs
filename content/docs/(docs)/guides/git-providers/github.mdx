@@ -1,0 +1,60 @@
+---
+title: GitHub
+description: Connect Deplo as a GitHub App, through GitHub's own manifest flow.
+---
+
+**GitHub** connects as a **GitHub App**, created through GitHub's manifest
+flow: you click, you approve on GitHub, and Deplo receives the credentials
+directly. There is no client id or private key to copy. The App is
+installed on the accounts and organisations that hold your repositories,
+and mints short-lived tokens to list and clone them.
+
+## Connect it
+
+<Steps>
+<Step>
+
+### Start the connection
+
+**Settings -> Git**, then **Connect**.
+
+</Step>
+<Step>
+
+### Choose account or organization
+
+Choose **Personal account** or **Connect an organization**.
+
+</Step>
+<Step>
+
+### Approve and pick repositories
+
+Approve on GitHub and pick which repositories the App may see.
+
+</Step>
+</Steps>
+
+**Manage** takes you back to GitHub to change that selection later.
+
+If you plan to use [pull request previews](/guides/networking/pull-request-previews),
+the App needs to see pull requests. When it cannot, Deplo shows **This
+App cannot see pull requests yet** with an **Update on GitHub** button.
+
+## If it does not work
+
+- **The repository list is empty**: the GitHub App has no access. Use
+  **Manage** and grant it there.
+- **`Authentication failed` in a clone**: the token expired or was
+  revoked. **Test connection** confirms it.
+- **"This App cannot see pull requests yet"**: the GitHub App lacks the
+  pull request permission. Use **Update on GitHub** on that notice.
+
+## See also
+
+<Cards>
+  <Card title="Git providers" description="GitHub App vs. git connection" href="/guides/git-providers" />
+  <Card title="GitLab" description="Self-hosted or gitlab.com" href="/guides/git-providers/gitlab" />
+  <Card title="Bitbucket" description="Cloud or self-hosted" href="/guides/git-providers/bitbucket" />
+  <Card title="Gitea" description="Self-hosted, Forgejo included" href="/guides/git-providers/gitea" />
+</Cards>

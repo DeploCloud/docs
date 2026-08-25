@@ -1,0 +1,38 @@
+---
+title: Networking
+description: How traffic reaches an app, your own hostnames over HTTPS, and a URL per pull request.
+---
+
+import { Globe, GitPullRequest } from "lucide-react";
+
+Everything about the addresses an app answers on, from a permanent
+production hostname to a throwaway one for a single pull request.
+
+---
+
+## How it works
+
+Every hostname Deplo serves, permanent or temporary, goes through the same
+router: a rule bound to a container, a certificate resolver when HTTPS is
+asked for, and a DNS check that decides whether the hostname is actually
+routed yet.
+
+- **[Domains and HTTPS](/guides/networking/domains-and-https)** covers the
+  permanent case: your own hostnames, certificates, path-based routing and
+  redirects.
+- **[Pull request previews](/guides/networking/pull-request-previews)**
+  covers the temporary case: a deterministic URL per open pull request,
+  torn down when it closes.
+
+A preview's hostname follows the same HTTPS rule as a manual domain,
+Let's Encrypt when a real domain is behind it, plain HTTP on `nip.io` when
+there is none.
+
+---
+
+## See also
+
+<Cards>
+  <Card icon={<Globe className="text-blue-400" />} title="Domains and HTTPS" description="Hostnames, certificates, path routing" href="/guides/networking/domains-and-https" />
+  <Card icon={<GitPullRequest className="text-blue-400" />} title="Pull request previews" description="A URL per pull request" href="/guides/networking/pull-request-previews" />
+</Cards>

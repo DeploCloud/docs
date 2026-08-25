@@ -1,0 +1,42 @@
+---
+title: Projects and environments
+description: The containers that hold your apps and databases, and the environments inside them.
+---
+
+A project groups related apps and databases together. An environment is a
+named slice inside a project (production, staging, whatever you call it),
+the boundary environment variables and previews respect.
+
+## Queries
+
+```graphql
+projects
+environments(projectId: ID!)
+```
+
+`projects` lists the containers the caller's team can see. `environments`
+lists the environments inside one project.
+
+## Mutations
+
+```graphql
+createProject
+createEnvironment
+```
+
+`createProject` makes a new project. `createEnvironment` adds an
+environment to an existing project.
+
+<Callout type="info" title="Folders have capabilities but no named operations yet">
+  The capability model already has `create_folders`, `organize_folders` and
+  `delete_folders` (see [Capabilities](/reference/capabilities)), but no
+  folder query or mutation is documented here yet, folders are managed from
+  the dashboard for now.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="Apps" description="Create and deploy an app inside a project" href="/api-reference/apps" />
+  <Card title="Environment variables" description="Scoped per environment" href="/api-reference/environment-variables" />
+</Cards>

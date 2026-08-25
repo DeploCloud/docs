@@ -1,0 +1,32 @@
+---
+title: Data
+description: Databases, scheduled backups and the volumes that keep an app's writes across a redeploy.
+---
+
+import { Terminal, Gauge, LifeBuoy } from "lucide-react";
+
+Anything on a disk: a managed **[database](/guides/data/databases)**, a
+scheduled **[backup](/guides/data/backups-and-restore)** of one, and the
+**[persistent storage](/guides/data/persistent-storage)** an app mounts to
+keep its own writes across a redeploy.
+
+---
+
+## How it works
+
+A database is provisioned like an app and joins the same `deplo` network, so it is reachable by name and its connection string never changes. A volume is Deplo-managed disk space an app or database keeps across every redeploy; a bind mount reaches an existing server folder instead. A backup is a scheduled, encrypted copy of a database or an app, sent to a destination you control, on S3 or on another server's disk.
+
+<Callout type="warn" title="An app's backup schedule does not cover its database">
+Databases and apps are backed up separately, on separate schedules. It is the
+single most common surprise across the three pages here.
+</Callout>
+
+---
+
+## See also
+
+<Cards>
+  <Card icon={<Terminal className="text-blue-400" />} title="Console and files" description="Browse what is actually on the volume" href="/guides/observability/console-and-files" />
+  <Card icon={<Gauge className="text-blue-400" />} title="Resource limits" description="CPU and memory for a database container" href="/advanced/resource-limits" />
+  <Card icon={<LifeBuoy className="text-blue-400" />} title="Disaster recovery" description="The whole picture, including the control plane itself" href="/operations/disaster-recovery" />
+</Cards>
