@@ -4,7 +4,6 @@ description: The configuration your app reads from its environment, encrypted, l
 ---
 
 import { Share2, Database, GitPullRequest, ShieldCheck } from "lucide-react";
-import { EnvLayersIllustration } from "@/components/illustrations/env-layers-illustration";
 
 ---
 
@@ -20,10 +19,6 @@ Four layers stack, and the deploy folds them together in this order, lowest
 priority first: **instance-wide variables** (set by an instance admin, every
 team, every app), then **the app's own variables**, then **a shared
 variable** the app has linked, then **a preview override** (previews only).
-
-<div className="not-prose w-full rounded-xl border border-fd-border bg-fd-card p-6">
-  <EnvLayersIllustration className="h-auto w-full" />
-</div>
 
 A name defined twice takes the value from the highest layer that defines it.
 

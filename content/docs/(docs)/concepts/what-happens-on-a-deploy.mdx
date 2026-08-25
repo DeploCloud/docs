@@ -4,7 +4,6 @@ description: The full trace of one deploy, from trigger to a container serving t
 ---
 
 import { Hammer, Zap, RotateCcw, Variable, LifeBuoy } from "lucide-react";
-import { EnvLayersIllustration } from "@/components/illustrations/env-layers-illustration";
 
 The full trace of one deploy, from the thing that triggered it to a
 container serving traffic. Reading it once makes most failure messages
@@ -103,10 +102,6 @@ variables**, then **the app's own variables**, then **a shared variable**
 the app has linked, then **a preview override** (previews only). A name
 defined on more than one layer takes the value from the highest layer that
 defines it.
-
-<div className="not-prose w-full rounded-xl border border-fd-border bg-fd-card p-6">
-  <EnvLayersIllustration className="h-auto w-full" />
-</div>
 
 Every layer carries a type. A **secret**-typed value is write-only, and a
 preview of a **fork** never receives one, whatever the settings say.

@@ -4,7 +4,6 @@ description: Run a docker-compose.yml stack on Deplo, with routing, TLS, variabl
 ---
 
 import { Lock, Layers, HardDrive, Globe } from "lucide-react";
-import { ComposeFoldIllustration } from "@/components/illustrations/compose-fold-illustration";
 
 Paste a `docker-compose.yml` and let Deplo run it: several containers, a
 network between them, whatever the vendor's README told you to run. Deplo
@@ -17,10 +16,6 @@ multi-service setups. For a single container from one image,
 ---
 
 ## How it works
-
-<div className="not-prose w-full rounded-xl border border-fd-border bg-fd-card p-6">
-  <ComposeFoldIllustration className="h-auto w-full" />
-</div>
 
 Your YAML is treated as **authored input, not a trusted document**. Deplo
 parses it, checks it, folds in what it must, and ships the result to the

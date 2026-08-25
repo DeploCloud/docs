@@ -4,7 +4,6 @@ description: Teams, capabilities, roles and the two gates every mutating action 
 ---
 
 import { UserPlus, ShieldCheck, KeyRound, Lock } from "lucide-react";
-import { TeamGatesIllustration } from "@/components/illustrations/team-gates-illustration";
 
 Deplo assumes several people share one instance and that whoever takes an
 action is not the person who owns the box. Everything is scoped to a
@@ -127,10 +126,6 @@ session, because it is a full sign-in method rather than a second step.
 ---
 
 ## The two gates
-
-<div className="not-prose w-full rounded-xl border border-fd-border bg-fd-card p-6">
-  <TeamGatesIllustration className="h-auto w-full" />
-</div>
 
 Every mutating action is checked twice, and only one of them matters.
 

@@ -4,7 +4,6 @@ description: Run a command on a schedule inside one of your containers, tracked 
 ---
 
 import { Terminal, Bell, BookOpen } from "lucide-react";
-import { CronScheduleIllustration } from "@/components/illustrations/cron-schedule-illustration";
 
 A command run on a schedule **inside** one of your containers: a nightly
 cleanup, a report at 6am, a queue worker tick, `php artisan schedule:run`.
@@ -12,10 +11,6 @@ cleanup, a report at 6am, a queue worker tick, `php artisan schedule:run`.
 ---
 
 ## How it works
-
-<div className="not-prose w-full rounded-xl border border-fd-border bg-fd-card p-6">
-  <CronScheduleIllustration className="h-auto w-full" />
-</div>
 
 The schedule is tracked by the **agent**, not by the control plane. That is
 the whole design decision: restarting the panel, upgrading Deplo or losing

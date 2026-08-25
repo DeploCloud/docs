@@ -4,7 +4,6 @@ description: Two programs, one rule, why that split explains almost everything D
 ---
 
 import { Server, Rocket, FolderTree } from "lucide-react";
-import { ControlPlaneIllustration } from "@/components/illustrations/control-plane-illustration";
 
 Deplo is two programs with one rule between them. Understanding that split
 explains almost every behavior in the product: why a deploy can fail with
@@ -15,10 +14,6 @@ not special.
 ---
 
 ## The two planes
-
-<div className="not-prose w-full rounded-xl border border-fd-border bg-fd-card p-6">
-  <ControlPlaneIllustration className="h-auto w-full" />
-</div>
 
 **The browser talks only to the control plane**, over gRPC with mutual TLS
 and a pinned certificate. **The control plane never talks to a server

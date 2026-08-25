@@ -75,14 +75,6 @@ meet most:
   }}
 />
 
-Three names from the old coarse model, `deploy`, `manage_infra` and
-`manage_files`, are still **accepted** on input (marked deprecated in the
-schema): each expands to exactly the permissions it used to imply, so an
-existing script keeps working unchanged. They are never returned. The
-other five old names (`view`, `manage_domains`, `manage_env`,
-`manage_members`, `manage_team`) survived the split as capabilities in
-their own right and mean exactly themselves.
-
 Some operations are gated on **instance admin** (global) instead of a
 team capability: user management, Docker cleanup, the panel's own
 address, and a host's own TLS certificates.
