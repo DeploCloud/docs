@@ -7,6 +7,7 @@ full: true
 
 import { GitBranch, Globe, Database, Archive, SlidersHorizontal, Users, Server, Coins, UploadCloud, Terminal, LayoutTemplate, Link2, Cpu, Bot, Route } from "lucide-react";
 import Image from "next/image";
+import { basePath } from "@/lib/base-path";
 
 <div className="not-prose grid grid-cols-1 items-center gap-10 pt-4 pb-16 lg:grid-cols-[2fr_3fr] lg:gap-16">
   <div className="flex flex-col gap-6">
@@ -42,7 +43,7 @@ import Image from "next/image";
       className="absolute -inset-x-12 -top-16 -bottom-24 -z-10 bg-gradient-to-b from-purple-600/50 via-blue-600/30 to-transparent blur-3xl"
     />
     <Image
-      src="/deplo_screenshot.png"
+      src={`${basePath}/deplo_screenshot.png`}
       alt="The Deplo dashboard"
       width={2400}
       height={1406}
