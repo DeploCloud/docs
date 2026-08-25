@@ -33,8 +33,22 @@ suggestions, they are the bar every doc page is reviewed against.
     config keys)
   - `Accordions` / `Accordion` for optional or grouped content, FAQ-style
   - `Cards` / `Card` for outbound links at the end of a page ("See also")
-  Don't force a component where a plain paragraph or a normal markdown table already reads
-  fine.
+    Don't force a component where a plain paragraph or a normal markdown table already reads
+    fine.
 - **Show every Node package manager.** Any example that runs a Node command (`install`,
   `run dev`, etc.) gets a `Tabs` with bun, pnpm and npm variants, not just one.
 - **Hyphen only, never an em dash or en dash**, in any doc content (same rule as chat).
+
+## Comments and commits
+
+Code comments are few and short, **hard cap about 3 lines per block**. No file-header essays,
+no design narratives. Where a page already explains something, one link replaces the
+paragraph: `// https://deplo.build/docs/<section>/<page>`. Pragmas, `@ts-expect-error` and
+`eslint-disable` are code and stay untouched.
+
+Commits are [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
+`type(scope): imperative lowercase summary`. **Title 50 characters or fewer, no trailing
+period.** Body only when the why does not fit the title, 2-3 lines at most. Commit straight to
+`main`; never create a branch.
+
+**Never name a competitor** in a comment, a string, or page content.
