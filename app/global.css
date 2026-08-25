@@ -39,6 +39,19 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Radix (the Ctrl+K search dialog) measures window vs. document width to
+   compensate for the scrollbar it hides on open, and injects margin/padding
+   on body[data-scroll-locked] for that. scrollbar-gutter above already keeps
+   that width stable permanently, so Radix's own compensation would double up
+   and shift the page again on open. Neutralize it, the gutter already covers it. */
+/* higher specificity than Radix's own `body[data-scroll-locked]` rule is
+   required: its <style> tag is injected at runtime (after this stylesheet),
+   so on equal specificity it would win the cascade by source order alone */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
 body {
   overflow-x: hidden;
 }
