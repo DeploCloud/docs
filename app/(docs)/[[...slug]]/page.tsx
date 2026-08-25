@@ -15,7 +15,7 @@ import { BetaChip } from "@/components/beta-chip";
 const BETA_PAGES = new Set([
   "/advanced/mcp-server",
   "/advanced/build-servers",
-  "/guides/cron-jobs",
+  "/guides/observability/cron-jobs",
   "/guides/move-from-dokploy",
 ]);
 

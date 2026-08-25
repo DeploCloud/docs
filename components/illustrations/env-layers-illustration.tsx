@@ -3,7 +3,7 @@ import type { SVGProps } from "react";
 /**
  * The four variable layers, lowest priority at the bottom, the one
  * that wins drawn in fd-primary. Static. Shared by
- * concepts/what-happens-on-a-deploy.mdx and guides/environment-variables.mdx,
+ * concepts/what-happens-on-a-deploy.mdx and guides/config/environment-variables.mdx,
  * which draw the exact same ASCII diagram today.
  */
 export function EnvLayersIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
