@@ -18,26 +18,6 @@ use to reach tools.
 
 ---
 
-## How it works
-
-The endpoint is `/api/mcp` on your own instance. It exposes **78 tools**,
-one per action. Each tool is a GraphQL document that runs **in-process
-against the same schema** a browser session uses.
-
-That is the whole security design: an agent goes through **the same
-authorization code a person goes through**. There is no parallel permission
-system to keep in sync, and no place for a check to be forgotten.
-
-Two switches guard it:
-
-- **A team switch**, off by default for a new team, deciding whether agents
-  may drive this team at all.
-- **A token**, because MCP has no credential of its own. An agent
-  authenticates with an ordinary [API token](/advanced/api-tokens-and-oauth),
-  and **what it may do is that token's capabilities, nothing more**.
-
----
-
 ## Connect an agent
 
 <Steps>
@@ -94,6 +74,26 @@ A web agent such as claude.ai or chatgpt.com does not take a pasted token.
 It goes through the [OAuth consent screen](/advanced/api-tokens-and-oauth)
 instead, which mints an ordinary token after you approve it.
 </Callout>
+
+---
+
+## How it works
+
+The endpoint is `/api/mcp` on your own instance. It exposes **78 tools**,
+one per action. Each tool is a GraphQL document that runs **in-process
+against the same schema** a browser session uses.
+
+That is the whole security design: an agent goes through **the same
+authorization code a person goes through**. There is no parallel permission
+system to keep in sync, and no place for a check to be forgotten.
+
+Two switches guard it:
+
+- **A team switch**, off by default for a new team, deciding whether agents
+  may drive this team at all.
+- **A token**, because MCP has no credential of its own. An agent
+  authenticates with an ordinary [API token](/advanced/api-tokens-and-oauth),
+  and **what it may do is that token's capabilities, nothing more**.
 
 ---
 

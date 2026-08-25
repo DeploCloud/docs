@@ -3,7 +3,6 @@
   "icon": "Sparkles",
   "pages": [
     "compose-apps",
-    "mcp-server",
     "api-tokens-and-oauth",
     "build-servers",
     "server-roles",

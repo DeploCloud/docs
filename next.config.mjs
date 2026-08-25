@@ -47,6 +47,7 @@ const config = {
       { source: "/guides/server-settings", destination: "/guides/server", permanent: false },
       { source: "/guides/container-registries", destination: "/guides/server/container-registries", permanent: false },
       { source: "/api-reference/queries-and-mutations", destination: "/api-reference/apps", permanent: false },
+      { source: "/advanced/mcp-server", destination: "/guides/mcp-server", permanent: false },
     ];
   },
 };
