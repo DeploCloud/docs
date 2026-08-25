@@ -1,5 +1,0 @@
-{
-  "title": "Webhooks",
-  "icon": "Webhook",
-  "pages": ["list-webhooks", "create-webhook", "delete-webhook"]
-}

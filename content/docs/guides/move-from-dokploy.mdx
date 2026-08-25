@@ -1,0 +1,189 @@
+---
+title: Move from Dokploy
+description: A wizard that reads an existing Dokploy installation over its API and recreates it in Deplo, with the data copied across.
+icon: ArrowLeftRight
+---
+
+import { Layers, ServerCog, Globe } from "lucide-react";
+
+<Callout type="info">Beta.</Callout>
+
+A wizard that reads an existing Dokploy installation over its API and
+recreates it here: projects, apps, domains, environment variables, volumes
+and databases, with the data copied across.
+
+**Settings -> Migrations**, which needs `create_projects`.
+
+## How it works
+
+Deplo does not scrape files or ask you for SSH. It talks to the source
+panel's API for the configuration, and for the data it puts an agent on
+the source machine.
+
+That agent is installed in a fourth, deliberately minimal server role: a
+**migration source**. It is out of every deploy picker and every build
+picker, never a backup destination, never swept by cleanup, absent from
+monitoring and from the fleet count, and granted to one team only. It is
+also the **only** server Deplo will uninstall itself from when you are
+done.
+
+Volumes are copied by the agent standing on the disk that holds them,
+relayed through the control plane, because agents cannot dial each other.
+
+## Run a migration
+
+<Steps>
+<Step>
+
+### Open the migrate tab
+
+Open **Settings -> Migrations**, the **Migrate** tab.
+
+</Step>
+<Step>
+
+### Install the agent on the source
+
+**Install the agent** on the source machine. The wizard prints the
+command, and if you are not an instance admin it tells you to ask one. It
+waits, and shows **Waiting for the agent** until the machine calls home.
+
+</Step>
+<Step>
+
+### Enter the source credentials
+
+Enter the **Panel address** and the **API key** of the source
+installation.
+
+</Step>
+<Step>
+
+### Let Deplo scan it
+
+Deplo scans and shows you the tree: every project, app and database it
+found.
+
+</Step>
+<Step>
+
+### Choose what comes over
+
+Choose what comes over. Per item you can set:
+
+- whether to include it
+- **Expose publicly** and a **Host port**, where that applies
+- **Build only**
+- **Deplo host**, which server it lands on
+
+</Step>
+<Step>
+
+### Handle the people
+
+The **People** step offers to create registration links for the users on
+the source, so you can hand them out.
+
+</Step>
+<Step>
+
+### Review and pick a team
+
+Review. Everything lands in one team: the current one, or **Create a new
+team**.
+
+</Step>
+<Step>
+
+### Move it over
+
+Click **Move it over**. A live console shows the progress.
+
+</Step>
+<Step>
+
+### Read the report
+
+Read **View report** at the end. It is copyable, and it lists everything
+that did not come across cleanly.
+
+</Step>
+</Steps>
+
+## After it lands
+
+Two clean-up actions, and they are different:
+
+- **Remove what came over** deletes what the migration created here, if
+  you want to start again.
+- **Remove from Deplo** takes the migration source out of the fleet.
+  Deplo uninstalls its own agent from that machine first, and warns you
+  with **Agent still installed** if it could not.
+
+The **History** tab keeps every past run with its report, and **Use this
+address** re-fills the connection details for another pass.
+
+## What changes on the way across
+
+- **Throwaway hostnames get re-hosted.** A source app served on a
+  generated `*.sslip.io`, `*.traefik.me` or `*.nip.io` name has the **old
+  server's IP** baked into it, so that name would keep pointing at the
+  old machine. Deplo mints its own equivalent, keeps the same route, and
+  the app's **Domains** section tells you which address became which.
+  Real domains you own come across as they are, and you repoint DNS when
+  you are ready.
+- **Imported basic-auth credentials are flagged.** They never went
+  through Deplo's password policy or the breach check.
+- **Anything needing a permission you do not hold lands in the report
+  instead.** Authored Compose is treated as hostile here exactly as it is
+  everywhere else: host bind mounts, `privileged`, published ports and
+  foreign networks or volumes each need their grant.
+- **An app still being created refuses every action** and draws as
+  pending until its run finishes.
+
+<Callout type="warn" title="Limits and gotchas">
+- **Cut DNS over yourself, when you are ready.** The migration does not
+  touch your registrar.
+- **Copying data takes as long as the data is big.** Volumes stream host
+  to host through the control plane.
+- **Run it twice and you get it twice.** There is no reconciliation: this
+  is a move, not a sync.
+- **Check the report, always.** A migration that says "done" with twelve
+  lines in the report has twelve things waiting for you.
+- **Uninstall the migration source afterwards.** It is a live agent on a
+  machine you are about to decommission.
+</Callout>
+
+<Callout type="error" title="If it does not work">
+- **The scan finds nothing**: wrong panel address, or the API key lacks
+  access. Dokploy keys are scoped per organisation.
+- **Stuck on Waiting for the agent**: the install command has not run on
+  the source, or that machine cannot reach this one.
+- **A volume arrives empty**: the report will say so. Re-run just that
+  item rather than the whole migration.
+
+See [Servers and agents](/troubleshooting/servers-and-agents) for more.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card
+    icon={<Layers className="text-blue-400" />}
+    title="Server roles"
+    description="What a migration source is, and is not"
+    href="/advanced/server-roles"
+  />
+  <Card
+    icon={<ServerCog className="text-blue-400" />}
+    title="Add a server"
+    description="Enrollment and the bootstrap command"
+    href="/guides/add-a-server"
+  />
+  <Card
+    icon={<Globe className="text-blue-400" />}
+    title="Domains and HTTPS"
+    description="Repointing DNS after a migration"
+    href="/guides/domains-and-https"
+  />
+</Cards>

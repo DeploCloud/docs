@@ -1,62 +1,89 @@
 ---
-title: Introduction
-description: What Deplo is, and where to start.
-icon: House
+title: Deplo
+description: Push a repo, pick a server, get a deployment, on your own infrastructure.
+icon: Rocket
 ---
 
-import { Rocket, Layers, BookOpen, Plug, Terminal } from "lucide-react";
+import { Rocket, Compass, BookOpen, Sparkles, Server, Library, LifeBuoy } from "lucide-react";
 
-Deplo is a ridiculously good alternative to traditional cloud providers.
-Connect a repository, and Deplo builds, deploys, and scales it for you, no
-servers to configure and no YAML to write.
+Deplo runs your apps on servers you own, and does the operations work for you: push a repo, pick a server, get a deployment, on your own infrastructure.
+
+You give it a repository, a Docker image or a Compose file. It builds the code, starts the containers, points a hostname at them, gets the TLS certificate, keeps the logs, takes the backups and restarts what dies. The comparison is Vercel, Railway or Render, except the machine is yours and the bill is your hosting bill.
 
 <Callout type="idea" title="New here?">
-  Start with the [Quickstart](/getting-started/quickstart): your first
-  deployment takes less than 5 minutes.
+  Start with [Install Deplo](/getting-started/install): one command on a fresh server, and you have somewhere to deploy.
 </Callout>
 
-## Explore the docs
+## Why Deplo
+
+You should not have to learn Docker or SSH to deploy your own app. The big clouds figured out this experience years ago: push, and it's live, with someone else doing the operations. Deplo is that experience on hardware you own and a bill you control.
+
+- **A VPS and a domain is enough.** The platform does the operator's job: builds, routing, TLS, databases, backups, monitoring, rollbacks.
+- **No per-seat pricing, no build minutes, no vendor lock-in.** You pay your host, not Deplo.
+- **The shell is an escape hatch, never a requirement.** It stays available for experts, and you get full value without ever opening it.
+- **Deploy from anything.** A Git repo, a registry image, a Dockerfile, a Compose file, or a plain upload.
+- **One-click templates**, teams with fine-grained capabilities, and any number of servers.
+- **Every pull request gets its own preview URL**, and a rollback is instant, no rebuild.
+- **Backups go where you already have storage.** An S3 bucket, or another server's disk you own.
+- **A free working URL from the first deploy**, before you own a domain.
+
+## How it works
+
+Deplo is two programs and one rule: the control plane decides, the agent executes, and only the agent ever touches Docker.
+
+```
+Browser -> Deplo control plane -> deplo-agent on each server -> Traefik + your containers
+```
+
+- **The control plane decides.** It renders the Compose file and the routing, resolves secrets, and never touches Docker or a host directly.
+- **The server agent executes.** One Go binary per host, the only thing that runs Docker anywhere, reached over mutual TLS.
+- **Traefik routes and issues the certificates. Postgres remembers**, the single source of truth.
+
+The box running Deplo itself is just another server in the fleet, no special shortcut.
+
+## Where to go next
 
 <Cards>
   <Card
     icon={<Rocket className="text-blue-400" />}
     title="Getting Started"
-    description="Install the CLI and ship your first deployment"
-    href="/getting-started/quickstart"
+    description="Install Deplo and deploy your first app."
+    href="/getting-started/install"
   />
   <Card
-    icon={<Layers className="text-violet-400" />}
-    title="Core Concepts"
-    description="Deployments, environments, builds, and domains"
-    href="/core-concepts/deployments"
+    icon={<Compass className="text-purple-400" />}
+    title="Concepts"
+    description="How Deplo works, under the hood."
+    href="/concepts/how-deplo-works"
   />
   <Card
-    icon={<BookOpen className="text-emerald-400" />}
-    title="Framework Guides"
-    description="Next.js, Astro, Vite, and Docker walkthroughs"
-    href="/guides/nextjs"
+    icon={<BookOpen className="text-green-400" />}
+    title="Guides"
+    description="Deploy from Git, and every day-to-day task."
+    href="/guides/deploy-from-git"
   />
   <Card
-    icon={<Plug className="text-amber-400" />}
-    title="Integrations"
-    description="GitHub, environment variables, webhooks, databases"
-    href="/integrations/github"
+    icon={<Sparkles className="text-amber-400" />}
+    title="Advanced"
+    description="Compose apps, build servers, custom certificates."
+    href="/advanced/compose-apps"
   />
   <Card
-    icon={<Terminal className="text-rose-400" />}
-    title="CLI Reference"
-    description="Every command and config key, in one place"
-    href="/cli/overview"
+    icon={<Server className="text-cyan-400" />}
+    title="Operations"
+    description="Upgrade, back up and administer your instance."
+    href="/operations/upgrade"
+  />
+  <Card
+    icon={<Library className="text-pink-400" />}
+    title="Reference"
+    description="Glossary, environment variables, the API."
+    href="/reference/glossary"
+  />
+  <Card
+    icon={<LifeBuoy className="text-red-400" />}
+    title="Troubleshooting"
+    description="Fix deploys, domains, servers and access."
+    href="/troubleshooting"
   />
 </Cards>
-
-## Why Deplo
-
-- **Zero config**: Deplo detects your framework and builds it correctly, every time.
-- **Preview by default**: every branch and pull request gets its own URL.
-- **Instant rollback**: any previous deployment can become production again in seconds.
-
-<Callout type="info">
-  Deplo is currently in public beta. Some features described in these docs
-  may change before the stable release.
-</Callout>

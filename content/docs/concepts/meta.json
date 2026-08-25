@@ -1,0 +1,11 @@
+{
+  "title": "Concepts",
+  "icon": "Compass",
+  "pages": [
+    "how-deplo-works",
+    "apps-projects-and-environments",
+    "servers-and-the-agent",
+    "teams-and-capabilities",
+    "what-happens-on-a-deploy"
+  ]
+}

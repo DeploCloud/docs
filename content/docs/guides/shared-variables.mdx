@@ -1,0 +1,125 @@
+---
+title: Shared variables
+description: One variable, owned by the team, that several apps can link to and use.
+icon: Share2
+---
+
+import { SlidersHorizontal, FolderTree } from "lucide-react";
+
+## What it is
+
+One variable, owned by the team, that several apps can use. Change it once and every app that uses it gets the new value on its next deploy.
+
+Typical cases: an API key three services all call, an S3 bucket name, a `SENTRY_DSN`.
+
+## How it works
+
+A shared variable has two independent parts, and confusing them is the single most common mistake here.
+
+**Availability scopes say who it is offered to.** A scope is a suggestion. There are three, and a variable can carry several:
+
+| Scope | Suggested to |
+| --- | --- |
+| **The whole team** | Every app in the team |
+| **Projects** | Every app inside the chosen projects |
+| **Environments** | Every app living in the chosen environments |
+| **Specific apps** | Exactly the apps you pick |
+
+<Callout type="info">
+**The per-app link is what actually injects it.** Until an app links the variable, the value reaches nothing, whatever its scopes say.
+
+That is deliberate. A variable that appeared in every app the moment somebody ticked "the whole team" would make a shared secret a footgun, and would make "why does this app have that value" unanswerable.
+</Callout>
+
+At deploy time a linked shared variable folds **above** the app's own variable of the same name, and below a preview override.
+
+## Create one
+
+<Steps>
+<Step>
+
+### Open the Shared tab
+
+Open **Variables** in the sidebar, then the **Shared** tab.
+
+</Step>
+<Step>
+
+### Add one
+
+Click the button to add one and give it a name and a value.
+
+</Step>
+<Step>
+
+### Pick the type
+
+Pick **Plain** or **Secret**. The same rules apply as anywhere else: a secret is write-only and immutable.
+
+</Step>
+<Step>
+
+### Set availability
+
+Choose at least one availability scope, or pick specific apps. One of the two is required.
+
+</Step>
+</Steps>
+
+## Use one in an app
+
+<Steps>
+<Step>
+
+### Open Environment
+
+Open the app, then **Environment**.
+
+</Step>
+<Step>
+
+### Link it
+
+The shared variables offered to this app are listed as such. Link the one you want.
+
+</Step>
+<Step>
+
+### Redeploy
+
+Redeploy.
+
+</Step>
+</Steps>
+
+A linked row in an app shows two different removals, and they mean very different things:
+
+| Action | Effect |
+| --- | --- |
+| **Remove from this app** | Unlinks it here. The variable and every other app keep it |
+| **Delete everywhere** | Deletes the variable for the whole team |
+
+<Callout type="warn" title="Limits and gotchas">
+- **Scope is not injection.** Worth repeating: the link is the only mechanism.
+- **The app's own variable loses to a linked shared one** of the same name. If an app needs its own value, unlink the shared one rather than fighting it.
+- **Shared variables belong to the team**, so an app transferred to another team leaves them behind.
+- **Deleting one affects every app that links it**, on their next deploy. The dialog says how many.
+- **Secrets follow the same fork rule**: a preview of a fork never receives a secret-typed shared value.
+</Callout>
+
+## If it does not work
+
+- **The app does not see the value** - it is scoped but not linked. Link it on the app's **Environment** tab.
+- **The value changed and the app still has the old one** - it applies on the next deploy. Redeploy.
+- **A different value than expected** - the app defines the same name itself, or a preview override does.
+
+<Callout type="info">
+More in [Deploys and builds](/troubleshooting/deploys-and-builds).
+</Callout>
+
+## See also
+
+<Cards>
+  <Card icon={<SlidersHorizontal className="text-blue-400" />} title="Environment variables" description="The four layers and their order" href="/guides/environment-variables" />
+  <Card icon={<FolderTree className="text-blue-400" />} title="Apps, projects and environments" description="What a scope refers to" href="/concepts/apps-projects-and-environments" />
+</Cards>

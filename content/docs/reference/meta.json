@@ -1,0 +1,12 @@
+{
+  "title": "Reference",
+  "icon": "Library",
+  "pages": [
+    "glossary",
+    "capabilities",
+    "environment-variables",
+    "installers",
+    "ports-networks-and-files",
+    "api"
+  ]
+}

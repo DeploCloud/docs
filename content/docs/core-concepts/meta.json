@@ -1,5 +1,0 @@
-{
-  "title": "Core Concepts",
-  "icon": "Layers",
-  "pages": ["deployments", "environments", "build-system", "custom-domains"]
-}

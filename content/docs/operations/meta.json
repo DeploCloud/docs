@@ -1,0 +1,11 @@
+{
+  "title": "Operations",
+  "icon": "Server",
+  "pages": [
+    "upgrade",
+    "disaster-recovery",
+    "instance-administration",
+    "panel-address-and-certificates",
+    "remove-a-server-or-uninstall"
+  ]
+}

@@ -1,0 +1,192 @@
+---
+title: Remove a server, or uninstall
+description: Taking a machine out of the fleet, removing the agent, and removing Deplo itself are three different acts.
+icon: ServerOff
+---
+
+import { Terminal, Server, Layers, ShieldAlert } from "lucide-react";
+
+## What it is
+
+Taking a machine out of the fleet, removing Deplo's agent from that machine, and removing Deplo itself from the machine it runs on.
+
+Three different acts, on purpose.
+
+## How it works
+
+**Removing a server in Deplo is trust revocation.** The pinned certificate is cleared, and the control plane will never talk to that machine again. It does **not** reach in and uninstall anything, because at the moment you most need to remove a server, it is usually not answering.
+
+**Uninstalling is a command you run on the host.** Deplo prints it for you.
+
+<Callout type="info">
+The one exception is a [migration source](/advanced/server-roles), which
+Deplo does uninstall itself from, because that role exists precisely to be
+temporary.
+</Callout>
+
+## Remove a server from Deplo
+
+<Steps>
+<Step>
+### Move or delete anything still running there
+Removal does not do this for you.
+</Step>
+
+<Step>
+### Open the server's Advanced tab
+**Settings -> Servers**, choose the server, then **Advanced**.
+</Step>
+
+<Step>
+### Remove the server
+Click **Remove server** in the danger zone.
+</Step>
+
+<Step>
+### Copy the uninstall command
+It's printed for you, if you want the host cleaned.
+</Step>
+</Steps>
+
+<Callout type="warn">
+The machine running the control plane cannot remove itself.
+</Callout>
+
+Any pending teardowns for that server are dropped with it, so Deplo stops retrying instructions nobody can carry out.
+
+## Uninstall the agent from a host
+
+One script does both jobs: `uninstall.sh`. `--agent-only` is what keeps it to the agent, and it is already in the command the dashboard prints for you.
+
+<Callout type="info">
+The script is a **dry run by default**. Running it with no flags prints
+exactly what it would do and changes nothing.
+</Callout>
+
+```bash
+# See what would happen
+curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --agent-only
+
+# Do it
+curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --agent-only
+
+# Do it, and delete the data too
+curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --agent-only --purge-data
+```
+
+| Without `--purge-data` | With `--purge-data` |
+| --- | --- |
+| The systemd unit and the binary | Everything on the left, plus |
+| Containers labelled as Deplo-managed | app and database **volumes** |
+| Deplo's Traefik on that host | images Deplo built |
+| The `deplo` network | the stacks directory |
+| `/var/lib/deplo-agent` | |
+
+It never touches Docker Engine itself, and never touches a container Deplo did not label. It is safe on a machine that was never a Deplo host, and safe to run twice.
+
+<Callout type="warn" title="/var/lib/deplo-agent holds your issued certificates">
+Removing it takes Traefik's `acme.json`, and your certificates, with it.
+Let's Encrypt rate-limits reissuance, so if you plan to reinstall on the
+same host and the same domains, copy that file first.
+</Callout>
+
+## Uninstall Deplo itself
+
+Same script, without `--agent-only`. It removes the control plane in `/opt/deplo` as well: the panel, its Postgres, its Traefik, the agent on that machine, and every container Deplo deployed there.
+
+```bash
+# See what would happen
+curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash
+
+# Do it, keeping every volume and /opt/deplo
+curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes
+
+# Do it, and delete the data with it
+curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --purge-data
+
+# And the backups stored on this machine
+curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --purge-data --purge-backups
+```
+
+Order matters, and the script handles it: the panel and its Postgres stop **before** Traefik and the `deplo` network go away under them.
+
+<Callout type="warn" title="--purge-data deletes DEPLO_SECRET">
+It deletes `/opt/deplo/.env`, and that file holds `DEPLO_SECRET`. Every
+backup artifact this instance ever wrote is encrypted with a key derived
+from it, and there is no other copy. If you might ever want to restore any
+of it, copy that file somewhere else first.
+</Callout>
+
+`--purge-backups` is separate for the same reason: everything else on the machine can be rebuilt from a backup, and those **are** the backups.
+
+<Callout type="info">
+Moving the instance rather than ending it? Take
+[disaster recovery](/operations/disaster-recovery) first and uninstall
+second.
+</Callout>
+
+## Decommission a machine properly
+
+<Steps>
+<Step>
+### Move the apps
+To another server, or delete them.
+</Step>
+
+<Step>
+### Move or re-point any backup destination
+If one lives on this machine.
+</Step>
+
+<Step>
+### Take a final backup
+If anything there is not backed up elsewhere.
+</Step>
+
+<Step>
+### Remove the server in Deplo
+</Step>
+
+<Step>
+### Run the uninstall command on the host
+With `--purge-data` if the machine is being handed on.
+</Step>
+
+<Step>
+### Delete the machine
+At your provider.
+</Step>
+</Steps>
+
+<Callout type="info">
+For the machine running the panel, steps 4 and 5 are one command: uninstall
+without `--agent-only`.
+</Callout>
+
+## Limits and gotchas
+
+<Callout type="warn">
+- **Removing a server does not stop its containers.** They keep running, unmanaged, until somebody stops them. That is why the uninstall step exists.
+- **Apps still assigned to a removed server cannot deploy.** Move them first.
+- **Reinstalling an agent re-bootstraps from scratch.** The installer deletes the existing certificate files, so it genuinely re-enrolls against the new pin rather than half-trusting the old one.
+- **A migration source is removed with `Remove from Deplo`**, and Deplo uninstalls its own agent from that machine as part of it.
+- **The panel cannot uninstall itself.** Nothing in the dashboard removes the control plane, it is the thing doing the removing. That is what the host-side script is for.
+- **Docker Engine and `/etc/docker/daemon.json` stay.** The installer widened Docker's address pools and kept your original as `daemon.json.deplo-bak`. Putting it back needs a Docker restart, which stops every container on the machine, so the uninstaller only tells you it is there.
+</Callout>
+
+## If it does not work
+
+<Callout type="error" title="If it does not work">
+The uninstall script does nothing (it is a dry run, add `--yes`),
+containers survive an uninstall, or a removed server reappears: see
+[Servers and agents troubleshooting](/troubleshooting/servers-and-agents).
+</Callout>
+
+## See also
+
+<Cards>
+  <Card icon={<Terminal className="text-blue-400" />} title="Installers reference" description="Every flag of all three scripts" href="/reference/installers" />
+  <Card icon={<Server className="text-blue-400" />} title="Server settings" description="Health, readiness, and the servers page" href="/guides/server-settings" />
+  <Card icon={<Layers className="text-blue-400" />} title="Server roles" description="Build servers, migration sources, backups-only" href="/advanced/server-roles" />
+  <Card icon={<ShieldAlert className="text-blue-400" />} title="Disaster recovery" description="What to keep before anything breaks" href="/operations/disaster-recovery" />
+</Cards>

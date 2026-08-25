@@ -1,0 +1,12 @@
+{
+  "title": "Troubleshooting",
+  "icon": "LifeBuoy",
+  "pages": [
+    "index",
+    "deploys-and-builds",
+    "domains-and-tls",
+    "servers-and-agents",
+    "databases-and-backups",
+    "sign-in-and-access"
+  ]
+}

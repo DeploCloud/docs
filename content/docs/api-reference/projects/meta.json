@@ -1,5 +1,0 @@
-{
-  "title": "Projects",
-  "icon": "Folder",
-  "pages": ["index", "list-projects", "create-project", "webhooks"]
-}

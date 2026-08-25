@@ -1,0 +1,104 @@
+---
+title: Upgrade
+description: Update the control plane and server agents, and know what changes on each side.
+icon: ArrowUpCircle
+---
+
+import { Download, Server, ShieldAlert, Settings } from "lucide-react";
+
+## What it is
+
+Moving Deplo to a newer version. Two things version independently:
+
+- The **control plane** (this panel)
+- The **server agents**, one binary per host
+
+## How it works
+
+- The control plane is a container image, `ghcr.io/deplocloud/deplo`. Upgrading it means pulling a newer tag and restarting the stack.
+- Database migrations apply themselves at boot. There's no separate migration step.
+- Agents update one server at a time, from the servers page.
+- The control plane and the agents tolerate a version gap: new capabilities are announced in the handshake, so an older agent simply doesn't offer a newer feature rather than failing.
+
+**Agent updates only ever move forward.** There is no downgrade path.
+
+## Upgrade the control plane
+
+Re-run the installer on the machine that runs it:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | bash
+```
+
+It detects the existing `/opt/deplo/.env`, switches to update mode, pulls the image, and restarts. **Secrets are never rotated.**
+
+To pin a version rather than take `latest`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | \
+  DEPLO_VERSION=0.4.1 bash
+```
+
+The panel checks for releases on its own and shows a banner when one is available, with a link to the release notes. Nothing updates itself.
+
+<Callout type="info" title="Your apps keep running throughout">
+They are containers on hosts, not part of the control plane. A panel that's
+down means you can't deploy or read logs for a minute, it does not mean your
+sites are down.
+</Callout>
+
+## Update the agents
+
+<Steps>
+<Step>
+### Open Settings -> Servers
+</Step>
+
+<Step>
+### Check for updates
+Click **Check for updates**.
+</Step>
+
+<Step>
+### Update each server that's behind
+Click **Update agent** on it.
+</Step>
+</Steps>
+
+Sensible order, especially on a fleet:
+
+1. One canary server that runs something you can afford to break.
+2. Watch it: readiness, a deploy, logs streaming.
+3. The rest.
+4. The machine running Deplo itself, last. If an agent update goes wrong there, you want the panel already proven on the new version.
+
+<Callout type="warn">
+Don't update an agent while a deploy is in flight on that host.
+</Callout>
+
+## Limits and gotchas
+
+<Callout type="warn">
+- **Agents cannot be downgraded.** Test on a canary.
+- **Some features need a newer agent.** When one is missing, Deplo says so rather than silently doing something else.
+- **Re-running the installer is safe and idempotent.** It's the intended update path, not a workaround.
+- **Read the release notes for a minor bump.** During `0.x`, minor means something you notice: a feature, changed behavior, a database migration, or a newer agent required.
+- **Back up before a big jump.** Migrations apply at boot and aren't reversed by rolling the image back.
+</Callout>
+
+## If it does not work
+
+<Callout type="error" title="If it does not work">
+Panel that won't come back after an upgrade, an image that won't pull, or an
+agent update that fails: see
+[Servers and agents troubleshooting](/troubleshooting/servers-and-agents).
+</Callout>
+
+## See also
+
+<Cards>
+  <Card icon={<Download className="text-blue-400" />} title="Install Deplo" description="First-run setup on a fresh machine" href="/getting-started/install" />
+  <Card icon={<Server className="text-blue-400" />} title="Server settings" description="Health, readiness, and the servers page" href="/guides/server-settings" />
+  <Card icon={<ShieldAlert className="text-blue-400" />} title="Disaster recovery" description="What to keep before anything breaks" href="/operations/disaster-recovery" />
+  <Card icon={<Settings className="text-blue-400" />} title="Instance administration" description="Instance-wide settings and users" href="/operations/instance-administration" />
+</Cards>

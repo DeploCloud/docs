@@ -1,0 +1,14 @@
+{
+  "title": "Advanced",
+  "icon": "Sparkles",
+  "pages": [
+    "compose-apps",
+    "mcp-server",
+    "api-tokens-and-oauth",
+    "build-servers",
+    "server-roles",
+    "resource-limits",
+    "host-access-and-privileges",
+    "custom-certificates"
+  ]
+}

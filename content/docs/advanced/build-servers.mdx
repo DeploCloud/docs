@@ -1,0 +1,106 @@
+---
+title: Build servers
+description: Build the image on a dedicated host and ship it to the server that will run it.
+icon: Hammer
+---
+
+import { Tags, Hammer } from "lucide-react";
+
+**Beta.**
+
+## What it is
+
+Compiling on one machine and running on another. The image is built on a
+dedicated host and shipped to the server that will serve traffic.
+
+Use it when builds are starving production of CPU, or when several small
+servers would rather share one big builder.
+
+## How it works
+
+A build server is a server installed in the **Build only** role: it gets
+Docker and the address-pool setup, because it runs the full build pipeline,
+but **no Traefik**, and it drops out of every deploy-target picker. Nothing
+is ever routed to it.
+
+At deploy time the builder produces the image, and the image is relayed to
+the target host **through the control plane**, because agents cannot dial
+each other. The deploy occupies a slot in the **builder's** queue, since
+that is where the cost is.
+
+Build logs still belong to the app. Read them where you always do.
+
+## Set one up
+
+<Steps>
+<Step>
+
+### Install a Build only server
+
+See [Add a server](/guides/add-a-server).
+
+</Step>
+<Step>
+
+### Open build settings
+
+Open the app, then **Settings -> Deployments -> Advanced settings**.
+
+</Step>
+<Step>
+
+### Set where it builds
+
+- **Automatic** lets Deplo choose
+- This app's own server
+- A named build server
+
+</Step>
+<Step>
+
+### Keep the fallback on
+
+So a build still happens if the builder is unreachable.
+
+</Step>
+<Step>
+
+### Save and redeploy
+
+</Step>
+</Steps>
+
+<Callout type="warn" title="Limits and gotchas">
+- **Both machines need the same CPU architecture.** An `arm64` builder
+  cannot produce an `amd64` image. Mismatched choices are shown but
+  disabled.
+- **A Compose app cannot use one.** There is no single image to build and
+  move.
+- **The image crosses the network twice**, once to the control plane and
+  once out again. Cheap on a fast local network, can cost more than it
+  saves over a slow link.
+- **The build cache lives on the builder.** Moving an app to a different
+  builder starts cold.
+- **A build-only server is not a deploy target**, and never will be.
+</Callout>
+
+## If it does not work
+
+- **The builder does not appear in the list** - it is not in the Build
+  only role, or its architecture does not match the target.
+- **Builds fall back to the app's own server** - the builder was
+  unreachable and the fallback did its job. Check that server's health.
+- **Deploys queue behind each other** - they share the builder's
+  concurrency. Raise it in that server's **Overview** if the machine can
+  take it.
+
+<Callout type="info">
+More in [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
+</Callout>
+
+## See also
+
+<Cards>
+  <Card icon={<Tags className="text-blue-400" />} title="Server roles" description="Everything, Build only, Backups only, Migration source" href="/advanced/server-roles" />
+  <Card icon={<Hammer className="text-blue-400" />} title="Build settings" description="Where and how an app builds" href="/guides/build-settings" />
+</Cards>

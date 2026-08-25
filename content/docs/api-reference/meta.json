@@ -1,5 +1,0 @@
-{
-  "title": "API Reference",
-  "icon": "Braces",
-  "pages": ["index", "deployments", "projects", "domains", "errors"]
-}
