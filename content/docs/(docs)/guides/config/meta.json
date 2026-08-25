@@ -1,4 +1,4 @@
 {
   "title": "Config",
-  "pages": ["index", "environment-variables", "shared-variables"]
+  "pages": ["environment-variables", "shared-variables"]
 }

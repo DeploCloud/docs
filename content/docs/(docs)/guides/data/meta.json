@@ -1,4 +1,4 @@
 {
   "title": "Data",
-  "pages": ["index", "databases", "backups-and-restore", "persistent-storage"]
+  "pages": ["databases", "backups-and-restore", "persistent-storage"]
 }

@@ -1,4 +1,4 @@
 {
   "title": "Deploy",
-  "pages": ["index", "from-git", "docker-image", "from-template", "upload-code"]
+  "pages": ["from-git", "docker-image", "from-template", "upload-code"]
 }

@@ -1,4 +1,4 @@
 {
   "title": "Apps",
-  "pages": ["index", "deploying-and-rollbacks", "deploy-hook"]
+  "pages": ["deploying-and-rollbacks", "deploy-hook"]
 }

@@ -1,4 +1,4 @@
 {
   "title": "Team",
-  "pages": ["index", "members", "activity", "account-security"]
+  "pages": ["members", "activity", "account-security"]
 }

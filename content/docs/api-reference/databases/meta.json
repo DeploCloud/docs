@@ -1,4 +1,4 @@
 {
   "title": "Databases",
-  "pages": ["index", "operations", "console-and-logs"]
+  "pages": ["operations", "console-and-logs"]
 }

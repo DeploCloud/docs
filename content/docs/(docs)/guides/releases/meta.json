@@ -1,4 +1,4 @@
 {
   "title": "Releases",
-  "pages": ["index", "build-settings", "automatic-deployments", "rollbacks"]
+  "pages": ["build-settings", "automatic-deployments", "rollbacks"]
 }
