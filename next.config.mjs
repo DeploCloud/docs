@@ -10,6 +10,14 @@ const basePath = process.env.NEXT_BASE_PATH || "";
 const config = {
   reactStrictMode: true,
   ...(basePath ? { basePath } : {}),
+  async rewrites() {
+    return [
+      // :path* doesn't cleanly match the empty (root page) case when glued
+      // directly to a literal suffix, so the root gets its own explicit rule
+      { source: "/index.mdx", destination: "/llms.mdx" },
+      { source: "/:path*.mdx", destination: "/llms.mdx/:path*" },
+    ];
+  },
 };
 
 export default withMDX(config);
