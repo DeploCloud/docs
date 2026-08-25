@@ -12,7 +12,7 @@ const funnelDisplay = Funnel_Display({
 const funnelSans = Funnel_Sans({
   variable: "--font-funnel-sans",
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["300"],
 });
 
 export const metadata: Metadata = {
