@@ -2,13 +2,14 @@ import Image from "next/image";
 import { Heart } from "lucide-react";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { SidebarMenu } from "@/components/sidebar-menu";
+import { basePath } from "@/lib/base-path";
 
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
       title: (
         <>
-          <Image src="/logo.svg" alt="Deplo" width={72} height={22} priority />
+          <Image src={`${basePath}/logo.svg`} alt="Deplo" width={72} height={22} priority />
         </>
       ),
       children: <SidebarMenu />,
