@@ -61,6 +61,17 @@ Traefik never gets the Docker socket: it reads container events through a `docke
 
 ---
 
+## What you need
+
+| What             | Requirement                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| A server         | Linux, `x86-64` or `arm64`, and root access for the length of one install command. Docker is installed for you if it is missing. |
+| Ports            | `80` and `443` reachable from the internet, `3000` for the dashboard, `9443` on every server you add later.                      |
+| A domain         | Optional. Useful, not required: the generated `nip.io` hostname works from the first deploy.                                     |
+| Docker knowledge | None. It is available as an escape hatch, never as a prerequisite.                                                              |
+
+---
+
 ## Create your account
 
 Open the dashboard. A fresh install starts completely empty, and the first visit opens the setup screen, **Welcome to Deplo**. It runs once: a workspace name, a username (lowercase letters, numbers, `-` and `_`), a display name, an admin email and a password, checked for length and character mix and against the Have I Been Pwned breach list. Click **Create workspace** to finish. That account is the **instance owner**: the tier above instance admin, and the only one that can hand the instance to somebody else later.

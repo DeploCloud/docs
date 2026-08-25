@@ -20,8 +20,10 @@ suggestions, they are the bar every doc page is reviewed against.
   paragraphs, more concrete examples (real commands, real values, real snippets) than prose.
 - **Stay inside Deplo's mission.** Self-hosted, no SSH required on the happy path, no Docker
   socket exposed, the control plane never touches a host directly. Never invent a feature
-  that doesn't exist in the product. If you're unsure whether something is real, check
-  `docs/` in the `DeploCloud/deplo` repo before writing about it, don't guess.
+  that doesn't exist in the product. If you're unsure whether something is real, check the
+  `DeploCloud/deplo` repo before writing about it - `CONTEXT.md` for the vocabulary,
+  `AGENTS.md` for the architecture, `docs/adr/` for the decisions, the code for the rest.
+  This repo is the only place the manual lives; that one has no user docs to read.
 - **Use the available Fumadocs components** (all pre-registered in `mdx-components.tsx`, no
   import needed except icons for `Card`):
   - `Callout` for a tip, warning, or note
