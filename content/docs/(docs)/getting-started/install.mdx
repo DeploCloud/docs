@@ -65,7 +65,7 @@ Neither Traefik nor the control plane ever gets the Docker socket. See [How Depl
 
 | What             | Requirement                                                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| A server         | Linux, `x86-64` or `arm64`, and root access for the length of one install command. Docker is installed for you if it is missing. |
+| A server         | Ubuntu 24.04, Debian, or any other modern Linux distro, `x86-64` or `arm64`, and root access for the length of one install command. Docker is installed for you if it is missing. |
 | Ports            | `80` and `443` reachable from the internet, `3000` for the dashboard, `9443` on every server you add later.                      |
 | A domain         | Optional. Useful, not required: the generated `nip.io` hostname works from the first deploy.                                     |
 | Docker knowledge | None. It is available as an escape hatch, never as a prerequisite.                                                              |
