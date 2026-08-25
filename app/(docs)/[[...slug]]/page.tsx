@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { DocsPage, DocsBody, DocsDescription, DocsTitle } from "fumadocs-ui/page";
+import { DocsPage, DocsBody, DocsDescription, DocsTitle, EditOnGitHub } from "fumadocs-ui/page";
 import { getMDXComponents } from "@/mdx-components";
 import { source } from "@/lib/source";
 import { PageFeedback } from "@/components/page-feedback";
@@ -12,21 +12,13 @@ export default async function Page(props: PageProps<"/[[...slug]]">) {
   const MDXContent = page.data.body;
 
   return (
-    <DocsPage
-      toc={page.data.toc}
-      full={page.data.full}
-      editOnGithub={{
-        owner: "DeploCloud",
-        repo: "docs",
-        sha: "main",
-        path: `content/docs/${page.path}`,
-      }}
-    >
+    <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
         <MDXContent components={getMDXComponents()} />
       </DocsBody>
+      <EditOnGitHub href={`https://github.com/DeploCloud/docs/edit/main/content/docs/${page.path}`} />
       <PageFeedback />
     </DocsPage>
   );

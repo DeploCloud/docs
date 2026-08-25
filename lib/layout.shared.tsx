@@ -1,17 +1,12 @@
-import Image from "next/image";
 import { Heart } from "lucide-react";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { SidebarMenu } from "@/components/sidebar-menu";
-import { basePath } from "@/lib/base-path";
+import { NavTitle } from "@/components/nav-title";
 
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
-      title: (
-        <>
-          <Image src={`${basePath}/logo.svg`} alt="Deplo" width={72} height={22} priority />
-        </>
-      ),
+      title: NavTitle,
       children: <SidebarMenu />,
     },
     githubUrl: "https://github.com/DeploCloud/deplo",
