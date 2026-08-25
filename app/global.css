@@ -35,8 +35,8 @@
   --color-fd-idea: #facc15;
 
   /* the one deliberate break from monochrome: inline links stay recognizable
-     as links (light blue) instead of blending into bold white text */
-  --color-fd-link: #7dd3fc;
+     as links (blue) instead of blending into bold white text */
+  --color-fd-link: #0ea5e9;
 }
 
 /* fumadocs-ui's own .prose rule redeclares --tw-prose-links locally, which
