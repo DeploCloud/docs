@@ -1,0 +1,52 @@
+---
+title: List deployments
+description: "GET /v1/deployments"
+---
+
+```
+GET /v1/deployments
+```
+
+## Query parameters
+
+<TypeTable
+  type={{
+    projectId: { description: "Filter by project", type: "string", default: "none" },
+    branch: { description: "Filter by branch name", type: "string", default: "none" },
+    limit: { description: "Max results per page", type: "number", default: "20" },
+  }}
+/>
+
+<Tabs items={['cURL', 'JavaScript']}>
+<Tab value="cURL">
+
+```bash
+curl "https://api.deplo.cloud/v1/deployments?projectId=prj_4b91aa" \
+  -H "Authorization: Bearer $DEPLO_API_KEY"
+```
+
+</Tab>
+<Tab value="JavaScript">
+
+```js
+const res = await fetch(
+  "https://api.deplo.cloud/v1/deployments?projectId=prj_4b91aa",
+  { headers: { Authorization: `Bearer ${process.env.DEPLO_API_KEY}` } },
+);
+const { data } = await res.json();
+```
+
+</Tab>
+</Tabs>
+
+## Response
+
+```json
+{
+  "data": [
+    { "id": "dep_8f2a1c", "status": "ready", "production": true },
+    { "id": "dep_1a9cd0", "status": "building", "production": false }
+  ],
+  "nextCursor": "dep_1a9cd0"
+}
+```

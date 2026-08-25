@@ -1,0 +1,44 @@
+---
+title: Introduction
+description: Authentication, base URL, and rate limits for the Deplo API.
+---
+
+The Deplo API is a REST API. All requests and responses use JSON.
+
+## Base URL
+
+```
+https://api.deplo.cloud/v1
+```
+
+## Authentication
+
+<Callout type="warning" title="Keep your API key secret">
+  Requests are authenticated with a bearer token in the `Authorization`
+  header. Never expose an API key in client-side code.
+</Callout>
+
+```bash
+curl https://api.deplo.cloud/v1/deployments \
+  -H "Authorization: Bearer $DEPLO_API_KEY"
+```
+
+## Rate limits
+
+<TypeTable
+  type={{
+    "Free plan": {
+      description: "requests per minute, per API key",
+      type: "60",
+    },
+    "Pro plan": {
+      description: "requests per minute, per API key",
+      type: "600",
+    },
+  }}
+/>
+
+<Callout type="info">
+  Every response includes `X-RateLimit-Remaining` and `X-RateLimit-Reset`
+  headers. See [Errors](/api-reference/errors) for the `429` response shape.
+</Callout>

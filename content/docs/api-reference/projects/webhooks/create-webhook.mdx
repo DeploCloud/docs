@@ -1,0 +1,27 @@
+---
+title: Create a webhook
+description: "POST /v1/projects/:id/webhooks"
+---
+
+```
+POST /v1/projects/:id/webhooks
+```
+
+<TypeTable
+  type={{
+    url: { description: "HTTPS endpoint to receive events", type: "string" },
+    events: { description: "Array of event names to subscribe to", type: "string[]" },
+  }}
+/>
+
+```bash
+curl -X POST https://api.deplo.cloud/v1/projects/prj_4b91aa/webhooks \
+  -H "Authorization: Bearer $DEPLO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://example.com/hooks/deplo", "events": ["deployment.ready"] }'
+```
+
+<Callout type="info">
+  The response includes a `secret` field once, at creation time, used to
+  verify the `X-Deplo-Signature` header on incoming events.
+</Callout>

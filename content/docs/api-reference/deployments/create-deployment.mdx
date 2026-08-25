@@ -1,0 +1,31 @@
+---
+title: Create a deployment
+description: "POST /v1/deployments"
+---
+
+```
+POST /v1/deployments
+```
+
+## Body parameters
+
+<TypeTable
+  type={{
+    projectId: { description: "Project to deploy", type: "string" },
+    branch: { description: "Branch to build from", type: "string", default: "main" },
+    production: { description: "Deploy straight to production", type: "boolean", default: "false" },
+  }}
+/>
+
+```bash
+curl -X POST https://api.deplo.cloud/v1/deployments \
+  -H "Authorization: Bearer $DEPLO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "projectId": "prj_4b91aa", "branch": "main" }'
+```
+
+<Callout type="success">
+  Returns `202 Accepted` immediately with a `queued` deployment. Poll
+  [Get a deployment](/api-reference/deployments/get-deployment) or listen for
+  the `deployment.ready` [webhook](/api-reference/projects/webhooks) event.
+</Callout>

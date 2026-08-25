@@ -1,0 +1,20 @@
+---
+title: Get a deployment
+description: "GET /v1/deployments/:id"
+---
+
+```
+GET /v1/deployments/:id
+```
+
+```bash
+curl https://api.deplo.cloud/v1/deployments/dep_8f2a1c \
+  -H "Authorization: Bearer $DEPLO_API_KEY"
+```
+
+Returns a single [Deployment object](/api-reference/deployments).
+
+<Callout type="error" title="404">
+  Returns `deployment_not_found` if the id doesn't exist or belongs to a
+  project your API key can't access.
+</Callout>

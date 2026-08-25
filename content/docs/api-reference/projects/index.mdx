@@ -1,0 +1,24 @@
+---
+title: The Project object
+description: Fields returned on every project.
+---
+
+<TypeTable
+  type={{
+    id: { description: "Unique identifier, e.g. prj_4b91aa", type: "string" },
+    name: { description: "Project name", type: "string" },
+    framework: { description: "Detected framework preset", type: "string" },
+    repository: { description: "Connected GitHub repository, owner/name", type: "string" },
+    createdAt: { description: "ISO 8601 timestamp", type: "string" },
+  }}
+/>
+
+```json
+{
+  "id": "prj_4b91aa",
+  "name": "marketing-site",
+  "framework": "nextjs",
+  "repository": "DeploCloud/marketing-site",
+  "createdAt": "2026-06-01T09:00:00Z"
+}
+```

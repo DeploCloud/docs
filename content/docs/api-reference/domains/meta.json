@@ -1,0 +1,5 @@
+{
+  "title": "Domains",
+  "icon": "Globe",
+  "pages": ["index", "list-domains", "verify-domain"]
+}

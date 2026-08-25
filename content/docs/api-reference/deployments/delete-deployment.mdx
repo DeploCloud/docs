@@ -1,0 +1,20 @@
+---
+title: Delete a deployment
+description: "DELETE /v1/deployments/:id"
+---
+
+```
+DELETE /v1/deployments/:id
+```
+
+```bash
+curl -X DELETE https://api.deplo.cloud/v1/deployments/dep_8f2a1c \
+  -H "Authorization: Bearer $DEPLO_API_KEY"
+```
+
+Returns `204 No Content` on success.
+
+<Callout type="warning" title="Production deployments">
+  Deleting the deployment currently promoted to production takes the
+  project offline. Promote another deployment first.
+</Callout>

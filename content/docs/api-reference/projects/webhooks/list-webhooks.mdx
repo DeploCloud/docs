@@ -1,0 +1,27 @@
+---
+title: List webhooks
+description: "GET /v1/projects/:id/webhooks"
+---
+
+```
+GET /v1/projects/:id/webhooks
+```
+
+```bash
+curl https://api.deplo.cloud/v1/projects/prj_4b91aa/webhooks \
+  -H "Authorization: Bearer $DEPLO_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "id": "wh_2ea910",
+      "url": "https://example.com/hooks/deplo",
+      "events": ["deployment.ready", "deployment.failed"]
+    }
+  ]
+}
+```
+
+See [Webhooks](/integrations/webhooks) for the full event payload reference.
