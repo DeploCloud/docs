@@ -92,6 +92,16 @@ Edit the file later in **Settings -> Deployments**.
 | **Storage names a service** | Every storage row says which service to mount into. A name your file does not contain is a hard error, never a silent remount. |
 | **Cron jobs name a service** | Blank means the stack's main container. |
 
+### Your file is read as you wrote it
+
+- **Anchors and merge keys work**, in both spellings: `x-common: &common`
+  with `<<: *common`, and the explicitly tagged `!!merge <<: *common` that
+  large stacks use.
+- **An `environment:` value keeps its text.** `UMASK: 022` reaches the
+  container as `022`, not as `22`, and `VERSION: 1.10` stays `1.10`. YAML
+  would read both as numbers; a variable is text by the time a container
+  reads it.
+
 ---
 
 ## Extra flags

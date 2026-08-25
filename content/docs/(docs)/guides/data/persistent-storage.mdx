@@ -133,6 +133,11 @@ The propagation choice is not cosmetic. Without `rslave`, a network share or a F
 - **A Compose service name that does not exist is a hard error**, deliberately, rather than a silent remount somewhere else.
 - **Do not put a database's data in a Bind unless you mean it.** A managed [database](/guides/data/databases) already has its own managed volume.
 - **Backups of an app include its files.** They do not include its databases.
+- **Moving to another server copies the data first, and only then tears the
+  old one down.** If a volume is not on the old server, a database move
+  stops and stays where it is - a volume that cannot be found is also what
+  a wrong volume name looks like, and the old copy is the only one there
+  is. An app move says so and carries on.
 </Callout>
 
 ---
