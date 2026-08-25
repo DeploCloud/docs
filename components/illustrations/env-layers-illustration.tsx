@@ -8,7 +8,7 @@ import type { SVGProps } from "react";
  */
 export function EnvLayersIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 200 120" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="0 -2.5 200 125" fill="none" aria-hidden className={className} {...props}>
       {/* instance-wide (lowest priority) */}
       <rect x="20" y="92" width="160" height="22" rx="6" className="fill-fd-background stroke-fd-border" strokeWidth="2" />
       {/* the app's own variables */}

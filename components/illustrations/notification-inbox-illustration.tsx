@@ -8,7 +8,7 @@ import type { SVGProps } from "react";
  */
 export function NotificationInboxIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 120 120" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="-36 0 192 120" fill="none" aria-hidden className={className} {...props}>
       <circle cx="60" cy="48" r="20" className="stroke-fd-primary" strokeWidth="2" opacity="0.7" />
       <circle cx="60" cy="48" r="27" className="stroke-fd-primary" strokeWidth="2" opacity="0.45" />
       <circle cx="60" cy="48" r="34" className="stroke-fd-primary" strokeWidth="2" opacity="0.2" />

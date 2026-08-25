@@ -10,7 +10,7 @@ const TARGETS = [10, 44, 78, 112];
 
 export function ScopeGrantIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 140 120" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="-26 0 192 120" fill="none" aria-hidden className={className} {...props}>
       {TARGETS.map((x) => (
         <line key={x} x1="70" y1="26" x2={x + 10} y2="96" className="stroke-fd-primary" strokeWidth="2" />
       ))}

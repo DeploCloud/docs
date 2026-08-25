@@ -13,7 +13,7 @@ const DEPLO_MARK_PATH =
  */
 export function ServerJoinIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 220 100" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="0 -18.75 220 137.5" fill="none" aria-hidden className={className} {...props}>
       <line x1="16" y1="50" x2="140" y2="50" className="stroke-fd-border" strokeWidth="2" strokeLinecap="round" />
 
       <rect x="140" y="22" width="60" height="56" rx="8" className="fill-fd-background stroke-fd-border" strokeWidth="2" />

@@ -10,7 +10,7 @@ const DEPLO_MARK_PATH =
  */
 export function ComposeFoldIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 140 100" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="-10 0 160 100" fill="none" aria-hidden className={className} {...props}>
       <line x1="20" y1="28" x2="60" y2="64" className="stroke-fd-border" strokeWidth="2" />
       <line x1="64" y1="28" x2="68" y2="64" className="stroke-fd-border" strokeWidth="2" />
       <line x1="108" y1="28" x2="76" y2="64" className="stroke-fd-border" strokeWidth="2" />

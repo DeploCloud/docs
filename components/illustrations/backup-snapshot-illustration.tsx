@@ -6,7 +6,7 @@ import type { SVGProps } from "react";
  */
 export function BackupSnapshotIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 120 120" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="-36 0 192 120" fill="none" aria-hidden className={className} {...props}>
       <ellipse cx="60" cy="32" rx="28" ry="10" className="fill-fd-background stroke-fd-muted-foreground" strokeWidth="2" />
       <line x1="32" y1="32" x2="32" y2="78" className="stroke-fd-muted-foreground" strokeWidth="2" />
       <line x1="88" y1="32" x2="88" y2="78" className="stroke-fd-muted-foreground" strokeWidth="2" />

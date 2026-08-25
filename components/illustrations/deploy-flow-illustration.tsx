@@ -10,7 +10,7 @@ const DEPLO_MARK_PATH =
  */
 export function DeployFlowIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 240 90" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="0 -30 240 150" fill="none" aria-hidden className={className} {...props}>
       <line x1="40" y1="45" x2="190" y2="45" className="stroke-fd-border" strokeWidth="2" strokeLinecap="round" />
 
       {/* The repository. */}

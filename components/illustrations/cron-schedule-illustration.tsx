@@ -7,7 +7,7 @@ import type { SVGProps } from "react";
  */
 export function CronScheduleIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 120 120" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="-36 0 192 120" fill="none" aria-hidden className={className} {...props}>
       <circle cx="60" cy="60" r="42" className="stroke-fd-muted-foreground" strokeWidth="2.5" />
 
       <g className="stroke-fd-border" strokeWidth="2" strokeLinecap="round">

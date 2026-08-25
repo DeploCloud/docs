@@ -7,7 +7,7 @@ import type { SVGProps } from "react";
  */
 export function RecoveryArcIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 120 120" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="-36 0 192 120" fill="none" aria-hidden className={className} {...props}>
       <circle cx="60" cy="60" r="44" className="stroke-fd-border" strokeWidth="2" strokeDasharray="2 5" />
       <circle cx="60" cy="60" r="36" className="stroke-fd-success" strokeWidth="2.5" fill="none" />
     </svg>

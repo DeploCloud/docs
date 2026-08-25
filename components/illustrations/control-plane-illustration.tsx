@@ -15,15 +15,7 @@ const DEPLO_MARK_PATH =
  */
 export function ControlPlaneIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 300 160" fill="none" aria-hidden className={className} {...props}>
-      <defs>
-        <radialGradient id="plane-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="var(--color-fd-primary)" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="var(--color-fd-primary)" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="150" cy="36" rx="85" ry="26" fill="url(#plane-glow)" />
-
+    <svg viewBox="0 -13.75 300 187.5" fill="none" aria-hidden className={className} {...props}>
       {/* The fan-out. */}
       <line x1="150" y1="56" x2="48" y2="112" className="stroke-fd-border" strokeWidth="2" />
       <line x1="150" y1="56" x2="150" y2="112" className="stroke-fd-border" strokeWidth="2" />

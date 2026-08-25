@@ -8,7 +8,7 @@ import type { SVGProps } from "react";
  */
 export function AppHierarchyIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 220 130" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="0 -3.75 220 137.5" fill="none" aria-hidden className={className} {...props}>
       {/* Environment: the outer, isolated boundary. */}
       <rect x="10" y="10" width="200" height="110" rx="14" className="stroke-fd-border" strokeWidth="2" strokeDasharray="4 5" />
       {/* Project / Folder: groups the apps. */}

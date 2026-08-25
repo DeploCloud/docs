@@ -7,7 +7,7 @@ import type { SVGProps } from "react";
  */
 export function TeamGatesIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 160 80" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="0 -10 160 100" fill="none" aria-hidden className={className} {...props}>
       <line x1="10" y1="40" x2="140" y2="40" className="stroke-fd-border" strokeWidth="2" strokeLinecap="round" />
 
       {/* Gate 1: cosmetic, in the interface. */}

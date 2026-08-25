@@ -8,7 +8,7 @@ import type { SVGProps } from "react";
  */
 export function PullRequestPreviewIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 120 100" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="-20 0 160 100" fill="none" aria-hidden className={className} {...props}>
       <line x1="30" y1="12" x2="30" y2="88" className="stroke-fd-muted-foreground" strokeWidth="2.5" strokeLinecap="round" />
       <circle cx="30" cy="12" r="3.5" className="fill-fd-muted-foreground" />
 

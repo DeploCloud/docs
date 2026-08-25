@@ -5,12 +5,11 @@ import type { SVGProps } from "react";
  * the badge ring on the right always there (the domain exists), the
  * lock inside it (the certificate issued). Wired left to right so it
  * fills a rectangular frame instead of floating a lone badge in a
- * square. Static. No halo here on purpose, this set of illustrations
- * keeps its one gradient for the two hero spots.
+ * square. Static.
  */
 export function DomainCertIllustration({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 220 110" fill="none" aria-hidden className={className} {...props}>
+    <svg viewBox="0 -13.75 220 137.5" fill="none" aria-hidden className={className} {...props}>
       <line x1="76" y1="55" x2="150" y2="55" className="stroke-fd-border" strokeWidth="2" strokeLinecap="round" />
 
       {/* The hostname. */}
