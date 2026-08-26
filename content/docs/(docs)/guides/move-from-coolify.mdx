@@ -146,6 +146,10 @@ whoever should be more.
 Click **Move it over**. A live console shows the progress, and the report
 at the end lists everything that did not come across cleanly.
 
+**One migration runs at a time per team.** Starting a second one while
+the first is still going is refused by name, so a double click cannot
+create the same app twice.
+
 </Step>
 </Steps>
 
@@ -194,6 +198,12 @@ at the end lists everything that did not come across cleanly.
 - **KeyDB and Dragonfly have no engine here.** They are named in the
   report rather than quietly skipped, so you can decide what to do with
   them.
+- **A variable whose name says credential arrives as a secret.**
+  `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `SERVICE_PASSWORD_*` and their kin
+  land write-only: nobody at the `view` floor reads them, and a
+  pull-request preview of a fork never inherits them. The report lists
+  which ones, and you can set any of them back to a plain value under
+  **Variables**.
 - **Imported basic-auth credentials are flagged.** They never went through
   Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report
@@ -212,6 +222,11 @@ at the end lists everything that did not come across cleanly.
 The **History** tab keeps every past run with its report and the mark of
 the panel it read, and **Use this address** re-fills the connection
 details for another pass.
+
+**An app whose data did not come across refuses to deploy.** The report
+names it, its page says why, and it stays that way on purpose: starting
+it would run it on empty storage. Bring that data over yourself, or press
+**Deploy anyway** on the app to accept starting without it.
 
 <Callout type="warn" title="Limits and gotchas">
 - **Cut DNS over yourself, when you are ready.** The migration does not
@@ -238,8 +253,11 @@ details for another pass.
 - **Stuck on Waiting for the agent**: the install command has not run on
   that machine, or it cannot reach this one.
 - **The data step stops half way**: nothing is rolled back. Everything
-  already created here stays exactly as it is, and the report says what is
-  still missing. Fix the reason and run it again for the rest.
+  already created here stays exactly as it is, and every service whose
+  data did not arrive is named in the report and blocked from deploying.
+  A second run does not fill the gap - it finds everything already here
+  and stops. Bring the missing data over yourself, or **Remove what came
+  over** and start again.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 </Callout>

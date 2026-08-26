@@ -106,6 +106,10 @@ team**.
 
 Click **Move it over**. A live console shows the progress.
 
+**One migration runs at a time per team.** Starting a second one while
+the first is still going is refused by name, so a double click cannot
+create the same app twice.
+
 </Step>
 <Step>
 
@@ -132,6 +136,11 @@ Two clean-up actions, and they are different:
 The **History** tab keeps every past run with its report, and **Use this
 address** re-fills the connection details for another pass.
 
+**An app whose data did not come across refuses to deploy.** The report
+names it, its page says why, and it stays that way on purpose: starting
+it would run it on empty storage. Bring that data over yourself, or press
+**Deploy anyway** on the app to accept starting without it.
+
 ---
 
 ## What changes on the way across
@@ -143,6 +152,11 @@ address** re-fills the connection details for another pass.
   the app's **Domains** section tells you which address became which.
   Real domains you own come across as they are, and you repoint DNS when
   you are ready.
+- **A variable whose name says credential arrives as a secret.**
+  `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `STRIPE_KEY` and their kin land
+  write-only: nobody at the `view` floor reads them, and a pull-request
+  preview of a fork never inherits them. The report lists which ones, and
+  you can set any of them back to a plain value under **Variables**.
 - **Imported basic-auth credentials are flagged.** They never went
   through Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report
@@ -175,11 +189,14 @@ address** re-fills the connection details for another pass.
   access. Dokploy keys are scoped per organisation.
 - **Stuck on Waiting for the agent**: the install command has not run on
   the source, or that machine cannot reach this one.
-- **A volume arrives empty**: the report will say so. Re-run just that
-  item rather than the whole migration.
+- **A volume arrives empty**: the report says so, and the app it belongs
+  to refuses to deploy until you decide what to do about it.
 - **The data step stops half way**: nothing is rolled back. Everything
-  already created here stays exactly as it is, and the report says what
-  is still missing. Fix the reason and run it again for the rest.
+  already created here stays exactly as it is, and every service whose
+  data did not arrive is named in the report and blocked from deploying.
+  A second run does not fill the gap - it finds everything already here
+  and stops. Bring the missing data over yourself, or **Remove what came
+  over** and start again.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 </Callout>
