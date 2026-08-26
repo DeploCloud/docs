@@ -60,7 +60,10 @@ The exact steps, and what goes in **Registry host**, **Username** and
 <Tabs defaultValue="ghcr">
 <TabsList>
 <TabsTrigger value="ghcr">
-  <svg role="img" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+  {/* the page background is always black (Deplo has no light theme), so
+      GitHub's own dark-surface mark (white) is the true logo here, not its
+      light-surface black */}
+  <svg role="img" viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true">
     <path d={siGithub.path} />
   </svg>
   GHCR (GitHub)
