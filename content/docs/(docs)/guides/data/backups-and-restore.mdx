@@ -67,6 +67,26 @@ A failed probe is a normal result, not an error dialog. **Connection log** in th
 
 ---
 
+## Read the destinations list
+
+Opening **Storage -> Destinations** tests every destination in the team, so what you see is
+measured now, not last week. The round is rate-limited, and a destination that cannot be
+reached keeps its previous figures and turns its badge red - it never goes blank.
+
+Each destination reports how much it holds:
+
+- **A folder on a server** gets a bar: how much your backups take, how much everything else
+  on that filesystem takes, and how much is free. It turns amber past 80% used.
+- **A bucket** has no size limit, so it reports the total instead: `48.2 GB in 137 backups`.
+
+The refresh icon next to the figure re-tests that one destination.
+
+The same toolbar sits on **Destinations** and **Backups**: search, filters, and a switch
+between cards and a table. Cards show the bar and any warnings in full; the table fits more
+rows and puts the warnings on the name as icons you can hover.
+
+---
+
 ## Save the recovery key
 
 Every destination has one, and the card keeps nudging you until somebody downloads it. **Download recovery key** in the destination's menu.
@@ -184,7 +204,7 @@ Only from a **server** destination, and it is decrypted on the way out. Bucket a
 ## If it does not work
 
 - **Test connection fails on a bucket** - most often the key is read-only, or the endpoint and region do not match the bucket. Read the **Connection log**.
-- **Runs fail with no space** - the destination server's disk is full. The probe reports free space; check it there.
+- **Runs fail with no space** - the destination server's disk is full. Its card on **Storage -> Destinations** shows how full, and how much of it is your backups.
 - **Restore refuses** - the checksum did not match, or the artifact is encrypted with a key this destination does not hold. Use **Restore from file** with the recovery key.
 
 <Callout type="info">
