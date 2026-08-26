@@ -19,10 +19,16 @@ not recommended for production. Try it out and share your feedback on
 
 ## How it works
 
-One entry per registry, stored per team and encrypted. On deploy, the
-agent uses it to pull. The image autocomplete in the app wizard also
-starts including that registry, so private images become searchable
-rather than something you have to type exactly.
+One entry per registry, stored per team and encrypted. Every deploy of
+an app in that team carries the credentials to its server, which
+authenticates with them on every pull it makes:
+
+- the image an app of source **Docker image** runs,
+- every image a **Compose stack** brings up,
+- the base image a **Dockerfile** build starts `FROM`.
+
+Nothing is set per app. Connect the registry once and every private
+image from that host pulls, on every server the team deploys to.
 
 The password or token is write-only: it is never returned by the API and
 there is no reveal path.
@@ -145,7 +151,8 @@ registries, check that provider's own documentation for how to create
 one.
 
 - **Registry host**: the registry's own host.
-- **Username** and **Token**: whatever that registry issued.
+- **Username** and **Password or access token**: whatever that registry
+  issued. This is the one type where a real password is a normal answer.
 
 </Tab>
 </Tabs>
@@ -165,6 +172,8 @@ Use it by referencing the image in an app whose source is
 a Dockerfile build.
 
 <Callout type="warn" title="Limits and gotchas">
+- **The server's agent has to be recent enough** to authenticate a pull.
+  An outdated one is flagged on the **Servers** page, where you update it.
 - **Registries are per team.** Another team needs its own entry.
 - **Tokens expire.** A pull that used to work and now fails with
   `unauthorized` is almost always this.
@@ -180,8 +189,12 @@ a Dockerfile build.
   the token cannot see that repository.
 - **It works for one image and not another**: same host, different
   repository permissions on the provider's side.
-- **A self-hosted registry with a private address is refused**: only an
-  instance admin can allow a non-public endpoint.
+- **Nothing changed after connecting the registry**: the deploy that
+  failed ran before it existed. Deploy again, the credentials are read at
+  deploy time.
+- **A registry on a private address**: the server pulls from it fine, it
+  is on the same network. Only the image search box in the app form
+  cannot reach it, so type the image reference in full.
 
 See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.
 </Callout>
