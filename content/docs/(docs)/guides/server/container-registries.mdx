@@ -7,6 +7,12 @@ import { Container, Hammer, ShieldCheck } from "lucide-react";
 
 **Settings -> Registries**.
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
 ---
 
 ## How it works
@@ -18,6 +24,9 @@ rather than something you have to type exactly.
 
 The password or token is write-only: it is never returned by the API and
 there is no reveal path.
+
+The credential itself is not something Deplo issues, it is created on
+the registry provider's own site first, then pasted in here.
 
 ---
 
@@ -40,16 +49,70 @@ Pick the **Type**: `ghcr`, `dockerhub`, `gitlab` or `generic`.
 </Step>
 <Step>
 
-### Set the host
+### Create a credential on the provider, then fill in the form
 
-Fill in the **Registry host**, for example `ghcr.io`.
+Go to the provider's own site first and create a read-only credential.
+The exact steps, and what goes in **Registry host**, **Username** and
+**Token**, differ per provider:
 
-</Step>
-<Step>
+<Tabs items={['GHCR (GitHub)', 'Docker Hub', 'GitLab', 'Generic']}>
+<Tab value="GHCR (GitHub)">
 
-### Set credentials
+- **Registry host**: `ghcr.io`.
+- **Username**: your GitHub username.
+- **Token**: a GitHub personal access token with the `read:packages`
+  scope, created under GitHub's own **Settings -> Developer settings ->
+  Personal access tokens**. If the image belongs to an organization, the
+  org may also need to grant that token access under its package
+  settings.
 
-Fill in the **Username** and the token.
+See GitHub's docs on
+[authenticating to the Container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+for the exact steps.
+
+</Tab>
+<Tab value="Docker Hub">
+
+- **Registry host**: `docker.io`.
+- **Username**: your Docker Hub username.
+- **Token**: a Docker Hub access token, not your account password.
+  Create one on Docker Hub under **Account settings -> Personal access
+  tokens**, with **Read** permission.
+
+See Docker's docs on
+[personal access tokens](https://docs.docker.com/security/access-tokens/)
+for the exact steps.
+
+</Tab>
+<Tab value="GitLab">
+
+- **Registry host**: `registry.gitlab.com`, or your self-hosted
+  instance's registry host.
+- **Username**: the deploy token's username, shown by GitLab when the
+  token is created, not your account name.
+- **Token**: a GitLab deploy token with the `read_registry` scope,
+  created under the project or group's **Settings -> Repository ->
+  Deploy tokens**.
+
+See GitLab's docs on
+[deploy tokens](https://docs.gitlab.com/ee/user/project/deploy_tokens/)
+for the exact steps.
+
+</Tab>
+<Tab value="Generic">
+
+For anything else, self-hosted Harbor, a cloud provider's container
+registry, or another self-hosted registry, use whatever credential that
+registry issues for read-only pulls, for example a robot account or an
+IAM-generated token. There is no common format across self-hosted
+registries, check that provider's own documentation for how to create
+one.
+
+- **Registry host**: the registry's own host.
+- **Username** and **Token**: whatever that registry issued.
+
+</Tab>
+</Tabs>
 
 </Step>
 <Step>
