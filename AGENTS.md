@@ -38,6 +38,12 @@ suggestions, they are the bar every doc page is reviewed against.
 - **Show every Node package manager.** Any example that runs a Node command (`install`,
   `run dev`, etc.) gets a `Tabs` with bun, pnpm and npm variants, not just one.
 - **Hyphen only, never an em dash or en dash**, in any doc content (same rule as chat).
+- **Beta callout needs the title chip too.** Any page carrying the standard
+  `<Callout type="info" title="Beta">This feature is currently beta/experimental...</Callout>`
+  card must also render the `BETA` chip next to its H1. The card lives in the `.mdx` content,
+  the chip is driven separately by the `BETA_PAGES` set in
+  `app/(docs)/[[...slug]]/page.tsx`, so adding or moving a page with this callout means adding
+  or updating its URL in that set. They must never be out of sync.
 
 ## Comments and commits
 
