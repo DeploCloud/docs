@@ -4,6 +4,8 @@ description: Credentials for pulling private images, from GitHub Container Regis
 ---
 
 import { Container, Hammer, ShieldCheck } from "lucide-react";
+import { TabsList, TabsTrigger } from "fumadocs-ui/components/tabs";
+import { siGithub, siDocker, siGitlab } from "simple-icons";
 
 **Settings -> Registries**.
 
@@ -55,23 +57,54 @@ Go to the provider's own site first and create a read-only credential.
 The exact steps, and what goes in **Registry host**, **Username** and
 **Token**, differ per provider:
 
-<Tabs items={['GHCR (GitHub)', 'Docker Hub', 'GitLab', 'Generic']}>
-<Tab value="GHCR (GitHub)">
+<Tabs defaultValue="ghcr">
+<TabsList>
+<TabsTrigger value="ghcr">
+  <svg role="img" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d={siGithub.path} />
+  </svg>
+  GHCR (GitHub)
+</TabsTrigger>
+<TabsTrigger value="dockerhub">
+  <svg role="img" viewBox="0 0 24 24" fill={`#${siDocker.hex}`} aria-hidden="true">
+    <path d={siDocker.path} />
+  </svg>
+  Docker Hub
+</TabsTrigger>
+<TabsTrigger value="gitlab">
+  <svg role="img" viewBox="0 0 24 24" fill={`#${siGitlab.hex}`} aria-hidden="true">
+    <path d={siGitlab.path} />
+  </svg>
+  GitLab
+</TabsTrigger>
+<TabsTrigger value="generic">
+  <Container />
+  Generic
+</TabsTrigger>
+</TabsList>
+<Tab value="ghcr">
 
 - **Registry host**: `ghcr.io`.
 - **Username**: your GitHub username.
-- **Token**: a GitHub personal access token with the `read:packages`
+- **Token**: a **classic** personal access token with the `read:packages`
   scope, created under GitHub's own **Settings -> Developer settings ->
-  Personal access tokens**. If the image belongs to an organization, the
-  org may also need to grant that token access under its package
-  settings.
+  Personal access tokens -> Tokens (classic)**. If the image belongs to an
+  organization, the org may also need to grant that token access under its
+  package settings.
+
+<Callout type="warn" title="Classic token, not fine-grained">
+GHCR does not work with a **fine-grained** personal access token: GitHub's
+fine-grained tokens have no `packages` permission to grant, so a pull with
+one fails with `unauthorized` even if the token looks valid. Use **Tokens
+(classic)** and tick `read:packages`.
+</Callout>
 
 See GitHub's docs on
 [authenticating to the Container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 for the exact steps.
 
 </Tab>
-<Tab value="Docker Hub">
+<Tab value="dockerhub">
 
 - **Registry host**: `docker.io`.
 - **Username**: your Docker Hub username.
@@ -84,7 +117,7 @@ See Docker's docs on
 for the exact steps.
 
 </Tab>
-<Tab value="GitLab">
+<Tab value="gitlab">
 
 - **Registry host**: `registry.gitlab.com`, or your self-hosted
   instance's registry host.
@@ -99,7 +132,7 @@ See GitLab's docs on
 for the exact steps.
 
 </Tab>
-<Tab value="Generic">
+<Tab value="generic">
 
 For anything else, self-hosted Harbor, a cloud provider's container
 registry, or another self-hosted registry, use whatever credential that
