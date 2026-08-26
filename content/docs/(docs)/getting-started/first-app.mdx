@@ -1,34 +1,18 @@
 ---
 title: Deploy your first app
-description: From a repository to a running site, in one wizard.
+description: From any source to a running site, in one wizard.
 icon: Rocket
 ---
 
-import { Globe, Settings2, Repeat, Compass } from "lucide-react";
-
----
-
-## What it is
-
-This page uses GitHub because it's the shortest path, but the same wizard also takes a GitLab, Bitbucket or Gitea repository, a registry image, an uploaded archive or a Compose file.
-
----
-
-## How it works
-
-Creating an app writes one row and nothing else. The first deploy is what does the work, and it happens on the server you pick, never on the control plane:
-
-1. The agent on that server clones the repository.
-2. It detects the framework from `package.json` and the root configuration, which sets the build commands and the default container port.
-3. It builds an image, by default with **Nixpacks**, so there's no Dockerfile to write.
-4. The control plane renders a Compose file plus the Traefik routing labels and ships them over. The agent brings the stack up.
-5. The app answers on a generated hostname immediately.
-
-Framework detection re-runs on **every** deploy and is never stored as a setting. Anything you type by hand wins over it, permanently.
+import { Globe, GitBranch, Container, Layers } from "lucide-react";
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
 
 ---
 
 ## Deploy it
+
+The wizard is the same no matter what you're deploying. Only **Pick the source**, below, branches by type: a GitHub repository, any other Git repository, a Docker image already built, an uploaded archive, or a Compose file.
 
 <Steps>
 <Step>
@@ -37,17 +21,13 @@ Framework detection re-runs on **every** deploy and is never stored as a setting
 
 On the Overview, open **Add new**, then **New app**, then **From Scratch**.
 
-</Step>
-<Step>
-
-### Connect GitHub
-
-Stay on the **GitHub** tab of the **Source** card. If no GitHub App is connected yet, click **Connect GitHub** and follow GitHub's screens. Deplo creates the App for you through GitHub's manifest flow, so there's nothing to copy and paste. Choose the repositories it may see.
-
-</Step>
-<Step>
-
-### Pick the repository and branch
+<Image
+  src={`${basePath}/screenshots/first-app/03-new-app-submenu.png`}
+  alt="The Add New menu open, showing New app with From Scratch and From Template"
+  width={1606}
+  height={1088}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>
@@ -56,19 +36,72 @@ Stay on the **GitHub** tab of the **Source** card. If no GitHub App is connected
 
 Give it a name under **App Name**. The name seeds the URL, so `shop` becomes something like `shop-brave-otter-9487cf1e.nip.io`.
 
+<Image
+  src={`${basePath}/screenshots/first-app/04-from-scratch.png`}
+  alt="The Configure App form with the app name, build settings, automatic deployments toggle and the Summary rail with the Deploy button"
+  width={1606}
+  height={1088}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
-### Check the detected framework
+### Pick the source
 
-If it names your framework and a sensible port, leave everything else alone. If it doesn't, open **Build & Output Settings** and set the build command, the start command and the port yourself.
+In the **Source** card, open the tab that matches what you have. This is the only step that differs between the five source types.
+
+<Tabs items={['GitHub', 'Git', 'Docker Image', 'Upload', 'Compose']}>
+<Tab value="GitHub">
+
+If no GitHub App is connected yet, click **Connect GitHub** and follow GitHub's screens. Deplo creates the App for you through GitHub's manifest flow, so there's nothing to copy and paste. Choose the repositories it may see, then pick the repository and branch.
+
+<Image
+  src={`${basePath}/screenshots/first-app/05-source-github.png`}
+  alt="The Source card on the GitHub tab, with the repository search and the server picker below it"
+  width={1606}
+  height={1088}
+  className="w-full rounded-lg"
+/>
+
+</Tab>
+<Tab value="Git">
+
+Pick the provider, paste the repository URL, and set the branch. See [Deploy from Git](/guides/deploy/from-git) for what each provider needs.
+
+</Tab>
+<Tab value="Docker Image">
+
+Type the image reference, like `ghcr.io/acme/api:v2.3.1`. The field autocompletes from public registries and from any private registry you've added.
+
+</Tab>
+<Tab value="Upload">
+
+Choose a compressed archive of your project. Deplo builds it exactly like a clone, framework detection included.
+
+</Tab>
+<Tab value="Compose">
+
+Paste your `docker-compose.yml`. The editor lints as you type and tells you what will be rewritten, what needs a permission, and what gets refused.
+
+</Tab>
+</Tabs>
+
+</Step>
+<Step>
+
+### Check the build
+
+- **GitHub, Git, Upload**: if the detected framework and port look right, leave them. Otherwise open **Build & Output Settings** and set the build command, the start command and the port yourself.
+- **Docker Image**: set the container port by hand. Nothing was built, so there's nothing to detect it from.
+- **Compose**: nothing to check here. Your file already declares its ports, and the editor already linted it in the previous step.
 
 </Step>
 <Step>
 
 ### Leave automatic deployments on
 
-Every push to the branch you picked will deploy from now on.
+Applies to **GitHub** and **Git**: every push to the branch you picked deploys from now on. **Docker Image**, **Upload** and **Compose** don't watch anything; redeploy them by hand or with a [deploy hook](/guides/releases/automatic-deployments).
 
 </Step>
 <Step>
@@ -101,6 +134,19 @@ It's served over **plain HTTP**: a `nip.io` hostname can't hold a certificate. S
 
 ---
 
+## How it works
+
+Creating an app writes one row and nothing else. The first deploy is what does the work, and it happens on the server you pick, never on the control plane. What that first deploy does depends on the source:
+
+- **GitHub and Git**: the agent clones the repository, detects the framework, and builds an image, by default with **Nixpacks**, so there's no Dockerfile to write.
+- **Docker Image**: nothing is built. The agent pulls the image reference you gave it.
+- **Upload**: the agent unpacks your archive and builds it exactly like a clone, framework detection included.
+- **Compose**: your `docker-compose.yml` is parsed, checked, and folded with routing, variables and volumes, then brought up as written.
+
+For every source, the control plane renders the final Compose file plus the Traefik routing labels and ships them to the agent, which brings the stack up. The app answers on a generated hostname immediately.
+
+---
+
 ## The tabs you now have
 
 | Tab | What's there |
@@ -118,8 +164,9 @@ Console, Files, Cron jobs and Pull requests appear once you turn them on or once
 
 <Callout type="warn" title="Limits and gotchas">
   - **The name is permanent.** An app's slug is frozen after creation. The display name is editable, the slug behind the URLs and volume names is not.
-  - **The first build is the slow one.** Nothing is cached yet. Later builds reuse the server's BuildKit cache, shared by every app on that host.
+  - **The first build is the slow one.** Nothing is cached yet. Later builds reuse the server's BuildKit cache, shared by every app on that host. Doesn't apply to Docker Image, since it never builds.
   - **A private repository needs the connection, not a key in the URL.** Connect the provider once in **Settings -> Git** and every app reuses it.
+  - **A private registry needs credentials in Settings -> Registries**, not in the image reference.
   - **`Error` means the last deploy failed, not that the app is down.** See [App status is intent, not observation](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
 </Callout>
 
@@ -128,9 +175,10 @@ Console, Files, Cron jobs and Pull requests appear once you turn them on or once
 ## If it does not work
 
 <Callout type="error" title="Common failures">
-  - **The build fails on a missing command.** The detected framework guessed wrong. Set the build and start commands in **Settings -> Deployments**.
-  - **The build succeeds and the URL times out.** The container is listening on a different port than the one Deplo routes to. Fix the port in **Settings -> Deployments**, or per hostname in **Domains**.
+  - **The build fails on a missing command.** The detected framework guessed wrong. Set the build and start commands in **Settings -> Deployments**. Applies to GitHub, Git and Upload.
+  - **The app starts and the URL times out.** The container is listening on a different port than the one Deplo routes to. Fix the port in **Settings -> Deployments**, or per hostname in **Domains**.
   - **The repository picker is empty.** The GitHub App has no access to it. Click **Manage connected apps** and grant the repository on GitHub.
+  - **`pull access denied` on a Docker Image app.** The image is private and no registry credential matches its host. Add one in **Settings -> Registries**.
   - More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 </Callout>
 
@@ -140,7 +188,7 @@ Console, Files, Cron jobs and Pull requests appear once you turn them on or once
 
 <Cards>
   <Card icon={<Globe className="text-blue-400" />} title="Add a domain" description="Your own hostname and a real certificate." href="/getting-started/add-a-domain" />
-  <Card icon={<Settings2 className="text-purple-400" />} title="Build settings" description="Every build knob." href="/guides/releases/build-settings" />
-  <Card icon={<Repeat className="text-green-400" />} title="Automatic deployments" description="Triggers, watch paths, deploy hooks." href="/guides/releases/automatic-deployments" />
-  <Card icon={<Compass className="text-amber-400" />} title="The deploy trace" description="The full trace." href="/concepts/what-happens-on-a-deploy" />
+  <Card icon={<GitBranch className="text-purple-400" />} title="Deploy sources" description="Git, Docker image, Template or Upload, compared." href="/guides/deploy" />
+  <Card icon={<Container className="text-green-400" />} title="Container registries" description="Add a private registry for Docker Image apps." href="/guides/server/container-registries" />
+  <Card icon={<Layers className="text-amber-400" />} title="Compose apps" description="Routing, TLS and volumes on a docker-compose.yml." href="/advanced/compose-apps" />
 </Cards>
