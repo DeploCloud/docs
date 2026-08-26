@@ -198,6 +198,10 @@ create the same app twice.
 - **KeyDB and Dragonfly have no engine here.** They are named in the
   report rather than quietly skipped, so you can decide what to do with
   them.
+- **An address Coolify stored without `http://` or `https://` arrives on plain
+  http.** It answered on `:80` over there, so it answers on `:80` here and every
+  link anyone had written keeps working. The report names it; add a certificate
+  under **Domains** when you want https.
 - **A variable whose name says credential arrives as a secret.**
   `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `SERVICE_PASSWORD_*` and their kin
   land write-only: nobody at the `view` floor reads them, and a
