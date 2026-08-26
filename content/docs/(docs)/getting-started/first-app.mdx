@@ -54,7 +54,7 @@ In the **Source** card, open the tab that matches what you have. This is the onl
 <Tabs items={['GitHub', 'Git', 'Docker Image', 'Upload', 'Compose']}>
 <Tab value="GitHub">
 
-If no GitHub App is connected yet, click **Connect GitHub** and follow GitHub's screens. Deplo creates the App for you through GitHub's manifest flow, so there's nothing to copy and paste. Choose the repositories it may see, then pick the repository and branch.
+If no GitHub App is connected yet, click **Connect GitHub** and follow GitHub's screens. Deplo creates the App for you through GitHub's manifest flow, so there's nothing to copy and paste. Choose the repositories it may see, then pick the repository and branch. See [GitHub](/guides/git-providers/github) for the connection in detail.
 
 <Image
   src={`${basePath}/screenshots/first-app/05-source-github.png`}
@@ -67,22 +67,22 @@ If no GitHub App is connected yet, click **Connect GitHub** and follow GitHub's 
 </Tab>
 <Tab value="Git">
 
-Pick the provider, paste the repository URL, and set the branch. See [Deploy from Git](/guides/deploy/from-git) for what each provider needs.
+Pick the provider, paste the repository URL, and set the branch. See [Git connections](/guides/git-providers/git-connections) for what GitLab, Bitbucket and Gitea each need, and [Deploy from Git](/guides/deploy/from-git) for the rest of this source.
 
 </Tab>
 <Tab value="Docker Image">
 
-Type the image reference, like `ghcr.io/acme/api:v2.3.1`. The field autocompletes from public registries and from any private registry you've added.
+Type the image reference, like `ghcr.io/acme/api:v2.3.1`. The field autocompletes from public registries and from any private registry you've added. See [Deploy a Docker image](/guides/deploy/docker-image) and [Container registries](/guides/server/container-registries) for adding a private one.
 
 </Tab>
 <Tab value="Upload">
 
-Choose a compressed archive of your project. Deplo builds it exactly like a clone, framework detection included.
+Choose a compressed archive of your project. Deplo builds it exactly like a clone, framework detection included. See [Upload your code](/guides/deploy/upload-code) for what to include in the archive.
 
 </Tab>
 <Tab value="Compose">
 
-Paste your `docker-compose.yml`. The editor lints as you type and tells you what will be rewritten, what needs a permission, and what gets refused.
+Paste your `docker-compose.yml`. The editor lints as you type and tells you what will be rewritten, what needs a permission, and what gets refused. See [Compose apps](/advanced/compose-apps) for the full rules.
 
 </Tab>
 </Tabs>

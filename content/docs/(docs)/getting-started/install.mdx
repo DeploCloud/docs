@@ -5,6 +5,7 @@ icon: Download
 ---
 
 import { Rocket, Variable, Network, Terminal, Trash2 } from "lucide-react";
+import { siUbuntu, siDebian, siLinux } from "simple-icons";
 
 <Tabs items={['Quick install', 'With your own domain']}>
 <Tab value="Quick install">
@@ -36,9 +37,20 @@ curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | 
 
 ---
 
-## What it is
+## What you need
 
-Docker installs only if it's missing, Traefik comes with automatic HTTPS, and Postgres stays private to the stack. Everything lands on the same machine, so you have somewhere to deploy the moment it finishes.
+| What             | Requirement                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| A server         | <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siUbuntu.hex}`} aria-hidden="true"><path d={siUbuntu.path} /></svg>Ubuntu 24.04, <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siDebian.hex}`} aria-hidden="true"><path d={siDebian.path} /></svg>Debian, or any other modern <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siLinux.hex}`} aria-hidden="true"><path d={siLinux.path} /></svg>Linux distro, `x86-64` or `arm64`, and root access for the length of one install command. Docker is installed for you if it is missing. |
+| Ports            | `80` and `443` reachable from the internet, `3000` for the dashboard, `9443` on every server you add later.                      |
+| A domain         | Optional. Useful, not required: the generated `nip.io` hostname works from the first deploy.                                     |
+| Docker knowledge | None. It is available as an escape hatch, never as a prerequisite.                                                              |
+
+---
+
+## Create your account
+
+Open the dashboard. A fresh install starts completely empty, and the first visit opens the setup screen, **Welcome to Deplo**. It runs once: a workspace name, a username (lowercase letters, numbers, `-` and `_`), a display name, an admin email and a password, checked for length and character mix and against the Have I Been Pwned breach list. Click **Create workspace** to finish. That account is the **instance owner**: the tier above instance admin, and the only one that can hand the instance to somebody else later.
 
 ---
 
@@ -58,23 +70,6 @@ Three containers come up:
 - `traefik:v3.7`, holding `80` and `443`.
 
 Neither Traefik nor the control plane ever gets the Docker socket. See [How Deplo works](/concepts/how-deplo-works#the-rule) for why.
-
----
-
-## What you need
-
-| What             | Requirement                                                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| A server         | Ubuntu 24.04, Debian, or any other modern Linux distro, `x86-64` or `arm64`, and root access for the length of one install command. Docker is installed for you if it is missing. |
-| Ports            | `80` and `443` reachable from the internet, `3000` for the dashboard, `9443` on every server you add later.                      |
-| A domain         | Optional. Useful, not required: the generated `nip.io` hostname works from the first deploy.                                     |
-| Docker knowledge | None. It is available as an escape hatch, never as a prerequisite.                                                              |
-
----
-
-## Create your account
-
-Open the dashboard. A fresh install starts completely empty, and the first visit opens the setup screen, **Welcome to Deplo**. It runs once: a workspace name, a username (lowercase letters, numbers, `-` and `_`), a display name, an admin email and a password, checked for length and character mix and against the Have I Been Pwned breach list. Click **Create workspace** to finish. That account is the **instance owner**: the tier above instance admin, and the only one that can hand the instance to somebody else later.
 
 ---
 
