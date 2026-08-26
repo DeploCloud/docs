@@ -19,6 +19,7 @@ const BETA_PAGES = new Set([
   "/guides/server/container-registries",
   "/guides/observability/cron-jobs",
   "/guides/move-from-dokploy",
+  "/guides/move-from-coolify",
 ]);
 
 export default async function Page(props: PageProps<"/[[...slug]]">) {

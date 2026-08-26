@@ -1,0 +1,270 @@
+---
+title: Move from Coolify
+description: A wizard that reads an existing Coolify installation over its API and recreates it in Deplo, with the data copied across.
+---
+
+import { Layers, ServerCog, Globe } from "lucide-react";
+
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+A wizard that reads an existing Coolify installation over its API and
+recreates it here: projects, applications, one-click services, databases,
+domains, environment variables, volumes and backup destinations, with the
+data copied across.
+
+**Settings -> Migrations**, which needs `create_projects`. Paste the panel
+address and a token, and Deplo works out which product is answering.
+
+---
+
+## Before you start
+
+Three things on the Coolify side, and only one of them is easy to miss.
+
+<Steps>
+<Step>
+
+### Turn the API on
+
+Coolify ships with its API switched off on some installs. If it is off,
+the scan says so in Coolify's own words: **API is disabled.** Turn it on
+under Coolify's **Settings**.
+
+</Step>
+<Step>
+
+### Mint a token that can read secrets
+
+Coolify: **Keys & Tokens -> API tokens**. Tick **read** and
+**`read:sensitive`**, and mint it from an account that is an **admin or
+owner** of the team.
+
+<Callout type="warn" title="read:sensitive is not optional">
+Without it Coolify does not blank your secrets, it removes them from the
+response. Every environment variable and every database password would
+arrive **empty**, and the migration would look like it worked. Deplo
+refuses to scan at all rather than let that happen.
+</Callout>
+
+</Step>
+<Step>
+
+### Check the IP allowlist
+
+If Coolify's API is restricted to a list of addresses, add the machine
+Deplo runs on. The refusal reads **You are not allowed to access the
+API.**
+
+</Step>
+</Steps>
+
+---
+
+## How it works
+
+Deplo does not scrape files or ask you for SSH. It talks to Coolify's API
+for the configuration, and for the data it puts an agent on each Coolify
+server.
+
+That agent is installed in a deliberately minimal server role: a
+**migration source**. It is out of every deploy picker and every build
+picker, never a backup destination, never swept by cleanup, absent from
+monitoring and from the fleet count, and granted to one team only. It is
+also the **only** server Deplo will uninstall itself from when you are
+done.
+
+Volumes are copied by the agent standing on the disk that holds them,
+relayed through the control plane, because agents cannot dial each other.
+
+A Coolify instance often has more than one server. The **Install** step
+lists every one behind the panel and gives you a command per machine.
+
+---
+
+## Run a migration
+
+<Steps>
+<Step>
+
+### Open the migrate tab
+
+Open **Settings -> Migrations**, the **Migrate** tab.
+
+</Step>
+<Step>
+
+### Enter the panel address and the token
+
+**Panel address** is the address you open Coolify on. Deplo appends the
+API path itself. **API token** is the one you minted above.
+
+Press **Check this panel**. Deplo identifies the product and the
+illustration takes on Coolify's mark. If it cannot tell what the panel is,
+it asks you which of the two it is and reads it again as that one.
+
+</Step>
+<Step>
+
+### Install the agent on each source machine
+
+The wizard prints one install command per Coolify server, and if you are
+not an instance admin it tells you to ask one. It waits, and shows
+**Waiting for the agent** until each machine calls home.
+
+</Step>
+<Step>
+
+### Choose what comes over
+
+Deplo shows the tree: every project, environment, application, service and
+database it found. Per item you can set:
+
+- whether to include it
+- **Expose publicly** and a **Host port**, where that applies
+- **Build only**
+- **Deplo host**, which server it lands on
+
+</Step>
+<Step>
+
+### Handle the people
+
+The **People** step offers registration links for the members of the
+Coolify team, so you can hand them out. Coolify does not report anybody's
+role over its API, so everyone arrives as a plain member and you promote
+whoever should be more.
+
+</Step>
+<Step>
+
+### Move it over
+
+Click **Move it over**. A live console shows the progress, and the report
+at the end lists everything that did not come across cleanly.
+
+</Step>
+</Steps>
+
+---
+
+## What comes across
+
+| On Coolify | Here |
+| --- | --- |
+| Application, `nixpacks` / `static` / `dockerfile` | App built from its git repository |
+| Application, `dockerimage` | App running that image |
+| Application, `dockercompose` | Compose stack |
+| Service (one-click) | Compose stack, from the compose its author wrote |
+| PostgreSQL, MySQL, MariaDB, MongoDB, Redis, ClickHouse | The same database engine |
+| KeyDB, Dragonfly | Nothing - named in the report, see below |
+| Persistent storage | Volume, with its data |
+| File storage | Config file under **Storage** |
+| Environment variables | The app's variables, magic `SERVICE_*` values already resolved |
+| Shared variables (team, project, environment) | Shared variables at the same level, linked to the same apps |
+| Domains, with their port and path | Domains |
+| HTTP basic auth | **Access** |
+| Memory and CPU limits | **Resources** |
+| Health check | **Advanced -> Health check** |
+| Scheduled tasks | Cron jobs |
+| S3 storages | Backup destinations, tested on arrival |
+
+---
+
+## What changes on the way across
+
+- **Throwaway hostnames get re-hosted.** A Coolify app served on a
+  generated `*.sslip.io` name has the **old server's IP** baked into it,
+  so that name would keep pointing at the old machine. Deplo mints its own
+  equivalent, keeps the same route, and the app's **Domains** section
+  tells you which address became which. Real domains you own come across
+  as they are, and you repoint DNS when you are ready.
+- **The compose is the one its author wrote.** Deplo imports Coolify's
+  raw compose, not the copy Coolify renders with its own labels, container
+  names and per-resource network - Deplo writes those itself.
+- **A git application arrives without a credential.** Coolify hands over a
+  clone URL and a branch, never a connection Deplo could reuse. Attach a
+  git connection to deploy it; that also turns on auto-deploy.
+- **Preview-only variables stay behind.** Deplo's pull-request previews
+  inherit the app's variables, so importing a preview-only one would leak
+  it into production. The report lists them by key.
+- **KeyDB and Dragonfly have no engine here.** They are named in the
+  report rather than quietly skipped, so you can decide what to do with
+  them.
+- **Imported basic-auth credentials are flagged.** They never went through
+  Deplo's password policy or the breach check.
+- **Anything needing a permission you do not hold lands in the report
+  instead**, naming what asked for it and who turns it on.
+
+---
+
+## After it lands
+
+- **Remove what came over** deletes what the migration created here, if
+  you want to start again.
+- **Remove from Deplo** takes the migration source out of the fleet. Deplo
+  uninstalls its own agent from that machine first, and warns you with
+  **Agent still installed** if it could not.
+
+The **History** tab keeps every past run with its report and the mark of
+the panel it read, and **Use this address** re-fills the connection
+details for another pass.
+
+<Callout type="warn" title="Limits and gotchas">
+- **Cut DNS over yourself, when you are ready.** The migration does not
+  touch your registrar.
+- **Copying data takes as long as the data is big.** Volumes stream host
+  to host through the control plane.
+- **Run it twice and you get it twice.** There is no reconciliation: this
+  is a move, not a sync.
+- **Check the report, always.** A migration that says "done" with twelve
+  lines in the report has twelve things waiting for you.
+- **Uninstall the migration source afterwards.** It is a live agent on a
+  machine you are about to decommission.
+</Callout>
+
+<Callout type="error" title="If it does not work">
+- **API is disabled**: turn the API on in Coolify's settings.
+- **You are not allowed to access the API**: Coolify's IP allowlist does
+  not include this machine.
+- **This token cannot read values**: the token has no `read:sensitive`, or
+  it belongs to an account that is not an admin or owner of the team.
+- **Rate limited**: Coolify allows 200 requests a minute and Deplo stays
+  under it, but a busy panel can still hit the ceiling. Wait and try
+  again.
+- **Stuck on Waiting for the agent**: the install command has not run on
+  that machine, or it cannot reach this one.
+- **The data step stops half way**: nothing is rolled back. Everything
+  already created here stays exactly as it is, and the report says what is
+  still missing. Fix the reason and run it again for the rest.
+
+See [Servers and agents](/troubleshooting/servers-and-agents) for more.
+</Callout>
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<Layers className="text-blue-400" />}
+    title="Server roles"
+    description="What a migration source is, and is not"
+    href="/advanced/server-roles"
+  />
+  <Card
+    icon={<ServerCog className="text-blue-400" />}
+    title="Add a server"
+    description="Enrollment and the bootstrap command"
+    href="/guides/server/add-a-server"
+  />
+  <Card
+    icon={<Globe className="text-blue-400" />}
+    title="Domains and HTTPS"
+    description="Repointing DNS after a migration"
+    href="/guides/networking/domains-and-https"
+  />
+</Cards>
