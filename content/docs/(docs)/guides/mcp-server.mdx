@@ -85,9 +85,9 @@ instead, which mints an ordinary token after you approve it.
 
 ## How it works
 
-The endpoint is `/api/mcp` on your own instance. It exposes **78 tools**,
-one per action. Each tool is a GraphQL document that runs **in-process
-against the same schema** a browser session uses.
+The endpoint is `/api/mcp` on your own instance. It exposes one tool per
+action, and each tool is a GraphQL document that runs **in-process against
+the same schema** a browser session uses.
 
 That is the whole security design: an agent goes through **the same
 authorization code a person goes through**. There is no parallel permission
@@ -158,6 +158,15 @@ ask, mint it a token that cannot do the thing you would not want it doing.
 <Callout type="info">
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
 </Callout>
+
+---
+
+## How many tools there are
+
+Deplo exposes **78 tools** today, one per action. The number moves with the
+product, so treat it as a snapshot: **Settings -> MCP -> Manage -> What an
+agent can do** is the live list, and an agent only ever sees the ones its
+own token can use.
 
 ---
 
