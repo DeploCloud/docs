@@ -26,11 +26,22 @@ journalctl -u deplo-agent -f
 </Accordion>
 <Accordion title="Online, but every deploy fails">
 
-**This is the classic one.** Green only means outbound 443 works; deploys
-need inbound `9443`. See
+**This is the classic one.** Enrolment turns the card green from the
+agent's outbound call home; deploys need inbound `9443`. See
 [ports, networks, and files](/reference/ports-networks-and-files).
 
-From the machine running the control plane:
+Opening the servers page re-dials every agent, so a blocked port usually
+shows there as `offline` with *the agent did not answer within the
+health-check deadline*. A card painted from an older reading still says
+online.
+
+This catches the Deplo host itself too: the panel runs in a container and
+dials its own machine by address, so a firewall on that machine blocks it
+exactly like a remote one.
+
+If `ufw` or `firewalld` is holding the port, the install command printed
+the fix on its last lines. Otherwise, from the machine running the
+control plane:
 
 ```bash
 nc -vz <server-ip> 9443

@@ -94,6 +94,13 @@ Writes `bootstrap.env` at `0600`, never on the command line.
 ### Start the service
 Writes the systemd unit at `0600` and starts it.
 </Step>
+<Step>
+### Check the firewall
+Looks for a `ufw` or `firewalld` rule holding the agent port, and prints
+the command to open it when one is missing. **It never edits the
+firewall itself**, and it detects nothing else: a hand-written
+`nftables` or `iptables` rule goes unnoticed.
+</Step>
 </Steps>
 
 The agent then calls home, sends a certificate signing request, and

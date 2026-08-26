@@ -50,10 +50,13 @@ Everything Deplo listens on, connects over and writes to disk.
   - **Port 3000 stays open on purpose.** It is the way back in when a
     domain, a certificate or the proxy is what broke. Closing it later
     means recreating the container by hand.
-  - **A green server card does not prove port 9443 is open.** The agent
-    calls home outbound over 443, and that is what turns it green. If
-    9443 is firewalled inbound, the server looks online and every deploy
-    fails. No installer opens a firewall.
+  - **A green server card does not prove port 9443 is open.** The call
+    home is outbound over 443, and that is what turns it green at
+    enrolment. Opening the servers page re-dials every agent, so a
+    blocked port shows up there as `offline` - but a card painted from
+    an older reading still says online. No installer opens a firewall:
+    the agent installer only tells you when `ufw` or `firewalld` is the
+    one holding the port.
 </Callout>
 
 ---

@@ -23,6 +23,8 @@ token**. On the server, that command:
    80 and 443 are taken.
 5. Starts the agent, which generates its own key, sends a certificate
    signing request and **calls home** with the token.
+6. Checks whether `ufw` or `firewalld` is holding port 9443 and prints
+   the command to open it. It never edits the firewall itself.
 
 The control plane signs the certificate and pins its fingerprint. The
 server flips to online, and from then on everything is mutual TLS on port
@@ -103,10 +105,10 @@ fails, the server's menu can issue a fresh one.
 | `80`, `443` | Internet to server | Traefik, and the HTTP certificate challenge |
 
 <Callout type="warn">
-A green card does not prove Deplo can dial it. The agent calls home
-outbound, over 443, and that is what turns the card green. If port 9443
-is firewalled inbound, the server looks online and every deploy fails.
-The installer opens no firewall.
+No installer opens a firewall for you. The agent installer checks `ufw`
+and `firewalld` on its last lines and prints the command to run when one
+of them is holding 9443, so read what it prints. A rule written by hand
+in `nftables` or `iptables` is not detected.
 </Callout>
 
 ---
@@ -143,7 +145,9 @@ separate setting. See [Access](/guides/server/access).
 <Callout type="error" title="If it does not work">
 - **Stuck on provisioning**: the agent never called home. On the server,
   check `systemctl status deplo-agent` and `journalctl -u deplo-agent -f`.
-- **Online, but every deploy fails**: inbound `9443` is blocked.
+- **Offline, or online with every deploy failing**: inbound `9443` is
+  blocked. When `ufw` or `firewalld` is the cause, the install command
+  printed the fix.
 - **`Refusing to run an unverified binary`**: the download did not match
   its checksum. Retry; if it persists, something is intercepting the
   download.
