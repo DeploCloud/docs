@@ -49,9 +49,15 @@ capability wearing different clothes:
 `volumes_from`, `env_file`, `oom_kill_disable`, `oom_score_adj`,
 `group_add`, `logging`, `userns_mode`.
 
-**Mounts**
+**Paths, not keys**
 
-A service mount whose source starts with `/` or climbs with `..`.
+Anything that names a **file or folder** is judged by the path, not by the
+key: a source that starts with `/` or climbs with `..` is on the server
+and is gated; a relative one is your app's own file, inside the project
+directory your stack gets to itself, and is free. That covers a service
+mount, an `env_file`, a `secrets:`/`configs:` `file:`, and a build
+context. So `env_file: - .env` and `file: ./db_pw.txt` need no permission,
+while `env_file: - /etc/app.env` does.
 
 **Top-level blocks**
 
@@ -68,6 +74,12 @@ loads host SSH keys or agents, or that runs privileged.
 
 `extends:` and `label_file:`, because they pull in keys from a file you
 did not show, and those keys can be any of the above.
+
+<Callout type="info" title="What a refusal tells you">
+A refusal names what tripped it - the key, or the mount - and who can turn
+the permission on. If you are told an app reaches the server and you
+cannot see where, that sentence is where to look.
+</Callout>
 
 <Callout type="success" title="What is never gated">
 Hardening is free. `no-new-privileges`, `cap_drop` and `read_only` are not

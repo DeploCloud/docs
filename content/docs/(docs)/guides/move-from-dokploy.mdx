@@ -140,7 +140,9 @@ address** re-fills the connection details for another pass.
 - **Imported basic-auth credentials are flagged.** They never went
   through Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report
-  instead.** Authored Compose is treated as hostile here exactly as it is
+  instead**, naming what asked for it and who turns it on. A Compose stack
+  that reaches the server needs the permission before it can come across
+  at all; everything else about the app comes over either way. Authored Compose is treated as hostile here exactly as it is
   everywhere else: host bind mounts, `privileged`, published ports and
   foreign networks or volumes each need their grant.
 - **A service that was never started comes across empty.** It has no data
