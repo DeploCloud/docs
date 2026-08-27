@@ -102,50 +102,47 @@ Set it in the app's **Environment** tab as a **Secret**, then redeploy.
 
 ## The overview
 
-Opening a database lands on its overview. Two cards and a row of three tiles.
+Opening a database lands on its overview: two cards and a row of three tiles.
 
 **Connection** holds the connection string (click to reveal, needs `reveal_secrets`) and the facts fixed at creation: engine and version, username, logical database, server.
 
 **Networking** holds the two addresses, which are not the same thing:
 
-| Address      | What it is                                               | Who uses it                        |
-| ------------ | -------------------------------------------------------- | ---------------------------------- |
-| **Internal** | `db-<name>:5432`, the name on the shared `deplo` network | Apps on the same server            |
-| **Public**   | `<server>:<host port>`, or **Not published**             | Anything that can reach the server |
+| Address | What it is | Who uses it |
+| --- | --- | --- |
+| **Internal** | `db-<name>:5432`, the name on the shared `deplo` network | Apps on the same server |
+| **Public** | `<server>:<host port>`, or **Not published** | Anything that can reach the server |
 
-The switch on the **Public** row and the **Host port** field are right there, so you never have to open Settings to expose a database or take it off the internet. Publishing needs both `configure_databases` and the `canExposePorts` grant; without either the switch is disabled and says why.
+The switch on the **Public** row and the **Host port** field are right there, so exposing a database, or taking it off the internet, never means opening Settings. It needs both `configure_databases` and the `canExposePorts` grant; without either the switch is disabled and says why.
 
 <Callout type="warn" title="A published port is plaintext">
-  Publishing binds the engine's port on `0.0.0.0` with no proxy and no
-  certificate. Traffic is not encrypted and the engine password is the only
-  thing in front of it. The card says so while the switch is on.
+Publishing binds the engine's port on `0.0.0.0` with no proxy and no certificate. Traffic is not encrypted and the engine password is the only thing in front of it. The card says so while the switch is on.
 </Callout>
 
-The three tiles are **Health** (the engine's own healthcheck, its uptime and its restart count), **Data** (the volume measured on disk, plus live memory use) and **Backups** (the last run and the schedule). Data reads `-` when the server's agent is older than the measurement - a dash, never a wrong number.
+The three tiles are **Health** (the engine's own healthcheck, its uptime and its restart count), **Data** (the volume measured on disk, plus live memory use) and **Backups** (the last run and the schedule). Data reads `-` when the server's agent is older than the measurement: a dash, never a wrong number.
 
 ---
 
 ## The lifecycle verbs, and which one destroys data
 
-| Action                             | What it does                                                                                                 | Data       |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------- |
-| **Start** / **Stop** / **Restart** | Container lifecycle                                                                                          | kept       |
-| **Redeploy**                       | Re-renders the stack and brings it back up. The data-preserving recreate                                     | kept       |
-| **Rebuild**                        | Danger Zone. Tears the stack down **with its volume** and provisions a fresh one from the stored credentials | **erased** |
-| **Delete**                         | Removes the database and reclaims its volume                                                                 | **erased** |
+| Action | What it does | Data |
+| --- | --- | --- |
+| **Start** / **Stop** / **Restart** | Container lifecycle | kept |
+| **Redeploy** | Re-renders the stack and brings it back up. The data-preserving recreate | kept |
+| **Rebuild** | Danger Zone. Tears the stack down **with its volume** and provisions a fresh one from the stored credentials | **erased** |
+| **Delete** | Removes the database and reclaims its volume | **erased** |
 
 <Callout type="warn" title="Rebuild and Delete destroy data">
 **Rebuild is a factory reset.** The connection string keeps working because the engine re-initialises from the same stored credentials, which is exactly what makes it dangerous: everything looks fine and the data is gone. Restore a backup afterwards.
 
 **Delete is authoritative.** It refuses unless the host confirms both the container and the volume are gone, so a half-deleted database cannot linger as a row pointing at a live volume. If the host is dead and never coming back, a `force` option appears after the refusal.
-
 </Callout>
 
 ---
 
 ## Settings
 
-**Settings -> Connection** carries the same exposure controls as the overview, plus the two things that do not belong on it: the server move, and password rotation.
+**Settings -> Connection** carries the same exposure controls as the overview, plus the two things that do not belong on one: the server move, and password rotation.
 
 <TypeTable
   type={{
@@ -172,8 +169,7 @@ Password rotation runs inside the engine for Postgres, MySQL, MariaDB and MongoD
   type={{
     "Custom image": {
       type: "text",
-      description:
-        "Replaces the derived image. Version goes inert while it is set",
+      description: "Replaces the derived image. Version goes inert while it is set",
     },
     "Custom command": {
       type: "text",
@@ -181,15 +177,13 @@ Password rotation runs inside the engine for Postgres, MySQL, MariaDB and MongoD
     },
     "Config files": {
       type: "file",
-      description:
-        "Add file, give it a File name and a Path in the container, edit it in the browser, then Save and apply",
+      description: "Add file, give it a File name and a Path in the container, edit it in the browser, then Save and apply",
     },
   }}
 />
 
 <Callout type="warn" title="Redis and --requirepass">
-  The default command carries the password. A custom command that omits it
-  silently drops authentication, and the interface warns you about exactly this.
+The default command carries the password. A custom command that omits it silently drops authentication, and the interface warns you about exactly this.
 </Callout>
 
 Config files are how you set `postgresql.conf`, `my.cnf`, `redis.conf` or an init script without a shell. **Save and apply** writes them next to the stack and reroutes the container so they take effect.
@@ -209,17 +203,11 @@ If the copy fails, the database is blocked from starting until you resolve it. T
 **Logs**, **Monitoring** and **Backups** work exactly as they do for an app. **Console** gives you the engine's own shell (`psql`, `mysql`, `redis-cli`) behind a one-time acknowledgement, and **Cron jobs** runs scheduled commands inside the container once you turn the switch on.
 
 <Callout type="warn" title="Limits and gotchas">
-  - **The username and the logical database name are set at creation and never
-  change.** The official images apply them only on first initialisation against
-  an empty volume, so afterwards they are display-only. Renaming the database
-  itself is just a label change. - **Neither Redeploy nor Rebuild works while
-  the database is provisioning.** - **An app's backup schedule does not cover
-  its database.** Databases are backed up as databases. Schedule both. - **`Host
-  port` is a real exposure.** Anything that can reach the server on that port
-  can try to log in. - **Version upgrades are not migrations.** Changing the
-  version tag restarts the engine on the same volume, and major-version upgrades
-  of Postgres in particular will refuse to start on an older data directory.
-  Dump, rebuild, restore.
+- **The username and the logical database name are set at creation and never change.** The official images apply them only on first initialisation against an empty volume, so afterwards they are display-only. Renaming the database itself is just a label change.
+- **Neither Redeploy nor Rebuild works while the database is provisioning.**
+- **An app's backup schedule does not cover its database.** Databases are backed up as databases. Schedule both.
+- **`Host port` is a real exposure.** Anything that can reach the server on that port can try to log in.
+- **Version upgrades are not migrations.** Changing the version tag restarts the engine on the same volume, and major-version upgrades of Postgres in particular will refuse to start on an older data directory. Dump, rebuild, restore.
 </Callout>
 
 ---
@@ -231,7 +219,7 @@ If the copy fails, the database is blocked from starting until you resolve it. T
 - **Stuck in provisioning** - the agent could not pull the image or the server is unreachable. Check the server's health.
 
 <Callout type="info">
-  More in [Databases and backups](/troubleshooting/databases-and-backups).
+More in [Databases and backups](/troubleshooting/databases-and-backups).
 </Callout>
 
 ---
@@ -239,28 +227,8 @@ If the copy fails, the database is blocked from starting until you resolve it. T
 ## See also
 
 <Cards>
-  <Card
-    icon={<Archive className="text-blue-400" />}
-    title="Backups and restore"
-    description="Schedule the database separately from the app"
-    href="/guides/data/backups-and-restore"
-  />
-  <Card
-    icon={<HardDrive className="text-blue-400" />}
-    title="Persistent storage"
-    description="How the volume behind a database works"
-    href="/guides/data/persistent-storage"
-  />
-  <Card
-    icon={<Terminal className="text-blue-400" />}
-    title="Console and files"
-    description="A one-time-acknowledged engine shell"
-    href="/guides/observability/console-and-files"
-  />
-  <Card
-    icon={<Gauge className="text-blue-400" />}
-    title="Resource limits"
-    description="CPU and memory for a database container"
-    href="/advanced/resource-limits"
-  />
+  <Card icon={<Archive className="text-blue-400" />} title="Backups and restore" description="Schedule the database separately from the app" href="/guides/data/backups-and-restore" />
+  <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="How the volume behind a database works" href="/guides/data/persistent-storage" />
+  <Card icon={<Terminal className="text-blue-400" />} title="Console and files" description="A one-time-acknowledged engine shell" href="/guides/observability/console-and-files" />
+  <Card icon={<Gauge className="text-blue-400" />} title="Resource limits" description="CPU and memory for a database container" href="/advanced/resource-limits" />
 </Cards>
