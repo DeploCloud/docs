@@ -1,22 +1,36 @@
 ---
 title: Deploy
-description: Four ways to get code onto Deplo, a repository, a prebuilt image, a template, or a plain archive.
+description: Five ways to get code onto Deplo, a repository, a prebuilt image, an archive or a Compose stack, plus templates that fill it in for you.
 ---
 
-import { GitBranch, Container, LayoutTemplate, Upload } from "lucide-react";
+import { GitBranch, Container, LayoutTemplate, Upload, FileText } from "lucide-react";
 
-Every app starts from one of four sources. Pick the one that matches what you already have.
+Every app starts from one of five sources. Pick the one that matches what you already have, or let a **template** fill all of it in.
 
 ---
 
-## The four sources
+## The five sources
 
 | Source | What it needs | Builds an image | Rollback |
 | --- | --- | --- | --- |
-| [Git](/guides/deploy/from-git) | A repository, connected once per team | yes | yes |
+| [GitHub](/guides/deploy/from-git) | A repository, connected once per team | yes | yes |
+| [Git](/guides/deploy/from-git) | GitLab, Bitbucket, Gitea or any git server | yes | yes |
 | [Docker image](/guides/deploy/docker-image) | An image reference | no, already built | no |
-| [Template](/guides/deploy/from-template) | Nothing, pick one from the catalogue | yes, it is a Compose stack | no |
 | [Upload](/guides/deploy/upload-code) | A compressed archive of the project | yes | yes |
+| [Compose](/advanced/compose-apps) | A `docker-compose.yml`, brought up as written | no | no |
+
+---
+
+## Or start from a template
+
+A [template](/guides/deploy/from-template) is not a sixth source: it is a Compose
+stack the catalogue already wrote, with its passwords generated and its address
+picked. Deplo creates an ordinary Compose app out of it.
+
+Two ways in, both landing on the same wizard:
+
+- **Templates** in the sidebar.
+- **Template** on the first step of the new-app wizard.
 
 ---
 
@@ -25,6 +39,7 @@ Every app starts from one of four sources. Pick the one that matches what you al
 <Cards>
   <Card icon={<GitBranch className="text-blue-400" />} title="Deploy from Git" description="Point an app at a repository" href="/guides/deploy/from-git" />
   <Card icon={<Container className="text-blue-400" />} title="Deploy a Docker image" description="Run something already built" href="/guides/deploy/docker-image" />
+  <Card icon={<FileText className="text-blue-400" />} title="Compose apps" description="Bring up a stack as written" href="/advanced/compose-apps" />
   <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="One click, preconfigured" href="/guides/deploy/from-template" />
   <Card icon={<Upload className="text-blue-400" />} title="Upload your code" description="No repository required" href="/guides/deploy/upload-code" />
   <Card title="Git providers" description="Connect GitHub, GitLab, Bitbucket or Gitea" href="/guides/git-providers" />
