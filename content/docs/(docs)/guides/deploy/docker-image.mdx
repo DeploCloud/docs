@@ -47,28 +47,25 @@ Because nothing is built, several features simply do not apply:
 
 ### Pick the image
 
-In the **Source** card pick the **Docker Image** tab. Type the image reference: the field autocompletes from public registries and from any private registry you have added.
-
-</Step>
-<Step>
-
-### Name it
-
-Set **App Name**.
+Pick the **Docker Image** tile, then **Next**. Type the image reference: the field
+autocompletes from public registries and from any private registry you have added, and the
+**App name** fills itself in from the image.
 
 </Step>
 <Step>
 
 ### Set the container port
 
-Deplo cannot detect it from an image it has not built. If the software listens on something other than `80`, say so now or fix it later in **Domains**.
+Under **Advanced**, in **Build method**. Deplo cannot detect it from an image it has not
+built, so if the software listens on something other than `80`, say so now or fix it later in
+**Domains**.
 
 </Step>
 <Step>
 
-### Pick a server and deploy
+### Deploy
 
-Pick the server, then **Deploy**.
+The server is under **Advanced** too, already picked. Click **Deploy**.
 
 </Step>
 </Steps>

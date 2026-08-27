@@ -49,7 +49,7 @@ On the Overview, open **Add new**, then **New app**, then **From Scratch**.
 
 ### Pick the source
 
-In the **Source** card, pick the tab you need.
+Pick the **GitHub** or **Git** tile, then **Next**.
 
 <Tabs items={['GitHub', 'Git']}>
 <Tab value="GitHub">
@@ -67,30 +67,26 @@ Pick the provider, paste the repository URL and set the production branch. Add t
 </Step>
 <Step>
 
-### Name it
+### Check what Deplo read
 
-Set **App Name**.
-
-</Step>
-<Step>
-
-### Check the detected build
-
-Check the detected framework line. Open **Build & Output Settings** only if it guessed wrong.
+The last card arrives filled in: the **App name** from the repository, the framework it
+recognised, and the **Build command** and **Deploy command** your `package.json` declares.
+**Reset** empties a command, which hands the decision back to the builder.
 
 </Step>
 <Step>
 
 ### Leave push deploys on
 
-Leave **Deploy on push** on unless you want to release by hand.
+Leave **Automatic deployments** on unless you want to release by hand.
 
 </Step>
 <Step>
 
-### Pick a server and deploy
+### Deploy
 
-Pick the server under **Deploy to**, then click **Deploy**.
+The server, the build method and the watch paths are under **Advanced**, already answered.
+Click **Deploy**.
 
 </Step>
 </Steps>

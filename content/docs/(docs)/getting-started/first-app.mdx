@@ -12,18 +12,22 @@ import { basePath } from "@/lib/base-path";
 
 ## Deploy it
 
-The wizard is the same no matter what you're deploying. Only **Pick the source**, below, branches by type: a GitHub repository, any other Git repository, a Docker image already built, an uploaded archive, or a Compose file.
+The wizard is three cards. Only the middle one changes with what you are deploying, and a
+Docker image, an upload or a Compose file finish on it.
+
+{/* TODO: re-capture - these shots predate the three-step wizard. */}
 
 <Steps>
 <Step>
 
-### Start a new app
+### Open the wizard
 
-On the Overview, open **Add new**, then **New app**, then **From Scratch**.
+On the Overview, open **Add new**, then **New app**, then **From Scratch**. The wizard takes
+the whole window; **Cancel**, bottom left, brings you back.
 
 <Image
-  src={`${basePath}/screenshots/first-app/03-new-app-submenu.png`}
-  alt="The Add New menu open, showing New app with From Scratch and From Template"
+  src={`${basePath}/screenshots/first-app/01-source.png`}
+  alt="The wizard's first card, with the five sources as tiles"
   width={1606}
   height={1088}
   className="w-full rounded-lg"
@@ -32,95 +36,123 @@ On the Overview, open **Add new**, then **New app**, then **From Scratch**.
 </Step>
 <Step>
 
-### Name the app
+### Pick where the code comes from
 
-Give it a name under **App Name**. The name seeds the URL, so `shop` becomes something like `shop-brave-otter-9487cf1e.nip.io`.
+Five tiles: **GitHub**, **Git**, **Docker Image**, **Upload**, **Compose**. Pick one and click
+**Next**.
 
-<Image
-  src={`${basePath}/screenshots/first-app/04-from-scratch.png`}
-  alt="The Configure App form with the app name, build settings, automatic deployments toggle and the Summary rail with the Deploy button"
-  width={1606}
-  height={1088}
-  className="w-full rounded-lg"
-/>
+<Callout type="info" title="Already have the archive?">
+  Drag it onto the Overview, or onto the wizard itself, and Deplo opens the Upload step with
+  the file in hand and the name filled in.
+</Callout>
 
 </Step>
 <Step>
 
-### Pick the source
+### Fill in that source
 
-In the **Source** card, open the tab that matches what you have. This is the only step that differs between the five source types.
+This is the only step that differs between the five.
 
 <Tabs items={['GitHub', 'Git', 'Docker Image', 'Upload', 'Compose']}>
 <Tab value="GitHub">
 
-If no GitHub App is connected yet, click **Connect GitHub** and follow GitHub's screens. Deplo creates the App for you through GitHub's manifest flow, so there's nothing to copy and paste. Choose the repositories it may see, then pick the repository and branch. See [GitHub](/guides/git-providers/github) for the connection in detail.
+If no GitHub App is connected yet, click **Connect GitHub** and follow GitHub's screens. Deplo
+creates the App for you through GitHub's manifest flow, so there's nothing to copy and paste.
+Choose the repositories it may see, then pick the repository and branch. See
+[GitHub](/guides/git-providers/github) for the connection in detail.
+
+</Tab>
+<Tab value="Git">
+
+Pick the provider, paste the repository URL, and set the branch. See
+[Git connections](/guides/git-providers/git-connections) for what GitLab, Bitbucket and Gitea
+each need.
+
+</Tab>
+<Tab value="Docker Image">
+
+Type the image reference, like `ghcr.io/acme/api:v2.3.1`. The field autocompletes from public
+registries and from any private registry you've added, and the app is named after the image.
+This card has the **Deploy** button on it. See
+[Deploy a Docker image](/guides/deploy/docker-image).
+
+</Tab>
+<Tab value="Upload">
+
+Drop a compressed archive of your project, or click to browse. Deplo builds it exactly like a
+clone, framework detection included. This card has the **Deploy** button on it. See
+[Upload your code](/guides/deploy/upload-code).
+
+</Tab>
+<Tab value="Compose">
+
+Click **Write compose** and paste your `docker-compose.yml` into the editor. It lints as you
+type and tells you what will be rewritten, what needs a permission, and what gets refused. The
+card then shows how many services the stack has, and carries the **Deploy** button. See
+[Compose apps](/advanced/compose-apps).
+
+</Tab>
+</Tabs>
 
 <Image
-  src={`${basePath}/screenshots/first-app/05-source-github.png`}
-  alt="The Source card on the GitHub tab, with the repository search and the server picker below it"
+  src={`${basePath}/screenshots/first-app/02-details.png`}
+  alt="The second card, with the repository picked and the branch chosen"
   width={1606}
   height={1088}
   className="w-full rounded-lg"
 />
 
-</Tab>
-<Tab value="Git">
-
-Pick the provider, paste the repository URL, and set the branch. See [Git connections](/guides/git-providers/git-connections) for what GitLab, Bitbucket and Gitea each need, and [Deploy from Git](/guides/deploy/from-git) for the rest of this source.
-
-</Tab>
-<Tab value="Docker Image">
-
-Type the image reference, like `ghcr.io/acme/api:v2.3.1`. The field autocompletes from public registries and from any private registry you've added. See [Deploy a Docker image](/guides/deploy/docker-image) and [Container registries](/guides/server/container-registries) for adding a private one.
-
-</Tab>
-<Tab value="Upload">
-
-Choose a compressed archive of your project. Deplo builds it exactly like a clone, framework detection included. See [Upload your code](/guides/deploy/upload-code) for what to include in the archive.
-
-</Tab>
-<Tab value="Compose">
-
-Paste your `docker-compose.yml`. The editor lints as you type and tells you what will be rewritten, what needs a permission, and what gets refused. See [Compose apps](/advanced/compose-apps) for the full rules.
-
-</Tab>
-</Tabs>
-
 </Step>
 <Step>
 
-### Check the build
+### Set up the app
 
-- **GitHub, Git, Upload**: if the detected framework and port look right, leave them. Otherwise open **Build & Output Settings** and set the build command, the start command and the port yourself.
-- **Docker Image**: set the container port by hand. Nothing was built, so there's nothing to detect it from.
-- **Compose**: nothing to check here. Your file already declares its ports, and the editor already linted it in the previous step.
+**GitHub and Git only.** Deplo has already read the repository, so this card arrives filled in:
 
-</Step>
-<Step>
+- **App name**, taken from the repository.
+- The framework it recognised, and the container port that framework's server binds.
+- **Build command** and **Deploy command**, read from your `package.json` and spelled for your
+  lockfile's package manager. **Reset** empties a field, which hands the decision back to the
+  builder.
+- **Automatic deployments**, on, so every push to that branch deploys.
 
-### Leave automatic deployments on
-
-Applies to **GitHub** and **Git**: every push to the branch you picked deploys from now on. **Docker Image**, **Upload** and **Compose** don't watch anything; redeploy them by hand or with a [deploy hook](/guides/releases/automatic-deployments).
-
-</Step>
-<Step>
-
-### Pick the server
-
-Under **Deploy to**, choose the server. A single-machine install has exactly one, already selected.
+<Image
+  src={`${basePath}/screenshots/first-app/03-configure.png`}
+  alt="The third card, with the framework, the build and deploy commands and the Advanced drawer"
+  width={1606}
+  height={1088}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>
 
 ### Deploy
 
-Click **Deploy** in the **Summary** rail on the right.
+Click **Deploy**, bottom right. Nothing else is required: the server, the URL and the build
+method all have an answer already.
 
 </Step>
 </Steps>
 
-The build log streams while it runs. It survives a page reload and a control plane restart, so closing the tab doesn't cancel anything.
+---
+
+## What's under Advanced
+
+Every card that carries the **Deploy** button has one **Advanced** drawer, closed, with the
+target server named on it so you can see where the app lands without opening it. Inside:
+
+| Setting | What it is |
+| --- | --- |
+| Deploy to | Which server runs it. A single-machine install has one, already picked. |
+| Environment variables | Type them, or tick the team's [shared variables](/guides/config/shared-variables). Both reach the first build. |
+| Build method | Nixpacks, Railpack, a Dockerfile, or a static site, with its version and the container port. |
+| Build path | The sub-folder to build from, for a monorepo. |
+| Build on | Another server to compile on. Automatic uses a [build server](/guides/server/add-a-server#choose-what-its-for) if the fleet has one. |
+| Git | Deploy on push or on tag, watch paths, submodules. |
+| Extra compose flags | Compose stacks only: what to append to `docker compose up`. |
+
+Deploy lands you on the build, streaming live. It survives a page reload and a control plane restart, so closing the tab doesn't cancel anything.
 
 ---
 
@@ -175,7 +207,7 @@ Console, Files, Cron jobs and Pull requests appear once you turn them on or once
 ## If it does not work
 
 <Callout type="error" title="Common failures">
-  - **The build fails on a missing command.** The detected framework guessed wrong. Set the build and start commands in **Settings -> Deployments**. Applies to GitHub, Git and Upload.
+  - **The build fails on a missing command.** Your repository declares no `build` or `start` script, so the builder guessed. Set both in **Settings -> Deployments**. Applies to GitHub, Git and Upload.
   - **The app starts and the URL times out.** The container is listening on a different port than the one Deplo routes to. Fix the port in **Settings -> Deployments**, or per hostname in **Domains**.
   - **The repository picker is empty.** The GitHub App has no access to it. Click **Manage connected apps** and grant the repository on GitHub.
   - **`pull access denied` on a Docker Image app.** The image is private and no registry credential matches its host. Add one in **Settings -> Registries**.
