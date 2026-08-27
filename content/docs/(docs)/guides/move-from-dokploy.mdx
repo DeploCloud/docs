@@ -55,6 +55,17 @@ Open **Settings -> Migrations**, the **Migrate** tab.
 command, and if you are not an instance admin it tells you to ask one. It
 waits, and shows **Waiting for the agent** until the machine calls home.
 
+<Callout type="info" title="The machine's own address, not the panel's">
+Deplo's first guess for a machine is the address you gave the panel. Behind
+a proxy or a CDN that address is the proxy, so nothing answers on `9443`
+and the wizard shows **Cannot connect** with a box to type the machine's
+real address into. That address is remembered for the next attempt.
+
+A machine that already answers has a **Change address** link too: a live
+agent on the wrong box reads as connected, and every volume of the
+services on it would then arrive empty.
+</Callout>
+
 </Step>
 <Step>
 
@@ -170,7 +181,10 @@ it would run it on empty storage. Bring that data over yourself, or press
   foreign networks or volumes each need their grant.
 - **A service that was never started comes across empty.** It has no data
   on the source yet, so nothing is copied for it and nothing holds its
-  first deploy here - which is what creates its volumes.
+  first deploy here - which is what creates its volumes. A service that
+  IS running and whose volume Deplo cannot find on that machine is the
+  other case, and it does hold the deploy: the report says which machine
+  was asked.
 - **An app still being created refuses every action** and draws as
   pending until its run finishes.
 
@@ -194,6 +208,10 @@ it would run it on empty storage. Bring that data over yourself, or press
   the source, or that machine cannot reach this one.
 - **A volume arrives empty**: the report says so, and the app it belongs
   to refuses to deploy until you decide what to do about it.
+- **One source machine will not answer**: the services on it are named in
+  the report and blocked from deploying, and the machines that do answer
+  are still copied. Only when nothing answers at all does the step stop
+  before touching anything.
 - **The data step stops half way**: nothing is rolled back. Everything
   already created here stays exactly as it is, and every service whose
   data did not arrive is named in the report and blocked from deploying.

@@ -95,6 +95,15 @@ Watch the card. It goes from **provisioning** to **online** on its own.
 The token is single-use and expires in about an hour. If enrollment
 fails, the server's menu can issue a fresh one.
 
+<Callout type="info" title="Deplo pins its own certificate in that command">
+Over https, the command carries the fingerprint of the certificate your
+panel serves, and the agent refuses to start without it. If Deplo cannot
+read that certificate from its own address, **Add** is refused with the
+reason instead of printing a command that could never work. Make the
+panel's address reachable from the panel itself, then add the server
+again.
+</Callout>
+
 ---
 
 ## Open the right ports
@@ -152,6 +161,9 @@ separate setting. See [Access](/guides/server/access).
   its checksum. Retry; if it persists, something is intercepting the
   download.
 - **The token is expired**: issue a new one from the server's menu.
+- **`Deplo could not read the certificate its own address serves`**: the
+  panel cannot dial its own public address, so it has no fingerprint to
+  pin. Check DNS and egress from the panel's machine to that address.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 </Callout>

@@ -115,6 +115,17 @@ The wizard prints one install command per Coolify server, and if you are
 not an instance admin it tells you to ask one. It waits, and shows
 **Waiting for the agent** until each machine calls home.
 
+<Callout type="info" title="The machine's own address, not the panel's">
+Deplo's first guess for a machine is the address you gave the panel. Behind
+a proxy or a CDN that address is the proxy, so nothing answers on `9443`
+and the wizard shows **Cannot connect** with a box to type the machine's
+real address into. That address is remembered for the next attempt.
+
+A machine that already answers has a **Change address** link too: a live
+agent on the wrong box reads as connected, and every volume of the
+services on it would then arrive empty.
+</Callout>
+
 </Step>
 <Step>
 
@@ -210,6 +221,10 @@ create the same app twice.
   pull-request preview of a fork never inherits them. The report lists
   which ones, and you can set any of them back to a plain value under
   **Variables**.
+- **A variable Coolify shows once arrives empty.** Coolify's API answers
+  with no value for it, whatever the token holds, so Deplo has nothing to
+  import. The report names those keys - fill them in under **Variables**
+  before you deploy.
 - **Imported basic-auth credentials are flagged.** They never went through
   Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report
@@ -258,6 +273,10 @@ it would run it on empty storage. Bring that data over yourself, or press
   again.
 - **Stuck on Waiting for the agent**: the install command has not run on
   that machine, or it cannot reach this one.
+- **One source machine will not answer**: the services on it are named in
+  the report and blocked from deploying, and the machines that do answer
+  are still copied. Only when nothing answers at all does the step stop
+  before touching anything.
 - **The data step stops half way**: nothing is rolled back. Everything
   already created here stays exactly as it is, and every service whose
   data did not arrive is named in the report and blocked from deploying.
