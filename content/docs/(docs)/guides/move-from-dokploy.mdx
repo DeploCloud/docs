@@ -162,6 +162,14 @@ it would run it on empty storage. Bring that data over yourself, or press
   the app's **Domains** section tells you which address became which.
   Real domains you own come across as they are, and you repoint DNS when
   you are ready.
+- **Connection strings are rewritten to the new names.** A database keeps
+  its data but not its hostname - it answers as `db-<name>` here - and
+  every variable that named the old one is updated on the way across,
+  write-only ones included. Same for an address that had to be re-hosted.
+  The report names every variable it changed. What Deplo cannot reach is
+  what an app stores about itself: a saved `trusted_domains` or `siteurl`
+  still holds the old address, and the report tells you to fix it from
+  the app's **Console**.
 - **A variable that looks like a credential arrives as a secret.**
   `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `DATABASE_URL`, `SENTRY_DSN` and
   their kin land write-only, and so does a value that carries a credential

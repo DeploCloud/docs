@@ -197,6 +197,19 @@ create the same app twice.
   equivalent, keeps the same route, and the app's **Domains** section
   tells you which address became which. Real domains you own come across
   as they are, and you repoint DNS when you are ready.
+- **Connection strings are rewritten to the new names.** A database keeps
+  its data but not its hostname - it answers as `db-<name>` here - and
+  every variable that named the old one is updated on the way across,
+  write-only ones included. Same for an address that had to be re-hosted.
+  The report names every variable it changed. What Deplo cannot reach is
+  what an app stores about itself: a saved `trusted_domains` or `siteurl`
+  still holds the old address, and the report tells you to fix it from
+  the app's **Console**.
+- **A volume keeps the name you gave it.** Coolify stores a persistent
+  storage as `<resource id>-<name>`, and that id is its own bookkeeping,
+  so the volume arrives here as plain `<name>` - what you read in
+  **Storage**, and what Deplo names it on disk. The data is the same
+  either way.
 - **The compose is the one its author wrote.** Deplo imports Coolify's
   raw compose, not the copy Coolify renders with its own labels, container
   names and per-resource network - Deplo writes those itself.
