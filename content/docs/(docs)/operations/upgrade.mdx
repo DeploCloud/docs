@@ -27,6 +27,24 @@ Moving Deplo to a newer version. Two things version independently:
 
 ---
 
+## Release history
+
+**Settings -> Deplo -> Updates** is the panel's own changelog, so "what changed" has an answer without leaving Deplo.
+
+- The version this instance runs, and whether a newer one is published.
+- **Check now** re-asks the repository instead of waiting out the hourly cache.
+- Every published release with its notes, newest first. The one you are running is marked **Installed**.
+- How much of the fleet is on the agent release Deplo expects, with a link to the servers page.
+
+A newer release also raises a banner across the dashboard and a dot on the **Deplo** entry in the sidebar. Dismissing the banner silences it for that version; the dot stays until you upgrade.
+
+<Callout type="info">
+Nothing updates itself. The list says what a release contains, the two sections
+below are how it gets applied.
+</Callout>
+
+---
+
 ## Upgrade the control plane
 
 Re-run the installer on the machine that runs it:
@@ -44,7 +62,7 @@ curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | 
   DEPLO_VERSION=0.4.1 bash
 ```
 
-The panel checks for releases on its own and shows a banner when one is available, with a link to the release notes. Nothing updates itself.
+The panel checks for releases on its own. Nothing updates itself.
 
 <Callout type="info" title="Your apps keep running throughout">
 They are containers on hosts, not part of the control plane. A panel that's
