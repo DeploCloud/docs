@@ -19,14 +19,13 @@ Typical cases: an API key three services all call, an S3 bucket name, a `SENTRY_
 
 A shared variable has two independent parts, and confusing them is the single most common mistake here.
 
-**Availability scopes say who it is offered to.** A scope is a suggestion. There are three, and a variable can carry several:
+**Availability scopes say who it is offered to.** A scope is a suggestion. A variable can carry several:
 
 | Scope | Suggested to |
 | --- | --- |
 | **The whole team** | Every app in the team |
-| **Projects** | Every app inside the chosen projects |
-| **Environments** | Every app living in the chosen environments |
-| **Specific apps** | Exactly the apps you pick |
+| **Projects** | Every app inside the chosen projects, or only the environments you narrow it to |
+| **Specific apps** | Exactly the apps you pick - the one scope that links right away |
 
 <Callout type="info">
 **The per-app link is what actually injects it.** Until an app links the variable, the value reaches nothing, whatever its scopes say.
@@ -40,36 +39,72 @@ At deploy time a linked shared variable folds **above** the app's own variable o
 
 ## Create one
 
+You can start from two places: the **Variables** page, or the app you want the variable in.
+
+### From the Variables page
+
 <Steps>
 <Step>
 
 ### Open the Shared tab
 
-Open **Variables** in the sidebar, then the **Shared** tab.
+Open **Variables** in the sidebar, then the **Shared** tab, then **New shared variable**.
 
 </Step>
 <Step>
 
-### Add one
+### Fill the table
 
-Click the button to add one and give it a name and a value.
+Type a name and a value per row. **Add another** takes as many rows as you like, and pasting a whole `.env` into a name field explodes it into rows - every one of them becomes its own shared variable.
 
-</Step>
-<Step>
-
-### Pick the type
-
-Pick **Plain** or **Secret**. The same rules apply as anywhere else: a secret is write-only and immutable.
+The **Secret** switch applies to the whole table. A secret is write-only and immutable, here as anywhere else.
 
 </Step>
 <Step>
 
 ### Set availability
 
-Choose at least one availability scope, or pick specific apps. One of the two is required.
+Choose at least one availability scope, or pick specific apps. One of the two is required, and the choice applies to every row you typed.
+
+</Step>
+<Step>
+
+### Review and create
+
+The last step lists what is about to be created and how many apps each scope reaches.
 
 </Step>
 </Steps>
+
+### From an app
+
+<Steps>
+<Step>
+
+### Open the app's variables
+
+Open the app, then **Environment**, then **Add**.
+
+</Step>
+<Step>
+
+### Go to Shared
+
+On the **Shared** tab, click **New shared variable**.
+
+</Step>
+<Step>
+
+### Fill it in
+
+Same table. This app is already the destination and cannot be unpicked - the variable is linked to it as soon as it is created. You can still offer it to the whole team or to projects at the same time.
+
+</Step>
+</Steps>
+
+<Callout type="info">
+Creating a shared variable needs the **Manage env vars** permission held across the whole team, not only on one app. Without it the button is not there.
+</Callout>
 
 ---
 
@@ -87,7 +122,7 @@ Open the app, then **Environment**.
 
 ### Link it
 
-The shared variables offered to this app are listed as such. Link the one you want.
+Click **Add**, then the **Shared** tab: every shared variable offered to this app is listed there. Add the one you want.
 
 </Step>
 <Step>
