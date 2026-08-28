@@ -86,7 +86,7 @@ Each row records who created it and who last changed it, with an avatar, so a su
 
 ## See everything at once
 
-The **Variables** page in the sidebar has three tabs:
+The **Variables** page in the sidebar has two tabs:
 
 <TypeTable
   type={{
@@ -96,20 +96,10 @@ The **Variables** page in the sidebar has three tabs:
     },
     Shared: {
       type: "tab",
-      description: "The team's shared variables",
-    },
-    "All teams": {
-      type: "tab",
-      description: "Instance-wide variables. Instance admins only",
+      description: "The team's shared variables, plus any another team shares with it",
     },
   }}
 />
-
----
-
-## Instance-wide variables
-
-**Variables -> All teams**, for instance admins. They apply to every app of every team and sit at the **lowest** priority, so any team can override one with its own value. Good for a corporate proxy setting or an internal registry mirror; wrong for anything one team should not see.
 
 ---
 
@@ -124,7 +114,7 @@ The normal use is pointing previews at a scratch database instead of the real on
 - **A secret cannot be edited, only replaced.** By design.
 - **`reveal_secrets` does not reveal secret-typed variables.** That capability unmasks plain-but-masked values, connection strings and passwords. Nothing unmasks a secret.
 - **Names are not validated against your framework.** A typo is a missing variable at run time, not an error at save time.
-- **Ticking a shared variable's scope does not inject it.** Only the per-app link does. See [Shared variables](/guides/config/shared-variables).
+- **Ticking a shared variable's scope does not inject it.** Only the per-app link does, unless the variable covers more than one team - that one adds itself everywhere. See [Shared variables](/guides/config/shared-variables).
 - **Compose apps get their variables injected into every service** as pass-through entries, with the values riding in a `0600` env file next to the stack.
 </Callout>
 

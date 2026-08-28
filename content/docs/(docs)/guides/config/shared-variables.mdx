@@ -9,7 +9,7 @@ import { SlidersHorizontal, FolderTree } from "lucide-react";
 
 ## What it is
 
-One variable, owned by the team, that several apps can use. Change it once and every app that uses it gets the new value on its next deploy.
+One variable that several apps can use - across one team, or across several. Change it once and every app that uses it gets the new value on its next deploy.
 
 Typical cases: an API key three services all call, an S3 bucket name, a `SENTRY_DSN`.
 
@@ -23,17 +23,31 @@ A shared variable has two independent parts, and confusing them is the single mo
 
 | Scope | Suggested to |
 | --- | --- |
-| **The whole team** | Every app in the team |
+| **Teams** | Every app in each team you tick |
 | **Projects** | Every app inside the chosen projects, or only the environments you narrow it to |
 | **Specific apps** | Exactly the apps you pick - the one scope that links right away |
 
 <Callout type="info">
 **The per-app link is what actually injects it.** Until an app links the variable, the value reaches nothing, whatever its scopes say.
 
-That is deliberate. A variable that appeared in every app the moment somebody ticked "the whole team" would make a shared secret a footgun, and would make "why does this app have that value" unanswerable.
+That is deliberate. A variable that appeared in every app the moment somebody ticked a team would make a shared secret a footgun, and would make "why does this app have that value" unanswerable.
 </Callout>
 
 At deploy time a linked shared variable folds **above** the app's own variable of the same name, and below a preview override.
+
+### Two teams or more, and it stops asking
+
+Ticking a **second** team changes what the variable does. It is then added to every app in every team you ticked, with no link and no opt-in, and it folds at the **lowest** priority - so an app's own value for the same name still wins.
+
+That is the setting for a corporate proxy or an internal registry mirror, and the wrong one for anything a single team should keep to itself. The review step spells out which of the two you are about to create, and the wording changes as you tick.
+
+You can only tick a team you hold **Manage env vars** in, across the whole of that team.
+
+### A variable another team shares with you
+
+It shows in your **Shared** tab with the owning team's name and no edit buttons: they own the value, you receive it. You can still link it to your own apps.
+
+On an app's **Environment** tab a variable that arrives this way is listed read-only, so a value in the container is never a value with no explanation.
 
 ---
 
@@ -66,6 +80,8 @@ The **Secret** switch applies to the whole table. A secret is write-only and imm
 
 Choose at least one availability scope, or pick specific apps. One of the two is required, and the choice applies to every row you typed.
 
+Picking **Teams** opens the list of teams you may share with, all ticked. Untick to narrow it - one team is the ordinary case.
+
 </Step>
 <Step>
 
@@ -97,7 +113,7 @@ On the **Shared** tab, click **New shared variable**.
 
 ### Fill it in
 
-Same table. This app is already the destination and cannot be unpicked - the variable is linked to it as soon as it is created. You can still offer it to the whole team or to projects at the same time.
+Same table. This app is already the destination and cannot be unpicked - the variable is linked to it as soon as it is created. You can still offer it to teams or to projects at the same time.
 
 </Step>
 </Steps>
@@ -142,9 +158,9 @@ A linked row in an app shows two different removals, and they mean very differen
 | **Delete everywhere** | Deletes the variable for the whole team |
 
 <Callout type="warn" title="Limits and gotchas">
-- **Scope is not injection.** Worth repeating: the link is the only mechanism.
+- **Scope is not injection.** Worth repeating: the link is the only mechanism, unless the variable covers more than one team.
 - **The app's own variable loses to a linked shared one** of the same name. If an app needs its own value, unlink the shared one rather than fighting it.
-- **Shared variables belong to the team**, so an app transferred to another team leaves them behind.
+- **A shared variable belongs to the team that created it.** Deleting that team deletes the variable, including for any other team it reached - the delete dialog counts them.
 - **Deleting one affects every app that links it**, on their next deploy. The dialog says how many.
 - **Secrets follow the same fork rule**: a preview of a fork never receives a secret-typed shared value.
 </Callout>

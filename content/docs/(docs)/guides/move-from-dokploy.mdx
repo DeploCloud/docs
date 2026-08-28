@@ -170,6 +170,15 @@ it would run it on empty storage. Bring that data over yourself, or press
   what an app stores about itself: a saved `trusted_domains` or `siteurl`
   still holds the old address, and the report tells you to fix it from
   the app's **Console**.
+- **A `${{project.KEY}}` reference becomes a real link.** Dokploy resolves
+  those only at deploy time, so a value that is exactly one reference to a
+  project or environment variable of the same name arrives here as a link to
+  that shared variable, not as a second copy. When the names differ a link
+  cannot express it, so the variable arrives with the resolved value and the
+  report says so. Only the apps that referenced a shared variable are linked to
+  it; the others still see it offered under **Variables**.
+  A `${{ <service>.<field> }}` reference to a sibling service is a different
+  thing and still arrives as it is written - the report names those keys.
 - **A variable that looks like a credential arrives as a secret.**
   `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `DATABASE_URL`, `SENTRY_DSN` and
   their kin land write-only, and so does a value that carries a credential

@@ -179,7 +179,7 @@ create the same app twice.
 | Persistent storage | Volume, with its data |
 | File storage | Config file under **Storage** |
 | Environment variables | The app's variables, magic `SERVICE_*` values already resolved |
-| Shared variables (team, project, environment) | Shared variables at the same level, linked to the same apps |
+| Shared variables (team, project, environment, server) | Shared variables at the same level, linked to the apps that referenced them |
 | Domains, with their port and path | Domains |
 | HTTP basic auth | **Access** |
 | Memory and CPU limits | **Resources** |
@@ -216,6 +216,22 @@ create the same app twice.
 - **A git application arrives without a credential.** Coolify hands over a
   clone URL and a branch, never a connection Deplo could reuse. Attach a
   git connection to deploy it; that also turns on auto-deploy.
+- **A `{{team.KEY}}` reference becomes a real link.** A variable whose value
+  is exactly one reference to a shared variable of the same name arrives as a
+  link to that shared variable, not as a second copy: change the shared value
+  once and the app follows. When the names differ (`SHARED={{team.SMTP_HOST}}`)
+  a link cannot express it, so the variable arrives with the value Coolify
+  resolved and the report says so. Only the apps that referenced a shared
+  variable are linked to it - the others still see it offered under
+  **Variables**, one click away.
+- **A server-level shared variable is offered to the project.** Coolify scopes
+  it to a machine, across projects. Deplo has no server scope, so it arrives as
+  a shared variable offered to the project being imported, and the report says
+  that is what happened.
+- **A shared-variable level Coolify will not answer for is in the report.**
+  An older panel has no endpoint for one of them. Nothing is imported from that
+  level and the report names it, so you copy those in by hand instead of
+  discovering them missing later.
 - **Preview-only variables stay behind.** Deplo's pull-request previews
   inherit the app's variables, so importing a preview-only one would leak
   it into production. The report lists them by key.
