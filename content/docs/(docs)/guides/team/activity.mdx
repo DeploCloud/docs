@@ -1,6 +1,6 @@
 ---
 title: Activity
-description: Every meaningful action on your team, grouped by day, with who did it.
+description: Every meaningful action on your team, on one timeline, with filters for who, when, what and where.
 ---
 
 import { UserPlus, Users } from "lucide-react";
@@ -10,19 +10,89 @@ and when.
 
 ---
 
-## How it works
+## The timeline
 
-Every meaningful action is recorded, grouped by day, with the actor's
-avatar: deployments, apps, projects, databases, domains, variables,
-members, backups, destinations, cron jobs, cleanups, monitoring changes
-and MCP access.
+One vertical timeline, newest first, split by month. Each entry reads in the
+order you ask the question in:
 
-Actions taken by the system or by a git provider are attributed to
-`system` or `github`, never to a person who happened to be nearby.
+1. the **face** of the person who acted,
+2. their **name**, and how long ago it was,
+3. **what they did**, in one sentence.
+
+The month heading stays pinned to the top as you scroll, with how many events
+that month holds, so you always know where you are in the trail.
+
+Actions taken by the system or by a git provider are attributed to `System`,
+never to a person who happened to be nearby. They get the event's own icon
+instead of a face.
+
+More entries load on their own as you reach the bottom.
+
+---
+
+## Filters
+
+Four filters, and they combine: picking several values inside one filter widens
+it, picking two different filters narrows it.
+
+<TypeTable
+  type={{
+    User: {
+      description:
+        "Who acted. Type to search, tick as many people as you want. Includes people who have since left the team, and one System entry for everything with no person behind it.",
+      type: "multiple",
+    },
+    Date: {
+      description:
+        "Last 24 hours, 3 days, 7 days or 30 days - or pick an exact range on the calendar.",
+      type: "one",
+    },
+    Event: {
+      description:
+        "What kind of thing happened, grouped into Apps, Data, Team and Platform. Search it, or tick a whole group with Select all.",
+      type: "multiple",
+    },
+    Resource: {
+      description:
+        "Which app, folder or project it happened to. One searchable list covering all three.",
+      type: "multiple",
+    },
+  }}
+/>
+
+The filters live in the address bar, so a filtered view is a link. Send someone
+"what did Ada change last week" instead of describing it.
+
+<Callout type="info">
+  Filtering by **Resource** hides team-level events on purpose. Adding a member
+  or rotating a token did not happen *to* an app, so asking about an app leaves
+  them out.
+</Callout>
+
+---
+
+## Events
+
+Every event carries one type, and the Event filter groups them:
+
+| Group | Covers |
+| --- | --- |
+| **Apps** | Deployments, apps, projects, domains, variables |
+| **Data** | Databases, backups, backup destinations, cron jobs |
+| **Team** | Members and roles; tokens, passkeys and two-factor |
+| **Platform** | Servers, integrations, instance settings, Docker cleanup, monitoring, MCP access |
+
+---
+
+## What you can see
+
+Activity needs the **View activity** capability. A member whose role only
+reaches part of the team sees the trail for the apps they reach, and not the
+team-wide events.
 
 If an entry could not be written, the next successful write says so in the
-trail, out loud, rather than leaving a silent gap. A hole in an audit log
-has to be visible in the audit log.
+trail, out loud, rather than leaving a silent gap. A hole in an audit log has
+to be visible in the audit log.
 
 ---
 
