@@ -39,7 +39,7 @@ const config = {
       { source: "/guides/logs", destination: "/guides/observability/logs", permanent: false },
       { source: "/guides/monitoring", destination: "/guides/observability/monitoring", permanent: false },
       { source: "/guides/notifications-and-alerts", destination: "/guides/observability/notifications-and-alerts", permanent: false },
-      { source: "/guides/console-and-files", destination: "/guides/observability/console-and-files", permanent: false },
+      { source: "/guides/console-and-files", destination: "/guides/observability/console", permanent: false },
       { source: "/guides/cron-jobs", destination: "/guides/observability/cron-jobs", permanent: false },
       { source: "/guides/teams-and-members", destination: "/guides/team/members", permanent: false },
       { source: "/guides/account-security", destination: "/guides/team/account-security", permanent: false },
