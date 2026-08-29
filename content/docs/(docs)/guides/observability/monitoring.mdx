@@ -30,6 +30,47 @@ on: the data was already flowing.
 
 ---
 
+## Reading the numbers
+
+Every figure here is meant to match what the same machine reports in a
+shell. Sizes are **binary** (KiB, MiB, GiB), the units `df`, `free`, `htop`
+and `docker` use, so a disk they call 132G is 132 GiB here too.
+
+### A server
+
+| Reading | What it means |
+| --- | --- |
+| **CPU** | Percentage of the whole machine. Time spent waiting on a disk counts as idle, exactly as `htop` shows it by default. |
+| **Memory** | Total minus available, the same figure `free` prints in its `used` column. The second line splits it: `processes` is what programs hold, `cache` is what the kernel will hand back the moment something needs it. |
+| **Disk** | The filesystem holding the agent's data directory, reported the way `df` reports it: same size, same used, same percentage. |
+| **Network** | Only the machine's real network interfaces. Docker bridges and container veth devices carry the same bytes a second time, so they are left out. |
+| **Load** | The kernel's 1, 5 and 15 minute averages, unchanged. |
+
+<Callout type="info" title="Memory looks higher than in htop">
+Both are right, they answer different questions. Deplo and `free` count
+cache that cannot be reclaimed as used; `htop` counts all of it as free.
+The gap is usually a few percent, and the `processes / cache` line under
+the tile is exactly the difference.
+</Callout>
+
+### An app or a database
+
+| Reading | What it means |
+| --- | --- |
+| **CPU** | Percentage of **one** core, the convention `docker stats` and `htop` use for a process. Three busy cores read as 300%, and the caption spells it out: `299.0% - 3.0 of 8 cores`. The chart's axis grows past 100% rather than flattening the line. |
+| **Memory** | Measured against the machine's RAM. Set a [resource limit](/advanced/resource-limits) and it reads against that limit instead, aggregated over the running containers. |
+| **Network** | Counted once per network namespace. A sidecar sharing another container's network reads the same counters, so the table marks it `network shared with <container>` and the stack total counts it once. |
+| **Disk I/O** | Bytes read and written to block devices by the stack's containers. |
+
+<Callout type="info" title="A container on the host network">
+`network_mode: host` puts a container on the machine's own network, where
+the only counters that exist are the machine's. That container is marked
+`host network` and contributes nothing to the app's network chart - its
+traffic is on the server's chart instead.
+</Callout>
+
+---
+
 ## Save metrics on server
 
 One instance-wide switch on the **Monitoring** page, **on by default**,
@@ -69,6 +110,9 @@ apps, and App keeps restarting.
   server whose agent is not reporting.
 - **Charts are empty right after a restart**: the window is in memory and
   starts again from scratch.
+- **A number does not match a shell**: check the unit first. Everything
+  here is binary (GiB), and an app's CPU is a percentage of one core, not
+  of the machine.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 </Callout>
