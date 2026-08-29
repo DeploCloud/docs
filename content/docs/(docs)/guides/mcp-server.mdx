@@ -114,6 +114,40 @@ teach your agent the product before it can use it.
 
 ---
 
+## Apps with more than one container
+
+A Compose app runs several containers, so anything that acts on "the app"
+has to say **which one**. The names are the service names in the app's own
+compose file, and `get_app` hands them to the agent:
+
+- **A domain** names the container that serves it, and its port. Two
+  hostnames can reach two different containers of the same app, and one
+  hostname can serve a second container under a path such as `/api`.
+- **A cron job** names the container the command runs in. Without it, the
+  job lands in whichever container of the stack happens to be up.
+- **A log read** names the container the same way.
+
+A typical exchange:
+
+```text
+get_app         slug: analytics                                     -> the compose file, with the names
+add_domain      appId, name: app.acme.com, service: client,  port: 3002
+add_domain      appId, name: api.acme.com, service: backend, port: 3001
+render_compose  appId                                               -> the routing that was written
+```
+
+Got one wrong? `update_domain` moves a hostname to another container
+without deleting it.
+
+<Callout type="info">
+Four names are Deplo's own on the shared network - `deplo`, `deplo-traefik`,
+`traefik` and `postgres` - so a domain cannot be pointed at a container
+called one of them. Rename that container in the compose file if it needs a
+hostname of its own.
+</Callout>
+
+---
+
 ## See and revoke what is connected
 
 The **Manage** tab lists **Connected clients** with a **Revoke** button.
@@ -163,6 +197,9 @@ ask, mint it a token that cannot do the thing you would not want it doing.
 - **The agent cannot reach the endpoint** - your panel address must be
   reachable from wherever the agent runs. A local IDE agent needs a route
   to it.
+- **The same refusal keeps coming back** - the agent is passing an argument
+  the tool does not take. The reply names that argument and lists the ones
+  the tool does take.
 
 <Callout type="info">
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
@@ -172,7 +209,7 @@ More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access
 
 ## How many tools there are
 
-Deplo exposes **78 tools** today, one per action. The number moves with the
+Deplo exposes **79 tools** today, one per action. The number moves with the
 product, so treat it as a snapshot: while creating a token, **See which**
 lists them all, marks the ones that token would reach and flags the
 destructive ones. An agent only ever sees the tools its own token can use.
