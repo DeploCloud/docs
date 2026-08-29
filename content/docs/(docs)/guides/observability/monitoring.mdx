@@ -28,11 +28,18 @@ on: the data was already flowing.
 | An app's **Monitoring** tab | That app's containers, plus disk I/O, with the resource limits that apply |
 | A database's **Monitoring** tab | The same for the engine |
 
+An app's and a database's Monitoring tab both name **the server they run on**
+in their header, with a **Manage** button beside it for instance admins: the
+same chart reads very differently depending on which machine it came from.
+
 With more than one server, the **Monitoring** page opens on the fleet: one row
 per host with its CPU trend and its three percentages. **Click a row** to point
-the panels below at that host, or use the **searchable picker** above the list
-to jump straight to one by name or address. With a single server both are
-skipped and the panels are the page.
+the panels below at that host, or use the **searchable picker** at the top of
+the page to jump straight to one by name or address. With a single server both
+are skipped and the panels are the page.
+
+The list sits **under** the selected host's own gauges and charts, not above
+them: the page answers "how is the one I picked" first.
 
 The list is ordered **worst first** - by whichever of CPU, memory or disk is
 fullest - so the hosts worth a look are the ones you see without scrolling.
