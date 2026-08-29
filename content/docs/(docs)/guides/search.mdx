@@ -26,6 +26,7 @@ separators are ignored, so `better auth` finds `better-auth-docs`.
 | Projects, Environments, Folders | The Overview's own structure                                     |
 | Domains                         | A hostname, and the app serving it                               |
 | Members                         | People on the team, by name or username                          |
+| Roles                           | The team's roles, by name                                        |
 | Cron jobs                       | Scheduled jobs, and what they run on                             |
 | Templates                       | The one-click catalogue                                          |
 | Pages                           | Every page in Deplo, including each app's own tabs               |
@@ -39,14 +40,15 @@ Capabilities do not cover, and the server checks again when you act on it.
 
 ## Reach one app's page directly
 
-Name the app and the page in the same breath and you land on it, without
-stepping into the app first:
+Name a page and you get it in every app; name the app too and you get just that
+one - without stepping into the app first:
 
-| You type              | You get                     |
-| --------------------- | --------------------------- |
-| `deplo variables`     | **deplo-web / Environment** |
-| `gamewatcher domains` | **gamewatcher / Domains**   |
-| `main backups`        | **main / Backups**          |
+| You type              | You get                                            |
+| --------------------- | -------------------------------------------------- |
+| `deployments`         | Deplo's own page, then **every app's Deployments** |
+| `deplo variables`     | **deplo-web / Environment**                        |
+| `gamewatcher domains` | **gamewatcher / Domains**                          |
+| `main backups`        | **main / Backups**                                 |
 
 These rows wear the app's own logo with the page's icon badged onto it, so a
 page belonging to one app never reads as a setting of Deplo itself.
@@ -54,10 +56,12 @@ page belonging to one app never reads as a setting of Deplo itself.
 The page is matched on its description too, not only its name - which is why
 `variables` finds the page Deplo calls **Environment**.
 
+Only six show at once; **Show N more** opens the rest without leaving the
+palette.
+
 <Callout type="info">
-  This needs **two words**: one naming the app or database, one naming the page.
-  A single word like `logs` gives you Deplo's own Logs page, not one row per
-  app.
+  A word that names one of your apps is spent naming it. Typing `blog` gives you
+  the app, not fourteen rows of its pages.
 </Callout>
 
 ---
@@ -92,6 +96,10 @@ teams**, each row labelled with the team it belongs to.
 
 Pressing **Enter** on one of those switches you to that team and opens the
 page in a single step.
+
+**Team settings count too.** Searching `roles` gives you the active team's Roles
+page and one for every other team you reach - and the roles themselves are
+searchable by name, so typing what a role is called opens it.
 
 Teams you cannot enter right now - an unmet two-factor policy, for example -
 contribute nothing rather than failing the search.
