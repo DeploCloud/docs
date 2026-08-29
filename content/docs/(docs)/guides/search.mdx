@@ -37,6 +37,31 @@ Capabilities do not cover, and the server checks again when you act on it.
 
 ---
 
+## Reach one app's page directly
+
+Name the app and the page in the same breath and you land on it, without
+stepping into the app first:
+
+| You type              | You get                     |
+| --------------------- | --------------------------- |
+| `deplo variables`     | **deplo-web / Environment** |
+| `gamewatcher domains` | **gamewatcher / Domains**   |
+| `main backups`        | **main / Backups**          |
+
+These rows wear the app's own logo with the page's icon badged onto it, so a
+page belonging to one app never reads as a setting of Deplo itself.
+
+The page is matched on its description too, not only its name - which is why
+`variables` finds the page Deplo calls **Environment**.
+
+<Callout type="info">
+  This needs **two words**: one naming the app or database, one naming the page.
+  A single word like `logs` gives you Deplo's own Logs page, not one row per
+  app.
+</Callout>
+
+---
+
 ## Step into a resource
 
 Pressing **Enter** on an app or a database does not leave the palette. It opens
