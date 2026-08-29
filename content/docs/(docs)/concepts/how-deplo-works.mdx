@@ -31,8 +31,9 @@ TypeScript. It:
 
 **The server agent executes.** One Go binary per server, `deplo-agent`. It is
 the only thing anywhere that runs `docker`, touches the filesystem or opens a
-shell. Builds, deploys, log streaming, the web console, metrics, the files
-browser, backups, restores, disk cleanup and volume copies all go through it.
+shell. Builds, deploys, log streaming, the web console, metrics, the config
+files a **File** volume points at, backups, restores, disk cleanup and volume
+copies all go through it.
 
 ---
 
