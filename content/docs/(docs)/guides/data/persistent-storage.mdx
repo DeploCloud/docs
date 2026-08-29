@@ -132,6 +132,7 @@ The propagation choice is not cosmetic. Without `rslave`, a network share or a F
 - **Data is never deleted by a redeploy, a source change, or removing the row.** Deleting the app is what removes its volumes.
 - **A Compose service name that does not exist is a hard error**, deliberately, rather than a silent remount somewhere else.
 - **Do not put a database's data in a Bind unless you mean it.** A managed [database](/guides/data/databases) already has its own managed volume.
+- **A File is a config file, not a blob.** The editor writes at most 1 MiB, and only text: a binary or oversized file already on the path stays mounted exactly as it is, and says so.
 - **Backups of an app include its files.** They do not include its databases.
 - **Moving to another server copies the data first, and only then tears the
   old one down.** If a volume is not on the old server, a database move
