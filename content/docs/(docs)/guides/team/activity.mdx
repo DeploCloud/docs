@@ -8,6 +8,10 @@ import { UserPlus, Users } from "lucide-react";
 **Activity**, in the sidebar, is the trail of who did what on your team,
 and when.
 
+The trail itself is kept at reading width, with the filters and a breakdown of
+the period in a column beside it on a wide screen. On a narrow one the filters
+sit above the trail and the breakdown at the end of the page.
+
 ---
 
 ## The timeline
@@ -69,6 +73,26 @@ it, picking two different filters narrows it.
 
 The filters live in the address bar, so a filtered view is a link. Send someone
 "what did Ada change last week" instead of describing it.
+
+Every option carries how many events it covers, so you can see where the
+activity is before you narrow anything. An option showing `0` had nothing in the
+period - it stays in the list rather than disappearing.
+
+---
+
+## The breakdown
+
+Under the filters, **Events** and **People** list what the period holds, busiest
+first. Click a line to narrow the trail to it, click it again to let it go.
+
+The heading says which period the numbers describe: the dates you picked, or the
+**last 30 days** when you have picked none. With no date filter the trail itself
+goes back further than that, so the two can disagree - the heading is what tells
+you by how much.
+
+Each list stays blind to its own filter: picking a person narrows the events
+beside them, and still shows everyone else's totals to compare against. Each
+list shows five lines, and the rest are one click away at the bottom.
 
 <Callout type="info">
   Filtering by **Resource** hides team-level events on purpose. Adding a member
