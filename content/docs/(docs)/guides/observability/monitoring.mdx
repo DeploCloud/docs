@@ -28,6 +28,16 @@ on: the data was already flowing.
 | An app's **Monitoring** tab | That app's containers, plus disk I/O, with the resource limits that apply |
 | A database's **Monitoring** tab | The same for the engine |
 
+With more than one server, the **Monitoring** page opens on the fleet: one row
+per host with its CPU trend and its three percentages. **Click a row** to point
+the panels below at that host - there is no separate picker. With a single
+server the list is skipped and the panels are the page.
+
+A row says two more things when there is something to say: **Agent outdated**
+when the host is behind the current agent, and an info marker when it is
+sampling through `docker stats` instead of cgroups, which costs it noticeably
+more CPU.
+
 ---
 
 ## Reading the numbers
@@ -41,7 +51,7 @@ and `docker` use, so a disk they call 132G is 132 GiB here too.
 | Reading | What it means |
 | --- | --- |
 | **CPU** | Percentage of the whole machine. Time spent waiting on a disk counts as idle, exactly as `htop` shows it by default. |
-| **Memory** | Total minus available, the same figure `free` prints in its `used` column. The second line splits it: `processes` is what programs hold, `cache` is what the kernel will hand back the moment something needs it. |
+| **Memory** | Total minus available, the same figure `free` prints in its `used` column. The tile's info marker splits it: `processes` is what programs hold, `cache` is what the kernel will hand back the moment something needs it. |
 | **Disk** | The filesystem holding the agent's data directory, reported the way `df` reports it: same size, same used, same percentage. |
 | **Network** | Only the machine's real network interfaces. Docker bridges and container veth devices carry the same bytes a second time, so they are left out. |
 | **Load** | The kernel's 1, 5 and 15 minute averages, unchanged. |
@@ -49,18 +59,26 @@ and `docker` use, so a disk they call 132G is 132 GiB here too.
 <Callout type="info" title="Memory looks higher than in htop">
 Both are right, they answer different questions. Deplo and `free` count
 cache that cannot be reclaimed as used; `htop` counts all of it as free.
-The gap is usually a few percent, and the `processes / cache` line under
-the tile is exactly the difference.
+The gap is usually a few percent, and the `processes / cache` split in the
+tile's tooltip is exactly the difference.
+</Callout>
+
+<Callout type="info" title="What the arcs measure">
+CPU, memory and disk are drawn as arcs, and an arc only means something
+against a ceiling. Here the ceiling is the whole machine, and the caption
+under each number says what that machine has. The arc turns amber past 80%.
 </Callout>
 
 ### An app or a database
 
 | Reading | What it means |
 | --- | --- |
-| **CPU** | Percentage of **one** core, the convention `docker stats` and `htop` use for a process. Three busy cores read as 300%, and the caption spells it out: `299.0% - 3.0 of 8 cores`. The chart's axis grows past 100% rather than flattening the line. |
+| **CPU** | The arc fills against the ceiling that really applies: the [resource limit](/advanced/resource-limits) when one is set, otherwise the whole machine, and the caption names it (`2.99 cores of 8 cores`). The **chart** below keeps the raw convention `docker stats` and `htop` use, a percentage of **one** core, so three busy cores read as 300% there and the axis grows past 100% rather than flattening the line. |
 | **Memory** | Measured against the machine's RAM. Set a [resource limit](/advanced/resource-limits) and it reads against that limit instead, aggregated over the running containers. |
 | **Network** | Counted once per network namespace. A sidecar sharing another container's network reads the same counters, so the table marks it `network shared with <container>` and the stack total counts it once. |
 | **Disk I/O** | Bytes read and written to block devices by the stack's containers. |
+| **Status** | Per container, in the breakdown table: the healthcheck verdict when the image defines one, otherwise the raw docker state (`running`, `restarting`, `exited`, `paused`, `dead`). |
+| **Restarts** | How many times docker has restarted that container. It is what separates a container that is starting from one that has been dying for an hour, and it turns amber the moment it leaves zero. |
 
 <Callout type="info" title="A container on the host network">
 `network_mode: host` puts a container on the machine's own network, where
@@ -73,8 +91,9 @@ traffic is on the server's chart instead.
 
 ## Save metrics on server
 
-One instance-wide switch on the **Monitoring** page, **on by default**,
-changed by anyone holding `manage_monitoring`.
+One instance-wide switch, in the **⋯** menu at the top right of the
+**Monitoring** page, **on by default**, changed by anyone holding
+`manage_monitoring`.
 
 Turning it off stops keeping history and clears what is stored. Live charts
 still work, because they read the stream directly. Turn it off if you would
@@ -104,15 +123,19 @@ apps, and App keeps restarting.
 </Callout>
 
 <Callout type="error" title="If it does not work">
-- **A server shows dashes instead of numbers**: the stream is not
-  connected. Check that server's health.
+- **A server shows dashes instead of numbers**, or its fleet row reads
+  **No data**: the stream is not connected. Check that server's health.
+- **A container's status is blank**: that host's agent is too old to report
+  one. An empty **Status** never means healthy.
+- **A running container shows no healthcheck verdict**: its image defines no
+  healthcheck, so the status falls back to `running`. Nothing is wrong.
 - **An app shows nothing**: it is stopped, or its containers are on a
   server whose agent is not reporting.
 - **Charts are empty right after a restart**: the window is in memory and
   starts again from scratch.
 - **A number does not match a shell**: check the unit first. Everything
-  here is binary (GiB), and an app's CPU is a percentage of one core, not
-  of the machine.
+  here is binary (GiB), and an app's CPU **chart** is a percentage of one
+  core, not of the machine - its arc is the one drawn against the machine.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 </Callout>
