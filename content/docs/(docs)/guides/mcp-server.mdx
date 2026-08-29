@@ -140,10 +140,11 @@ Got one wrong? `update_domain` moves a hostname to another container
 without deleting it.
 
 <Callout type="info">
-Four names are Deplo's own on the shared network - `deplo`, `deplo-traefik`,
-`traefik` and `postgres` - so a domain cannot be pointed at a container
-called one of them. Rename that container in the compose file if it needs a
-hostname of its own.
+Six names are Deplo's own on the shared network - `deplo`, `deplo-traefik`,
+`traefik`, `postgres`, `deplo-socket-proxy` and `docker-socket-proxy` - so a
+domain cannot be pointed at a container called one of them, whatever its
+capitalisation, and the same goes for a container whose `hostname:` is one of
+them. Rename it in the compose file if it needs a hostname of its own.
 </Callout>
 
 ---

@@ -36,11 +36,19 @@ agent.
 - **Hand-written `aliases:` on the shared network are dropped.** Every
   container on that network already registers its service name as a DNS
   alias, and Docker round-robins a name two containers both claim.
-- **A service named `deplo`, `postgres`, `traefik` or `deplo-traefik` on the
-  shared network is refused outright.** Those names belong to the platform.
-  Claiming one collects somebody else's traffic, including the control
-  plane's own database connections. The check resolves the network by name,
-  so pointing at it under a different key does not get around it.
+- **Six names belong to the platform and are refused on the shared
+  network:** `deplo`, `postgres`, `traefik`, `deplo-traefik`,
+  `deplo-socket-proxy` and `docker-socket-proxy`. Claiming one collects
+  somebody else's traffic, including the control plane's own database
+  connections and the proxy's routing config.
+- **A service claims more than its own name.** The refusal also covers
+  `hostname:`, which Docker registers in DNS exactly like a service name,
+  and it ignores capitalisation, because DNS does: `Postgres` answers a
+  `postgres` lookup. The network is resolved by name too, so referencing it
+  under a different key does not get around any of this.
+- **A service cannot be named after a managed database on the same server.**
+  A database answers to `db-<name>` on the shared network, so a service of
+  that name would collect its connections.
 
 ---
 
@@ -167,8 +175,9 @@ stack again.
 
 ## If it does not work
 
-- **The editor refuses a service name** - it is one of the four reserved
-  names on the shared network. Rename the service.
+- **The editor refuses a service name** - it is a name the platform or a
+  managed database answers to on the shared network. Rename the service, or
+  its `hostname:` if that is what the message names.
 - **A service cannot resolve another one** - they must be in the same
   stack, or both on the shared network with distinct names.
 - **`compose up` fails on a flag** - your extra flags are passed verbatim.
