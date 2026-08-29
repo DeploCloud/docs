@@ -1,4 +1,4 @@
 {
   "title": "Observability",
-  "pages": ["logs", "monitoring", "notifications-and-alerts", "console-and-files", "cron-jobs"]
+  "pages": ["logs", "monitoring", "notifications-and-alerts", "console", "cron-jobs"]
 }

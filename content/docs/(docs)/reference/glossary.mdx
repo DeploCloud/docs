@@ -24,7 +24,7 @@ start-to-end read.
 | **Basic auth** | Username and password in front of every domain of an app. Set under **Settings -> Access**. |
 | **Bootstrap token** | The single-use token that lets a new server enroll. Hashed at rest, valid about an hour. |
 | **Build server** | A server that compiles images for hosts it does not run on. |
-| **Capability** | One action a member may take. There are 46, and `view` is the always-on floor. Never called a permission, a scope or a grant. |
+| **Capability** | One action a member may take. There are 44, and `view` is the always-on floor. Never called a permission, a scope or a grant. |
 | **Certificate provider** | Where a domain's TLS certificate comes from: none, Let's Encrypt, Cloudflare, or one installed on the server. |
 | **Connected client** | A web AI application that reached Deplo through the OAuth consent screen. |
 | **Control plane** | The panel: the dashboard, the API, the database and the rendering. It never runs Docker. |
@@ -39,7 +39,7 @@ start-to-end read.
 | **Git connection** | Stored credentials for one git host, reused by every app deploying from it. |
 | **Instance admin** | A flag on an account that unlocks Servers, Users and the instance settings. Not a team capability. |
 | **Instance owner** | The tier above instance admin, immutable to every hand but its own. |
-| **MCP server** | The endpoint an AI agent connects to, exposing 79 tools that run against the same schema and the same gates a person gets. |
+| **MCP server** | The endpoint an AI agent connects to, exposing 76 tools that run against the same schema and the same gates a person gets. |
 | **Membership** | A person's link to a team, carrying a role. |
 | **Migration source** | A server that hosts nothing, installed only to import from another platform. The one server Deplo uninstalls itself from. |
 | **Preview** | See **pull request preview**. |
@@ -96,7 +96,7 @@ start-to-end read.
   <Card
     icon={<Lock className="text-blue-400" />}
     title="Capabilities"
-    description="The full list of 46"
+    description="The full list of 44"
     href="/reference/capabilities"
   />
 </Cards>
