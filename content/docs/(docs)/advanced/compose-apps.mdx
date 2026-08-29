@@ -99,10 +99,10 @@ Edit the file later in **Settings -> Deployments**.
 A stack has several containers, but only one of them is the front door. Deplo
 picks it when you save the file, and the wizard shows you the choice:
 
-- A service that **publishes or exposes a port** wins. That is your file saying
-  "here".
-- Otherwise it is the service **nothing else waits on** in `depends_on`, which
-  is the one sitting in front of the others.
+- The candidates are the services that **publish or expose a port** - your file
+  saying "here" - or all of them when none does.
+- Among those, it is the one **nothing else waits on** in `depends_on`: the
+  service sitting in front of the others.
 - **A database is never picked.** Postgres, MySQL, MariaDB, MongoDB, Redis and
   ClickHouse are skipped, unless the stack is nothing but databases.
 
