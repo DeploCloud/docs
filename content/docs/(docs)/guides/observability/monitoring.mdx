@@ -30,13 +30,21 @@ on: the data was already flowing.
 
 With more than one server, the **Monitoring** page opens on the fleet: one row
 per host with its CPU trend and its three percentages. **Click a row** to point
-the panels below at that host - there is no separate picker. With a single
-server the list is skipped and the panels are the page.
+the panels below at that host, or use the **searchable picker** above the list
+to jump straight to one by name or address. With a single server both are
+skipped and the panels are the page.
+
+The list is ordered **worst first** - by whichever of CPU, memory or disk is
+fullest - so the hosts worth a look are the ones you see without scrolling.
+Past six servers it scrolls rather than pushing the charts off the screen, and
+the selected host is scrolled back into view whenever you pick one.
 
 A row says two more things when there is something to say: **Agent outdated**
 when the host is behind the current agent, and an info marker when it is
 sampling through `docker stats` instead of cgroups, which costs it noticeably
-more CPU.
+more CPU. **Manage** on each row opens that server's own page - its agent,
+cleanup policy, team access and uninstall. It only appears for instance
+admins, because those pages are theirs.
 
 ---
 
