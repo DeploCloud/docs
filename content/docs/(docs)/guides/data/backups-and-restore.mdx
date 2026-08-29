@@ -115,7 +115,7 @@ Fetching the key is recorded in the activity trail. It is one of only two places
 
 ### Start a new backup
 
-**Storage -> Backups -> New Backup**, or the **Backups** tab of an app or a database.
+**Storage -> Backups -> New Backup**, or **Back up -> New schedule** on the **Backups** tab of an app or a database.
 
 </Step>
 <Step>
@@ -159,11 +159,13 @@ Set **Keep**.
 **Keep is a count, not a number of days.** "Keep 7" means the seven most recent successful artifacts, whether they were taken over a week or a year. Older ones are removed after each successful run, and the newest successful artifact is never removed.
 </Callout>
 
-**Back up now** runs one immediately without touching the schedule.
+**Back up -> Back up now** runs one immediately without touching the schedule.
 
 ---
 
 ## Restore
+
+Every finished run is a restore point. On the target's **Backups** tab they are listed under **Restore points**, and each row's menu holds **Restore**, **Download** and **Delete**.
 
 **In place and destructive.** It asks you to type the target's name.
 
@@ -182,13 +184,13 @@ Stops it, wipes its data, unpacks the artifact and brings it back up. The app sh
 
 The artifact's checksum is verified before a single byte is fed to anything. An artifact taken before checksumming existed says so out loud rather than skipping the check quietly.
 
-**Restore from file** takes an artifact you are holding yourself. If it is encrypted, you paste the recovery key.
+**Back up -> Restore from file** takes an artifact you are holding yourself. If it is encrypted, you paste the recovery key.
 
 ---
 
 ## Download an artifact
 
-Only from a **server** destination, and it is decrypted on the way out. Bucket artifacts are not downloadable through Deplo: you already have credentials for that bucket.
+**Download** in a restore point's menu. Only from a **server** destination, and it is decrypted on the way out. Bucket artifacts are not downloadable through Deplo: you already have credentials for that bucket.
 
 <Callout type="warn" title="Limits and gotchas">
 - **An app schedule does not include its databases.** Schedule the database separately. This trips people up more than anything else here.
