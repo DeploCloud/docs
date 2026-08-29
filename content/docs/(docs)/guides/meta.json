@@ -3,6 +3,7 @@
   "icon": "BookOpen",
   "pages": [
     "deploy",
+    "search",
     "mcp-server",
     "git-providers",
     "releases",

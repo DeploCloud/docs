@@ -1,0 +1,110 @@
+---
+title: Search
+description: Open the command palette with Ctrl K and reach anything in Deplo by typing its name.
+---
+
+import { Rocket, Users, Database } from "lucide-react";
+
+## Open it
+
+Press **Ctrl K** (**⌘K** on a Mac) anywhere in Deplo. Clicking the search box
+at the top of the sidebar does the same thing, and so does pressing **/**.
+
+On a phone, the magnifier in the header opens it full screen.
+
+---
+
+## What it finds
+
+Type a few letters and the palette searches everything at once. Case and
+separators are ignored, so `better auth` finds `better-auth-docs`.
+
+| Group                           | What it covers                                                   |
+| ------------------------------- | ---------------------------------------------------------------- |
+| Apps, Databases                 | Every app and database, by name, slug or id                      |
+| Servers                         | Fleet machines, by name or address                               |
+| Projects, Environments, Folders | The Overview's own structure                                     |
+| Domains                         | A hostname, and the app serving it                               |
+| Members                         | People on the team, by name or username                          |
+| Cron jobs                       | Scheduled jobs, and what they run on                             |
+| Templates                       | The one-click catalogue                                          |
+| Pages                           | Every page in Deplo, including each app's own tabs               |
+| Settings                        | Two-factor, passkeys, registries, cleanup and the rest           |
+| Actions                         | Redeploy, Start, Stop, Reload, New app, New database, Add member |
+
+You only ever see what you are allowed to see. The palette hides what your
+Capabilities do not cover, and the server checks again when you act on it.
+
+---
+
+## Step into a resource
+
+Pressing **Enter** on an app or a database does not leave the palette. It opens
+that resource's own menu: its actions on top, then every page it has.
+
+<Steps>
+  <Step>Type part of the name and press **Enter** on the row.</Step>
+  <Step>
+    Pick an action - **Redeploy**, **Start**, **Stop**, **Reload** - or a page
+    such as **Logs**, **Monitoring** or **Settings**.
+  </Step>
+  <Step>**Backspace** on an empty box steps back out. So does **Escape**.</Step>
+</Steps>
+
+<Callout type="info">
+  Destructive actions are deliberately absent. Deleting an app, rebuilding a
+  database or restoring a backup stays on the page that owns it, behind its own
+  confirmation.
+</Callout>
+
+---
+
+## Other teams
+
+The palette searches every team you can reach, not only the active one. Hits
+from where you are working come first; anything else lands under **Other
+teams**, each row labelled with the team it belongs to.
+
+Pressing **Enter** on one of those switches you to that team and opens the
+page in a single step.
+
+Teams you cannot enter right now - an unmet two-factor policy, for example -
+contribute nothing rather than failing the search.
+
+---
+
+## Keys
+
+| Key                 | What it does                                        |
+| ------------------- | --------------------------------------------------- |
+| **Ctrl K** / **⌘K** | Open or close the palette                           |
+| **/**               | Open the palette (unless you are typing in a field) |
+| **↑ ↓**             | Move through the results                            |
+| **Enter**           | Open the row, or step into a resource               |
+| **Backspace**       | Step back out of a resource, when the box is empty  |
+| **Escape**          | Step back out, or close                             |
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<Rocket className="text-blue-400" />}
+    title="Deploy an app"
+    description="Push, and it is live"
+    href="/guides/deploy"
+  />
+  <Card
+    icon={<Database className="text-blue-400" />}
+    title="Databases"
+    description="Provision, connect and back up"
+    href="/guides/data"
+  />
+  <Card
+    icon={<Users className="text-blue-400" />}
+    title="Roles and permissions"
+    description="What each member can reach"
+    href="/guides/roles-and-permissions"
+  />
+</Cards>
