@@ -28,16 +28,25 @@ and the proxy joins it on every deploy.
 | From | To | Reachable |
 | --- | --- | --- |
 | A service in a stack | Another service in the same stack | Yes |
-| An app | Another app in the same environment | Yes |
-| An app | A database placed in the same environment | Yes |
+| An app | Another app in the same environment, **same server** | Yes |
+| An app | A database in the same environment, **same server** | Yes |
+| An app | Anything in the same environment on **another server** | No |
 | An app in Production | An app in Staging, same project | No |
 | An app | An app in another project | No |
 | An app | Anything of another team | No |
 | A pull request preview | Anything at all | No |
 
-The last two rows are the point. Before this, every container on a server
-shared one network: any app could open a connection to any other app's
-database, by name or by address, whoever owned it.
+The "no" rows for another project and another team are the point. Before this,
+every container on a server shared one network: any app could open a connection
+to any other app's database, by name or by address, whoever owned it.
+
+<Callout type="warn" title="A network does not span servers">
+A Docker network lives on one machine. Two apps in the same environment but on
+different servers do **not** reach each other by name - that was true before this
+change too, and no placement fixes it. Put both on the same server, or publish a
+port and use the server's address. A deploy that points at a name on another
+server says so in its log.
+</Callout>
 
 Folders do not affect any of this. Moving an app between folders never changes
 what it can reach - dragging an icon should not disconnect a database.
@@ -85,15 +94,23 @@ DATABASE_URL points at `gamewatcher-db`, which lives in GW / Production and
 is not reachable from here.
 ```
 
+The other shape says the placement is right and the machine is not:
+
+```
+DB_HOST points at `orders-db`, which is in Shop / Production with this app but
+runs on ANOTHER SERVER.
+```
+
 Three ways out, best first:
 
 <Steps>
 <Step>
 
-### Put them in the same environment
+### Put them in the same environment, on the same server
 
-Move the app (or the database) so both sit in one environment. That is what the
-boundary is for.
+Move the app (or the database) so both sit in one environment **and on one
+server**. That is what the boundary is for - and the server part is not the
+boundary's doing, it is what a Docker network is.
 
 </Step>
 <Step>

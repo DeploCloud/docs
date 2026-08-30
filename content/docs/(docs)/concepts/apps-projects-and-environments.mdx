@@ -95,7 +95,8 @@ other environment gets `deplo-<slug>__<envSlug>`, which is what keeps them
 from colliding on a host.
 
 An Environment is also a **network boundary**. The apps and managed databases
-placed in one reach each other by name, and nothing crosses the line - not
+placed in one - and running on the same server, since a Docker network lives on
+one machine - reach each other by name, and nothing crosses the line: not
 between two environments of the same project, not between projects, not
 between teams. Apps outside any project sit on their team's own network
 instead. See [Network isolation](/advanced/network-isolation).

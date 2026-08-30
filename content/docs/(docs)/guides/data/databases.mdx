@@ -99,7 +99,7 @@ Then open it and copy the connection string into the app that needs it, as an en
 
 ## Connect an app to it
 
-An app reaches a database **in the same environment** by the database's stable name, which is the host in the connection string. Nothing else is required: no port publishing, no firewall rule, no IP.
+An app reaches a database **in the same environment and on the same server** by the database's stable name, which is the host in the connection string. Nothing else is required: no port publishing, no firewall rule, no IP. (A Docker network lives on one machine, so a database on another server needs a published port and the server's address instead.)
 
 ```
 DATABASE_URL = postgres://appuser:••••••@db-orders:5432/orders
@@ -108,9 +108,10 @@ DATABASE_URL = postgres://appuser:••••••@db-orders:5432/orders
 Set it in the app's **Environment** tab as a **Secret**, then redeploy.
 
 <Callout type="warn">
-The app and the database have to be in the **same environment**. Nothing
-crosses an environment boundary, so an app in Production does not reach a
-database placed in Staging - it gets `cannot resolve host`. Deplo says which
+The app and the database have to be in the **same environment and on the same
+server**. Nothing crosses an environment boundary, and no network spans two
+machines, so an app in Production does not reach a database placed in Staging -
+nor one on another server - it gets `cannot resolve host`. Deplo says which
 one, and where it lives, in the deploy log before the container tries. See
 [Network isolation](/advanced/network-isolation).
 </Callout>
@@ -128,7 +129,7 @@ addresses, which are not the same thing:
 
 | Address | What it is | Who uses it |
 | --- | --- | --- |
-| **Internal** | `db-<name>:5432`, the name on its environment's network | Apps in the same environment |
+| **Internal** | `db-<name>:5432`, the name on its environment's network | Apps in the same environment, on the same server |
 | **Public** | `<server>:<host port>`, or **Not published** | Anything that can reach the server |
 
 The **Environment** row is what decides who the internal address answers for. Got
