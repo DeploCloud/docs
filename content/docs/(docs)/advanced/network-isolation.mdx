@@ -54,8 +54,10 @@ create it, under **Storage → New database**.
 - **No environment** - it sits on the team's network, reachable from apps that
   are not in a project.
 
-To move one later, use **Move to environment** on its card. The container is
-brought up again on the new network before the action returns.
+Where a database lives is on its **Networking** card, next to the internal
+address it decides. To move it, use **Move to environment** in the menu on its
+card in the database list - the container is brought up again on the new network
+before the action returns.
 
 <Callout type="warn">
 A database exposed on a host port is unaffected by any of this. The port is

@@ -186,6 +186,12 @@ stack again.
   container ever tries. See [Network isolation](/advanced/network-isolation).
 - **Two services in the same stack cannot see each other** - they must be in
   the same stack with distinct names.
+- **A domain points at a service and nothing answers** - check whether that
+  service sets `network_mode`. Any form of it (`host`, `service:vpn`,
+  `container:x`) keeps the container off its own network, so Traefik cannot reach
+  it and no router is written. The editor warns about this. Route a service that
+  has its own network instead - with a VPN sidecar, that is usually a small proxy
+  in front of it.
 - **`compose up` fails on a flag** - your extra flags are passed verbatim.
   Check them.
 - **Domains show no container to pick** - the file did not parse. Fix the

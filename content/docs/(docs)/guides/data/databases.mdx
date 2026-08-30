@@ -123,12 +123,18 @@ Opening a database lands on its overview: two cards and a row of three tiles.
 
 **Connection** holds the connection string (click to reveal, needs `reveal_secrets`) and the facts fixed at creation: engine and version, username, logical database, server.
 
-**Networking** holds the two addresses, which are not the same thing:
+**Networking** holds the **Environment** the database lives in, and the two
+addresses, which are not the same thing:
 
 | Address | What it is | Who uses it |
 | --- | --- | --- |
 | **Internal** | `db-<name>:5432`, the name on its environment's network | Apps in the same environment |
 | **Public** | `<server>:<host port>`, or **Not published** | Anything that can reach the server |
+
+The **Environment** row is what decides who the internal address answers for. Got
+it wrong at creation? **Move to environment** in the menu on the database's card,
+in the list, moves it - the container comes back up on the new network before the
+action returns.
 
 The switch on the **Public** row and the **Host port** field are right there, so exposing a database, or taking it off the internet, never means opening Settings. It needs both `configure_databases` and the `canExposePorts` grant; without either the switch is disabled and says why.
 
