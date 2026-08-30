@@ -1,0 +1,166 @@
+---
+title: Network isolation
+description: Every environment gets its own private network, so a service name means one container and nothing crosses an environment boundary.
+---
+
+import { Boxes, Database, FolderTree, Layers } from "lucide-react";
+
+---
+
+## What it is
+
+Each **environment** gets its own private Docker network. The apps and managed
+databases placed there reach each other by name. Nothing outside reaches in.
+
+Apps that are not in a project sit on their **team's** network instead, so a
+solo setup behaves exactly as it always did: everything you own can talk to
+everything else you own.
+
+<Callout type="info">
+You never create or pick a network. Deplo derives it from where the app lives,
+and the proxy joins it on every deploy.
+</Callout>
+
+---
+
+## What sees what
+
+| From | To | Reachable |
+| --- | --- | --- |
+| A service in a stack | Another service in the same stack | Yes |
+| An app | Another app in the same environment | Yes |
+| An app | A database placed in the same environment | Yes |
+| An app in Production | An app in Staging, same project | No |
+| An app | An app in another project | No |
+| An app | Anything of another team | No |
+| A pull request preview | Anything at all | No |
+
+The last two rows are the point. Before this, every container on a server
+shared one network: any app could open a connection to any other app's
+database, by name or by address, whoever owned it.
+
+Folders do not affect any of this. Moving an app between folders never changes
+what it can reach - dragging an icon should not disconnect a database.
+
+---
+
+## Where a database lives
+
+A managed database takes a placement, exactly like an app. You pick it when you
+create it, under **Storage → New database**.
+
+- **In an environment** - the apps in that environment reach it at
+  `db-<name>`. This is what you want almost always.
+- **No environment** - it sits on the team's network, reachable from apps that
+  are not in a project.
+
+To move one later, use **Move to environment** on its card. The container is
+brought up again on the new network before the action returns.
+
+<Callout type="warn">
+A database exposed on a host port is unaffected by any of this. The port is
+published by Docker on the machine itself, and its connection string already
+uses the server address, so it works from anywhere it worked before.
+</Callout>
+
+---
+
+## `cannot resolve host`
+
+The one thing that breaks: an app pointing at another app by name, when the two
+are in different environments.
+
+```
+could not translate host name "gamewatcher-db" to address:
+Name or service not known
+```
+
+Deplo says so **before** the container tries. The deploy log carries a line
+naming what you pointed at and where it lives:
+
+```
+DATABASE_URL points at `gamewatcher-db`, which lives in GW / Production and
+is not reachable from here.
+```
+
+Three ways out, best first:
+
+<Steps>
+<Step>
+
+### Put them in the same environment
+
+Move the app (or the database) so both sit in one environment. That is what the
+boundary is for.
+
+</Step>
+<Step>
+
+### Use a managed database
+
+Create it in the environment that needs it. Deplo writes the connection string
+and keeps it reachable.
+
+</Step>
+<Step>
+
+### Publish a port
+
+Only if the two genuinely must stay apart: expose the service on a host port
+and point at the server address instead of the container name.
+
+</Step>
+</Steps>
+
+---
+
+## Upgrading an existing instance
+
+The first time a Deplo with this feature starts, it moves every existing app
+and database onto its environment's network, one server at a time.
+
+- A stack that cannot be reached **stays where it is** and keeps running. It is
+  a delay, not an outage.
+- The Overview shows how many did not move, and Activity says which ones and
+  why.
+- Deploying one moves it. **Try again** on the notice re-runs the whole sweep.
+
+Databases that had no placement are given the environment that actually uses
+them, when exactly one does. One used from two environments stays at the team
+level for you to decide.
+
+---
+
+## What stays exactly the same
+
+Domains, HTTPS, certificates, redirects and basic auth. Published ports, for
+apps and for databases. Logs, console, terminal, backups, cron, metrics and
+migrations - all of those reach a container through the server agent, never
+through the Docker network.
+
+<Cards>
+  <Card
+    icon={<Boxes />}
+    title="Compose apps"
+    href="/advanced/compose-apps"
+    description="What Deplo adds to your compose file, and the names it refuses."
+  />
+  <Card
+    icon={<FolderTree />}
+    title="Apps, projects and environments"
+    href="/concepts/apps-projects-and-environments"
+    description="Where an app lives, and what an environment is for."
+  />
+  <Card
+    icon={<Database />}
+    title="Databases"
+    href="/guides/data/databases"
+    description="Create one, connect to it, and place it where your apps are."
+  />
+  <Card
+    icon={<Layers />}
+    title="Host access"
+    href="/advanced/host-access-and-privileges"
+    description="The grant that gates everything reaching outside a container."
+  />
+</Cards>

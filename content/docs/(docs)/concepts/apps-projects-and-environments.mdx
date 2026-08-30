@@ -94,6 +94,12 @@ The default environment (Production, as seeded) keeps the plain
 other environment gets `deplo-<slug>__<envSlug>`, which is what keeps them
 from colliding on a host.
 
+An Environment is also a **network boundary**. The apps and managed databases
+placed in one reach each other by name, and nothing crosses the line - not
+between two environments of the same project, not between projects, not
+between teams. Apps outside any project sit on their team's own network
+instead. See [Network isolation](/advanced/network-isolation).
+
 An Environment is also one of the three availability scopes of a
 [shared variable](/guides/config/shared-variables): a variable scoped to an
 environment is *suggested* to the apps living there, and each app still

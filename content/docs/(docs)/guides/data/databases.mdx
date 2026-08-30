@@ -3,7 +3,7 @@ title: Databases
 description: A managed Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse instance on one of your servers.
 ---
 
-import { Archive, HardDrive, Terminal, Gauge } from "lucide-react";
+import { Archive, HardDrive, Terminal, Gauge, Network } from "lucide-react";
 
 ---
 
@@ -15,7 +15,7 @@ A managed database running on one of your servers: Postgres, MySQL, MariaDB, Mon
 
 ## How it works
 
-A database is provisioned exactly like an app, by the agent on the server you pick. It runs as its own Compose stack keyed `db-<name>` and joins the shared `deplo` network, which is what lets your apps reach it **by name** rather than by IP. The connection string therefore never changes when the container is recreated.
+A database is provisioned exactly like an app, by the agent on the server you pick. It runs as its own Compose stack keyed `db-<name>` and joins the network of the **environment you place it in**, which is what lets the apps there reach it **by name** rather than by IP. The connection string therefore never changes when the container is recreated.
 
 Images are the official ones, tagged with the version you pick: `postgres:<v>-alpine`, `mysql:<v>`, `mariadb:<v>`, `mongo:<v>`, `redis:<v>-alpine` and `clickhouse/clickhouse-server:<v>`.
 
@@ -70,6 +70,15 @@ Pick the server.
 </Step>
 <Step>
 
+### Pick the environment
+
+Pick the **Environment** the apps that will use it live in. The apps there
+reach it by name; nothing outside it does. Leave it on **No environment** if
+your apps are not in a project.
+
+</Step>
+<Step>
+
 ### Optional: host port
 
 Optionally set a **Host port** to expose it outside the server. This needs the `canExposePorts` grant, and you should think twice: an app on the same Deplo instance does not need it. You can also turn it on later, from the database's overview.
@@ -90,13 +99,21 @@ Then open it and copy the connection string into the app that needs it, as an en
 
 ## Connect an app to it
 
-Apps and databases on the same server share the `deplo` network, so the host in the connection string is the database's stable name. Nothing else is required: no port publishing, no firewall rule, no IP.
+An app reaches a database **in the same environment** by the database's stable name, which is the host in the connection string. Nothing else is required: no port publishing, no firewall rule, no IP.
 
 ```
 DATABASE_URL = postgres://appuser:••••••@db-orders:5432/orders
 ```
 
 Set it in the app's **Environment** tab as a **Secret**, then redeploy.
+
+<Callout type="warn">
+The app and the database have to be in the **same environment**. Nothing
+crosses an environment boundary, so an app in Production does not reach a
+database placed in Staging - it gets `cannot resolve host`. Deplo says which
+one, and where it lives, in the deploy log before the container tries. See
+[Network isolation](/advanced/network-isolation).
+</Callout>
 
 ---
 
@@ -110,7 +127,7 @@ Opening a database lands on its overview: two cards and a row of three tiles.
 
 | Address | What it is | Who uses it |
 | --- | --- | --- |
-| **Internal** | `db-<name>:5432`, the name on the shared `deplo` network | Apps on the same server |
+| **Internal** | `db-<name>:5432`, the name on its environment's network | Apps in the same environment |
 | **Public** | `<server>:<host port>`, or **Not published** | Anything that can reach the server |
 
 The switch on the **Public** row and the **Host port** field are right there, so exposing a database, or taking it off the internet, never means opening Settings. It needs both `configure_databases` and the `canExposePorts` grant; without either the switch is disabled and says why.
@@ -231,4 +248,5 @@ More in [Databases and backups](/troubleshooting/databases-and-backups).
   <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="How the volume behind a database works" href="/guides/data/persistent-storage" />
   <Card icon={<Terminal className="text-blue-400" />} title="Console" description="A one-time-acknowledged engine shell" href="/guides/observability/console" />
   <Card icon={<Gauge className="text-blue-400" />} title="Resource limits" description="CPU and memory for a database container" href="/advanced/resource-limits" />
+  <Card icon={<Network className="text-blue-400" />} title="Network isolation" description="Why an app reaches a database only from the same environment" href="/advanced/network-isolation" />
 </Cards>

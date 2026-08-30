@@ -23,8 +23,8 @@ agent.
 
 **What it folds in:**
 
-- The shared `deplo` network, so your services can reach other apps and
-  managed databases by name.
+- **Your environment's own network**, so your services can reach the other apps
+  and managed databases *in that environment* by name - and nothing outside it.
 - **Traefik labels** for each domain you add, pointing at the service you
   named on that domain.
 - **Your environment variables**, injected into every service as
@@ -33,22 +33,24 @@ agent.
 
 **What it drops or refuses:**
 
-- **Hand-written `aliases:` on the shared network are dropped.** Every
-  container on that network already registers its service name as a DNS
-  alias, and Docker round-robins a name two containers both claim.
-- **Six names belong to the platform and are refused on the shared
-  network:** `deplo`, `postgres`, `traefik`, `deplo-traefik`,
-  `deplo-socket-proxy` and `docker-socket-proxy`. Claiming one collects
-  somebody else's traffic, including the control plane's own database
-  connections and the proxy's routing config.
+- **Hand-written `aliases:` are dropped.** Every container already registers
+  its service name as a DNS alias, and Docker round-robins a name two
+  containers both claim.
+- **`networks: [deplo]` is rewritten, not refused.** Whatever you wrote lands
+  on your environment's network. Copy-pasted compose files and imports from
+  other platforms keep working.
+- **Six names belong to the platform and are refused:** `deplo`, `postgres`,
+  `traefik`, `deplo-traefik`, `deplo-socket-proxy` and `docker-socket-proxy`.
+  The proxy resolves two of those by name from inside your network, so
+  claiming one collects the panel's traffic or the proxy's routing config.
 - **A service claims more than its own name.** The refusal also covers
   `hostname:`, which Docker registers in DNS exactly like a service name,
   and it ignores capitalisation, because DNS does: `Postgres` answers a
   `postgres` lookup. The network is resolved by name too, so referencing it
   under a different key does not get around any of this.
 - **A service cannot be named after a managed database on the same server.**
-  A database answers to `db-<name>` on the shared network, so a service of
-  that name would collect its connections.
+  A database answers to `db-<name>`, so a service of that name would collect
+  its connections.
 
 ---
 
@@ -176,10 +178,14 @@ stack again.
 ## If it does not work
 
 - **The editor refuses a service name** - it is a name the platform or a
-  managed database answers to on the shared network. Rename the service, or
-  its `hostname:` if that is what the message names.
-- **A service cannot resolve another one** - they must be in the same
-  stack, or both on the shared network with distinct names.
+  managed database answers to. Rename the service, or its `hostname:` if that
+  is what the message names.
+- **`cannot resolve host`, and the name is another app** - that app is in a
+  different environment, and nothing crosses an environment boundary. Move one
+  of them so both sit in the same one. The deploy log names it before the
+  container ever tries. See [Network isolation](/advanced/network-isolation).
+- **Two services in the same stack cannot see each other** - they must be in
+  the same stack with distinct names.
 - **`compose up` fails on a flag** - your extra flags are passed verbatim.
   Check them.
 - **Domains show no container to pick** - the file did not parse. Fix the
