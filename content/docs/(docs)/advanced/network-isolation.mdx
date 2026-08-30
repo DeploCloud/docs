@@ -51,6 +51,19 @@ server says so in its log.
 Folders do not affect any of this. Moving an app between folders never changes
 what it can reach - dragging an icon should not disconnect a database.
 
+<Callout type="warn" title="A folder is permissions, not a network">
+Two apps in different folders are on the same team network and reach each other
+by name. Folders decide who may **see and change** an app, not what an app may
+**talk to**. If two things must not reach each other, put them in different
+environments.
+</Callout>
+
+A domain is a separate question. Anything you give a hostname is served by the
+proxy, and the proxy answers from every network - so an app with a domain is
+reachable at that domain from inside another environment exactly as it is from
+the internet. The boundary is about names and addresses inside the machine, not
+about what you publish.
+
 ---
 
 ## Where a database lives
@@ -64,15 +77,39 @@ create it, under **Storage → New database**.
   are not in a project.
 
 Where a database lives is on its **Networking** card, next to the internal
-address it decides. To move it, use **Move to environment** in the menu on its
-card in the database list - the container is brought up again on the new network
-before the action returns.
+address it decides, and you change it from the same place - the container is
+brought up again on the new network before the action returns. The database
+list's card menu has the same **Move to environment**.
+
+A database you stopped stays stopped: it follows the move the next time you
+start it.
 
 <Callout type="warn">
 A database exposed on a host port is unaffected by any of this. The port is
 published by Docker on the machine itself, and its connection string already
 uses the server address, so it works from anywhere it worked before.
 </Callout>
+
+---
+
+## Two stacks, one name
+
+Inside one environment the names have to be unique, and Deplo does not stop you
+from repeating one: two apps that both route a service called `web` both answer
+to `web` on that network, and Docker splits the lookups between them. Half your
+requests reach the wrong container.
+
+The deploy says so:
+
+```
+`web` is also answered by a stack in Shop / Production, on the same network as
+this one. Docker splits the lookups between them, so half will reach the wrong
+container.
+```
+
+Rename the service, or give it a `hostname:` of its own. Only the services you
+route, and the ones you attach to the shared network by hand, take a name there -
+a private sidecar on its own network never collides with anything.
 
 ---
 
@@ -145,8 +182,11 @@ and database onto its environment's network, one server at a time.
 - Deploying one moves it. **Try again** on the notice re-runs the whole sweep.
 
 Databases that had no placement are given the environment that actually uses
-them, when exactly one does. One used from two environments stays at the team
-level for you to decide.
+them, when exactly one place does. One used from two environments - or from an
+environment **and** from apps outside every project - stays at the team level
+for you to decide, because moving it would take it away from half its callers.
+
+Stopped apps and stopped databases are left alone and follow when you start them.
 
 ---
 

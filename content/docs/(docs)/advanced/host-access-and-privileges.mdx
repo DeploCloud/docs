@@ -63,7 +63,10 @@ while `env_file: - /etc/app.env` does.
 
 A `volumes:` entry that is `external: true`, pins a `name:`, or uses
 `driver_opts` to bind a path. A `networks:` entry that joins a network
-belonging to something else.
+belonging to something else - another Compose project's, or the host's own
+segment through `macvlan`. A network **Deplo** owns is not one of these: it is
+rewritten onto your app's own network instead of being refused, so it needs no
+grant and reaches nothing.
 
 **Builds**
 
@@ -125,8 +128,34 @@ grant:
 | A bind mount for uploads | A **Volume**. Deplo creates and keeps it. |
 | A bind mount for a config file | A **File**, edited in the browser. |
 | `network_mode: host` for performance | A domain through Traefik. |
-| A published port so another app can reach it | Nothing. Apps on one server reach each other by name on the shared network. |
+| A published port so another app can reach it | Nothing. Apps in one environment, on one server, reach each other by name. |
 | `privileged` because the README said so | Check whether it is needed. Many images copy it from an older example. |
+
+---
+
+## Taking it away
+
+Revoking the grant stops that person from saving anything new that reaches the
+server - and it also stops the apps they already saved from **deploying** again.
+Deplo remembers who authored a Compose file that reaches outside its container,
+and reads the grant against them on every deploy, including one a git push
+starts:
+
+```
+shop's compose reaches past its container, and whoever saved it no longer has
+permission to let an app reach the server.
+```
+
+Two ways to clear it: give the grant back, or have someone who holds it open the
+app's Compose and save it again, which makes the reach theirs.
+
+<Callout type="warn">
+Containers that are already running keep running. Revoking a grant is not a
+kill switch - it stops the next deploy, it does not stop what is up. Stop the
+app if that is what you need.
+</Callout>
+
+---
 
 <Callout type="warn" title="Limits and gotchas">
 - **A key that is present but empty declares nothing.** `cap_add: []` and
