@@ -6,7 +6,12 @@ description: Your password, two-factor authentication, passkeys and the devices 
 import { Users, KeyRound as KeyRoundIcon } from "lucide-react";
 
 All of it is in **Settings -> Security**, which is personal and has no
-team context.
+team context. Two tabs:
+
+- **Sign-in** - what proves you are you: your password, two-factor
+  authentication and your passkeys. **Account protection** at the top says
+  what the account currently carries and what is worth doing next.
+- **Devices** - where that proof is being held right now.
 
 ---
 
@@ -95,6 +100,15 @@ that presented one **satisfies a two-factor requirement**.
 - **Rename** does not.
 - **Remove** asks again.
 
+Each one shows what is holding it, as the authenticator reported it, not
+as you named it:
+
+| Type | What it means |
+| --- | --- |
+| **Synced** | Copied into a keychain, so it follows you between your devices. |
+| **This device** | Lives only on the machine you registered it on. |
+| **Security key** | A physical key you plug in or tap - USB, NFC or Bluetooth. |
+
 A passkey is bound to the hostname you registered it on. If the panel
 moves to a different address, every passkey shows **Not usable here** and
 the password still signs you in, so you can register a new one. This is
@@ -102,9 +116,13 @@ how the standard works and cannot be worked around.
 
 ---
 
-## Signed-in devices
+## Devices
 
-**Signed-in devices** lists each session with when it was last seen.
+The **Devices** tab puts the browser you are reading this in at the top,
+then lists every other one under **Other devices** with its address and
+when it was last seen. Each row carries the mark of the browser and the
+operating system, so an entry you do not recognise stands out.
+
 **Sign out** ends one. **Sign out everywhere else** ends all but the one
 you are using, which is the right button after losing a laptop.
 
