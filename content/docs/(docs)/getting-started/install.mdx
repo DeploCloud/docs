@@ -39,17 +39,16 @@ curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | 
 
 ## What you need
 
+<Callout type="warn" title="Start from a clean, stock server">
+  A fresh VPS with nothing installed: no Docker, no Nginx, Apache or Caddy already bound to `80`/`443`, no other control panel. The installer is built for that starting point, it's the only way to guarantee the exact experience described on this page. Anything already occupying those ports gets in the way of Traefik and certificate issuance.
+</Callout>
+
 | What             | Requirement                                                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| A clean server   | **Freshly provisioned, stock, nothing installed on it yet.** No Docker, no reverse proxy already bound to `80`/`443` (Nginx, Apache, Caddy), no other control panel. The installer is built for exactly that starting point, it's the only way it can guarantee the experience described on this page. **Reusing a server that already runs something else is unsupported, not just discouraged:** wipe it or provision a new one first. |
 | A server         | <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siUbuntu.hex}`} aria-hidden="true"><path d={siUbuntu.path} /></svg>Ubuntu 24.04, <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siDebian.hex}`} aria-hidden="true"><path d={siDebian.path} /></svg>Debian, or any other modern <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siLinux.hex}`} aria-hidden="true"><path d={siLinux.path} /></svg>Linux distro, `x86-64` or `arm64`, and root access for the length of one install command. Docker is installed for you if it is missing. |
 | Ports            | `80` and `443` reachable from the internet, `3000` for the dashboard, `9443` on every server, this machine included.                      |
 | A domain         | Optional. Useful, not required: the generated `nip.io` hostname works from the first deploy.                                     |
 | Docker knowledge | None. It is available as an escape hatch, never as a prerequisite.                                                              |
-
-<Callout type="warn" title="Don't point the installer at a server that already does something else">
-  A box already running Docker with its own networks, a reverse proxy holding `80`/`443`, or another control panel will fight with what the installer sets up: the address-pool rewrite, the `deplo` network, Traefik's certificate issuance. Start from a stock image and let Deplo be the first thing installed on it.
-</Callout>
 
 ---
 
