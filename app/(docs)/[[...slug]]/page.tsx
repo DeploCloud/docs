@@ -13,6 +13,7 @@ import { ViewOptions } from "@/components/view-options";
 import { BetaChip } from "@/components/beta-chip";
 
 const BETA_PAGES = new Set([
+  "/getting-started/install",
   "/guides/mcp-server",
   "/advanced/build-servers",
   "/guides/server/cleanup",

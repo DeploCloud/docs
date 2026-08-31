@@ -10,6 +10,7 @@ const DEPLO_MARK_PATH =
 // Pages documenting a feature still in beta: flagged in the sidebar with a
 // trailing flask icon. Keep in sync with the beta Callout on each page.
 const BETA_PAGES = new Set([
+  "/getting-started/install",
   "/guides/server/container-registries",
   "/guides/server/cleanup",
   "/advanced/build-servers",
