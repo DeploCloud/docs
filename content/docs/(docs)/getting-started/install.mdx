@@ -7,6 +7,10 @@ icon: Download
 import { Rocket, Variable, Network, Terminal, Trash2 } from "lucide-react";
 import { siUbuntu, siDebian, siLinux } from "simple-icons";
 
+<Callout type="warn" title="Start from a clean, stock server">
+  A fresh VPS with nothing installed: no Docker, no Nginx, Apache or Caddy already bound to `80`/`443`, no other control panel. The installer is built for that starting point, it's the only way to guarantee the exact experience described on this page. Anything already occupying those ports gets in the way of Traefik and certificate issuance.
+</Callout>
+
 <Tabs items={['Quick install', 'With your own domain']}>
 <Tab value="Quick install">
 
