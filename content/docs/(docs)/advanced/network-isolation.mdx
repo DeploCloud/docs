@@ -184,9 +184,16 @@ container.
 
 Rename the service, or give it a `hostname:` of its own. **Every** service of your
 stack takes a name on that network, not only the ones you route: a worker with no
-domain is still part of the app and still has to reach your database. The one
-exception is a service named after Deplo's own infrastructure, which is left off
-the network instead of being refused.
+domain is still part of the app and still has to reach your database.
+
+Two things stay off it, and both keep talking to the rest of your stack over a
+private network of their own:
+
+- a service named after Deplo's own infrastructure (`postgres`, `traefik`, …),
+  which is left off rather than refused, so an ordinary stack still deploys;
+- anything in a compose file where **you** declared the networks yourself. Naming
+  your own is a choice, and Deplo does not add to it behind your back - a service
+  with a domain is still wired, or the domain would answer nothing.
 
 Deplo also refuses a move that would create the overlap - putting an app into an
 environment where a database already answers to one of its names, or the reverse.

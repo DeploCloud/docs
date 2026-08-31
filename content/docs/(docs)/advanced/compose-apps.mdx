@@ -48,8 +48,10 @@ agent.
   manages ends up on your own environment's, under the single key `deplo`.
 - **`network_mode:` may not name a network.** Anything but `none` and `default`
   needs the host permission, because every other value is a docker network name -
-  and one naming a network Deplo manages is refused outright, as is one filled in
-  from a variable, which nothing can inspect before it runs.
+  `bridge` included, which is the one docker shares between everything that asks
+  for it. One naming a network Deplo manages is refused outright, and so is one
+  filled in from a variable (`$NET` as much as `${NET}`), since the value only
+  exists at `compose up` and nothing can inspect it before then.
 - **Six names belong to the platform and are refused:** `deplo`, `postgres`,
   `traefik`, `deplo-traefik`, `deplo-socket-proxy` and `docker-socket-proxy`.
   The proxy resolves two of those by name from inside your network, so
