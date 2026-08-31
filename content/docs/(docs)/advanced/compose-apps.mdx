@@ -25,6 +25,11 @@ agent.
 
 - **Your environment's own network**, so your services can reach the other apps
   and managed databases *in that environment* by name - and nothing outside it.
+  The services put on it are the ones a **domain routes to**, plus any service
+  that names the network itself. A sidecar with neither stays private to your
+  stack: it reaches its siblings, not `db-<name>`. Add one with
+  `networks: [default, deplo]` - keep `default`, or the service leaves the
+  siblings it had.
 - **Traefik labels** for each domain you add, pointing at the service you
   named on that domain.
 - **Your environment variables**, injected into every service as

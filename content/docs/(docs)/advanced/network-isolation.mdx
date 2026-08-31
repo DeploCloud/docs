@@ -48,8 +48,14 @@ port and use the server's address. A deploy that points at a name on another
 server says so in its log.
 </Callout>
 
-Folders do not affect any of this. Moving an app between folders never changes
-what it can reach - dragging an icon should not disconnect a database.
+Folders have no network of their own. Moving an app **between** folders, or in
+and out of one at the team level, never changes what it can reach.
+
+Moving an app **from an environment into a folder** is a different move. An app
+lives in exactly one place, so filing it in a folder takes it out of the
+environment and puts it on the team's network - it leaves that environment's
+databases behind. Deplo brings the stack up again on the new network before the
+move returns, and the deploy log names anything it can no longer resolve.
 
 <Callout type="warn" title="A folder is permissions, not a network">
 Two apps in different folders are on the same team network and reach each other
@@ -63,6 +69,44 @@ proxy, and the proxy answers from every network - so an app with a domain is
 reachable at that domain from inside another environment exactly as it is from
 the internet. The boundary is about names and addresses inside the machine, not
 about what you publish.
+
+---
+
+## Which services are on the network
+
+A single-image app is one container, and it is always on it.
+
+A compose app is several containers, and only some of them are:
+
+- every service a **domain routes to**, and
+- every service that **names the network itself**.
+
+A sidecar with neither - a worker, a queue consumer, a cron container - stays
+private to its own stack. It reaches its siblings by name and nothing else, so
+`db-<name>` does not resolve from it. The same is true of a whole app that has
+no domain at all: nothing in it is on the environment's network.
+
+Put the service on it by naming the network yourself:
+
+```yaml
+services:
+  worker:
+    image: my/app
+    command: bundle exec sidekiq
+    networks: [default, deplo]
+```
+
+`deplo` is the key Deplo declares for the environment's network. Naming it is
+enough - Deplo points that key at the right network for you, so the same file
+keeps working if the app moves environment.
+
+<Callout type="warn" title="Keep default in the list">
+Compose puts a service on `default` only while it names no network at all.
+The moment you write `networks:`, that list is the whole list - `networks:
+[deplo]` on its own would reach the environment and lose the siblings it used
+to talk to. `[default, deplo]` is what Deplo writes for a routed service, for
+exactly this reason.
+</Callout>
 
 ---
 
@@ -84,10 +128,12 @@ list's card menu has the same **Move to environment**.
 A database you stopped stays stopped: it follows the move the next time you
 start it.
 
-<Callout type="warn">
-A database exposed on a host port is unaffected by any of this. The port is
-published by Docker on the machine itself, and its connection string already
-uses the server address, so it works from anywhere it worked before.
+<Callout type="warn" title="A published port is outside the boundary">
+Exposing a database on a host port takes it out of all of this. Docker binds
+the port on the machine, so it answers **every container on that server**,
+whatever network they are on - and the server's own firewall does not stop
+them, because Docker publishes below it. The password is the only thing in the
+way. Leave the port off unless something outside the server really needs it.
 </Callout>
 
 ---
@@ -163,7 +209,9 @@ and keeps it reachable.
 ### Publish a port
 
 Only if the two genuinely must stay apart: expose the service on a host port
-and point at the server address instead of the container name.
+and point at the server address instead of the container name. Treat that port
+as public - it answers every container on the server, not only the one you
+opened it for.
 
 </Step>
 </Steps>
