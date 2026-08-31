@@ -330,7 +330,9 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **One source machine will not answer**: the services on it are named in
   the report and blocked from deploying, and the machines that do answer
   are still copied. Only when nothing answers at all does the step stop
-  before touching anything.
+  before touching anything. Copying dials that machine on inbound `9443`,
+  which its call home never uses, so a source that went green can still be
+  out of reach. Check it from this machine with `nc -vz <source-ip> 9443`.
 - **The data step stops half way**: nothing is rolled back. Everything
   already created here stays exactly as it is, and every service whose
   data did not arrive is named in the report and blocked from deploying.
