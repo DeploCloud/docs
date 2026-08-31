@@ -225,8 +225,9 @@ and database onto its environment's network, one server at a time.
 
 - A stack that cannot be reached **stays where it is** and keeps running. It is
   a delay, not an outage.
-- The Overview shows how many did not move, and Activity says which ones and
-  why.
+- The Overview shows how many the sweep could not reach, and Activity says which
+  ones and why. A stack it deliberately skipped - one you had stopped, one
+  mid-deploy - is not in that count.
 - Deploying one moves it. **Try again** on the notice re-runs the whole sweep.
 
 Databases that had no placement are given the environment that actually uses
@@ -234,7 +235,8 @@ them, when exactly one place does. One used from two environments - or from an
 environment **and** from apps outside every project - stays at the team level
 for you to decide, because moving it would take it away from half its callers.
 
-Stopped apps and stopped databases are left alone and follow when you start them.
+Stopped apps and stopped databases are left alone and follow when you start
+them. So does anything that was mid-deploy, on its next deploy.
 
 ---
 
