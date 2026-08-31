@@ -45,9 +45,10 @@ owner** of the team.
 
 <Callout type="warn" title="read:sensitive is not optional">
 Without it Coolify does not blank your secrets, it removes them from the
-response. Every environment variable and every database password would
-arrive **empty**, and the migration would look like it worked. Deplo
-refuses to scan at all rather than let that happen.
+response. Every environment variable, every database password and every
+one-click stack's **compose file** would arrive **empty**, and the
+migration would look like it worked. Deplo refuses to scan at all rather
+than let that happen.
 </Callout>
 
 </Step>
@@ -228,9 +229,18 @@ create the same app twice.
   `./nginx.conf` - under Coolify's data directory. Those are copied into the
   app's files directory in the data step, so it does not deploy onto an empty
   path.
-- **A git application arrives without a credential.** Coolify hands over a
-  clone URL and a branch, never a connection Deplo could reuse. Attach a
-  git connection to deploy it; that also turns on auto-deploy.
+- **An address a template recorded without a port still routes.** A
+  one-click template that declares `SERVICE_FQDN_<NAME>` and no
+  `SERVICE_FQDN_<NAME>_<PORT>` names its service and no port. Deplo reads
+  the port off that service - what it publishes, what its healthcheck
+  dials, else the usual web port - and the report says which one it took.
+- **Coolify's own `COOLIFY_*` variables stay behind.** They name the
+  machine and the panel you are leaving, so they are dropped from every
+  shared level rather than becoming team variables nobody can act on.
+- **A git application arrives without a credential** when Coolify cloned it
+  through a connected source. A public repository clones here exactly as it
+  cloned there and needs nothing. Attach a git connection for a private one;
+  that also turns on auto-deploy.
 - **A `{{team.KEY}}` reference becomes a real link.** A variable whose value
   is exactly one reference to a shared variable of the same name arrives as a
   link to that shared variable, not as a second copy: change the shared value
@@ -309,8 +319,9 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **API is disabled**: turn the API on in Coolify's settings.
 - **You are not allowed to access the API**: Coolify's IP allowlist does
   not include this machine.
-- **This token cannot read values**: the token has no `read:sensitive`, or
-  it belongs to an account that is not an admin or owner of the team.
+- **This token cannot read values** or **This token cannot read compose
+  files**: the token has no `read:sensitive`, or it belongs to an account
+  that is not an admin or owner of the team. Both are the same scope.
 - **Rate limited**: Coolify allows 200 requests a minute and Deplo stays
   under it, but a busy panel can still hit the ceiling. Wait and try
   again.
