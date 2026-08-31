@@ -186,14 +186,15 @@ Rename the service, or give it a `hostname:` of its own. **Every** service of yo
 stack takes a name on that network, not only the ones you route: a worker with no
 domain is still part of the app and still has to reach your database.
 
-Two things stay off it, and both keep talking to the rest of your stack over a
-private network of their own:
+Declaring your own networks does not take a service off it - `frontend` and
+`backend` is organisation, not a request to be cut off, and your networks are kept
+alongside the environment's. Three things do stay off:
 
-- a service named after Deplo's own infrastructure (`postgres`, `traefik`, …),
-  which is left off rather than refused, so an ordinary stack still deploys;
-- anything in a compose file where **you** declared the networks yourself. Naming
-  your own is a choice, and Deplo does not add to it behind your back - a service
-  with a domain is still wired, or the domain would answer nothing.
+| Stays off | Why |
+| --- | --- |
+| A network you marked `internal: true` | That IS the request to be cut off, and adding the environment's network would hand back the egress you removed |
+| `network_mode:` on a service | It replaces the network stack entirely, so there is nothing to join - and a domain pointing at such a service is reported in the deploy log |
+| A service named after Deplo's own infrastructure | Left off rather than refused, so an ordinary stack still deploys. It keeps a private network with the rest of your stack, so the two still talk |
 
 Deplo also refuses a move that would create the overlap - putting an app into an
 environment where a database already answers to one of its names, or the reverse.
