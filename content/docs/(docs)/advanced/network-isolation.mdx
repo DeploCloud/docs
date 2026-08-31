@@ -16,6 +16,14 @@ Apps that are not in a project sit on their **team's** network instead, so a
 solo setup behaves exactly as it always did: everything you own can talk to
 everything else you own.
 
+<Callout type="warn" title="Without projects, nothing is separated">
+Everything outside a project - the top level, and anything in a folder - shares
+one network per team. That is deliberate (it is what keeps the simple setup
+simple), but it means **the boundary only exists once you use environments**. If
+you want two things separated, put them in different environments; a folder will
+not do it.
+</Callout>
+
 <Callout type="info">
 You never create or pick a network. Deplo derives it from where the app lives,
 and the proxy joins it on every deploy.
@@ -40,6 +48,17 @@ and the proxy joins it on every deploy.
 The "no" rows for another project and another team are the point. Before this,
 every container on a server shared one network: any app could open a connection
 to any other app's database, by name or by address, whoever owned it.
+
+<Callout type="warn" title="A preview cannot reach your database">
+A pull request preview is sealed in a network of its own, because the code in a
+pull request is a stranger's. That also means it does **not** reach the managed
+database of the environment it was opened from - the preview will fail to
+connect unless it brings its own.
+
+Give the preview its own database as a service inside the compose file, or point
+it at a database you have published a port for. There is no way to let a preview
+into an environment's network: that is the thing the seal is for.
+</Callout>
 
 <Callout type="warn" title="A published port is not behind the boundary">
 A port published on the host (an app's `ports:`, or a database you exposed) is

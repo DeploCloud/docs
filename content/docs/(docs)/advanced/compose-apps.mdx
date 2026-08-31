@@ -44,6 +44,9 @@ agent.
   other platforms keep working. The same is true of a network you point
   somewhere else on purpose, `default` included: any key naming a network Deplo
   manages ends up on your own environment's, under the single key `deplo`.
+- **Do not call a network of your own `deplo`.** That key is Deplo's, so a network
+  you declare under it is replaced by your environment's - and if you had marked it
+  `internal: true`, the seal goes with it. Any other name is yours and is kept.
 - **`network_mode:` may not name a network.** Anything but `none` and `default`
   needs the host permission, because every other value is a docker network name -
   `bridge` included, which is the one docker shares between everything that asks
