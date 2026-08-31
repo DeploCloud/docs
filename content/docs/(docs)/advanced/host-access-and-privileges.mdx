@@ -79,9 +79,9 @@ loads host SSH keys or agents, or that runs privileged.
 did not show, and those keys can be any of the above.
 
 <Callout type="info" title="What a refusal tells you">
-A refusal names what tripped it - the key, or the mount - and who can turn
-the permission on. If you are told an app reaches the server and you
-cannot see where, that sentence is where to look.
+  A refusal names what tripped it - the key, or the mount - and who can turn the
+  permission on. If you are told an app reaches the server and you cannot see
+  where, that sentence is where to look.
 </Callout>
 
 <Callout type="success" title="What is never gated">
@@ -91,14 +91,16 @@ on any list and never ask for a permission.
 That is deliberate: a permission prompt in front of the safer choice is
 one people learn to route around, and then they route around the one that
 mattered.
+
 </Callout>
 
 ---
 
 ## Publishing a port is a separate grant
 
-`canExposePorts` covers publishing a container port on the host: what a
-`ports:` entry does, and what a database's **Host port** does.
+`canExposePorts` covers publishing a container port on the host: an app's
+[**Published ports**](/advanced/published-ports), a `ports:` entry in a
+Compose file, and a database's **Host port**.
 
 It is separate because it is a different risk. A published port is
 reachable from the network, but it does not give the container the
@@ -112,8 +114,8 @@ Both grants sit on the member, alongside their role: **Settings ->
 Members -> the member -> Permissions**.
 
 <Callout type="warn">
-Grant them to somebody who administers the servers. Not to everybody who
-deploys apps, and never as a shortcut to make one Compose file save.
+  Grant them to somebody who administers the servers. Not to everybody who
+  deploys apps, and never as a shortcut to make one Compose file save.
 </Callout>
 
 ---
@@ -123,13 +125,14 @@ deploys apps, and never as a shortcut to make one Compose file save.
 Nine times out of ten there is a supported answer that does not need the
 grant:
 
-| You wanted | Do this instead |
-| --- | --- |
-| A bind mount for uploads | A **Volume**. Deplo creates and keeps it. |
-| A bind mount for a config file | A **File**, edited in the browser. |
-| `network_mode: host` for performance | A domain through Traefik. |
-| A published port so another app can reach it | Nothing. Apps in one environment, on one server, reach each other by name. |
-| `privileged` because the README said so | Check whether it is needed. Many images copy it from an older example. |
+| You wanted                                         | Do this instead                                                              |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| A bind mount for uploads                           | A **Volume**. Deplo creates and keeps it.                                    |
+| A bind mount for a config file                     | A **File**, edited in the browser.                                           |
+| `network_mode: host` for performance               | A domain through Traefik.                                                    |
+| A published port so another app can reach it       | Nothing. Apps in one environment, on one server, reach each other by name.   |
+| A port for a game server, a mail server or raw TCP | [Published ports](/advanced/published-ports). That is what the grant is for. |
+| `privileged` because the README said so            | Check whether it is needed. Many images copy it from an older example.       |
 
 ---
 
@@ -150,26 +153,26 @@ Two ways to clear it: give the grant back, or have someone who holds it open the
 app's Compose and save it again, which makes the reach theirs.
 
 <Callout type="warn">
-Containers that are already running keep running. Revoking a grant is not a
-kill switch - it stops the next deploy, it does not stop what is up. Stop the
-app if that is what you need.
+  Containers that are already running keep running. Revoking a grant is not a
+  kill switch - it stops the next deploy, it does not stop what is up. Stop the
+  app if that is what you need.
 </Callout>
 
 ---
 
 <Callout type="warn" title="Limits and gotchas">
-- **A key that is present but empty declares nothing.** `cap_add: []` and
-  `privileged: false` do not trip the gate.
-- **Deplo's own render-time entries never trip it.** The check reads what
-  you authored, not the finished file.
-- **An import can hit this too.** Items needing a grant you do not hold
-  land in the migration report rather than being created.
-- **This is a real trust boundary, not a formality.** Somebody with this
-  grant can read every other team's data on that machine.
+  - **A key that is present but empty declares nothing.** `cap_add: []` and
+  `privileged: false` do not trip the gate. - **Deplo's own render-time entries
+  never trip it.** The check reads what you authored, not the finished file. -
+  **An import can hit this too.** Items needing a grant you do not hold land in
+  the migration report rather than being created. - **This is a real trust
+  boundary, not a formality.** Somebody with this grant can read every other
+  team's data on that machine.
 </Callout>
 
 <Callout type="info">
-Save or deploy refused for a permission you don't hold? See [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
+  Save or deploy refused for a permission you don't hold? See [Sign-in and
+  access troubleshooting](/troubleshooting/sign-in-and-access).
 </Callout>
 
 ---
@@ -177,8 +180,28 @@ Save or deploy refused for a permission you don't hold? See [Sign-in and access 
 ## See also
 
 <Cards>
-  <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="Where this grant is checked" href="/advanced/compose-apps" />
-  <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="Volumes instead of bind mounts" href="/guides/data/persistent-storage" />
-  <Card icon={<Users className="text-blue-400" />} title="Roles and permissions" description="Grant this on a member" href="/guides/roles-and-permissions" />
-  <Card icon={<Library className="text-blue-400" />} title="Capabilities" description="Every capability, including canMountHostVolumes" href="/reference/capabilities" />
+  <Card
+    icon={<Layers className="text-blue-400" />}
+    title="Compose apps"
+    description="Where this grant is checked"
+    href="/advanced/compose-apps"
+  />
+  <Card
+    icon={<HardDrive className="text-blue-400" />}
+    title="Persistent storage"
+    description="Volumes instead of bind mounts"
+    href="/guides/data/persistent-storage"
+  />
+  <Card
+    icon={<Users className="text-blue-400" />}
+    title="Roles and permissions"
+    description="Grant this on a member"
+    href="/guides/roles-and-permissions"
+  />
+  <Card
+    icon={<Library className="text-blue-400" />}
+    title="Capabilities"
+    description="Every capability, including canMountHostVolumes"
+    href="/reference/capabilities"
+  />
 </Cards>

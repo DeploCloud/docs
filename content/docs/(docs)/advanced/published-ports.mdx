@@ -1,0 +1,118 @@
+---
+title: Published ports
+description: Reach an app on a port of the server, for anything that is not a website.
+---
+
+import { Globe, Server } from "lucide-react";
+
+---
+
+## What it is
+
+Deplo routes apps through its proxy: you add a domain, and the app answers
+on it over HTTPS. That covers websites and APIs, and it does not cover a
+Minecraft server, an SMTP relay, a cache or a TCP game protocol.
+
+A **published port** binds a port of the server straight to a port of your
+container, so clients connect to `your-server:16379` instead of to a name.
+
+**Settings -> Advanced -> Published ports**, on an app.
+
+---
+
+## How to publish one
+
+<Steps>
+<Step>
+
+### Open the app's Advanced settings
+
+**Settings -> Advanced -> Published ports**, then **Add port**.
+
+</Step>
+<Step>
+
+### Fill in the pair
+
+<TypeTable
+  type={{
+    "Host port": {
+      type: "1024-65535",
+      description:
+        "The port on the server, the one clients connect to. It must be free.",
+    },
+    "Container port": {
+      type: "1-65535",
+      description: "The port your app listens on inside the container.",
+    },
+    Protocol: {
+      type: "TCP or UDP",
+      description:
+        "TCP unless the protocol says otherwise. A game server is often UDP.",
+    },
+  }}
+/>
+
+</Step>
+<Step>
+
+### Deploy
+
+The ports are written into the app's Compose file, so they bind on the
+**next deploy**, like a volume or a resource limit.
+
+</Step>
+</Steps>
+
+---
+
+## The rules
+
+- **It needs the publish-ports permission** (`canExposePorts`), the same
+  one a database's **Host port** needs. Without it the section is
+  read-only and says so. See
+  [Host access](/advanced/host-access-and-privileges#publishing-a-port-is-a-separate-grant).
+- **Ports under 1024 are refused.** They belong to the host, and 80 and 443
+  belong to Deplo's proxy. Publish 8025 and let your DNS or firewall do the
+  rest.
+- **A host port belongs to one thing on the machine.** Deplo refuses a port
+  another app or database on that server already publishes, even one in
+  another team - a server is shared.
+- **Pull request previews never publish.** A preview would be fighting
+  production for the same port, so it gets none.
+- **A Compose app publishes its own.** The section is not offered: write
+  `ports:` in the Compose file, which needs the same permission.
+
+<Callout type="warn">
+  A published port is open to whatever can reach the server. It carries no
+  certificate, no basic auth and none of the middlewares a domain gets. Put a
+  firewall in front of it, and use a domain whenever the protocol is HTTP.
+</Callout>
+
+---
+
+## Do you actually need one?
+
+| You wanted                                              | Do this instead                                                          |
+| ------------------------------------------------------- | ------------------------------------------------------------------------ |
+| A website or an API reachable from outside              | [Add a domain](/getting-started/add-a-domain). HTTPS is handled for you. |
+| One app to reach another                                | Nothing. Apps in one environment reach each other by name.               |
+| An app to reach its database                            | Nothing. The database answers as `db-<name>`.                            |
+| A game server, a mail server, a raw TCP or UDP protocol | A published port. This is what it is for.                                |
+
+## See also
+
+<Cards>
+  <Card
+    icon={<Globe className="text-blue-400" />}
+    title="Domains and HTTPS"
+    description="The other way in, and the one to prefer"
+    href="/guides/networking/domains-and-https"
+  />
+  <Card
+    icon={<Server className="text-blue-400" />}
+    title="Host access"
+    description="The two grants that reach outside a container"
+    href="/advanced/host-access-and-privileges"
+  />
+</Cards>

@@ -6,9 +6,9 @@ description: A wizard that reads an existing Dokploy installation over its API a
 import { Layers, ServerCog, Globe } from "lucide-react";
 
 <Callout type="info" title="Beta">
-This feature is currently beta/experimental and subject to change. It is
-not recommended for production. Try it out and share your feedback on
-[our GitHub](https://github.com/DeploCloud/deplo/issues).
+  This feature is currently beta/experimental and subject to change. It is not
+  recommended for production. Try it out and share your feedback on [our
+  GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
 A wizard that reads an existing Dokploy installation over its API and
@@ -64,6 +64,7 @@ real address into. That address is remembered for the next attempt.
 A machine that already answers has a **Change address** link too: a live
 agent on the wrong box reads as connected, and every volume of the
 services on it would then arrive empty.
+
 </Callout>
 
 </Step>
@@ -155,6 +156,17 @@ it would run it on empty storage. Bring that data over yourself, or press
 
 ## What changes on the way across
 
+- **A published host port comes across.** An app that bound `16379:6379` on
+  the source binds it here too, under **Settings -> Advanced ->
+  [Published ports](/advanced/published-ports)**. It needs the
+  publish-ports permission; without it the app still arrives and the report
+  names the ports it left behind. A port under 1024 cannot be republished -
+  the report says so, and a domain is usually the answer.
+- **The same app name in two environments keeps both.** `production/wiki`
+  and `staging/wiki` are two apps and both stay called **wiki**. Only the
+  internal name has to differ, so the second one is filed under
+  `/apps/wiki-1` - that name is what its container and its volumes take.
+  The report says which one it took.
 - **Throwaway hostnames get re-hosted.** A source app served on a
   generated `*.sslip.io`, `*.traefik.me` or `*.nip.io` name has the **old
   server's IP** baked into it, so that name would keep pointing at the
@@ -219,16 +231,13 @@ it would run it on empty storage. Bring that data over yourself, or press
   pending until its run finishes.
 
 <Callout type="warn" title="Limits and gotchas">
-- **Cut DNS over yourself, when you are ready.** The migration does not
-  touch your registrar.
-- **Copying data takes as long as the data is big.** Volumes stream host
-  to host through the control plane.
-- **Run it twice and you get it twice.** There is no reconciliation: this
-  is a move, not a sync.
-- **Check the report, always.** A migration that says "done" with twelve
-  lines in the report has twelve things waiting for you.
-- **Uninstall the migration source afterwards.** It is a live agent on a
-  machine you are about to decommission.
+  - **Cut DNS over yourself, when you are ready.** The migration does not touch
+  your registrar. - **Copying data takes as long as the data is big.** Volumes
+  stream host to host through the control plane. - **Run it twice and you get it
+  twice.** There is no reconciliation: this is a move, not a sync. - **Check the
+  report, always.** A migration that says "done" with twelve lines in the report
+  has twelve things waiting for you. - **Uninstall the migration source
+  afterwards.** It is a live agent on a machine you are about to decommission.
 </Callout>
 
 <Callout type="error" title="If it does not work">
@@ -252,6 +261,7 @@ it would run it on empty storage. Bring that data over yourself, or press
   over** and start again.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
+
 </Callout>
 
 ---
