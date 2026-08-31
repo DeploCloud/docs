@@ -103,39 +103,38 @@ about what you publish.
 
 ## Which services are on the network
 
-A single-image app is one container, and it is always on it.
+Every service in the stack, whatever else its compose file names. Deplo **adds**
+the environment's network to the ones you declared, it never replaces them - so a
+`frontend`/`backend` split keeps working exactly as written, and a worker with no
+domain reaches `db-<name>` like everything else.
 
-A compose app is several containers, and only some of them are:
+Three kinds of service stay off it:
 
-- every service a **domain routes to**, and
-- every service that **names the network itself**.
-
-A sidecar with neither - a worker, a queue consumer, a cron container - stays
-private to its own stack. It reaches its siblings by name and nothing else, so
-`db-<name>` does not resolve from it. The same is true of a whole app that has
-no domain at all: nothing in it is on the environment's network.
-
-Put the service on it by naming the network yourself:
+- One with `network_mode:`. It joins no network of its own by definition, so
+  there is nothing to add it to - and a domain pointed at it will not answer.
+- One whose name, or `hostname:`, is one **the platform answers to** (`postgres`,
+  `traefik`, `deplo`, and the three others). It stays on the stack's own private
+  network, and Deplo keeps every other service on that network too, so the app
+  still reaches it by name.
+- One whose networks you **all** marked `internal: true`. That is a deliberate
+  seal and Deplo leaves it alone. A domain still wins: route to the service and
+  it joins, because otherwise the proxy cannot reach it.
 
 ```yaml
 services:
-  worker:
+  web:
     image: my/app
-    command: bundle exec sidekiq
-    networks: [default, deplo]
+    networks: [backend]   # on backend AND the environment's network
+  worker:
+    image: my/app         # names nothing: on the environment's network
+  vault:
+    image: vault
+    networks: [sealed]    # sealed off on purpose: stays private
+networks:
+  backend: {}
+  sealed:
+    internal: true
 ```
-
-`deplo` is the key Deplo declares for the environment's network. Naming it is
-enough - Deplo points that key at the right network for you, so the same file
-keeps working if the app moves environment.
-
-<Callout type="warn" title="Keep default in the list">
-Compose puts a service on `default` only while it names no network at all.
-The moment you write `networks:`, that list is the whole list - `networks:
-[deplo]` on its own would reach the environment and lose the siblings it used
-to talk to. `[default, deplo]` is what Deplo writes for a routed service, for
-exactly this reason.
-</Callout>
 
 ---
 
