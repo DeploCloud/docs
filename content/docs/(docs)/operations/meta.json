@@ -3,6 +3,7 @@
   "icon": "Server",
   "pages": [
     "upgrade",
+    "verify-a-release",
     "disaster-recovery",
     "instance-administration",
     "panel-address-and-certificates",

@@ -3,7 +3,7 @@ title: Upgrade
 description: Update the control plane and server agents, and know what changes on each side.
 ---
 
-import { Download, Server, ShieldAlert, Settings } from "lucide-react";
+import { Download, Server, ShieldAlert, ShieldCheck, Settings } from "lucide-react";
 
 ---
 
@@ -130,6 +130,7 @@ agent update that fails: see
 <Cards>
   <Card icon={<Download className="text-blue-400" />} title="Installation" description="First-run setup on a fresh machine" href="/getting-started/install" />
   <Card icon={<Server className="text-blue-400" />} title="Server settings" description="Health, readiness, and the servers page" href="/guides/server" />
+  <Card icon={<ShieldCheck className="text-blue-400" />} title="Verify a release" description="Check the image was built by Deplo before you run it" href="/operations/verify-a-release" />
   <Card icon={<ShieldAlert className="text-blue-400" />} title="Disaster recovery" description="What to keep before anything breaks" href="/operations/disaster-recovery" />
   <Card icon={<Settings className="text-blue-400" />} title="Instance administration" description="Instance-wide settings and users" href="/operations/instance-administration" />
 </Cards>

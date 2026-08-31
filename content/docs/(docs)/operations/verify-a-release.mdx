@@ -1,0 +1,102 @@
+---
+title: Verify a release
+description: Check that a Deplo image was really built by Deplo's release workflow before you run it.
+---
+
+import { Download, ShieldAlert, Server, Terminal } from "lucide-react";
+
+---
+
+## What it is
+
+Every Deplo image published to `ghcr.io/deplocloud/deplo` is signed. The signature proves that
+**this exact image was built by Deplo's release workflow, from Deplo's repository** - not
+repackaged by someone else and pushed under a similar name.
+
+Verifying is optional. It takes one command, and it is the difference between trusting a tag and
+checking it.
+
+---
+
+## How it works
+
+The release workflow signs the image with [Sigstore](https://www.sigstore.dev/) at build time,
+using a short-lived certificate tied to the workflow's own identity. There is **no long-lived
+signing key** to trust, leak, or rotate.
+
+The signature is stored on the registry next to the image, so verifying it needs nothing but the
+image reference.
+
+<Callout type="info">
+  Releases built from 31 August 2026 onward carry an attestation. Older tags predate it and will
+  report that none was found.
+</Callout>
+
+---
+
+## Verify the image
+
+<Steps>
+<Step>
+### Install the GitHub CLI
+
+[`gh`](https://cli.github.com/) is the only tool needed. It does not have to run on the Deplo
+server - verifying reads the registry, so any machine works.
+</Step>
+
+<Step>
+### Run the check
+
+Replace the version with the one you are about to install:
+
+```bash
+gh attestation verify oci://ghcr.io/deplocloud/deplo:0.4.1 --repo DeploCloud/deplo
+```
+</Step>
+
+<Step>
+### Read the result
+
+A good result names the digest it checked and the workflow that built it:
+
+```
+Loaded digest sha256:... for oci://ghcr.io/deplocloud/deplo:0.4.1
+Verification succeeded!
+```
+
+Anything else is a failure, whatever the exit text says.
+</Step>
+</Steps>
+
+---
+
+## The server agent
+
+Nothing to do by hand. `install-agent.sh` compares the agent binary against its published
+SHA-256 before it runs it, and refuses to continue on a mismatch. That check is part of the
+installer, on every install and every update.
+
+---
+
+## If verification fails
+
+**Do not run the image.** A failure means the image is not the one Deplo published, or the tag
+now points at something else.
+
+- Re-run the command against a specific digest rather than a tag, in case a local mirror or a
+  proxy is serving something stale.
+- Pull again from `ghcr.io` directly.
+- If it still fails, report it privately through
+  [Deplo's security policy](https://github.com/DeploCloud/deplo/blob/main/SECURITY.md). Never in a
+  public issue.
+
+---
+
+## See also
+
+<Cards>
+  <Card icon={<Download className="text-blue-400" />} title="Installation" description="First-run setup on a fresh machine" href="/getting-started/install" />
+  <Card icon={<Server className="text-blue-400" />} title="Upgrade" description="Move the control plane and the agents to a newer version" href="/operations/upgrade" />
+  <Card icon={<Terminal className="text-blue-400" />} title="Installers reference" description="What each install script does, flag by flag" href="/reference/installers" />
+  <Card icon={<ShieldAlert className="text-blue-400" />} title="Disaster recovery" description="What to keep before anything breaks" href="/operations/disaster-recovery" />
+</Cards>
