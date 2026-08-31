@@ -170,6 +170,20 @@ it would run it on empty storage. Bring that data over yourself, or press
   what an app stores about itself: a saved `trusted_domains` or `siteurl`
   still holds the old address, and the report tells you to fix it from
   the app's **Console**.
+- **A database lands in the same Environment as its apps.** An Environment
+  owns a Docker network here, so a database placed anywhere else would not
+  answer to `db-<name>` from the apps that name it. It arrives beside them,
+  and its **Networking** card moves it later if you want it somewhere else.
+- **A service name another stack already answers to is renamed.** Every
+  stack in one Environment shares that network, so two one-click apps both
+  calling their database `db` cannot both have the name. The second one
+  arrives as `<app>-db` rather than being refused, and its `depends_on`,
+  its variables and its domain all follow the new name. The report says
+  which names changed.
+- **A `./x` bind comes across with what is in it.** A stack that keeps files
+  beside its own compose file - a `./content` directory, a `./nginx.conf` -
+  has them copied into the app's files directory in the data step, so it does
+  not deploy onto an empty path.
 - **A `${{project.KEY}}` reference becomes a real link.** Dokploy resolves
   those only at deploy time, so a value that is exactly one reference to a
   project or environment variable of the same name arrives here as a link to
