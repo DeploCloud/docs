@@ -18,6 +18,12 @@ suggestions, they are the bar every doc page is reviewed against.
   isn't needed.
 - **No walls of text.** Short sentences, one concept per block, lists instead of long
   paragraphs, more concrete examples (real commands, real values, real snippets) than prose.
+- **The product is `Deplo`, with a capital D.** Always, in every sentence a reader sees -
+  page titles, body copy, callouts, alt text, commit messages. Lowercase `deplo` survives
+  only as a machine token something matches on: the `deplo` Docker network, the `deplo`
+  container and Postgres role, `deplo-agent`, `deplo.build`, `/opt/deplo`, the `<deplo>`
+  URL placeholder, and the MCP server name in `claude mcp add`. If changing the case would
+  change what a command does, it stays lowercase.
 - **Stay inside Deplo's mission.** Self-hosted, no SSH required on the happy path, no Docker
   socket exposed, the control plane never touches a host directly. Never invent a feature
   that doesn't exist in the product. If you're unsure whether something is real, check the
