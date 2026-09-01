@@ -79,10 +79,35 @@ instance admin can tick **This git server is on my own network**. It is
 deliberately admin-only, because it turns off a guard that stops Deplo
 being used to probe your internal network.
 
+## What the token needs
+
+A token that authenticates but cannot do the job is the failure nobody sees
+coming, so tick these when you mint it:
+
+| Provider | On its token page | What it unlocks |
+| --- | --- | --- |
+| GitLab | **`read_repository`** | Clone your code to build it |
+| GitLab | **`api`** | List your projects and register the push webhook |
+| Bitbucket | **Repositories: Read** | List and clone your repositories |
+| Bitbucket | **Webhooks: Read and write** | Deploy automatically when you push |
+| Gitea | **`read:repository`** | List and clone your repositories |
+| Gitea | **`write:repository`** | Register the push webhook so a push deploys |
+
+GitLab reports what its tokens cover, so Deplo names the missing scope on the
+connection's card as **This token is missing access**. Bitbucket and Gitea do
+not report it, so Deplo says nothing until the host actually refuses something,
+and then shows this list beside the refusal.
+
 ## If it does not work
 
 - **`Authentication failed` in a clone**: the token expired or was
   revoked. **Test connection** confirms it.
+- **"This token is missing access"**: it authenticates, but a scope in the
+  table above is not ticked. Mint a replacement with it, then **Replace the
+  token**.
+- **"Deplo could not add the push webhook"**: usually the same cause, and
+  the notice lists what the token needs. The webhook address is there to
+  paste by hand in the meantime.
 - **Saving a self-hosted address is refused**: it resolves to a private
   address, and only an instance admin can allow that.
 

@@ -37,9 +37,34 @@ Approve on GitHub and pick which repositories the App may see.
 
 **Manage** takes you back to GitHub to change that selection later.
 
-If you plan to use [pull request previews](/guides/networking/pull-request-previews),
-the App needs to see pull requests. When it cannot, Deplo shows **This
-App cannot see pull requests yet** with an **Update on GitHub** button.
+## What the App needs
+
+The manifest flow asks GitHub for exactly this, so a freshly connected App
+already has it. It matters when someone narrows the App later on GitHub:
+
+| On GitHub | What it unlocks |
+| --- | --- |
+| **Metadata: Read-only** | See your repositories at all |
+| **Contents: Read-only** | Clone your code to build it |
+| **Subscribe to event: Push** | Deploy automatically when you push |
+| **Pull requests: Read and write** | Post the preview address on the pull request |
+| **Subscribe to event: Pull request** | Build a preview when a pull request opens |
+
+The last two are only needed for
+[pull request previews](/guides/networking/pull-request-previews), and Deplo
+only mentions them once a team uses them.
+
+Deplo asks GitHub what the App is allowed to do and shows **Deplo is missing
+access on GitHub** with the exact list, on **Settings -> Git**, on the app's
+**Deploy source** settings and on its **Pull requests** page. **Update on
+GitHub** opens the App's permissions page, the only place GitHub lets you
+change them.
+
+<Callout type="info">
+GitHub emails the App's owner when its permissions change, and the new ones
+stay pending until someone accepts them on each installation. Approve there
+too, or Deplo keeps reporting them as missing.
+</Callout>
 
 ## If it does not work
 
@@ -47,8 +72,11 @@ App cannot see pull requests yet** with an **Update on GitHub** button.
   **Manage** and grant it there.
 - **`Authentication failed` in a clone**: the token expired or was
   revoked. **Test connection** confirms it.
-- **"This App cannot see pull requests yet"**: the GitHub App lacks the
-  pull request permission. Use **Update on GitHub** on that notice.
+- **"Deplo is missing access on GitHub"**: the App no longer has
+  everything in the table above. **Update on GitHub** takes you straight
+  to its permissions page.
+- **"This repository will not clone"**: the App is fine, but this
+  repository is not in its selection. Use **Manage** and add it.
 
 ## See also
 
