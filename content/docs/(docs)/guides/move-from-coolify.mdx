@@ -231,6 +231,14 @@ create the same app twice.
   owns a Docker network here, so a database placed anywhere else would not
   answer to `db-<name>` from the apps that name it. It arrives beside them,
   and its **Networking** card moves it later if you want it somewhere else.
+- **A network you created yourself does not come across.** A stack attached
+  to a network made on the source machine with `docker network create`
+  arrives without it. That network exists only on that machine, and left in
+  place the stack would not start here at all.
+  You rarely lose anything by it: an Environment owns one network and every
+  app in it shares that one, so two stacks that talked over a network of your
+  own keep talking as long as they land in the same Environment. The report
+  names each network it dropped.
 - **A service name another stack already answers to is renamed.** Every
   stack in one Environment shares that network, so two one-click apps both
   calling their database `db` cannot both have the name. The second one
