@@ -197,6 +197,8 @@ The artifact's checksum is verified before a single byte is fed to anything. An 
 - **Retention counts successes.** Failed runs do not consume a slot.
 - **A skipped hour on a DST change raises a warning** rather than silently missing a run.
 - **Deleting runs can leave a target with no restore point.** That is why `delete_backups` is a separate, flagged capability.
+- **Deleting a schedule does not delete what it already backed up.** Retention prunes per schedule, so once the schedule is gone nothing prunes its copies: they stay in the destination, and on the target's **Restore points**, until you delete them there. Check the list before you delete a schedule that was writing large artifacts.
+- **Deleting the app or database itself does clear them,** after 30 days. An artifact whose target is gone is kept that long on purpose, so a delete you regret is still recoverable, then removed from the destination.
 - **A destination on the same server as the workload survives everything except losing that server**, which is the failure people actually have. Put at least one copy elsewhere.
 - **Backups are encrypted, always, both kinds.** There is no plaintext mode.
 </Callout>

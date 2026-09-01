@@ -33,6 +33,26 @@ A **Bind** reaches outside Deplo's control, which is why it needs the "Bind serv
 
 ---
 
+## What deleting the app removes
+
+The three kinds are not treated the same way, and the difference is the whole reason **Bind** needs a permission.
+
+| Kind | When you delete the app |
+| --- | --- |
+| **Volume** | **Erased.** Deplo removes `deplo-<slug>-<name>` on the server |
+| **File** | **Erased.** The app's files directory goes with the stack |
+| **Bind** | **Left alone.** The folder belongs to the server, not to Deplo, and stays exactly where it is |
+
+<Callout type="warn" title="A Bind is yours to remove">
+Deleting the app does not delete a bound folder, and nothing else will either: [server cleanup](/guides/server/cleanup) never prunes volumes or server folders, and no screen lists what a deleted app left behind.
+
+A 40 GB game-server folder in a **Bind** is still 40 GB the day after you delete the app, with nothing in Deplo left to explain it. Note the paths your app binds before you delete it, and remove them on the server yourself.
+</Callout>
+
+In a [Compose app](/advanced/compose-apps) the same line is drawn by the name. Deplo only reclaims volumes it owns - the ones named `deplo-<slug>-<name>`. A volume your own YAML marks `external: true`, or pins to a name of your choosing, is somebody else's by definition and survives the delete.
+
+---
+
 ## Add storage
 
 <Steps>
@@ -129,7 +149,7 @@ The propagation choice is not cosmetic. Without `rslave`, a network share or a F
 
 <Callout type="warn" title="Limits and gotchas">
 - **Storage applies on the next deploy.** Adding a row does not remount a running container.
-- **Data is never deleted by a redeploy, a source change, or removing the row.** Deleting the app is what removes its volumes.
+- **Data is never deleted by a redeploy, a source change, or removing the row.** Deleting the app erases its **Volume** and **File** storage; a **Bind** is left on the server. See [what deleting the app removes](#what-deleting-the-app-removes).
 - **A Compose service name that does not exist is a hard error**, deliberately, rather than a silent remount somewhere else.
 - **Do not put a database's data in a Bind unless you mean it.** A managed [database](/guides/data/databases) already has its own managed volume.
 - **A File is a config file, not a blob.** The editor writes at most 1 MiB, and only text: a binary or oversized file already on the path stays mounted exactly as it is, and says so.

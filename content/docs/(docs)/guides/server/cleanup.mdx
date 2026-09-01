@@ -85,6 +85,15 @@ a dangling volume may hold somebody's data.
 <Callout type="warn" title="Limits and gotchas">
 - **Cleanup and rollbacks fight over the same images.** If rollbacks stop
   working, **Images kept per app** is too low for the app's **Keep**.
+- **This is not what frees the disk after you delete something.** Cleanup
+  reclaims images, caches and the directories of apps that are gone. It
+  never touches a volume, and it never touches a server folder an app
+  reached through a
+  [Bind](/guides/data/persistent-storage#what-deleting-the-app-removes) -
+  those are yours to remove.
+- **Backup files are not on this list either.** Deleting a backup schedule
+  leaves the copies it already made in the
+  [destination](/guides/data/backups-and-restore).
 </Callout>
 
 <Callout type="error" title="If it does not work">

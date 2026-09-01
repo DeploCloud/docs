@@ -167,7 +167,7 @@ An untested backup is a hope, not a plan.
 <Callout type="warn">
 - **`DEPLO_SECRET` cannot be rotated.** There is no key versioning. Treat it as permanent.
 - **Deplo pushes no images to a registry**, so rebuilding an app after losing its server means rebuilding from source. Keep the source somewhere that is not that machine.
-- **Backup artifacts survive their target's deletion** for a keep window, so a deleted-by-mistake app is usually still recoverable.
+- **Backup artifacts survive their target's deletion** for 30 days, so a deleted-by-mistake app is usually still recoverable. Deleting the schedule alone keeps them indefinitely instead - see [backups](/guides/data/backups-and-restore).
 </Callout>
 
 ---
