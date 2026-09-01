@@ -43,7 +43,7 @@ A person who registers through a link lands in **their own team**. Adding them t
 | **Panel address** | Where the dashboard answers. See [The panel's own address](/operations/panel-address-and-certificates) |
 | **Certificate account email** | The address Let's Encrypt has for this instance |
 | **Max log range** | The ceiling on how far back log queries may reach. Default 7 days, 1 to 90 |
-| Gravatar | Whether a person with no uploaded picture falls back to their Gravatar. **Off by default**, and off means initials only |
+| Gravatar | Whether a person with no picture of their own falls back to their Gravatar. **Off by default**, and off means everyone wears a face Deplo generates, or their initials if they pick those |
 | Updates | Whether a newer Deplo release exists, with a link to the release notes |
 
 The page also shows this instance's version and which host it runs on.
@@ -51,8 +51,10 @@ The page also shows this instance's version and which host it runs on.
 <Callout type="info" title="What turning Gravatar on sends">
 Deplo never dials gravatar.com itself - each **person's browser** does, with a
 hash of their email address in the URL. Their IP address and that hash reach a
-third party as a result, which is why it ships off. It is also one switch for
-everybody on the instance, so nobody opts in for themselves.
+third party as a result, which is why it ships off. The switch only decides
+whether Gravatar is offered at all; each person still chooses their own picture
+in **Settings > Account** - a generated face, an upload, their Gravatar, or
+their initials.
 </Callout>
 
 ---
