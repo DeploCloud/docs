@@ -176,8 +176,8 @@ it would run it on empty storage. Bring that data over yourself, or press
   you are ready.
 - **Connection strings are rewritten to the new names.** A database keeps
   its data but not its hostname - it answers as `db-<name>` here - and
-  every variable that named the old one is updated on the way across,
-  write-only ones included. Same for an address that had to be re-hosted.
+  every variable that named the old one is updated on the way across.
+  Same for an address that had to be re-hosted.
   The report names every variable it changed. What Deplo cannot reach is
   what an app stores about itself: a saved `trusted_domains` or `siteurl`
   still holds the old address, and the report tells you to fix it from
@@ -205,14 +205,13 @@ it would run it on empty storage. Bring that data over yourself, or press
   it; the others still see it offered under **Variables**.
   A `${{ <service>.<field> }}` reference to a sibling service is a different
   thing and still arrives as it is written - the report names those keys.
-- **A variable that looks like a credential arrives as a secret.**
-  `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `DATABASE_URL`, `SENTRY_DSN` and
-  their kin land write-only, and so does a value that carries a credential
-  inside it - a `postgres://user:pass@host/db`, a private key - whatever
-  the variable is called. Nobody at the `view` floor reads them, and a
-  pull-request preview of a fork never inherits them. The report lists
-  which ones, and you can set any of them back to a plain value under
-  **Variables**.
+- **Every variable arrives plain, and stays readable.** Dokploy has no
+  notion of a secret variable, so Deplo does not invent one: your values
+  come across exactly as they were, `MYSQL_ROOT_PASSWORD` and
+  `DATABASE_URL` included, and you can read and edit all of them under
+  **Variables**. Mark the ones you want write-only there, at your own
+  pace - a secret variable never reads its value back, so it is a choice
+  to make once you have checked the import.
 - **Imported basic-auth credentials are flagged.** They never went
   through Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report

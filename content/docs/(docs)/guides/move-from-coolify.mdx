@@ -213,8 +213,8 @@ create the same app twice.
   as they are, and you repoint DNS when you are ready.
 - **Connection strings are rewritten to the new names.** A database keeps
   its data but not its hostname - it answers as `db-<name>` here - and
-  every variable that named the old one is updated on the way across,
-  write-only ones included. Same for an address that had to be re-hosted.
+  every variable that named the old one is updated on the way across.
+  Same for an address that had to be re-hosted.
   The report names every variable it changed. What Deplo cannot reach is
   what an app stores about itself: a saved `trusted_domains` or `siteurl`
   still holds the old address, and the report tells you to fix it from
@@ -280,14 +280,14 @@ create the same app twice.
   http.** It answered on `:80` over there, so it answers on `:80` here and every
   link anyone had written keeps working. The report names it; add a certificate
   under **Domains** when you want https.
-- **A variable that looks like a credential arrives as a secret.**
-  `MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `DATABASE_URL`, `SENTRY_DSN` and
-  their kin land write-only, and so does a value that carries a credential
-  inside it - a `postgres://user:pass@host/db`, a private key - whatever
-  the variable is called. Nobody at the `view` floor reads them, and a
-  pull-request preview of a fork never inherits them. The report lists
-  which ones, and you can set any of them back to a plain value under
-  **Variables**.
+- **Every variable arrives plain, and stays readable.** Coolify's API
+  never says a variable is a secret, so Deplo does not invent one: your
+  values come across exactly as they were, `MYSQL_ROOT_PASSWORD` and
+  `DATABASE_URL` included, and you can read and edit all of them under
+  **Variables**. Mark the ones you want write-only there, at your own
+  pace - a secret variable never reads its value back, so it is a choice
+  to make once you have checked the import. The one Coolify really does
+  hold back is the next bullet: it arrives with no value at all.
 - **A variable Coolify shows once arrives empty.** Coolify's API answers
   with no value for it, whatever the token holds, so Deplo has nothing to
   import. The report names those keys - fill them in under **Variables**
