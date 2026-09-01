@@ -245,11 +245,23 @@ create the same app twice.
   arrives as `<app>-db` rather than being refused, and its `depends_on`,
   its variables and its domain all follow the new name. The report says
   which names changed.
-- **A `./x` bind comes across with what is in it.** A one-click stack keeps
-  its state beside its own compose file - a `./content` directory, a
-  `./nginx.conf` - under Coolify's data directory. Those are copied into the
-  app's files directory in the data step, so it does not deploy onto an empty
-  path.
+- **A bind comes across with what is in it, a single file included.** A
+  one-click stack keeps its state beside its own compose file - a `./content`
+  directory, a `./nginx.conf` - under Coolify's data directory. Those are
+  copied into the app's files directory in the data step. A bind that names a
+  host path outside the stack works the same way, and one that names a
+  **file** rather than a directory copies that file alone, never the directory
+  around it. Nothing else in that directory travels.
+- **The machine's own files stay on the machine.** Coolify files every bind
+  mount under **Storages**, `/etc/localtime` and `/etc/resolv.conf` included.
+  Those belong to the host, not to the app - the server you are moving to
+  already has its own - so Deplo never carries them, and the report does not
+  mention them.
+- **A file that is not text arrives with the data.** A config file comes
+  across as a **File** under **Settings -> Storage**, which holds text. A
+  binary one - an SQLite database mounted at a path, say - and a whole mounted
+  directory are copied in the data step instead, byte for byte. The report
+  says which files took that route.
 - **An address a template recorded without a port still routes.** A
   one-click template that declares `SERVICE_FQDN_<NAME>` and no
   `SERVICE_FQDN_<NAME>_<PORT>` names its service and no port. Deplo reads
@@ -356,6 +368,10 @@ it would run it on empty storage. Bring that data over yourself, or press
   before touching anything. Copying dials that machine on inbound `9443`,
   which its call home never uses, so a source that went green can still be
   out of reach. Check it from this machine with `nc -vz <source-ip> 9443`.
+- **A file the target agent is too old to take**: copying a bind that names
+  a single file needs a recent agent on the DESTINATION server. An older one
+  refuses the file by name rather than putting an empty directory in its
+  place - update that server's agent and run the copy again.
 - **The data step stops half way**: nothing is rolled back. Everything
   already created here stays exactly as it is, and every service whose
   data did not arrive is named in the report and blocked from deploying.
