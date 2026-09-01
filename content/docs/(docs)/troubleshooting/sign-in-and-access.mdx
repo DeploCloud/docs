@@ -14,7 +14,7 @@ import { ShieldCheck, Users, Lock, Fingerprint } from "lucide-react";
 | The six-digit code is rejected | The phone's clock has drifted. TOTP is time-based |
 | Neither the code nor a recovery code works | Recovery codes are single-use. An instance admin has to reset two-factor on the account |
 | Every passkey says **Not usable here** | The panel is on a different hostname than when they were registered. See "Passkeys stopped working" below |
-| The page will not load at all | Try `http://<server-ip>:3000` |
+| The page will not load at all | Try the generated `https://deplo-<hex>.nip.io` address |
 
 </Accordion>
 <Accordion title="Passkeys stopped working">

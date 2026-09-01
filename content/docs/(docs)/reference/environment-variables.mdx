@@ -101,13 +101,13 @@ them in front of the install command.
   type={{
     DEPLO_DOMAIN: {
       type: "domain",
-      default: "empty, meaning IP mode",
+      default: "empty, meaning a generated deplo-<hex>.nip.io host",
       description:
-        "The domain the panel is served on. Must contain a dot and cannot be localhost or a .local name. Set means HTTPS through Traefik; unset means http://<ip>:3000 only.",
+        "The domain the panel is served on. Must contain a dot, cannot be localhost, a .local name or an IP address. Either way the panel is served over HTTPS through Traefik, and the generated host stays routed alongside it.",
     },
     ACME_EMAIL: {
       type: "email",
-      default: "admin@example.com",
+      default: "admin@<the panel's own host>",
       description:
         "The Let's Encrypt registration email for that host's Traefik. Note the name: the container's own variable is DEPLO_ACME_EMAIL.",
     },

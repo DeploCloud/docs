@@ -13,7 +13,7 @@ import { Globe, Layers, Trash2 } from "lucide-react";
 
 Most people have one server, and it already runs something. Deplo installs on
 that server by **taking its place**: it brings your projects across, then takes
-ports 80, 443 and 3000 from the old panel.
+ports 80 and 443 from the old panel.
 
 Your domains keep pointing at the same IP, and Deplo inherits the certificates
 that panel already had. Nothing to change in DNS, no HTTPS gap.
@@ -108,10 +108,11 @@ window, Deplo:
 
 - stops the old panel, without removing anything
 - copies its certificates into its own store
-- moves Traefik onto 80 and 443, and the dashboard onto 3000
+- moves Traefik onto 80 and 443, with the dashboard served behind it
 - restarts Docker, which applies the address pools the install wrote
 
-The dashboard answers on `http://<server-ip>:3000` from then on.
+The dashboard answers on its own HTTPS address from then on: your domain if you
+gave one, and the generated `deplo-<hex>.nip.io` either way.
 
 </Step>
 

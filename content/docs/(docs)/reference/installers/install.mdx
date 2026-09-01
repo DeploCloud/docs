@@ -7,8 +7,10 @@ description: Installs the whole platform, Docker, Traefik, Postgres, the control
 curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | bash
 ```
 
-Configured entirely by environment variables in front of the command. See
-[Environment variables](/reference/environment-variables) for the table.
+Configured by environment variables in front of the command. See
+[Environment variables](/reference/environment-variables) for the table. With
+none of them, and a terminal, it asks for a domain once: press Enter and it
+generates `deplo-<hex>.nip.io`. With no terminal it generates one without asking.
 
 <Callout type="info" title="Requires">
   Root, `curl`, `openssl`, and Docker Compose v2. Docker itself is
@@ -49,12 +51,13 @@ the panel's own proxy.
 <Step>
 ### Start Deplo
 Writes and starts the Deplo stack: Postgres on an internal network, and the
-control plane publishing `3000`.
+control plane publishing `3000` on `127.0.0.1` only. Traefik serves it over
+HTTPS, on your domain and on the generated `nip.io` host.
 </Step>
 <Step>
 ### Enroll this machine
-Waits up to two minutes for `/api/health`, then enrolls this machine as a
-server.
+Waits up to two minutes for `/api/health` on `http://127.0.0.1:3000`, then
+enrolls this machine as a server.
 </Step>
 </Steps>
 

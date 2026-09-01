@@ -108,15 +108,23 @@ domain, compared across the whole DNS zone in both directions.
 </Accordion>
 <Accordion title="The panel itself is unreachable">
 
-`http://<server-ip>:3000` always answers (see
-[ports, networks, and files](/reference/ports-networks-and-files)). Go in
-that way and fix the address in **Settings -> Deplo**.
+The generated `https://deplo-<hex>.nip.io` address always answers, whatever
+your own domain is doing. Go in that way and fix the address in
+**Settings -> Deplo**. The browser warns about its certificate once.
 
-If even `:3000` is silent, the control plane container is down. On the host:
+If that is silent too, the proxy is down. From the server itself:
 
 ```bash
+curl http://127.0.0.1:3000/api/health   # the panel, past the proxy
 docker ps
+docker logs deplo-traefik
 docker logs deplo
+```
+
+With nothing else left, tunnel to the panel and fix it from there:
+
+```bash
+ssh -L 3000:localhost:3000 root@<server-ip>   # then open http://localhost:3000
 ```
 
 </Accordion>

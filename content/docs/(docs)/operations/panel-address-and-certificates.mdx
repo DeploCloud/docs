@@ -19,6 +19,17 @@ Moving it is a real operation with real consequences, which is why it has its ow
 
 The panel is routed by the host's Traefik like anything else, but through a **file provider** entry rather than container labels. That's deliberate: a panel published by labels could never change its own route, because changing it would need the panel.
 
+It is served over **HTTPS and nothing else**, and it is never reachable at
+`http://<server-ip>:3000`: that port is published on `127.0.0.1` only. A panel on
+an open port is a login page on the internet with no TLS in front of it.
+
+Two routers point at it, always:
+
+- **Your domain**, when you gave one, with a Let's Encrypt certificate.
+- **A generated `deplo-<hex>.nip.io` host**, which resolves to this server with no
+  DNS to set up. It is the address that still answers when your domain, its DNS or
+  its certificate is what broke, and it cannot be turned off.
+
 The address is also used for more than serving pages:
 
 - It is baked into the **install command** printed for new servers.
@@ -43,23 +54,39 @@ Point the new hostname's DNS at this server first. The page shows the exact reco
 
 <Step>
 ### Enter the new address
-An impact check runs and tells you what it found: an IP address rather than
-a hostname, missing HTTPS, or a DNS record that does not resolve here yet.
-</Step>
-
-<Step>
-### Turn on HTTPS
-Use **Serve the panel over HTTPS** once the hostname resolves, so Traefik can get a certificate for it.
+An impact check runs and tells you what it found: passkeys that stop working,
+sessions that end, or a DNS record that does not resolve here yet. An IP address
+is refused: no certificate authority issues for one.
 </Step>
 
 <Step>
 ### Save
+The certificate issues on the first request to the new address.
 </Step>
 </Steps>
 
 <Callout type="info">
-`http://<server-ip>:3000` keeps working throughout. See
+The generated `deplo-<hex>.nip.io` address keeps working throughout, so the panel
+stays reachable while DNS moves. See
 [ports, networks, and files](/reference/ports-networks-and-files).
+</Callout>
+
+---
+
+## HTTPS is not optional
+
+There is no switch to serve the panel on plain http from the General tab, and no
+way to reach it on `<server-ip>:3000`. The one exception lives under
+**Settings -> Deplo -> Advanced**, **Serve the panel over plain HTTP**, and it
+exists for one case: a panel on an internal network that no certificate authority
+can reach. Turning it on sends every password and every session cookie across the
+network in clear, and passkeys stop working entirely, so the confirm says so.
+
+<Callout type="warn" title="The generated address serves a certificate the browser does not know">
+No public authority issues for a `nip.io` hostname, so Traefik serves its own
+self-signed certificate there and the browser warns once. Set your own domain to
+get one it trusts. Deplo does not send HSTS on that address, precisely so the
+warning stays skippable.
 </Callout>
 
 ---
@@ -73,10 +100,11 @@ Use **Serve the panel over HTTPS** once the hostname resolves, so Traefik can ge
 ## Limits and gotchas
 
 <Callout type="warn">
+- **The install command for a new server carries `-k`** while the panel's certificate is the self-signed one. The agent is unaffected: it pins the certificate's fingerprint at enrollment either way.
 - **Every passkey breaks when the address changes.** They are bound to a hostname by the standard. They show **Not usable here**, the password still signs people in, and everyone re-registers a passkey on the new address. Warn your team before you do this.
 - **Webhooks must be re-pointed.** Deplo re-registers what it can, but a provider that cannot reach the new address stops delivering, and pushes stop deploying.
 - **The install command changes.** Servers already enrolled are unaffected, new ones use the new address.
-- **Do not use an IP for the panel address** unless you accept no certificate. Let's Encrypt does not issue for bare IPs.
+- **An IP address is refused as the panel address.** Let's Encrypt does not issue for bare IPs, and Deplo generates a `nip.io` hostname instead.
 - **`DEPLO_PUBLIC_URL` in `/opt/deplo/.env` is the other half.** If you edit the environment by hand, keep them consistent.
 </Callout>
 
