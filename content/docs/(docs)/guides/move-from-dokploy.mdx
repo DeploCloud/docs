@@ -246,7 +246,10 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **Stuck on Waiting for the agent**: the install command has not run on
   the source, or that machine cannot reach this one.
 - **A volume arrives empty**: the report says so, and the app it belongs
-  to refuses to deploy until you decide what to do about it.
+  to refuses to deploy until you decide what to do about it. A single volume
+  has six hours to copy - past that it fails and the report marks it
+  empty, so a very big volume over a slow link is one to bring over
+  yourself.
 - **One source machine will not answer**: the services on it are named in
   the report and blocked from deploying, and the machines that do answer
   are still copied. Only when nothing answers at all does the step stop
