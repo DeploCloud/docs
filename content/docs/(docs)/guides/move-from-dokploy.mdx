@@ -37,6 +37,37 @@ relayed through the control plane, because agents cannot dial each other.
 
 ---
 
+## What Deplo touches, and what it leaves alone
+
+**Nothing on Dokploy is deleted.** Volumes, bind-mounted directories and
+bind-mounted files all stay exactly where they are. Deplo reads them and copies
+the bytes across; the originals are still on that machine afterwards, so you can
+run the migration again or go back to Dokploy if you change your mind.
+
+**It does stop what it copies, and leaves it stopped.** A volume read while its
+container is still writing to it arrives corrupted, so the data step stops the
+service on Dokploy first. That stop is the cutover: Deplo never starts it again
+on Dokploy. If Dokploy refuses to stop a service that is running, its data is
+not copied at all and the report says so, rather than copying something that
+moved under the read.
+
+**On this side, only the paths the app itself mounts are written.** Each volume
+and each bind mount is emptied and rewritten with what came across, so a second
+run does not merge two copies. Nothing else on the destination server is
+touched. A managed database is started again and checked; every other app waits
+for you to press **Deploy**.
+
+**The host is not part of the app.** What belongs to the machine rather than to
+what you are moving - the Docker socket, the kernel's own pseudo-filesystems,
+and the machine's timezone, hostname and resolver files - is left out of the
+copy on both sides. The destination server already has its own, and rewriting
+them would change that machine rather than the app.
+
+**The only thing Deplo puts on Dokploy's machine is its own agent**, and
+**Remove from Deplo** takes it off again.
+
+---
+
 ## Run a migration
 
 <Steps>
