@@ -51,6 +51,13 @@ curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | 
   A fresh VPS with nothing installed: no Docker, no Nginx, Apache or Caddy already bound to `80`/`443`, no other control panel. The installer is built for that starting point, it's the only way to guarantee the exact experience described on this page. Anything already occupying those ports gets in the way of Traefik and certificate issuance.
 </Callout>
 
+<Callout type="warn" title="Already running Dokploy or Coolify?">
+  The installer offers to **take that machine over** instead: it brings your
+  projects across, then takes ports `80`, `443` and `3000` from the old panel and
+  inherits its certificates. Answer no and nothing is installed. See [Take over
+  your VPS](/docs/guides/take-over-your-vps).
+</Callout>
+
 | What             | Requirement                                                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | A server         | <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siUbuntu.hex}`} aria-hidden="true"><path d={siUbuntu.path} /></svg>Ubuntu 24.04, <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siDebian.hex}`} aria-hidden="true"><path d={siDebian.path} /></svg>Debian, or any other modern <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siLinux.hex}`} aria-hidden="true"><path d={siLinux.path} /></svg>Linux distro, `x86-64` or `arm64`, and root access for the length of one install command. **Fresh, with nothing on it yet:** no Docker, no reverse proxy on `80`/`443`, no other control panel. Docker is installed for you if it is missing. |

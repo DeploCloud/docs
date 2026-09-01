@@ -1,0 +1,232 @@
+---
+title: Take over your VPS
+description: Install Deplo on the machine that already runs Dokploy or Coolify. It brings your projects across, takes the ports, and removes the old panel when you say so.
+---
+
+import { Globe, Layers, Trash2 } from "lucide-react";
+
+<Callout type="info" title="Beta">
+  This feature is currently beta/experimental and subject to change. It is not
+  recommended for production. Try it out and share your feedback on [our
+  GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+Most people have one server, and it already runs something. Deplo installs on
+that server by **taking its place**: it brings your projects across, then takes
+ports 80, 443 and 3000 from the old panel.
+
+Your domains keep pointing at the same IP, and Deplo inherits the certificates
+that panel already had. Nothing to change in DNS, no HTTPS gap.
+
+<Callout type="warn">
+  On a machine that already runs Dokploy or Coolify, this is the **only** way
+  Deplo installs. Two panels cannot share ports 80 and 443, so the installer
+  either replaces the other one or exits without touching anything.
+</Callout>
+
+---
+
+## What you need
+
+- A machine running Dokploy or Coolify, with root access for one command.
+- An API token from that panel. Deplo reads it over the API, the same way
+  [Move from Dokploy](/docs/guides/move-from-dokploy) and
+  [Move from Coolify](/docs/guides/move-from-coolify) do.
+- Room on the disk: every volume that comes across is written a second time
+  before the old one goes.
+
+---
+
+## The takeover
+
+<Steps>
+
+<Step>
+
+### Run the installer
+
+The same command as any other install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | bash
+```
+
+It finds the other panel and asks:
+
+```
+[ !] Dokploy is already running on this machine.
+     Deplo can only install here by taking its place: it brings your projects
+     across, then removes Dokploy. Two panels cannot share 80 and 443.
+
+  -> Migrate off Dokploy and let Deplo replace it? [y/N]
+```
+
+Answer **no** and nothing is installed. Answer **yes** and Deplo installs on a
+free port, leaving the other panel exactly where it is.
+
+`--yes` does not answer this one: replacing somebody's platform is not a
+default. To install without being asked, set `DEPLO_TAKEOVER=dokploy` (or
+`coolify`).
+
+</Step>
+
+<Step>
+
+### Leave the window open
+
+The installer prints the address to open and then waits. It is the half of this
+that needs root on the host: moving the ports, restarting Docker, removing the
+old panel.
+
+Closing it is safe. Re-run `/opt/deplo/install.sh` to pick the takeover back up.
+
+</Step>
+
+<Step>
+
+### Create your account and migrate
+
+Open the address it printed. After the account and the team, Deplo opens the
+migration wizard and nothing else: until the ports are its own, there is
+nothing to deploy onto.
+
+The panel it is replacing is already filled in. Paste its API token, pick what
+you want to bring across, and start.
+
+<Callout type="warn">
+  What you leave unticked stays behind, and goes when the old panel is removed.
+</Callout>
+
+</Step>
+
+<Step>
+
+### Take the ports
+
+Press **Take over the ports** when everything you want is here. In the terminal
+window, Deplo:
+
+- stops the old panel, without removing anything
+- copies its certificates into its own store
+- moves Traefik onto 80 and 443, and the dashboard onto 3000
+- restarts Docker, which applies the address pools the install wrote
+
+The dashboard answers on `http://<server-ip>:3000` from then on.
+
+</Step>
+
+<Step>
+
+### Deploy your apps
+
+Deplo never deploys anything for you. Your apps arrived with their
+configuration and their data, and you deploy them one at a time, checking each
+one.
+
+The old panel is stopped but still on the disk, volumes and all. That is your
+way back for as long as you want it.
+
+</Step>
+
+<Step>
+
+### Remove the old panel
+
+When you are happy, **Remove Dokploy** (or Coolify) on the takeover screen. You
+type its name to confirm, and its containers, the workloads it ran, their
+volumes and networks, its images and its directory all come off the machine.
+
+</Step>
+
+</Steps>
+
+---
+
+## If the dashboard does not open
+
+Deplo waits on a free port, and some providers only open 22, 80 and 443 in
+their own firewall. The installer notices that nothing has reached the panel
+and offers two ways in that need no port opened:
+
+<Accordions>
+
+<Accordion title="Through the old panel's proxy, on port 80">
+
+Deplo drops one route into the other panel's Traefik, which reloads it by
+itself, and prints an address like:
+
+```
+http://deplo-setup.203.0.113.10.sslip.io
+```
+
+Nothing else of theirs is touched, and the route is removed when the ports
+move.
+
+</Accordion>
+
+<Accordion title="Over SSH, from your own machine">
+
+```bash
+ssh -L 3001:localhost:3001 root@<server-ip>
+```
+
+Then open `http://localhost:3001`. Nothing on the server changes.
+
+</Accordion>
+
+</Accordions>
+
+---
+
+## Backing out
+
+**Cancel and remove Deplo** on the takeover screen, at any point before the
+ports move. Deplo:
+
+- starts again every service the migration stopped on the old panel
+- removes everything it created here
+- uninstalls itself
+
+The old panel keeps all of its data. It needs its API token again to start
+those services, so keep the one you pasted.
+
+If the port move itself fails, the installer puts the ports back and starts the
+old panel again on its own.
+
+---
+
+## What it never does
+
+- **Deploy anything for you.** Some apps need a change after a migration, so
+  every deploy is yours to make.
+- **Remove anything before you ask.** Taking the ports stops the old panel; it
+  is still whole on the disk until you confirm the removal.
+- **Touch a machine you said no on.** Answering no to the first question exits
+  before anything is written.
+
+---
+
+<Cards>
+
+<Card
+  icon={<Layers />}
+  title="Move from Dokploy"
+  href="/docs/guides/move-from-dokploy"
+  description="What the wizard reads, what it creates, and what it cannot carry."
+/>
+
+<Card
+  icon={<Globe />}
+  title="Move from Coolify"
+  href="/docs/guides/move-from-coolify"
+  description="The same wizard against a Coolify panel."
+/>
+
+<Card
+  icon={<Trash2 />}
+  title="Uninstall"
+  href="/docs/reference/installers/uninstall"
+  description="Taking Deplo back off a machine, and what it leaves alone."
+/>
+
+</Cards>
