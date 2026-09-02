@@ -41,6 +41,8 @@ Stored and shown back to you. Can be edited freely, and can be promoted to secre
 
 Promoting `plain` to `secret` is always allowed. The other direction is not.
 
+**Deplo says so when a name reads like a credential.** A plain variable called `PAYLOAD_SECRET`, `S3_ACCESS_KEY_ID` or `DB_PASSWORD` carries a **Looks like a secret** badge in **Environment**, and adding one says the same thing in the dialog. It is a suggestion, not a refusal: the variable works either way, and the rule is Docker's own, so names holding `PUBLIC`, `FILE` or `VERSION` (`NEXT_PUBLIC_API_KEY`, `TOKEN_FILE`) are exempt.
+
 **Build time and run time are the same set.** Every resolved variable is passed to the build as a build argument and declared in the generated Dockerfile, so build-time inlined configuration such as `NEXT_PUBLIC_*` or `VITE_*` works with no extra toggle.
 
 ---
@@ -66,7 +68,7 @@ Click **Add variable**.
 
 ### Name it and set the type
 
-Type the name and the value, and pick **Plain** or **Secret**.
+Type the name and the value, and pick **Plain** or **Secret**. A name that reads like a credential is flagged here, so you can flip it before it is stored.
 
 </Step>
 <Step>
