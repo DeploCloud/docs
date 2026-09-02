@@ -34,12 +34,20 @@ that panel already had. Nothing to change in DNS, no HTTPS gap.
 
 ## What you need
 
+- A snapshot of the server, taken before you start.
 - A machine running Dokploy or Coolify, with root access for one command.
 - An API token from that panel. Deplo reads it over the API, the same way
   [Move from Dokploy](/guides/move-from-dokploy) and
   [Move from Coolify](/guides/move-from-coolify) do.
 - Room on the disk: every volume that comes across is written a second time
   before the old one goes.
+
+<Callout type="warn" title="Take the snapshot first">
+  The old panel stays on the disk with its volumes, and that is your way back
+  from a takeover that worked. The snapshot is your way back from the rest: a
+  volume emptied for a copy that then failed, a disk that filled part way, the
+  Docker restart the cutover needs. It is one click at every provider.
+</Callout>
 
 ---
 
@@ -73,6 +81,13 @@ free port, leaving the other panel exactly where it is.
 `--yes` does not answer this one: replacing somebody's platform is not a
 default. To install without being asked, set `DEPLO_TAKEOVER=dokploy` (or
 `coolify`).
+
+<Callout type="warn" title="If it says the server agent did not install">
+  The summary card then reads `Server  NOT installed`, and it means the data
+  phase cannot start: every byte is copied by the agent on this machine. The
+  installer prints why. Re-run `/opt/deplo/install.sh` here, or copy the command
+  the dashboard offers under **Settings -> Servers**. Both install the agent.
+</Callout>
 
 </Step>
 

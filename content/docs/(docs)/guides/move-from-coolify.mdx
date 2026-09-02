@@ -275,6 +275,12 @@ create the same app twice.
 - **The compose is the one its author wrote.** Deplo imports Coolify's
   raw compose, not the copy Coolify renders with its own labels, container
   names and per-resource network - Deplo writes those itself.
+- **A volume the file pins by name is not the one that was running.**
+  Coolify renames every volume a compose declares to its own
+  `<resource id>_<key>`, and honours neither `external: true` nor a pinned
+  `name:`. So the volume the file names is one the stack never mounted.
+  Deplo copies what was actually running, and the report names the pinned
+  volume so you can decide what to do with what is in it.
 - **A database lands in the same Environment as its apps.** An Environment
   owns a Docker network here, so a database placed anywhere else would not
   answer to `db-<name>` from the apps that name it. It arrives beside them,

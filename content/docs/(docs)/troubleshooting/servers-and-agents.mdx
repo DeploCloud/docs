@@ -109,11 +109,39 @@ entry and raises an alert, so an orphan is never silently left behind.
 Removing the server drops its pending teardowns.
 
 </Accordion>
+<Accordion title="The install command 503s, or says the release could not be resolved">
+
+`/install-agent.sh` refuses to serve an installer it cannot checksum, so it
+answers `503` when it cannot reach `github.com` at all. Deplo asks the GitHub
+API for the newest agent release and falls back to the version it ships
+pinned, whose files are plain downloads - so a rate-limited API is no longer
+enough to stop an install.
+
+A `503` therefore means outbound access to `github.com` from the machine
+running the panel. Check it, then run the command again.
+
+</Accordion>
+<Accordion title="This host's own install command says 127.0.0.1">
+
+That is deliberate. The panel is published on loopback and Traefik serves it,
+so `127.0.0.1` is the address that always answers **on this machine** - during
+a takeover it is the only one, because the proxy is bound to loopback until it
+takes 80 and 443. It is the same address the installer bootstraps agent 0 over.
+
+Paste it on this machine and nowhere else. Every other server gets the panel's
+public address, as before.
+
+</Accordion>
 <Accordion title="Reinstalling an agent">
 
 Re-run the install command from the server's **Advanced** tab. The
 installer **deletes the existing certificate files** so the host genuinely
 re-enrolls against the new pin, rather than half-trusting the old one.
+
+That is also why the command has to be a **fresh** one: the installer clears
+the old materials either way, so an expired or already-used token leaves the
+agent restarting with `unknown-token` instead of the certificate it had.
+Reissue from the server's menu and paste that.
 
 </Accordion>
 <Accordion title="The server is gone for good">
