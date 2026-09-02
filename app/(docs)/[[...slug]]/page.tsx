@@ -17,10 +17,10 @@ const BETA_PAGES = new Set([
   "/advanced/build-servers",
   "/guides/server/cleanup",
   "/guides/server/container-registries",
-  "/guides/observability/cron-jobs",
   "/guides/take-over-your-vps",
   "/guides/move-from-dokploy",
   "/guides/move-from-coolify",
+  "/api-reference/rest-and-mcp",
 ]);
 
 export default async function Page(props: PageProps<"/[[...slug]]">) {
