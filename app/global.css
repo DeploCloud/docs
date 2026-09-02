@@ -95,6 +95,53 @@ img {
   background-color: var(--color-fd-background);
 }
 
+/* fumadocs scrolls the active link into view on navigation via
+   element.scroll({...}) with no explicit behavior, which falls back to this
+   container's scroll-behavior. Default is instant; make it glide. */
+#nd-sidebar [data-radix-scroll-area-viewport] {
+  position: relative;
+  scroll-behavior: smooth;
+}
+
+/* github.com sidebar nav: one shared pill slides between rows on hover
+   instead of each row fading its own background in place, see
+   SidebarHoverIndicator. Active row keeps its own persistent tint. */
+#nd-sidebar [data-radix-scroll-area-viewport] a:not([data-active="true"]):hover {
+  background-color: transparent;
+}
+
+#nd-sidebar .sidebar-hover-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  z-index: -1;
+  border-radius: var(--radius-lg);
+  background-color: color-mix(in srgb, var(--color-fd-accent) 50%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 150ms ease,
+    height 150ms ease,
+    opacity 150ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-sidebar .sidebar-hover-indicator {
+    transition: opacity 150ms ease;
+  }
+}
+
+/* Docs / API Reference tab switcher dropdown: fumadocs' default p-1/gap-1
+   reads cramped for two-line entries with icon + title + description. This
+   width-var class combo is unique to that dropdown across every fumadocs
+   layout variant, nothing else to accidentally catch. */
+.w-\(--radix-popover-trigger-width\) {
+  padding: 0.75rem;
+  gap: 0.75rem;
+}
+
 /* drop the icon fumadocs renders next to "On this page" in the TOC header */
 #toc-title svg {
   display: none;
