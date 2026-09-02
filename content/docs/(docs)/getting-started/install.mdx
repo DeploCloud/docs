@@ -94,7 +94,21 @@ curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | 
 
 ## Create your account
 
-Open the dashboard. A fresh install starts completely empty, and the first visit opens the setup screen, **Welcome to Deplo**. It runs once: a workspace name, a username (lowercase letters, numbers, `-` and `_`), a display name, an admin email and a password, checked for length and character mix and against the Have I Been Pwned breach list. Click **Create workspace** to finish. That account is the **instance owner**: the tier above instance admin, and the only one that can hand the instance to somebody else later.
+The installer prints a **setup link** at the end, next to the dashboard address:
+
+```
+Set up   https://deplo.example.com/setup?key=a3f9c1d84b7e2065
+```
+
+That link is the only way to create the first account. Without it the panel shows **This instance isn't set up yet** and nothing can be claimed - a fresh install answers on a public address whose name reaches certificate transparency logs within seconds, so the first account has to belong to whoever ran the installer rather than to whoever arrives first.
+
+<Callout type="info" title="Lost the link?">
+  Re-run the installer on the server. It prints the same link again - the key is generated once into `/opt/deplo/.env` and never rotates.
+</Callout>
+
+The link stops working on its own the moment the account exists. From then on the address goes to the sign-in page, and the key means nothing.
+
+Open it. A fresh install starts completely empty, and the link opens the setup screen, **Welcome to Deplo**. It runs once: a workspace name, a username (lowercase letters, numbers, `-` and `_`), a display name, an admin email and a password, checked for length and character mix and against the Have I Been Pwned breach list. Click **Create workspace** to finish. That account is the **instance owner**: the tier above instance admin, and the only one that can hand the instance to somebody else later.
 
 ---
 
@@ -153,12 +167,14 @@ docker network create deplo
 export DEPLO_DOMAIN=deplo.example.com   # required: it is the only address it serves
 export DEPLO_SECRET=$(openssl rand -base64 48)
 export DEPLO_DB_PASSWORD=$(openssl rand -base64 24)
+export DEPLO_SETUP_KEY=$(openssl rand -hex 8)   # then open /setup?key=<it>
 docker compose up -d
 ```
 
 Going this way, you enroll the host as a server yourself from **Settings -> Servers**, exactly like any other machine.
 
 <Callout type="warn" title="Limits and gotchas">
+  - **`DEPLO_SETUP_KEY` is yours to set here.** The installer generates one; Compose does not. Leave it unset and the first account is created by whoever reaches `/setup` first.
   - **`DEPLO_SECRET` is not rotatable.** It derives every encryption key, every session signature and the agent certificate authority. Change it and every stored secret becomes unreadable, every session ends, and every agent certificate is re-minted. Back it up with the rest of `/opt/deplo/.env`.
   - **The domain must resolve before the certificate can issue.** Let's Encrypt validates over HTTP on port 80. Point the A record first, install second, or re-run the installer once DNS is live. The generated address answers meanwhile.
   - **Agent enrollment failure is not fatal.** If it fails, the dashboard still comes up and the script says so. Re-running the installer retries it.
