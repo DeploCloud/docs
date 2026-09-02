@@ -72,13 +72,30 @@ default. To install without being asked, set `DEPLO_TAKEOVER=dokploy` (or
 
 <Step>
 
-### Leave the window open
+### Open the address it prints
 
-The installer prints the address to open and then waits. It is the half of this
-that needs root on the host: moving the ports, restarting Docker, removing the
-old panel.
+The installer prints the way in and then waits. It is the half of this that
+needs root on the host: moving the ports, restarting Docker, removing the old
+panel.
 
-Closing it is safe. Re-run `/opt/deplo/install.sh` to pick the takeover back up.
+```
+http://deplo-setup.203.0.113.10.sslip.io
+```
+
+No SSH, no port to open: Deplo writes one route into the old panel's own proxy,
+which reloads it by itself, and the panel that is still running serves that
+address on port 80. The route is taken away again at the cutover.
+
+<Callout type="info" title="Deplo waits on loopback, deliberately">
+  Until it takes 80 and 443, Deplo's proxy is bound to `127.0.0.1` only. An
+  account-creation page behind a certificate Deplo signed itself has no business
+  on the open internet, and a published Docker port would walk straight past
+  ufw. So the interim ports answer on the machine and nowhere else, and no
+  certificate can issue yet: the browser warns once.
+</Callout>
+
+Closing the window is safe. Re-run `/opt/deplo/install.sh` to pick the takeover
+back up.
 
 </Step>
 
@@ -86,9 +103,8 @@ Closing it is safe. Re-run `/opt/deplo/install.sh` to pick the takeover back up.
 
 ### Create your account and migrate
 
-Open the address it printed. After the account and the team, Deplo opens the
-migration wizard and nothing else: until the ports are its own, there is
-nothing to deploy onto.
+After the account and the team, Deplo opens the migration wizard and nothing
+else: until the ports are its own, there is nothing to deploy onto.
 
 The panel it is replacing is already filled in. Paste its API token, pick what
 you want to bring across, and start.
@@ -106,13 +122,18 @@ you want to bring across, and start.
 Press **Take over the ports** when everything you want is here. In the terminal
 window, Deplo:
 
-- stops the old panel, without removing anything
+- stops the old panel **and the apps it ran**, without removing anything
 - copies its certificates into its own store
 - moves Traefik onto 80 and 443, with the dashboard served behind it
 - restarts Docker, which applies the address pools the install wrote
 
+The apps go down too because two copies of one app cannot both hold a port, and
+the ones the old platform ran are holding exactly the ports Deplo's proxy is
+about to take.
+
 The dashboard answers on its own HTTPS address from then on: your domain if you
-gave one, and the generated `deplo-<hex>.nip.io` either way.
+gave one, and the generated `deplo-<hex>.nip.io` either way. Ports 80 and 443
+are Deplo's now, so a real certificate issues on the first request.
 
 </Step>
 
@@ -134,8 +155,20 @@ way back for as long as you want it.
 ### Remove the old panel
 
 When you are happy, **Remove Dokploy** (or Coolify) on the takeover screen. You
-type its name to confirm, and its containers, the workloads it ran, their
-volumes and networks, its images and its directory all come off the machine.
+type its name to confirm.
+
+The removal itself needs root, so it happens in the terminal: re-run
+`/opt/deplo/install.sh` on the machine and it carries out what you asked for.
+Off come its containers, the workloads it ran, their volumes and networks, its
+images and its directory.
+
+<Callout type="info" title="What it does not touch">
+  Volumes and networks are read off the containers being removed, so anything
+  the old platform left behind for an app it had already deleted stays where it
+  is. The installer says how many unused volumes and networks are still on the
+  host and prints the command to list them, so you can look before you remove
+  any of them yourself.
+</Callout>
 
 </Step>
 
@@ -143,29 +176,12 @@ volumes and networks, its images and its directory all come off the machine.
 
 ---
 
-## If the dashboard does not open
+## How you get in
 
-Deplo waits on a free port, and some providers only open 22, 80 and 443 in
-their own firewall. The installer notices that nothing has reached the panel
-and offers two ways in that need no port opened:
-
-<Accordions>
-
-<Accordion title="Through the old panel's proxy, on port 80">
-
-Deplo drops one route into the other panel's Traefik, which reloads it by
-itself, and prints an address like:
-
-```
-http://deplo-setup.203.0.113.10.sslip.io
-```
-
-Nothing else of theirs is touched, and the route is removed when the ports
-move.
-
-</Accordion>
-
-<Accordion title="Over SSH, from your own machine">
+The `deplo-setup` address needs no port opened: it rides the old panel's proxy
+on port 80, which is already reachable. If that panel has no dynamic config
+directory to write into, the installer says so and falls back to SSH, which is
+also there for anyone who would rather use it:
 
 ```bash
 ssh -L 3001:localhost:3001 root@<server-ip>
@@ -173,9 +189,10 @@ ssh -L 3001:localhost:3001 root@<server-ip>
 
 Then open `http://localhost:3001`. Nothing on the server changes.
 
-</Accordion>
-
-</Accordions>
+<Callout type="info">
+  The installer keeps watching. If nothing has opened Deplo after a minute or
+  two, it prints both ways in again rather than sitting on a spinner.
+</Callout>
 
 ---
 
@@ -185,6 +202,8 @@ Then open `http://localhost:3001`. Nothing on the server changes.
 ports move. Deplo:
 
 - starts again every service the migration stopped on the old panel
+- starts the old platform's own containers again, each with the restart policy
+  it had and only if it was running
 - removes everything it created here
 - uninstalls itself
 
@@ -200,8 +219,9 @@ old panel again on its own.
 
 - **Deploy anything for you.** Some apps need a change after a migration, so
   every deploy is yours to make.
-- **Remove anything before you ask.** Taking the ports stops the old panel; it
-  is still whole on the disk until you confirm the removal.
+- **Remove anything before you ask.** Taking the ports stops the old panel and
+  the apps it ran; both are still whole on the disk until you confirm the
+  removal.
 - **Touch a machine you said no on.** Answering no to the first question exits
   before anything is written.
 

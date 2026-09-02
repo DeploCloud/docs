@@ -33,6 +33,27 @@ A **Bind** reaches outside Deplo's control, which is why it needs the "Bind serv
 
 ---
 
+## A Compose app's own mounts
+
+A [Compose app](/advanced/compose-apps) declares its storage in its own
+`docker-compose.yml`, so there is no Storage row to add for it.
+
+**Settings -> Storage** lists those mounts read-only, under **From
+docker-compose.yml**, one line each: the volume name or host path, then the path
+inside the container. Change them where they are written, in the compose file
+under **Deployments**.
+
+**No storage yet** appears only when the app has neither kind, so a stack whose
+data is perfectly safe no longer reads as one that throws everything away.
+
+<Callout type="warn" title="On a Compose app, edit the compose">
+  A Storage row added at a container path the compose file already mounts is
+  dropped at deploy time: the compose you wrote wins. Change the YAML, not the
+  Storage tab.
+</Callout>
+
+---
+
 ## What deleting the app removes
 
 The three kinds are not treated the same way, and the difference is the whole reason **Bind** needs a permission.

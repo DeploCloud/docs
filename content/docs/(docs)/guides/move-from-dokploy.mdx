@@ -257,13 +257,19 @@ it would run it on empty storage. Bring that data over yourself, or press
   it; the others still see it offered under **Variables**.
   A `${{ <service>.<field> }}` reference to a sibling service is a different
   thing and still arrives as it is written - the report names those keys.
-- **Every variable arrives plain, and stays readable.** Dokploy has no
-  notion of a secret variable, so Deplo does not invent one: your values
-  come across exactly as they were, `MYSQL_ROOT_PASSWORD` and
-  `DATABASE_URL` included, and you can read and edit all of them under
-  **Variables**. Mark the ones you want write-only there, at your own
-  pace - a secret variable never reads its value back, so it is a choice
-  to make once you have checked the import.
+- **A variable that looks like a credential arrives masked.** Dokploy has
+  no notion of a secret variable, so Deplo reads the name. One holding
+  `password`, `passwd`, `secret`, `token`, `credentials`, `salt` or
+  `passphrase`, or an `api` / `private` / `access` / `signing` /
+  `encryption` / `license` key, lands as a **secret**: write-only, and
+  never shown again. `MYSQL_ROOT_PASSWORD` and `APP_SECRET` are masked;
+  everything else stays plain and readable, `DATABASE_URL` and `SMTP_DSN`
+  included, and a name that announces itself as public
+  (`NEXT_PUBLIC_`, `VITE_`, `PUBLIC_`) is never masked. The report lists
+  every key it masked.
+- **A masked variable cannot be edited.** To put one back in the clear, open
+  it under **Variables** and press **Make it plain**. A secret is write-only,
+  so Deplo cannot read the old value out: you type it again.
 - **Imported basic-auth credentials are flagged.** They never went
   through Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report
@@ -281,19 +287,51 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **An app still being created refuses every action** and draws as
   pending until its run finishes.
 
+---
+
+## What the report tells you
+
+Besides what did and did not come across, the report carries a few checks that
+are cheaper to read now than to find out later.
+
+- **A copy that would erase another app is refused.** Two apps mounting the
+  same absolute path on the same server - `/opt/data` on both is enough - is
+  all it takes, because the data copy empties its target before it writes.
+  Deplo names the other app and writes nothing: on the review screen before the
+  run starts, and again in the report. Give one of the two its own directory,
+  then copy the data again.
+- **Free disk on the machine receiving the data**, when it is under 10% or
+  under 5 GiB. A copy writes a second copy of everything before the old one
+  goes, so free some room first.
+- **A project that is empty on Dokploy** is named, rather than left out
+  silently and read as one that vanished between the scan and the report.
+- **An API key belongs to one organization**, so an import covers that one
+  only. Anything under another organization needs a second import with a key
+  from it.
+- **The registries a stack pulls its images from.** Dokploy never exposes the
+  password, so add a private one under
+  [Registries](/guides/server/container-registries) before the deploy fails on
+  it.
+
 <Callout type="warn" title="Limits and gotchas">
-  - **Cut DNS over yourself, when you are ready.** The migration does not touch
-  your registrar. - **Copying data takes as long as the data is big.** Volumes
-  stream host to host through the control plane. - **Run it twice and you get it
-  twice.** There is no reconciliation: this is a move, not a sync. - **Check the
-  report, always.** A migration that says "done" with twelve lines in the report
-  has twelve things waiting for you. - **Uninstall the migration source
-  afterwards.** It is a live agent on a machine you are about to decommission.
+- **Cut DNS over yourself, when you are ready.** The migration does not touch
+  your registrar.
+- **Copying data takes as long as the data is big.** Volumes stream host to
+  host through the control plane.
+- **Running it again is safe.** Everything already here is skipped, so a second
+  run brings newer data across without undoing the first one and without taking
+  the agent off the source machine.
+- **Check the report, always.** A migration that says "done" with twelve lines
+  in the report has twelve things waiting for you.
+- **Uninstall the migration source afterwards.** It is a live agent on a
+  machine you are about to decommission.
 </Callout>
 
 <Callout type="error" title="If it does not work">
 - **The scan finds nothing**: wrong panel address, or the API key lacks
   access. Dokploy keys are scoped per organisation.
+- **The panel's certificate is not trusted**: Deplo cannot be told to accept
+  one, so use Dokploy's plain http address instead.
 - **Stuck on Waiting for the agent**: the install command has not run on
   the source, or that machine cannot reach this one.
 - **A volume arrives empty**: the report says so, and the app it belongs
@@ -314,9 +352,9 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **The data step stops half way**: nothing is rolled back. Everything
   already created here stays exactly as it is, and every service whose
   data did not arrive is named in the report and blocked from deploying.
-  A second run does not fill the gap - it finds everything already here
-  and stops. Bring the missing data over yourself, or **Remove what came
-  over** and start again.
+  A second run skips everything already created and copies the data again,
+  or bring the missing data over yourself with **Copy the data again** on the
+  app.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 

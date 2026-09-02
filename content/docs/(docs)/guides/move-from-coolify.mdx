@@ -293,6 +293,12 @@ create the same app twice.
   binary one - an SQLite database mounted at a path, say - and a whole mounted
   directory are copied in the data step instead, byte for byte. The report
   says which files took that route.
+- **A file Coolify keeps at a real path on the host travels too.** A stack's
+  config file stored outside Coolify's own data directory - `/srv/app/nginx.conf`
+  rather than `/data/coolify/services/<id>/nginx.conf` - is carried by the data
+  step, and the copy lands in Deplo's own files directory rather than recreating
+  Coolify's path on the new machine. It used to arrive mounted and empty, with
+  no line in the report.
 - **An address a template recorded without a port still routes.** A
   one-click template that declares `SERVICE_FQDN_<NAME>` and no
   `SERVICE_FQDN_<NAME>_<PORT>` names its service and no port. Deplo reads
@@ -331,14 +337,19 @@ create the same app twice.
   http.** It answered on `:80` over there, so it answers on `:80` here and every
   link anyone had written keeps working. The report names it; add a certificate
   under **Domains** when you want https.
-- **Every variable arrives plain, and stays readable.** Coolify's API
-  never says a variable is a secret, so Deplo does not invent one: your
-  values come across exactly as they were, `MYSQL_ROOT_PASSWORD` and
-  `DATABASE_URL` included, and you can read and edit all of them under
-  **Variables**. Mark the ones you want write-only there, at your own
-  pace - a secret variable never reads its value back, so it is a choice
-  to make once you have checked the import. The one Coolify really does
-  hold back is the next bullet: it arrives with no value at all.
+- **A variable that looks like a credential arrives masked.** Coolify's API
+  never says a variable is a secret, so Deplo reads the name. One holding
+  `password`, `passwd`, `secret`, `token`, `credentials`, `salt` or
+  `passphrase`, or an `api` / `private` / `access` / `signing` /
+  `encryption` / `license` key, lands as a **secret**: write-only, and
+  never shown again. `MYSQL_ROOT_PASSWORD` and `SERVICE_PASSWORD_ROOT` are
+  masked; everything else stays plain and readable, `DATABASE_URL` and
+  `SMTP_DSN` included, and a name that announces itself as public
+  (`NEXT_PUBLIC_`, `VITE_`, `PUBLIC_`) is never masked. The report lists
+  every key it masked.
+- **A masked variable cannot be edited.** To put one back in the clear, open
+  it under **Variables** and press **Make it plain**. A secret is write-only,
+  so Deplo cannot read the old value out: you type it again.
 - **A variable Coolify shows once arrives empty.** Coolify's API answers
   with no value for it, whatever the token holds, so Deplo has nothing to
   import. The report names those keys - fill them in under **Variables**
@@ -347,6 +358,32 @@ create the same app twice.
   Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report
   instead**, naming what asked for it and who turns it on.
+
+---
+
+## What the report tells you
+
+Besides what did and did not come across, the report carries a few checks that
+are cheaper to read now than to find out later.
+
+- **A copy that would erase another app is refused.** Two apps mounting the
+  same absolute path on the same server - `/opt/data` on both is enough - is
+  all it takes, because the data copy empties its target before it writes.
+  Deplo names the other app and writes nothing: on the review screen before the
+  run starts, and again in the report. Give one of the two its own directory,
+  then copy the data again.
+- **Free disk on the machine receiving the data**, when it is under 10% or
+  under 5 GiB. A copy writes a second copy of everything before the old one
+  goes, so free some room first.
+- **A project that is empty on Coolify** is named, rather than left out
+  silently and read as one that vanished between the scan and the report.
+- **An API key belongs to one organization**, so an import covers that one
+  only. Anything under another organization needs a second import with a key
+  from it.
+- **The registries a stack pulls its images from.** Coolify never exposes the
+  password, so add a private one under
+  [Registries](/guides/server/container-registries) before the deploy fails on
+  it.
 
 ---
 
@@ -367,19 +404,25 @@ it would run it on empty storage. Bring that data over yourself, or press
 **Deploy anyway** on the app to accept starting without it.
 
 <Callout type="warn" title="Limits and gotchas">
-  - **Cut DNS over yourself, when you are ready.** The migration does not touch
-  your registrar. - **Copying data takes as long as the data is big.** Volumes
-  stream host to host through the control plane. - **Run it twice and you get it
-  twice.** There is no reconciliation: this is a move, not a sync. - **Check the
-  report, always.** A migration that says "done" with twelve lines in the report
-  has twelve things waiting for you. - **Uninstall the migration source
-  afterwards.** It is a live agent on a machine you are about to decommission.
+- **Cut DNS over yourself, when you are ready.** The migration does not touch
+  your registrar.
+- **Copying data takes as long as the data is big.** Volumes stream host to
+  host through the control plane.
+- **Running it again is safe.** Everything already here is skipped, so a second
+  run brings newer data across without undoing the first one and without taking
+  the agent off the source machine.
+- **Check the report, always.** A migration that says "done" with twelve lines
+  in the report has twelve things waiting for you.
+- **Uninstall the migration source afterwards.** It is a live agent on a
+  machine you are about to decommission.
 </Callout>
 
 <Callout type="error" title="If it does not work">
 - **API is disabled**: turn the API on in Coolify's settings.
 - **You are not allowed to access the API**: Coolify's IP allowlist does
   not include this machine.
+- **The panel's certificate is not trusted**: Deplo cannot be told to accept
+  one, so use Coolify's plain http address instead.
 - **This token cannot read values** or **This token cannot read compose
   files**: the token has no `read:sensitive`, or it belongs to an account
   that is not an admin or owner of the team. Both are the same scope.
@@ -406,9 +449,9 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **The data step stops half way**: nothing is rolled back. Everything
   already created here stays exactly as it is, and every service whose
   data did not arrive is named in the report and blocked from deploying.
-  A second run does not fill the gap - it finds everything already here
-  and stops. Bring the missing data over yourself, or **Remove what came
-  over** and start again.
+  A second run skips everything already created and copies the data again,
+  or bring the missing data over yourself with **Copy the data again** on the
+  app.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 
