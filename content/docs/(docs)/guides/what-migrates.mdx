@@ -1,0 +1,263 @@
+---
+title: What migrates
+description: Which apps come across untouched, which ones need a look, and how Deplo measures the difference on real Dokploy and Coolify installations.
+---
+
+import { Layers, ServerCog, Globe, Database } from "lucide-react";
+
+<Callout type="info" title="Beta">
+  This feature is currently beta/experimental and subject to change. It is not
+  recommended for production. Try it out and share your feedback on [our
+  GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+Before you move anything, this is the honest answer to "will my apps survive
+the trip". It covers both panels Deplo reads, Dokploy and Coolify, and both
+ways of moving: the external migration from another machine, and the takeover
+that installs Deplo on the machine the old panel already runs on.
+
+---
+
+## In short
+
+**Expect around 95% of apps to arrive and run with nothing to do by hand.**
+That figure is per app, not per migration, and it comes from a suite that runs
+against live Dokploy and Coolify installations rather than mocks.
+
+| Way of moving | Apps that land untouched | Why |
+| --- | --- | --- |
+| **Takeover** (Deplo installs on the same machine) | **~95%** | The data never leaves the disk it is already on. Fewer moving parts than any other route. |
+| **External** (Deplo reads another machine) | **~93%** | Adds an inbound port on the source, a landing server to pick, and the bytes crossing the network. |
+
+The rest is not a coin toss. **Every app that needs attention is named in the
+report, on its own line, before you deploy anything.** Nothing is dropped in
+silence, and nothing starts on empty storage without saying so.
+
+<Callout type="info" title="What that means for a big migration">
+  A migration of a dozen apps usually has one that wants a look. That is what
+  the report is for: read it once, handle the line it names, deploy the rest.
+  Deplo deliberately does not deploy everything for you at the end, so you check
+  each app as it comes up.
+</Callout>
+
+---
+
+## Apps that come across every time
+
+**This set lands essentially every time, on both panels and by either route.**
+If your app is on this list, treat the move as routine. These shapes are
+covered on every release and they arrive byte for byte.
+
+| Shape | Notes |
+| --- | --- |
+| **An app from a Docker image** | Image, tag, command, environment, ports. |
+| **An app from a compose file** | Rendered as written, with its named volumes. |
+| **An app built from a git repository** | Repository, branch, build settings. |
+| **Managed databases** | Postgres, MySQL, MariaDB, MongoDB, Redis, with their data. |
+| **Named volumes** | Including deep trees, empty directories and zero-byte files. |
+| **Bind mounts of a host directory** | Copied to the destination and re-pointed. |
+| **Bind mounts of a single file** | Carried with its contents, not just re-mounted. |
+| **Config files** | The bytes travel, not only the mount path. |
+| **A volume shared between services of one stack** | Copied once, mounted where it was. |
+| **Environment variables** | Per app and shared, with their values. |
+| **Domains and routes** | Including a path prefix and a per-domain port. |
+| **Basic auth** | Users and passwords, re-hashed on arrival. |
+| **Cron jobs** | Schedule and command. |
+
+What is preserved inside a volume, and verified on every release:
+
+- File contents, byte for byte
+- Permissions and ownership, including files a non-root user owns
+- Empty directories and zero-byte files
+- Names with unicode characters, spaces and long paths
+- Hard links, which stay hard links rather than becoming two copies
+- Symbolic links that point inside their own volume
+
+---
+
+## Apps that need a look
+
+These are not failures. They are the shapes where a machine cannot decide for
+you, so Deplo brings across what it can and **names the rest in the report**.
+
+| Shape | What happens |
+| --- | --- |
+| **A stack that reaches the host** | `privileged`, `network_mode: host`, `cap_add`, device passthrough. Deplo refuses to render it rather than quietly stripping the line, and says which key stopped it. |
+| **An image from a private registry** | The image reference comes across, the credentials do not, because the old panel never hands them over. The report names the registry so you can add it. |
+| **A compose file kept in a git repository** | Some panels will not resolve it over the API. The app is created and the report tells you to paste the file in. |
+| **Device nodes, sockets and named pipes inside a volume** | Not copied, by design: they are runtime objects, not data. Each one is listed with its path. |
+| **Symbolic links pointing outside their volume** | Not copied, for the same reason a bind mount of `/` is not. Listed with its path. |
+| **State that lives outside the app** | A cron entry on the host itself, a systemd unit, a file somewhere no mount points at. Deplo only knows about what the app mounts. |
+| **A very large volume onto a tight disk** | Deplo checks the destination's free space first and warns before it starts, rather than filling the disk halfway through. |
+
+<Callout type="warn" title="The one thing worth checking yourself">
+  Apps whose data lives somewhere the old panel does not describe. If a
+  container writes to a path that is not a declared volume or bind mount, that
+  path is inside the container and it is gone on the next restart, on the old
+  panel as much as on Deplo. Moving is a good moment to notice it.
+</Callout>
+
+---
+
+## Where the two panels differ
+
+The importer reads both panels over their own API, and they do not hand over
+the same amount.
+
+| | Dokploy | Coolify |
+| --- | --- | --- |
+| Compose file over the API | Inline files, yes. A file kept in git, no. | Needs a token with `read:sensitive`, or values and database passwords arrive empty. |
+| Volume names | Taken from the stack's own file. | Taken from the panel's storage rows. A volume the compose pins by name is worth checking in the report. |
+| Environment variables | Handed over in full. | Needs `read:sensitive` for the values. |
+| Multiple machines | Both handled, and each machine needs the agent before its apps can move. | Same. |
+| Organizations | An API key covers one organization. Anything under another needs a second import with a key from it. | Same, and the report says so. |
+
+<Callout type="info" title="Coolify tokens">
+  Mint the token with `read:sensitive` ticked. Without it Coolify hands over
+  empty values and Deplo cannot tell an empty variable from one it was not
+  allowed to read. The report says when it saw a masked value and refuses
+  rather than importing blanks.
+</Callout>
+
+---
+
+## External or takeover
+
+Both routes end in the same place. They differ in what can go wrong on the way.
+
+**The takeover is the more reliable of the two**, which surprises people
+because it looks like the more invasive one:
+
+- The data never crosses a network. It is copied on the disk it already lives on.
+- There is no landing server to choose and no second machine to keep reachable.
+- The old panel is stopped, not removed, until you say otherwise. That is your
+  way back at any point.
+- When you remove it, Deplo removes what that panel ran and lists any volume it
+  left behind instead of deleting anything it is not sure about.
+
+**The external migration** adds three things that can need attention:
+
+- The source machine has to answer on TCP 9443, inbound, for Deplo to read it.
+- You choose which of your servers each app lands on.
+- The bytes travel through Deplo, encrypted, which takes as long as the volumes
+  are big.
+
+<Callout type="info" title="One machine only?">
+  An external migration cannot land apps back on the source machine: Deplo only
+  reads from it. If that box is all you have, the takeover is the route for you.
+</Callout>
+
+---
+
+## How this is measured
+
+Every release, migrations are run against a live Dokploy and a live Coolify
+installation, with real apps and real data, and each app is checked five ways:
+
+<Steps>
+
+<Step>
+### Real use, first
+
+A record is created through the app's own interface before anything moves: an
+article, a repository, a monitor, a row in a database.
+
+</Step>
+
+<Step>
+### The same answers
+
+The app is asked the same handful of requests on both sides, and the status,
+the relevant headers and a checksum of the body are compared.
+
+</Step>
+
+<Step>
+### The same data
+
+For each engine, the same count-and-checksum query is run before and after.
+
+</Step>
+
+<Step>
+### The same files
+
+For every volume, bind mount and config file: the file list, sizes,
+permission bits, owner, type, and a checksum of the contents, compared
+between the two machines with the same command.
+
+</Step>
+
+<Step>
+### Visible in the app
+
+Every mount shows in Storage, every address in Domains, every variable in
+Variables with the right type, the logs stream, the console opens, and the
+record made in step one is still there.
+
+</Step>
+
+</Steps>
+
+The same suite runs under conditions that are not a clean lab:
+
+- A source machine behind a closed firewall
+- A panel behind a CDN with an invalid certificate at the origin
+- A panel spread over more than one machine, with one going unreachable mid-run
+- A destination disk close to full, with volumes measured in gigabytes
+- A crowded instance: several organizations, projects and environments, a
+  private registry, stopped apps, apps in a crash loop, clashing service names
+
+<Accordions>
+<Accordion title="Check your own migration by hand">
+
+You do not have to take the report's word for it. If you have shell access to
+both machines, this compares a volume on each side. Run it before and after,
+and the two outputs should match except for anything the report named.
+
+```bash
+docker run --rm -v <volume>:/v:ro debian:stable-slim bash -c '
+  cd /v
+  echo "files:   $(find . | wc -l)"
+  echo "tree:    $(find . | LC_ALL=C sort | md5sum | cut -d" " -f1)"
+  echo "content: $(find . -type f -exec md5sum {} + | LC_ALL=C sort | md5sum | cut -d" " -f1)"
+  echo "modes:   $(find . -printf "%p|%m|%U|%G|%y\n" | LC_ALL=C sort | md5sum | cut -d" " -f1)"
+'
+```
+
+This is an expert convenience, not a step in the migration. Nothing in Deplo
+asks you to open a terminal to move a platform across.
+
+</Accordion>
+</Accordions>
+
+---
+
+## See also
+
+<Cards>
+  <Card
+    icon={<ServerCog className="text-blue-400" />}
+    title="Take over your VPS"
+    description="Install Deplo on the machine the old panel runs on"
+    href="/guides/take-over-your-vps"
+  />
+  <Card
+    icon={<Layers className="text-blue-400" />}
+    title="Move from Dokploy"
+    description="Read a Dokploy installation over its API"
+    href="/guides/move-from-dokploy"
+  />
+  <Card
+    icon={<Globe className="text-blue-400" />}
+    title="Move from Coolify"
+    description="Read a Coolify installation over its API"
+    href="/guides/move-from-coolify"
+  />
+  <Card
+    icon={<Database className="text-blue-400" />}
+    title="Backups and restore"
+    description="What to take before you move anything"
+    href="/guides/data/backups-and-restore"
+  />
+</Cards>

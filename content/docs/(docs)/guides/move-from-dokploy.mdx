@@ -3,7 +3,7 @@ title: Move from Dokploy
 description: A wizard that reads an existing Dokploy installation over its API and recreates it in Deplo, with the data copied across.
 ---
 
-import { Layers, ServerCog, Globe } from "lucide-react";
+import { Layers, ServerCog, Globe, ClipboardCheck } from "lucide-react";
 
 <Callout type="info" title="Beta">
   This feature is currently beta/experimental and subject to change. It is not
@@ -22,6 +22,12 @@ and databases, with the data copied across.
   all of this for you: it brings everything across, takes ports 80 and 443, and
   removes Dokploy when you say so.
   See [Take over your VPS](/guides/take-over-your-vps).
+</Callout>
+
+<Callout type="info" title="Will your apps make it across?">
+  [What migrates](/guides/what-migrates) lists the shapes that come across
+  untouched, the ones that need a look, and how each release is measured
+  against live installations.
 </Callout>
 
 ---
@@ -376,6 +382,12 @@ See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 ## See also
 
 <Cards>
+  <Card
+    icon={<ClipboardCheck className="text-blue-400" />}
+    title="What migrates"
+    description="What lands untouched, and what needs a look"
+    href="/guides/what-migrates"
+  />
   <Card
     icon={<Layers className="text-blue-400" />}
     title="Server roles"

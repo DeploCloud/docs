@@ -17,6 +17,7 @@ const BETA_PAGES = new Set([
   "/advanced/build-servers",
   "/guides/server/cleanup",
   "/guides/server/container-registries",
+  "/guides/what-migrates",
   "/guides/take-over-your-vps",
   "/guides/move-from-dokploy",
   "/guides/move-from-coolify",
