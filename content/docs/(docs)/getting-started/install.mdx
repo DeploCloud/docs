@@ -6,14 +6,8 @@ icon: Download
 
 import { Rocket, Variable, Network, Terminal, Trash2 } from "lucide-react";
 import { siUbuntu, siDebian, siLinux } from "simple-icons";
-
-<Callout type="info" title="Beta">
-Deplo itself is still in beta: rough edges are expected. The official
-1.0 release is planned for Q4 2026. Try it out and share feedback on
-[our GitHub](https://github.com/DeploCloud/deplo/issues).
-</Callout>
-
----
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
 
 <Tabs items={['Quick install', 'With your own domain']}>
 <Tab value="Quick install">
@@ -46,19 +40,42 @@ curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | 
 </Tab>
 </Tabs>
 
+<Callout
+  type="neutral"
+  icon={
+    <span className="flex shrink-0 items-center -space-x-1.5">
+      <Image
+        src={`${basePath}/competitors/coolify-color.svg`}
+        alt=""
+        aria-hidden="true"
+        width={20}
+        height={20}
+        className="size-5 rounded-full bg-white p-1 ring-1 ring-black"
+      />
+      <Image
+        src={`${basePath}/competitors/dokploy-color.svg`}
+        alt=""
+        aria-hidden="true"
+        width={20}
+        height={20}
+        className="size-5 rounded-full bg-black p-1 ring-1 ring-black"
+      />
+    </span>
+  }
+  title="Already running Dokploy or Coolify?"
+>
+  The installer offers to **take that machine over** instead: it brings your
+  projects across, then takes ports `80`, `443` and `3000` from the old panel and
+  inherits its certificates. Answer no and nothing is installed. See [Take over
+  your VPS](/docs/guides/take-over-your-vps).
+</Callout>
+
 ---
 
 ## What you need
 
 <Callout type="info" title="Start from a clean, stock server">
   A fresh VPS with nothing installed: no Docker, no Nginx, Apache or Caddy already bound to `80`/`443`, no other control panel. The installer is built for that starting point, it's the only way to guarantee the exact experience described on this page. Anything already occupying those ports gets in the way of Traefik and certificate issuance.
-</Callout>
-
-<Callout type="warn" title="Already running Dokploy or Coolify?">
-  The installer offers to **take that machine over** instead: it brings your
-  projects across, then takes ports `80`, `443` and `3000` from the old panel and
-  inherits its certificates. Answer no and nothing is installed. See [Take over
-  your VPS](/docs/guides/take-over-your-vps).
 </Callout>
 
 | What             | Requirement                                                                                                                     |
