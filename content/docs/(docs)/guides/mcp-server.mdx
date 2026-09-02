@@ -100,8 +100,9 @@ system to keep in sync, and no place for a check to be forgotten.
 
 Two switches guard it:
 
-- **A team switch**, off by default for a new team, deciding whether agents
-  may drive this team at all.
+- **A team switch**, on by default, deciding whether agents may drive this
+  team at all. A token is required either way, so this is the kill switch, not
+  what makes the endpoint safe.
 - **A token**, because MCP has no credential of its own. An agent
   authenticates with an ordinary [API token](/advanced/api-tokens-and-oauth),
   and **what it may do is that token's capabilities, nothing more**.
@@ -208,10 +209,31 @@ More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access
 
 ---
 
+## When no tool fits
+
+Most of what you ask for has a tool of its own. For the rest there are two:
+
+- **`graphql_query`** reads anything in Deplo's API.
+- **`graphql_mutate`** writes anything in it.
+
+They run a query the agent writes against the same schema and the same
+permission checks as every other tool, so the MCP server reaches **the whole
+API**, not just the part someone thought to wrap. An agent can discover what
+is there by asking the schema itself.
+
+Two things they will not do, whatever the token holds: return a **credential**
+(any password, connection string, token or install command) and run a
+**command inside a container**. Those are refused by name.
+
+Because one write tool covers everything from a rename to a deletion, it is
+always flagged destructive, so your agent asks before using it.
+
+---
+
 ## How many tools there are
 
-Deplo exposes **76 tools** today, one per action. The number moves with the
-product, so treat it as a snapshot: while creating a token, **See which**
+Deplo exposes **84 tools** today, plus the two above. The number moves with
+the product, so treat it as a snapshot: while creating a token, **See which**
 lists them all, marks the ones that token would reach and flags the
 destructive ones. An agent only ever sees the tools its own token can use.
 
