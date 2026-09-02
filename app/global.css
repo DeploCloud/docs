@@ -95,41 +95,39 @@ img {
   background-color: var(--color-fd-background);
 }
 
-/* fumadocs scrolls the active link into view on navigation via
-   element.scroll({...}) with no explicit behavior, which falls back to this
-   container's scroll-behavior. Default is instant; make it glide. */
+/* containing block for the active-page indicator below */
 #nd-sidebar [data-radix-scroll-area-viewport] {
   position: relative;
-  scroll-behavior: smooth;
 }
 
-/* github.com sidebar nav: one shared pill slides between rows on hover
-   instead of each row fading its own background in place, see
-   SidebarHoverIndicator. Active row keeps its own persistent tint. */
-#nd-sidebar [data-radix-scroll-area-viewport] a:not([data-active="true"]):hover {
+/* github.com sidebar nav: the current-page highlight glides to its new row
+   on navigation instead of snapping, see SidebarActiveIndicator. The
+   vendor background is disabled so only this animated pill shows the tint;
+   hover stays the vendor default (static, no slide). */
+#nd-sidebar [data-radix-scroll-area-viewport] a[data-active="true"] {
   background-color: transparent;
 }
 
-#nd-sidebar .sidebar-hover-indicator {
+#nd-sidebar .sidebar-active-indicator {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  width: 0;
   height: 0;
   z-index: -1;
   border-radius: var(--radius-lg);
-  background-color: color-mix(in srgb, var(--color-fd-accent) 50%, transparent);
+  background-color: color-mix(in srgb, var(--color-fd-primary) 10%, transparent);
   opacity: 0;
   pointer-events: none;
   transition:
-    transform 150ms ease,
-    height 150ms ease,
-    opacity 150ms ease;
+    transform 200ms ease,
+    width 200ms ease,
+    height 200ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #nd-sidebar .sidebar-hover-indicator {
-    transition: opacity 150ms ease;
+  #nd-sidebar .sidebar-active-indicator {
+    transition: none;
   }
 }
 

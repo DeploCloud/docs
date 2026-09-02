@@ -2,7 +2,7 @@ import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { notFound } from "next/navigation";
 import { baseOptions } from "@/lib/layout.shared";
 import { source } from "@/lib/source";
-import { SidebarHoverIndicator } from "@/components/sidebar-hover-indicator";
+import { SidebarActiveIndicator } from "@/components/sidebar-active-indicator";
 
 export default async function Layout({
   children,
@@ -13,7 +13,7 @@ export default async function Layout({
 
   return (
     <DocsLayout tree={source.pageTree} {...baseOptions()}>
-      <SidebarHoverIndicator />
+      <SidebarActiveIndicator />
       {children}
     </DocsLayout>
   );
