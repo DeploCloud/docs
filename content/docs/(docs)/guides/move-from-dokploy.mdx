@@ -17,6 +17,13 @@ and databases, with the data copied across.
 
 **Settings -> Migrations**, which needs `create_projects`.
 
+<Callout type="info" title="Deplo going on the same machine?">
+  If Deplo installs on the machine Dokploy already runs on, the installer does
+  all of this for you: it brings everything across, takes ports 80 and 443, and
+  removes Dokploy when you say so.
+  See [Take over your VPS](/guides/take-over-your-vps).
+</Callout>
+
 ---
 
 ## How it works
@@ -105,6 +112,10 @@ services on it would then arrive empty.
 
 Enter the **Panel address** and the **API key** of the source
 installation.
+
+A private address - the same machine (`http://172.17.0.1:3000`) or another
+box on your network - works too, but only for an **instance admin**. There
+is nothing to switch on: the address itself is what decides.
 
 </Step>
 <Step>
