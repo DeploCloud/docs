@@ -171,3 +171,79 @@ summary,
     opacity: 0.35;
   }
 }
+
+/* 404 page background (app/not-found.tsx): same drifting-blob aurora as
+   deplo-web's 404, kept on permanently. */
+.deplo-aurora {
+  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 95%);
+  mask-image: linear-gradient(to top, #000 10%, transparent 95%);
+}
+
+.deplo-blob {
+  position: absolute;
+  border-radius: 9999px;
+  background: #fff;
+  opacity: 0.08;
+  filter: blur(90px);
+  will-change: transform;
+}
+
+.deplo-blob:nth-child(1) {
+  bottom: -58%;
+  left: -8%;
+  width: 46vw;
+  height: 46vw;
+  animation: deplo-blob-drift-a 16s ease-in-out infinite;
+}
+
+.deplo-blob:nth-child(2) {
+  bottom: -66%;
+  left: 26%;
+  width: 52vw;
+  height: 52vw;
+  animation: deplo-blob-drift-b 21s ease-in-out infinite;
+}
+
+.deplo-blob:nth-child(3) {
+  right: -10%;
+  bottom: -56%;
+  width: 44vw;
+  height: 44vw;
+  animation: deplo-blob-drift-c 18s ease-in-out infinite;
+}
+
+@keyframes deplo-blob-drift-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(12%, -8%, 0) scale(1.18);
+  }
+}
+
+@keyframes deplo-blob-drift-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(-14%, -5%, 0) scale(0.9);
+  }
+}
+
+@keyframes deplo-blob-drift-c {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+  50% {
+    transform: translate3d(-10%, -11%, 0) scale(1.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deplo-blob {
+    animation: none;
+  }
+}

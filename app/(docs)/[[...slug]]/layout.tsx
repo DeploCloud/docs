@@ -1,9 +1,15 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
-import type { ReactNode } from "react";
+import { notFound } from "next/navigation";
 import { baseOptions } from "@/lib/layout.shared";
 import { source } from "@/lib/source";
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({
+  children,
+  params,
+}: LayoutProps<"/[[...slug]]">) {
+  const { slug } = await params;
+  if (!source.getPage(slug)) notFound();
+
   return (
     <DocsLayout tree={source.pageTree} {...baseOptions()}>
       {children}
