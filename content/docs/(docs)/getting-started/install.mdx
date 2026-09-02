@@ -42,9 +42,13 @@ curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | 
 
 <Callout
   type="neutral"
-  style={{ "--callout-color": "var(--color-fd-foreground)" }}
+  style={{
+    backgroundColor: "#111111",
+    borderColor: "#111111",
+    "--callout-color": "#111111",
+  }}
   icon={
-    <span className="flex shrink-0 items-center -space-x-2">
+    <span className="flex shrink-0 items-start -space-x-2">
       <Image
         src={`${basePath}/competitors/coolify-color.svg`}
         alt=""
