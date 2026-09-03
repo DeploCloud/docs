@@ -13,7 +13,11 @@ import { Globe, Layers, Trash2, ClipboardCheck } from "lucide-react";
 
 Most people have one server, and it already runs something. Deplo installs on
 that server by **taking its place**: it brings your projects across, then takes
-ports 80 and 443 from the old panel.
+ports 80 and 443 from the old panel and removes it.
+
+If you do not want any of it, the wizard's first step offers **Start clean**
+instead: the old panel and everything on it is deleted, and Deplo takes the
+machine with nothing carried over.
 
 Your domains keep pointing at the same IP, and Deplo inherits the certificates
 that panel already had. Nothing to change in DNS, no HTTPS gap.
@@ -43,9 +47,9 @@ that panel already had. Nothing to change in DNS, no HTTPS gap.
   before the old one goes.
 
 <Callout type="warn" title="Take the snapshot first">
-  The old panel stays on the disk with its volumes, and that is your way back
-  from a takeover that worked. The snapshot is your way back from the rest: a
-  volume emptied for a copy that then failed, a disk that filled part way, the
+  The cutover removes the old panel in the same confirmed step, so the snapshot
+  is your only way back once you press it - and your way back from the rest too:
+  a volume emptied for a copy that then failed, a disk that filled part way, the
   Docker restart the cutover needs. It is one click at every provider.
 </Callout>
 
@@ -122,13 +126,36 @@ back up.
 
 <Step>
 
-### Create your account and migrate
+### Create your account, and choose
 
-After the account and the team, Deplo opens the migration wizard and nothing
+After the account and the team, Deplo opens the takeover wizard and nothing
 else: until the ports are its own, there is nothing to deploy onto.
+
+Its first step asks the one question that cannot be undone later:
+
+- **Bring your data over** - your apps, databases and their data move to Deplo,
+  and the old panel comes off the machine once they are here. This is the rest
+  of this page.
+- **Start clean** - the old panel and everything on it is deleted: apps, data,
+  teams. Nothing comes across, and nothing can be brought back. Deplo skips
+  straight to **Take over**.
+
+The wizard's steps are **Choose**, **Connect**, **Install**, **Review**,
+**People**, **Take over** and **Done**. A step opens only when the one before it
+has finished, so you can never land on a step with nothing in it.
+
+</Step>
+
+<Step>
+
+### Migrate
 
 The panel it is replacing is already filled in. Paste its API token, pick what
 you want to bring across, and start.
+
+The migration runs in **Review**, and stays there: the progress, the log, and
+then the report of what came across. If anything needs a person, the report
+says so and you acknowledge it before the wizard moves on.
 
 <Callout type="warn">
   What you leave unticked stays behind, and goes when the old panel is removed.
@@ -147,32 +174,55 @@ you want to bring across, and start.
 
 <Step>
 
-### Take the ports
+### Take over the machine
 
-The button is on the wizard's last step, **Take over**, which you reach from the
-migration report when everything is across. The step is there from the start, and
-says so until there is something to take over for.
+**Take over** opens when there is something to take over for: a migration that
+finished, or the **Start clean** choice. Until then the step is closed - there
+is no button to press and nothing to explain.
 
 With several teams on the list it stays shut until the last one is over, and then
 asks you to tick **I have no other teams on this panel**. Nothing here can start
 the old panel again once its ports are gone, so that tick is the last chance to
 go back for a team you forgot.
 
-Press **Take over the ports** when everything you want is here. In the terminal
-window, Deplo:
+One confirmation does the whole cutover, and you type the panel's name for it.
+In the terminal window, Deplo:
 
-- stops the old panel **and the apps it ran**, without removing anything
+- stops the old panel **and the apps it ran**
 - copies its certificates into its own store
 - moves Traefik onto 80 and 443, with the dashboard served behind it
 - restarts Docker, which applies the address pools the install wrote
+- takes the old panel off the disk: its containers, the workloads it ran, their
+  volumes and networks, its images and its directory
 
-The apps go down too because two copies of one app cannot both hold a port, and
+The apps go down because two copies of one app cannot both hold a port, and
 the ones the old platform ran are holding exactly the ports Deplo's proxy is
 about to take.
+
+The wait stays in the step - it says what the installer is doing, and it names
+the address to open in a minute, because this page's own address stops answering
+while the ports move.
+
+<Callout type="info" title="What it does not touch">
+  Volumes and networks are read off the containers being removed, so anything
+  the old platform left behind for an app it had already deleted stays where it
+  is. The installer says how many unused volumes and networks are still on the
+  host and prints the command to list them, so you can look before you remove
+  any of them yourself.
+</Callout>
+
+</Step>
+
+<Step>
+
+### Done
 
 The dashboard answers on its own HTTPS address from then on: your domain if you
 gave one, and the generated `deplo-<hex>.nip.io` either way. Ports 80 and 443
 are Deplo's now, so a real certificate issues on the first request.
+
+The last step opens it for you. If the browser lost the old address during the
+cutover, open the one the previous step printed.
 
 </Step>
 
@@ -183,31 +233,6 @@ are Deplo's now, so a real certificate issues on the first request.
 Deplo never deploys anything for you. Your apps arrived with their
 configuration and their data, and you deploy them one at a time, checking each
 one.
-
-The old panel is stopped but still on the disk, volumes and all. That is your
-way back for as long as you want it.
-
-</Step>
-
-<Step>
-
-### Remove the old panel
-
-When you are happy, **Remove Dokploy** (or Coolify) on the takeover screen. You
-type its name to confirm.
-
-The removal itself needs root, so it happens in the terminal: re-run
-`/opt/deplo/install.sh` on the machine and it carries out what you asked for.
-Off come its containers, the workloads it ran, their volumes and networks, its
-images and its directory.
-
-<Callout type="info" title="What it does not touch">
-  Volumes and networks are read off the containers being removed, so anything
-  the old platform left behind for an app it had already deleted stays where it
-  is. The installer says how many unused volumes and networks are still on the
-  host and prints the command to list them, so you can look before you remove
-  any of them yourself.
-</Callout>
 
 </Step>
 
@@ -258,9 +283,9 @@ old panel again on its own.
 
 - **Deploy anything for you.** Some apps need a change after a migration, so
   every deploy is yours to make.
-- **Remove anything before you ask.** Taking the ports stops the old panel and
-  the apps it ran; both are still whole on the disk until you confirm the
-  removal.
+- **Remove anything before you ask.** The old panel is whole on the disk until
+  the one confirmation you type its name into, and that confirmation says what
+  goes with it.
 - **Touch a machine you said no on.** Answering no to the first question exits
   before anything is written.
 
