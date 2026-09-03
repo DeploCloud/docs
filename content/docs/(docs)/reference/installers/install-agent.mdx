@@ -16,6 +16,13 @@ The three role flags below pick what the server is for, see
   and it refuses to run unsubstituted.
 </Callout>
 
+<Callout type="info" title="Requires">
+  Root, `systemd`, `curl` and `sha256sum`, on `linux/amd64` or `arm64`.
+  Docker is installed if missing, except for a migration source, which
+  needs the Docker it imports from. It refuses below **5 GB free on `/`**
+  and checks nothing about memory.
+</Callout>
+
 <TypeTable
   type={{
     "$1": {

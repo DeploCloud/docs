@@ -13,13 +13,82 @@ none of them, and a terminal, it asks for a domain once: press Enter and it
 generates `deplo-<hex>.nip.io`. With no terminal it generates one without asking.
 
 <Callout type="info" title="Requires">
-  Root, `curl`, `openssl`, and Docker Compose v2. Docker itself is
-  installed if missing.
+  Root, Bash 4, `curl`, `openssl`, and Docker Compose v2 when Docker is
+  already on the host. Docker itself is installed if missing. `systemd` is
+  what runs the agent: without it the panel still comes up, but the machine
+  cannot become a Deplo server.
 </Callout>
+
+<TypeTable
+  type={{
+    "--check": {
+      type: "flag",
+      description:
+        "Runs the preflight and exits, changing nothing. Exits non-zero when it found a blocking problem.",
+    },
+    "--domain <d>": {
+      type: "domain",
+      description: "Serve the dashboard on this domain over HTTPS.",
+    },
+    "--email <e>": {
+      type: "email",
+      default: "admin@<domain>",
+      description: "Let's Encrypt contact address.",
+    },
+    "--version <v>": {
+      type: "version",
+      default: "latest",
+      description: "Install this Deplo version instead of the newest one.",
+    },
+    "--yes": {
+      type: "flag",
+      description:
+        "Never ask anything, take every default. It deliberately does not answer the take-over question.",
+    },
+    "--force": {
+      type: "flag",
+      description: "Install even though the preflight found a blocking problem.",
+    },
+    "--plain": {
+      type: "flag",
+      description: "ASCII output, no colour, no spinners. `--no-color` keeps the rest.",
+    },
+    "--quiet": {
+      type: "flag",
+      description: "Only warnings, errors and the summary.",
+    },
+    "--log-file <p>": {
+      type: "path",
+      default: "/var/log/deplo-install.log",
+      description: "Transcript location. It is written `0600`: it carries whatever the commands print.",
+    },
+  }}
+/>
 
 <Steps>
 <Step>
 ### Preflight checks
+Everything knowable before the host is touched, so a server that cannot
+finish says so in ten seconds. **These stop the run**, unless you pass
+`--force`:
+
+- Architecture other than `x86-64` or `arm64`, Bash older than 4, or a
+  missing `curl` or `openssl`.
+- **Less than 8 GB free on `/`.** 20 GB is the comfortable floor.
+- Ports `80`, `443` or `3000` already held by something that is not Deplo.
+- No outbound HTTPS to `ghcr.io`, or to `get.docker.com` when Docker has
+  to be installed. `DEPLO_SKIP_NET_CHECKS=1` skips the network checks on a
+  host that reaches its registry another way.
+- Docker present but its daemon not answering, or without Compose v2.
+
+**These only warn:**
+
+- **Less than 2 GB of RAM.** Deplo and Postgres fit in about 1 GB, builds
+  are what get tight, and no amount of memory blocks the install.
+- No `systemd`: the control plane runs, but this machine cannot become a
+  Deplo server.
+- The domain does not resolve here yet, or Let's Encrypt is unreachable,
+  so the certificate cannot issue yet.
 </Step>
 <Step>
 ### Install Docker

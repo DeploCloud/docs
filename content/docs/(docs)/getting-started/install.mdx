@@ -85,10 +85,16 @@ curl -fsSL https://deplo.build/install.sh | \
 
 | What             | Requirement                                                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| A server         | <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siUbuntu.hex}`} aria-hidden="true"><path d={siUbuntu.path} /></svg>Ubuntu 24.04, <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siDebian.hex}`} aria-hidden="true"><path d={siDebian.path} /></svg>Debian, or any other modern <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siLinux.hex}`} aria-hidden="true"><path d={siLinux.path} /></svg>Linux distro, `x86-64` or `arm64`, and root access for the length of one install command. **Fresh, with nothing on it yet:** no Docker, no reverse proxy on `80`/`443`, no other control panel. Docker is installed for you if it is missing. |
+| A server         | <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siUbuntu.hex}`} aria-hidden="true"><path d={siUbuntu.path} /></svg>Ubuntu 24.04, <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siDebian.hex}`} aria-hidden="true"><path d={siDebian.path} /></svg>Debian, or any other modern <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siLinux.hex}`} aria-hidden="true"><path d={siLinux.path} /></svg>Linux distro, `x86-64` or `arm64`, and root access for the length of one install command. **Fresh, with nothing on it yet:** no Docker, no reverse proxy on `80`/`443`, no other control panel. Docker is installed for you if it is missing, and `systemd` has to be there: it is what runs the agent, so without it the dashboard comes up but the machine cannot run apps. |
+| Size             | **2 GB of RAM and 20 GB free on `/`** is the comfortable floor, and 2 vCPU if you build on this machine. Below 2 GB the installer warns and builds get tight; **below 8 GB free it refuses**, because Docker images alone do not fit. |
 | Ports            | `80` and `443` reachable from the internet, `9443` on every server, this machine included. Port `3000` is bound to `127.0.0.1` and needs nothing opened. |
+| Outbound HTTPS   | To `ghcr.io` for the image, to `get.docker.com` when Docker is missing, and to Let's Encrypt for the certificate. The first two are checked before anything is installed. |
 | A domain         | Optional. Useful, not required: the generated `nip.io` hostname works from the first deploy.                                     |
 | Docker knowledge | None. It is available as an escape hatch, never as a prerequisite.                                                              |
+
+<Callout type="info" title="Check the machine before you commit to it">
+  `curl -fsSL https://deplo.build/install.sh | bash -s -- --check` runs the preflight and exits, changing **nothing** on the host. It prints every blocking problem and every warning, so a server that cannot finish the install says so in ten seconds instead of halfway through.
+</Callout>
 
 ---
 

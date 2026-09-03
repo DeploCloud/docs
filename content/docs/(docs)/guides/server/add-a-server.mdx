@@ -32,6 +32,20 @@ server flips to online, and from then on everything is mutual TLS on port
 
 ---
 
+## What the machine needs
+
+| What | Requirement |
+| --- | --- |
+| A server | `linux/amd64` or `arm64`, `systemd`, and root for the length of one command. Docker is installed for you if it is missing, except for a [migration source](/advanced/server-roles), which needs the Docker it is importing from. |
+| Tools | `curl` and `sha256sum`, to download the agent and verify it. |
+| Disk | 20 GB free on `/` is the comfortable floor. **The installer refuses below 5 GB**, since images and build caches grow fast. |
+| Network | The control plane must reach this host on `9443`, and this host must reach the control plane's URL to call home. |
+
+There is no memory floor on a server: the agent itself is a small Go
+binary, and what needs RAM is whatever you deploy on it.
+
+---
+
 ## Add one
 
 You need to be an instance admin.
