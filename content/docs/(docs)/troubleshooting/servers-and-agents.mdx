@@ -57,7 +57,7 @@ Open the port to the control plane's address and try again.
 | `warning` | The agent is up and trusted, Docker is not answering | `systemctl status docker` on the host |
 | `error` | Something answered, but its agent is wrong: untrusted certificate, unsupported contract, or an application error | Re-run the install command to re-enroll |
 | `offline` | Nothing answered, confirmed by a retry | The machine, the network, or the port |
-| `Unknown` | The stored reading is stale | Click **Check status** |
+| `Unknown` | The stored reading is stale | Click **Refresh** |
 
 <Callout type="info">
 Health never gates a deploy. A deploy takes a live handshake at that
