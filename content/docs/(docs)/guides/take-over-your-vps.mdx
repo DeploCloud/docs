@@ -134,6 +134,15 @@ you want to bring across, and start.
   What you leave unticked stays behind, and goes when the old panel is removed.
 </Callout>
 
+<Callout type="warn" title="Every team, before the ports move">
+  A token reads **one team** of that panel, so add a token per team here (press
+  **Add** for each). Taking the ports stops the old panel for good, and its API
+  with it - a team you have not brought over by then has nowhere left to come
+  from. Deplo blocks the button while a team is still on the list, and asks you
+  to confirm there are no others, because Coolify cannot list the teams a token
+  does not cover.
+</Callout>
+
 </Step>
 
 <Step>
@@ -143,6 +152,11 @@ you want to bring across, and start.
 The button is on the wizard's last step, **Take over**, which you reach from the
 migration report when everything is across. The step is there from the start, and
 says so until there is something to take over for.
+
+With several teams on the list it stays shut until the last one is over, and then
+asks you to tick **I have no other teams on this panel**. Nothing here can start
+the old panel again once its ports are gone, so that tick is the last chance to
+go back for a team you forgot.
 
 Press **Take over the ports** when everything you want is here. In the terminal
 window, Deplo:

@@ -123,6 +123,14 @@ A private address - the same machine (`http://172.17.0.1:3000`) or another
 box on your network - works too, but only for an **instance admin**. There
 is nothing to switch on: the address itself is what decides.
 
+<Callout type="warn" title="One key reads one organization">
+  A Dokploy key is minted **for** one organization and reads only that one. If
+  your Dokploy has three, mint a key each: paste the next one and press **Add**,
+  and it joins the **Teams to bring over** list. Deplo names the organizations
+  the key does not cover, so you can see what is still missing, and brings them
+  over one at a time - each into a Deplo team of its own.
+</Callout>
+
 </Step>
 <Step>
 
@@ -169,6 +177,11 @@ Click **Move it over**. A live console shows the progress.
 **One migration runs at a time per team.** Starting a second one while
 the first is still going is refused by name, so a double click cannot
 create the same app twice.
+
+With several organizations on the list, each report says which one is
+next: press **Bring \<team\> over** and the wizard walks the same steps
+again with that key. Deplo leaves its agents on the source machines until
+the last one is over, so only the first pays for the install.
 
 </Step>
 <Step>
@@ -322,9 +335,9 @@ are cheaper to read now than to find out later.
   goes, so free some room first.
 - **A project that is empty on Dokploy** is named, rather than left out
   silently and read as one that vanished between the scan and the report.
-- **An API key belongs to one organization**, so an import covers that one
-  only. Anything under another organization needs a second import with a key
-  from it.
+- **An API key belongs to one organization**, so one key covers that one only.
+  Add a key per organization on the Connect step and Deplo brings them over one
+  after another; the ones no key covers are named there.
 - **The registries a stack pulls its images from.** Dokploy never exposes the
   password, so add a private one under
   [Registries](/guides/server/container-registries) before the deploy fails on
