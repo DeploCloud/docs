@@ -83,41 +83,18 @@ them would change that machine rather than the app.
 
 ## Run a migration
 
+The wizard's steps are **Connect**, **Install**, **Review**, **People** (for an
+instance admin) and **Done**. A step opens only when the one before it has
+finished.
+
 <Steps>
 <Step>
 
-### Open the migrate tab
+### Connect
 
-Open **Settings -> Migrations**, the **Migrate** tab.
-
-</Step>
-<Step>
-
-### Install the agent on the source
-
-**Install the agent** on the source machine. The wizard prints the
-command, and if you are not an instance admin it tells you to ask one. It
-waits, and shows **Waiting for the agent** until the machine calls home.
-
-<Callout type="info" title="The machine's own address, not the panel's">
-Deplo's first guess for a machine is the address you gave the panel. Behind
-a proxy or a CDN that address is the proxy, so nothing answers on `9443`
-and the wizard shows **Cannot connect** with a box to type the machine's
-real address into. That address is remembered for the next attempt.
-
-A machine that already answers has a **Change address** link too: a live
-agent on the wrong box reads as connected, and every volume of the
-services on it would then arrive empty.
-
-</Callout>
-
-</Step>
-<Step>
-
-### Enter the source credentials
-
-Enter the **Panel address** and the **API key** of the source
-installation.
+Open **Settings -> Migrations**, the **Migrate** tab, and enter the **Panel
+address** and the **API key** of the source installation. Deplo reads the
+panel and shows which organization the key covers.
 
 A private address - the same machine (`http://172.17.0.1:3000`) or another
 box on your network - works too, but only for an **instance admin**. There
@@ -134,65 +111,82 @@ is nothing to switch on: the address itself is what decides.
 </Step>
 <Step>
 
-### Let Deplo scan it
+### Install
 
-Deplo scans and shows you the tree: every project, app and database it
-found.
+Deplo needs its agent on each machine the source runs on, to read the disks.
+The step prints one line per machine: sign in to that machine as root, paste
+it, and wait here. It shows **Waiting for the agent** until the machine calls
+home, and **Connected** once it has. Deplo takes the agent back off when the
+migration is done.
 
-</Step>
-<Step>
+<Callout type="info" title="The machine's own address, not the panel's">
+Deplo's first guess for a machine is the address you gave the panel. Behind
+a proxy or a CDN that address is the proxy, so nothing answers on `9443`
+and the wizard shows **Cannot connect** with a box to type the machine's
+real address into. That address is remembered for the next attempt.
 
-### Choose what comes over
+A machine that already answers has a **Change address** link too: a live
+agent on the wrong box reads as connected, and every volume of the
+services on it would then arrive empty.
 
-Choose what comes over. Per item you can set:
-
-- whether to include it
-- **Expose publicly** and a **Host port**, where that applies
-- **Build only**
-- **Deplo host**, which server it lands on
-
-</Step>
-<Step>
-
-### Handle the people
-
-The **People** step offers to create registration links for the users on
-the source, so you can hand them out.
+</Callout>
 
 </Step>
 <Step>
 
-### Review and pick a team
+### Review
 
-Review. Everything lands in one team: the current one, or **Create a new
-team**.
+Deplo shows the tree: every project, environment, app and database it found.
+Tick what comes over. Per item you can set **Expose publicly** and a **Host
+port** where that applies, and which server it lands on; **Place everything
+on** sets the whole tree at once. A row that cannot come over says why in a
+badge, and the badge's tooltip carries the reason.
 
-</Step>
-<Step>
-
-### Move it over
-
-Click **Move it over**. A live console shows the progress.
+Then press **Start migration**. The run happens on the server: the step
+shows the progress, the log is one click away under **Show log**, and you
+can close the tab. **Stop and undo** takes the run back out - see below for
+what that means once the data step has begun.
 
 **One migration runs at a time per team.** Starting a second one while
 the first is still going is refused by name, so a double click cannot
 create the same app twice.
 
-With several organizations on the list, each report says which one is
-next: press **Bring \<team\> over** and the wizard walks the same steps
-again with that key. Deplo leaves its agents on the source machines until
-the last one is over, so only the first pays for the install.
+At the end the report is on the same step. It names everything that did not
+come across cleanly, and you acknowledge it to move on.
+
+With several organizations on the list, the report says which one is next:
+press **Migrate \<organization\>** and the wizard walks the same steps again
+with that key. Deplo leaves its agents on the source machines until the last
+one is over, so only the first pays for the install.
 
 </Step>
 <Step>
 
-### Read the report
+### People
 
-Read **View report** at the end. It is copyable, and it lists everything
-that did not come across cleanly.
+For an instance admin: the step offers single-use registration links for the
+members of the source organization, so you can hand them out. Everyone
+arrives as a plain member.
+
+</Step>
+<Step>
+
+### Done
+
+Nothing is deployed yet. Open each app, check it over, and press **Deploy**
+when you want the traffic. The report of every past run stays under the
+**History** tab, with its log.
 
 </Step>
 </Steps>
+
+<Callout type="warn" title="Stop during the data step">
+  Before the data step, **Stop and undo** removes everything the run created
+  and takes the agent off the source. Once data has started moving, a stop
+  keeps what came across, marks every service whose data is not here yet so it
+  refuses to deploy on empty storage, starts again what it stopped on the old
+  panel, and leaves the agents where they are so the copy can run again.
+</Callout>
 
 ---
 
@@ -200,7 +194,7 @@ that did not come across cleanly.
 
 Two clean-up actions, and they are different:
 
-- **Remove what came over** deletes what the migration created here, if
+- **Stop and undo**, while a run is moving, deletes what the migration created here, if
   you want to start again.
 - **Remove from Deplo** takes the migration source out of the fleet.
   Deplo uninstalls its own agent from that machine first, and warns you

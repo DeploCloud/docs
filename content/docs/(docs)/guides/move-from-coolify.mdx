@@ -138,42 +138,39 @@ and **Remove from Deplo** takes it off again.
 
 ## Run a migration
 
+The wizard's steps are **Connect**, **Install**, **Review**, **People** (for an
+instance admin) and **Done**. A step opens only when the one before it has
+finished.
+
 <Steps>
 <Step>
 
-### Open the migrate tab
+### Connect
 
-Open **Settings -> Migrations**, the **Migrate** tab.
-
-</Step>
-<Step>
-
-### Enter the panel address and the token
-
-**Panel address** is the address you open Coolify on. Deplo appends the
-API path itself. **API token** is the one you minted above.
+Open **Settings -> Migrations**, the **Migrate** tab, and enter the **Panel
+address** and the **API token**. Deplo reads the panel and shows which team
+the token covers.
 
 A private address - the same machine (`http://172.17.0.1:8000`) or another
-box on your network - works too, but only for an **instance admin**. There
-is nothing to switch on: the address itself is what decides.
+box on your network - works too, but only for an **instance admin**.
 
-Press **Check this panel**. Deplo identifies the product and the
-illustration takes on Coolify's mark. If it cannot tell what the panel is,
-it asks you which of the two it is and reads it again as that one.
-
-More than one team on that Coolify? Paste the next team's token and press
-**Add**. Each one joins the **Teams to bring over** list, and Deplo brings
-them across one at a time - each into a Deplo team of its own, named after
-the team it came from.
+<Callout type="warn" title="One token reads one team">
+  A Coolify token is bound to the team it was minted in. For a second team,
+  mint a token there, paste it and press **Add**. Each one joins the **Teams
+  to bring over** list, and Deplo brings them across one at a time - each into
+  a Deplo team of its own, named after the team it came from.
+</Callout>
 
 </Step>
 <Step>
 
-### Install the agent on each source machine
+### Install
 
-The wizard prints one install command per Coolify server, and if you are
-not an instance admin it tells you to ask one. It waits, and shows
-**Waiting for the agent** until each machine calls home.
+Deplo needs its agent on each Coolify server, to read the disks. The step
+prints one line per machine: sign in to that machine as root, paste it, and
+wait here. It shows **Waiting for the agent** until the machine calls home,
+and **Connected** once it has. Deplo takes the agent back off when the
+migration is done.
 
 <Callout type="info" title="The machine's own address, not the panel's">
 Deplo's first guess for a machine is the address you gave the panel. Behind
@@ -190,45 +187,60 @@ services on it would then arrive empty.
 </Step>
 <Step>
 
-### Choose what comes over
+### Review
 
 Deplo shows the tree: every project, environment, application, service and
-database it found. Per item you can set:
+database it found. Tick what comes over. Per item you can set **Expose
+publicly** and a **Host port** where that applies, and which server it lands
+on; **Place everything on** sets the whole tree at once. A row that cannot
+come over says why in a badge, and the badge's tooltip carries the reason.
 
-- whether to include it
-- **Expose publicly** and a **Host port**, where that applies
-- **Build only**
-- **Deplo host**, which server it lands on
-
-</Step>
-<Step>
-
-### Handle the people
-
-The **People** step offers registration links for the members of the
-Coolify team, so you can hand them out. Coolify does not report anybody's
-role over its API, so everyone arrives as a plain member and you promote
-whoever should be more.
-
-</Step>
-<Step>
-
-### Move it over
-
-Click **Move it over**. A live console shows the progress, and the report
-at the end lists everything that did not come across cleanly.
+Then press **Start migration**. The run happens on the server: the step
+shows the progress, the log is one click away under **Show log**, and you
+can close the tab. **Stop and undo** takes the run back out - see below for
+what that means once the data step has begun.
 
 **One migration runs at a time per team.** Starting a second one while
 the first is still going is refused by name, so a double click cannot
 create the same app twice.
 
-With several teams on the list, each report says which team is next:
-press **Bring \<team\> over** and the wizard walks the same steps again
-with that team's token. Deplo leaves its agents on the source machines
-until the last team is over, so only the first team pays for the install.
+At the end the report is on the same step. It names everything that did not
+come across cleanly, and you acknowledge it to move on.
+
+With several teams on the list, the report says which team is next: press
+**Migrate \<team\>** and the wizard walks the same steps again with that
+team's token. Deplo leaves its agents on the source machines until the last
+team is over, so only the first team pays for the install.
+
+</Step>
+<Step>
+
+### People
+
+For an instance admin: the step offers single-use registration links for the
+members of the Coolify team, so you can hand them out. Coolify does not
+report anybody's role over its API, so everyone arrives as a plain member
+and you promote whoever should be more.
+
+</Step>
+<Step>
+
+### Done
+
+Nothing is deployed yet. Open each app, check it over, and press **Deploy**
+when you want the traffic. The report of every past run stays under the
+**History** tab, with its log.
 
 </Step>
 </Steps>
+
+<Callout type="warn" title="Stop during the data step">
+  Before the data step, **Stop and undo** removes everything the run created
+  and takes the agent off the source. Once data has started moving, a stop
+  keeps what came across, marks every service whose data is not here yet so it
+  refuses to deploy on empty storage, starts again what it stopped on Coolify,
+  and leaves the agents where they are so the copy can run again.
+</Callout>
 
 ---
 
@@ -429,7 +441,7 @@ are cheaper to read now than to find out later.
 
 ## After it lands
 
-- **Remove what came over** deletes what the migration created here, if
+- **Stop and undo**, while a run is moving, deletes what the migration created here, if
   you want to start again.
 - **Remove from Deplo** takes the migration source out of the fleet. Deplo
   uninstalls its own agent from that machine first, and warns you with
