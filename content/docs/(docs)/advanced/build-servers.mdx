@@ -46,6 +46,10 @@ A deploy still ships. Deplo tries, in order:
 
 The first host that answers compiles it, and the deploy log names it.
 
+A host is only tried when Deplo can see it is **healthy**: one that is offline,
+one whose certificate Deplo no longer trusts, and one with **Docker down** are
+all skipped before anything is shipped to them, rather than dialed and failed.
+
 **The Deplo host is a fallback out of the box** - it is the one machine every
 install has. Any other server can join the pool: open it in
 **Settings -> Servers**, then **Advanced -> Build as a fallback**. The same
