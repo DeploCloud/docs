@@ -194,9 +194,9 @@ the old panel again once its ports are gone, so that tick is the last chance to
 go back for a team you forgot.
 
 A service whose data copy failed gets a second tick of its own, naming it: the
-old panel still holds the only copy of that data, and taking over deletes it.
-Go back to **Review** and copy the data again instead of ticking it, unless you
-mean to lose it. The takeover also waits while any migration is still moving.
+old panel still holds the only copy of that data. Its volume stays on the disk
+after the takeover, but nothing in Deplo reads it. Go back to **Review** and copy
+the data again instead of ticking it, unless you mean to lose it. The takeover also waits while any migration is still moving.
 
 One confirmation does the whole cutover, and you type the panel's name for it.
 On the host, `deplo-takeover.service`:
@@ -204,8 +204,9 @@ On the host, `deplo-takeover.service`:
 - stops the old panel **and the apps it ran**
 - copies its certificates into its own store
 - moves Traefik onto 80 and 443, with the dashboard served behind it
-- takes the old panel off the disk: its containers, the workloads it ran, their
-  volumes and networks, its images and its directory
+- takes the old panel off the disk: its containers, the workloads it ran and
+  their networks, its images and its directory. The **volumes** those workloads
+  held stay on the disk, so a copy that went wrong can still be recovered
 - restarts Docker, which applies the address pools the install wrote and puts
   Docker's own DNS back after the old panel's swarm is left
 
@@ -222,11 +223,11 @@ If the port move fails, the unit puts the ports back and starts the old panel
 again, and the step says why, in the installer's words, next to **Try again**.
 
 <Callout type="info" title="What it does not touch">
-  Volumes and networks are read off the containers being removed, so anything
-  the old platform left behind for an app it had already deleted stays where it
-  is. The installer says how many unused volumes and networks are still on the
-  host and prints the command to list them, so you can look before you remove
-  any of them yourself.
+  No volume of an app is ever removed: the ones the old panel's apps held and
+  anything it left behind for an app it had already deleted both stay where
+  they are. The installer says how many unused volumes and networks are still
+  on the host and prints the command to list them, so you can look before you
+  remove any of them yourself.
 </Callout>
 
 </Step>

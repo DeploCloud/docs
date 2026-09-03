@@ -287,7 +287,9 @@ when you want the traffic. The report of every past run stays under the
   so that name would keep pointing at the old machine. Deplo mints its own
   equivalent, keeps the same route, and the app's **Domains** section
   tells you which address became which. Real domains you own come across
-  as they are, and you repoint DNS when you are ready.
+  as they are, and you repoint DNS when you are ready. On a
+  [takeover](/guides/take-over-your-vps) the generated name points at
+  the same machine, so it stays as it is.
 - **Connection strings are rewritten to the new names.** A database keeps
   its data but not its hostname - it answers as `db-<name>` here - and
   every variable that named the old one is updated on the way across.
