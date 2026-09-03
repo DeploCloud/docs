@@ -226,7 +226,8 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **The same app name in two environments keeps both.** `production/wiki`
   and `staging/wiki` are two apps and both stay called **wiki**. Only the
   internal name has to differ, so the second one is filed under
-  `/apps/wiki-1` - that name is what its container and its volumes take.
+  `/<team>/apps/wiki-1` - that name is what its container and its volumes
+  take.
   The report says which one it took.
 - **Throwaway hostnames get re-hosted.** A source app served on a
   generated `*.sslip.io`, `*.traefik.me` or `*.nip.io` name has the **old

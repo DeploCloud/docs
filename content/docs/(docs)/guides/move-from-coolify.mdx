@@ -267,7 +267,8 @@ until the last team is over, so only the first team pays for the install.
 - **The same app name in two environments keeps both.** `production/wiki`
   and `staging/wiki` are two apps and both stay called **wiki**. Only the
   internal name has to differ, so the second one is filed under
-  `/apps/wiki-1` - that name is what its container and its volumes take.
+  `/<team>/apps/wiki-1` - that name is what its container and its volumes
+  take.
   The report says which one it took.
 - **Throwaway hostnames get re-hosted.** A Coolify app served on a
   generated `*.sslip.io` name has the **old server's IP** baked into it,

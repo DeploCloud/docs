@@ -30,6 +30,20 @@ deploy to, never team-owned. Which teams may target a given server is a
 setting on the server.
 </Callout>
 
+### The team's address
+
+Every page carries the team in its address: `<deplo>/acme/apps/wiki`. So a link
+to an app, a database or a setting opens in the team that owns it - whoever
+clicks it, and whatever team they were looking at before. That is what makes the
+link in a notification, or one you paste to a colleague, land on the page you
+meant.
+
+The name in the address comes from the team's name when the team is created, and
+it does not change afterwards, so a link you sent last month still works. An
+older address with no team in it works too: Deplo sends it on to the team that
+owns what it points at. A link to a team you are not a member of shows a short
+"no access" page with your own teams on it.
+
 ### The primary owner
 
 The account that founded the team wears a crown. It is immutable to every
