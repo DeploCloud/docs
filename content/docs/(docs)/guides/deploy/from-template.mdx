@@ -94,6 +94,7 @@ Most templates are multi-container Compose stacks, so a few things behave the wa
 - **Templates are a starting point, not a subscription.** Updating the catalogue entry does not update apps you already created from it.
 - **Read the variables before you deploy.** Some templates need a domain or an admin email set at first boot, and changing them afterwards means the software has already initialised itself with the old value.
 - **A template can carry configuration files**, written next to the stack and mounted into the container. They show up under the app's storage.
+- **Deploying the same template twice into one environment renames what would clash.** Two stacks cannot both answer to `db` on one network, so the second one gets `myapp-db`, references included, and the app's Activity says so. See [Network isolation](/advanced/network-isolation#two-stacks-one-name).
 - **Browsing is open to anybody; deploying needs `create_apps`.**
 - **If the catalogue is unreachable**, the store shows an offline state. Apps you already deployed are unaffected.
 </Callout>

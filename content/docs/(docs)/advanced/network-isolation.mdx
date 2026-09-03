@@ -187,12 +187,21 @@ way. Leave the port off unless something outside the server really needs it.
 
 ## Two stacks, one name
 
-Inside one environment the names have to be unique, and Deplo does not stop you
-from repeating one: two apps that both route a service called `web` both answer
-to `web` on that network, and Docker splits the lookups between them. Half your
-requests reach the wrong container.
+Inside one environment the names have to be unique: two apps that both have a
+service called `web` both answer to `web` on that network, and Docker splits the
+lookups between them. Half your requests reach the wrong container.
 
-The deploy says so:
+Saving a compose file that takes a name already answered there is refused, and
+the message names one that is free:
+
+```
+`web` is already answered by Shop on that network, and Docker would split the
+connections between the two. Rename it on this app (the service, or its
+`hostname:`) - `web-2` is free - or pick another environment.
+```
+
+An overlap that already exists - two stacks that landed there before the check,
+or arrived by different routes - is reported by the deploy instead:
 
 ```
 `web` is also answered by a stack in Shop / Production, on the same network as
@@ -217,9 +226,13 @@ alongside the environment's. Three things do stay off:
 Deplo also refuses a move that would create the overlap - putting an app into an
 environment where a database already answers to one of its names, or the reverse.
 
-A migration from another panel is the one exception: it renames the service it is
-bringing over, references and all, rather than losing the app, and the report names
-what changed.
+A stack **Deplo wrote** is renamed rather than refused: a template you deploy, or
+an app a migration brings over from another panel. Deploying the same template
+twice into one environment gives the second one `myapp-db` instead of `db`, and
+everything that named it moves with it - the route, the variables, the config
+files. The app's Activity says what was renamed; a migration puts it in the report
+too. A compose file you wrote yourself is yours, so it is refused with the free
+name instead of edited behind your back.
 
 ---
 
