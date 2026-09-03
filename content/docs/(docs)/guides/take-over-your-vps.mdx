@@ -216,8 +216,10 @@ about to take. Deplo's own container is not touched: only who answers on 80
 and 443 changes.
 
 The wait stays in the step, and the page follows the dashboard by itself: onto
-its https address the moment that answers, and onto the home once the old
-panel is gone. There is nothing to open and nothing to reload.
+the home, at the https address, once the old panel is gone and the address
+answers. It does not move earlier on purpose - the removal restarts Docker, and
+a page that had already moved would die with it. There is nothing to open and
+nothing to reload.
 
 If the port move fails, the unit puts the ports back and starts the old panel
 again, and the step says why, in the installer's words, next to **Try again**.
