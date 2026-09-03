@@ -50,7 +50,7 @@ below are how it gets applied.
 Re-run the installer on the machine that runs it:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | bash
+curl -fsSL https://deplo.build/install.sh | bash
 ```
 
 It detects the existing `/opt/deplo/.env`, switches to update mode, pulls the image, and restarts. **Secrets are never rotated.**
@@ -58,7 +58,7 @@ It detects the existing `/opt/deplo/.env`, switches to update mode, pulls the im
 To pin a version rather than take `latest`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | \
+curl -fsSL https://deplo.build/install.sh | \
   DEPLO_VERSION=0.4.1 bash
 ```
 

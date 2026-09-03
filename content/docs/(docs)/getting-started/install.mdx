@@ -15,7 +15,7 @@ import { basePath } from "@/lib/base-path";
 As root, on the server:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | bash
+curl -fsSL https://deplo.build/install.sh | bash
 ```
 
 It asks for a domain. Press Enter and it generates one: the dashboard answers on
@@ -29,7 +29,7 @@ for a `nip.io` address.
 Point an A record at the server first, then run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DeploCloud/deplo/main/install.sh | \
+curl -fsSL https://deplo.build/install.sh | \
   DEPLO_DOMAIN=deplo.example.com ACME_EMAIL=you@example.com bash
 ```
 
