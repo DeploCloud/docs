@@ -193,6 +193,11 @@ asks you to tick **I have no other teams on this panel**. Nothing here can start
 the old panel again once its ports are gone, so that tick is the last chance to
 go back for a team you forgot.
 
+A service whose data copy failed gets a second tick of its own, naming it: the
+old panel still holds the only copy of that data, and taking over deletes it.
+Go back to **Review** and copy the data again instead of ticking it, unless you
+mean to lose it. The takeover also waits while any migration is still moving.
+
 One confirmation does the whole cutover, and you type the panel's name for it.
 On the host, `deplo-takeover.service`:
 
