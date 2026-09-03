@@ -112,6 +112,7 @@ Deplo uses one network per app, and Docker's default pools allow about
 /opt/deplo/.env                     generated secrets, chmod 600
 /opt/deplo/docker-compose.yml       Postgres + the control plane
 /opt/deplo/traefik/                 the proxy stack
+/opt/deplo/traefik/certs/           the fallback certificate, minted once
 /opt/deplo/data/                    build and upload staging
 /opt/deplo/acme/acme.json           issued certificates, chmod 600
 ```

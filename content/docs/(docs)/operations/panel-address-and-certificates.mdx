@@ -83,10 +83,13 @@ can reach. Turning it on sends every password and every session cookie across th
 network in clear, and passkeys stop working entirely, so the confirm says so.
 
 <Callout type="warn" title="The generated address serves a certificate the browser does not know">
-No public authority issues for a `nip.io` hostname, so Traefik serves its own
-self-signed certificate there and the browser warns once. Set your own domain to
-get one it trusts. Deplo does not send HSTS on that address, precisely so the
-warning stays skippable.
+No public authority issues for a `nip.io` hostname, so the installer mints a
+self-signed one into `/opt/deplo/traefik/certs/` and the browser warns once. It is
+minted **once and kept**, so accepting it holds: Traefik's own default certificate
+is regenerated at every start, which would make the warning come back after each
+restart and break the certificate an enrolling agent pins. Set your own domain to
+get one the browser trusts. Deplo does not send HSTS on that address, precisely so
+the warning stays skippable.
 </Callout>
 
 ---
