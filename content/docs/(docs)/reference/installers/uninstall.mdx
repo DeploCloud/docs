@@ -1,35 +1,42 @@
 ---
 title: uninstall.sh
-description: "Dry run, full removal, agent-only or purge-data: one script, four ways to run it."
+description: "One script, two jobs: pull the agent off a host, or remove Deplo itself. Dry run by default."
 ---
 
-<Tabs items={['Dry run', 'Full removal', 'Agent only', 'Purge data']}>
-  <Tab value="Dry run">
+<Tabs items={['Uninstall an agent from the host', 'Uninstall Deplo itself']}>
+  <Tab value="Uninstall an agent from the host">
+    `--agent-only` leaves the control plane in `/opt/deplo` alone. This is
+    the flag already in the command the dashboard prints for a server.
+
     ```bash
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash
-    ```
-    Prints every command it would run. Changes nothing.
-  </Tab>
-  <Tab value="Full removal">
-    ```bash
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes
-    ```
-    Actually removes the control plane, the agent and everything Deplo
-    labelled.
-  </Tab>
-  <Tab value="Agent only">
-    ```bash
+    # See what would happen (dry run, the default)
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --agent-only
+
+    # Do it
     curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --agent-only
+
+    # Do it, and delete the data too
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --agent-only --purge-data
     ```
-    Leaves the control plane in `/opt/deplo` alone. This is the flag in
-    the command the dashboard prints for a server.
   </Tab>
-  <Tab value="Purge data">
+  <Tab value="Uninstall Deplo itself">
+    Without `--agent-only`, it removes the control plane in `/opt/deplo`
+    (the panel, its Postgres, its Traefik) as well: the agent, Deplo's
+    named containers, and every container labelled as Deplo-managed.
+
     ```bash
+    # See what would happen (dry run, the default)
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash
+
+    # Do it, keeping every volume and /opt/deplo
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes
+
+    # Do it, and delete the data too
     curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --purge-data
+
+    # And the backups stored on this machine
+    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --purge-data --purge-backups
     ```
-    Also deletes Deplo volumes, images Deplo built, the stacks directory
-    and `/opt/deplo` itself, `.env` included. **Irreversible.**
   </Tab>
 </Tabs>
 
@@ -57,7 +64,7 @@ description: "Dry run, full removal, agent-only or purge-data: one script, four 
   }}
 />
 
-One script, three jobs. By default it removes the control plane in
+One script, two jobs. By default it removes the control plane in
 `/opt/deplo` (the panel, its Postgres, its Traefik), the agent, Deplo's
 named containers, every container labelled as Deplo-managed, the `deplo`
 network and `/var/lib/deplo-agent`. `--agent-only` stops at the agent. It
