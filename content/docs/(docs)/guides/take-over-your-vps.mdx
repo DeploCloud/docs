@@ -99,28 +99,36 @@ default. To install without being asked, set `DEPLO_TAKEOVER=dokploy` (or
 
 ### Open the address it prints
 
-The installer prints the way in and then waits. It is the half of this that
-needs root on the host: moving the ports, restarting Docker, removing the old
-panel.
+The installer prints the way in and exits. The terminal is yours again: the
+half that needs root on the host - moving the ports, restarting Docker,
+removing the old panel - is a systemd unit it leaves behind,
+`deplo-takeover.service`, which waits for the dashboard to say so.
 
 ```
-http://deplo-setup.203.0.113.10.sslip.io
+Next
+  1  Open http://deplo-cb00710b.nip.io/setup?key=... and create your account.
+     No SSH needed - it goes in through Dokploy's own proxy on port 80.
+  2  Bring your projects over from Dokploy, or start clean.
+     The dashboard takes the machine when you say so, and opens by itself after.
 ```
 
-No SSH, no port to open: Deplo writes one route into the old panel's own proxy,
-which reloads it by itself, and the panel that is still running serves that
-address on port 80. The route is taken away again at the cutover.
+That address is Deplo's address, before and after: your domain if you gave
+one, the generated `deplo-<hex>.nip.io` otherwise. Until the cutover it answers
+over plain http through the old panel's own proxy - Deplo writes one route into
+it, which it reloads by itself - and after the cutover the same host answers
+over https from Deplo's proxy. Nothing to re-open, nothing to re-type.
 
 <Callout type="info" title="Deplo waits on loopback, deliberately">
-  Until it takes 80 and 443, Deplo's proxy is bound to `127.0.0.1` only. An
+  Until it takes 80 and 443, Deplo's own proxy is bound to `127.0.0.1` only. An
   account-creation page behind a certificate Deplo signed itself has no business
   on the open internet, and a published Docker port would walk straight past
-  ufw. So the interim ports answer on the machine and nowhere else, and no
-  certificate can issue yet: the browser warns once.
+  ufw. The route through the old panel's proxy is the way in, and it goes away
+  at the cutover.
 </Callout>
 
-Closing the window is safe. Re-run `/opt/deplo/install.sh` to pick the takeover
-back up.
+To watch the host side, `journalctl -u deplo-takeover -f`; its transcript is
+`/var/log/deplo-takeover.log`. Re-running `/opt/deplo/install.sh` only puts the
+unit back if it is missing, and prints the address again.
 
 </Step>
 
@@ -186,22 +194,27 @@ the old panel again once its ports are gone, so that tick is the last chance to
 go back for a team you forgot.
 
 One confirmation does the whole cutover, and you type the panel's name for it.
-In the terminal window, Deplo:
+On the host, `deplo-takeover.service`:
 
 - stops the old panel **and the apps it ran**
 - copies its certificates into its own store
 - moves Traefik onto 80 and 443, with the dashboard served behind it
-- restarts Docker, which applies the address pools the install wrote
 - takes the old panel off the disk: its containers, the workloads it ran, their
   volumes and networks, its images and its directory
+- restarts Docker, which applies the address pools the install wrote and puts
+  Docker's own DNS back after the old panel's swarm is left
 
 The apps go down because two copies of one app cannot both hold a port, and
 the ones the old platform ran are holding exactly the ports Deplo's proxy is
-about to take.
+about to take. Deplo's own container is not touched: only who answers on 80
+and 443 changes.
 
-The wait stays in the step - it says what the installer is doing, and it names
-the address to open in a minute, because this page's own address stops answering
-while the ports move.
+The wait stays in the step, and the page follows the dashboard by itself: onto
+its https address the moment that answers, and onto the home once the old
+panel is gone. There is nothing to open and nothing to reload.
+
+If the port move fails, the unit puts the ports back and starts the old panel
+again, and the step says why, in the installer's words, next to **Try again**.
 
 <Callout type="info" title="What it does not touch">
   Volumes and networks are read off the containers being removed, so anything
@@ -217,12 +230,12 @@ while the ports move.
 
 ### Done
 
-The dashboard answers on its own HTTPS address from then on: your domain if you
-gave one, and the generated `deplo-<hex>.nip.io` either way. Ports 80 and 443
-are Deplo's now, so a real certificate issues on the first request.
+The browser lands on the dashboard's home, on the same address over https,
+with a note that the old panel is gone. Ports 80 and 443 are Deplo's now, so a
+real certificate issues within seconds of the move; the page waits for it
+before it goes there, so there is no warning to click through.
 
-The last step opens it for you. If the browser lost the old address during the
-cutover, open the one the previous step printed.
+`deplo-takeover.service` removes itself once the machine is Deplo's.
 
 </Step>
 
@@ -242,21 +255,17 @@ one.
 
 ## How you get in
 
-The `deplo-setup` address needs no port opened: it rides the old panel's proxy
-on port 80, which is already reachable. If that panel has no dynamic config
-directory to write into, the installer says so and falls back to SSH, which is
-also there for anyone who would rather use it:
+The address needs no port opened: until the cutover it rides the old panel's
+proxy on port 80, which is already reachable. If that panel has no dynamic
+config directory to write into, the installer says so and falls back to SSH,
+which is also there for anyone who would rather use it:
 
 ```bash
 ssh -L 3001:localhost:3001 root@<server-ip>
 ```
 
-Then open `http://localhost:3001`. Nothing on the server changes.
-
-<Callout type="info">
-  The installer keeps watching. If nothing has opened Deplo after a minute or
-  two, it prints both ways in again rather than sitting on a spinner.
-</Callout>
+Then open `http://localhost:3001`. Nothing on the server changes, and the page
+still follows the dashboard to its own address at the cutover.
 
 ---
 
@@ -274,8 +283,9 @@ ports move. Deplo:
 The old panel keeps all of its data. It needs its API token again to start
 those services, so keep the one you pasted.
 
-If the port move itself fails, the installer puts the ports back and starts the
-old panel again on its own.
+If the port move itself fails, the unit puts the ports back and starts the old
+panel again on its own, and the takeover step offers **Try again** with the
+reason.
 
 ---
 
