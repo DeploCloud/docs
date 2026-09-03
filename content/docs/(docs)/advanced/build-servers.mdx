@@ -36,6 +36,29 @@ Build logs still belong to the app. Read them where you always do.
 
 ---
 
+## When the builder is down
+
+A deploy still ships. Deplo tries, in order:
+
+1. The app's build server.
+2. Every server marked **Build as a fallback**, the Deplo host first.
+3. The server the app runs on.
+
+The first host that answers compiles it, and the deploy log names it.
+
+**The Deplo host is a fallback out of the box** - it is the one machine every
+install has. Any other server can join the pool: open it in
+**Settings -> Servers**, then **Advanced -> Build as a fallback**. The same
+architecture rule applies, so a fallback that cannot produce a runnable image
+is skipped rather than tried.
+
+To take a host out of the pool, turn the same switch off. To stop **one app**
+from ever building anywhere else, turn off **Build somewhere else if that
+server is down** in that app's build settings: its deploy then fails instead,
+and the running version is left alone.
+
+---
+
 ## Set one up
 
 <Steps>
@@ -66,7 +89,8 @@ Open the app, then **Settings -> Deployments -> Advanced settings**.
 
 ### Keep the fallback on
 
-So a build still happens if the builder is unreachable.
+So a build still happens if the builder is unreachable - on the Deplo host,
+or on any server you marked as a fallback.
 
 </Step>
 <Step>
@@ -96,8 +120,9 @@ So a build still happens if the builder is unreachable.
 
 - **The builder does not appear in the list** - it is not in the Build
   only role, or its architecture does not match the target.
-- **Builds fall back to the app's own server** - the builder was
-  unreachable and the fallback did its job. Check that server's health.
+- **Builds happen on another host** - the builder was unreachable and the
+  fallback did its job. The deploy log names the host that took over; check
+  the builder's health.
 - **Deploys queue behind each other** - they share the builder's
   concurrency. Raise it in that server's **Overview** if the machine can
   take it.

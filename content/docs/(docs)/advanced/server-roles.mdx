@@ -40,6 +40,10 @@ nothing is ever routed to it. It never appears as a deploy target.
 Install with `DEPLO_BUILD_ONLY=1` in front of the agent installer, or pick
 **Build only** in **Connect a remote server**.
 
+Any role except Backups only can also stand in as a
+[build fallback](/advanced/build-servers#when-the-builder-is-down) - the
+Deplo host does by default.
+
 ### Backups only
 
 A storage box. **No Docker at all**, no Traefik, no shared network. It
