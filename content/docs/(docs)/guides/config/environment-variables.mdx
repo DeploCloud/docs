@@ -45,6 +45,10 @@ Promoting `plain` to `secret` is always allowed. The other direction is not.
 
 **Build time and run time are the same set.** Every resolved variable is passed to the build as a build argument and declared in the generated Dockerfile, so build-time inlined configuration such as `NEXT_PUBLIC_*` or `VITE_*` works with no extra toggle.
 
+<Callout type="warn" title="A build argument stays in the image history">
+The built image does not keep the value in its environment, but Docker records every build argument in the image's build history, so `docker history` shows it in plaintext on the server that built it. Only someone with Docker access to that server can read it.
+</Callout>
+
 ---
 
 ## Set variables on one app
