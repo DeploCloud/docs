@@ -83,6 +83,13 @@ for every shot, since the capture viewport is fixed at 1366x848 plus a
 120px padding border on each side). Nothing here gets committed until the
 user asks for it explicitly.
 
+## Reporting your work
+
+**Say what you are about to do, then recap.** Before you start, one line on what you are about
+to do; brief updates while you work help the user follow along. Close with a short recap that
+stands on its own - what you found, what you did, and what is next - so a reader who only sees the
+last message has the full picture.
+
 ## Comments and commits
 
 Code comments are few and short, **hard cap about 3 lines per block**. No file-header essays,
