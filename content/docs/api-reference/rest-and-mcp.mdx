@@ -68,13 +68,14 @@ claude mcp add --transport http deplo https://deplo.example.com/api/mcp \
   --header "X-Deplo-Team: acme"
 ```
 
-The protocol is stateless (no session, no `initialize` handshake), so one
-endpoint serves **one team**, chosen by `X-Deplo-Team` when the agent is
-connected; connect a second server to work in another team. `tools/list`
-returns only the tools the token can actually call, so the "MCP & AI
-agents" template shows 35 of the 84. A `403` means the team has switched
-MCP off (Settings -> MCP Server, needs `manage_mcp`); a `429` means the
-per-token rate limit.
+The protocol is stateless (no session, no `initialize` handshake). Every
+call runs in **one team**: the default is chosen by `X-Deplo-Team` when the
+agent is connected, and every tool takes an optional `team` argument (id or
+slug) to work in another; `list_teams` names the ones the connection can
+act in. `tools/list` returns only the tools the token can actually call.
+A `403` means the team has switched MCP off (Settings -> MCP Server, needs
+`manage_team`) or the token's owner lacks `manage_mcp` there; a `429` means
+the per-token rate limit.
 
 <Callout type="warn">
   **No tool can reveal a secret**, whatever capabilities the token holds:

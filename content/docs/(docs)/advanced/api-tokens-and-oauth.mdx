@@ -12,7 +12,9 @@ import { Library, Bot, RefreshCw } from "lucide-react";
 For anything that talks to Deplo without a browser, like an
 [MCP agent](/guides/mcp-server).
 
-**Settings -> Tokens**.
+**Settings -> API tokens**, under your account. A token is **personal**: it
+belongs to the person who created it, and nobody else can see, edit or
+revoke it - not a team admin, not an instance admin.
 
 ---
 
@@ -25,13 +27,25 @@ you can change that afterwards without reissuing it.
 Its **effective** power is the live intersection of two things:
 
 ```
-what the token was granted   AND   what its creator can still do
+what the token was granted   AND   what its owner can still do
 ```
 
-Removing somebody's capabilities immediately blunts every token they
-created. Removing them from the team blunts those tokens completely. There
-is no forgotten credential quietly holding powers its owner lost a year
-ago.
+Where it can act is decided by the team, per member, with two
+capabilities:
+
+| Capability | What it allows |
+| --- | --- |
+| **Use API tokens** (`manage_tokens`) | The member's tokens can act in this team at all |
+| **Connect AI agents** (`manage_mcp`) | The member's tokens can drive this team over MCP |
+
+Both are read live on every request. Taking a capability away from
+somebody immediately blunts every token they own, in that team. Removing
+them from the team cuts those tokens off completely. There is no
+forgotten credential quietly holding powers its owner lost a year ago, and
+nobody has to hunt for it: the lever is the member, never the token.
+
+**Settings -> Members** shows how many tokens and agents each member has
+reaching the team - a number, never the credentials.
 
 The secret is shown **once**, at creation. Only its hash is stored.
 
@@ -44,7 +58,8 @@ The secret is shown **once**, at creation. Only its hash is stored.
 
 ### Start a new token
 
-**Settings -> Tokens**, then **New token**.
+**Settings -> API tokens**, then **New token**. Any member can, in the
+teams where they hold **Use API tokens**.
 
 </Step>
 <Step>
@@ -84,8 +99,9 @@ Sensitive ones are marked.
 ### Set the scope
 
 A tree: whole **Teams**, whole **Projects**, whole **Folders** (subtrees
-included), or individual **Apps**. Ticking nothing means every team you
-belong to.
+included), or individual **Apps**. Ticking nothing means every team where
+you may use API tokens, now and later: join a team tomorrow and the token
+reaches it without being edited.
 
 </Step>
 <Step>
@@ -119,7 +135,8 @@ curl -s https://deplo.example.com/api/graphql \
   -d '{"query":"{ apps { id name status } }"}'
 ```
 
-A bearer request acts in **one** team. The full surface is in the
+A bearer request acts in **one** team. Without the header it lands in the
+first team the token reaches. The full surface is in the
 [API reference](/api-reference).
 
 ---
@@ -144,14 +161,16 @@ token, so Deplo acts as an OAuth authorization server for exactly this one
 purpose.
 
 Approving on the consent screen **mints an ordinary API token** with the
-team, capabilities and scope you picked there. The access token the client
+capabilities and scope you picked there. The access token the client
 holds is only a pointer at that row:
 
-- It appears in **Settings -> Tokens**, marked as such.
-- Revoking it there stops the client immediately.
+- It appears in **Settings -> API tokens**, marked as such.
+- Revoking it there stops the client immediately, in every team.
 - The OAuth scopes decide nothing. The token's capabilities do.
 
-Approving needs both `manage_mcp` and `manage_tokens`.
+By default the connection reaches every team where you hold **Connect AI
+agents** and MCP is on. Narrow it on the consent screen if the client
+should only see part of that.
 
 ---
 
@@ -173,9 +192,10 @@ edit them.
   with a password and a second factor.
 - **A token cannot reveal a secret** through MCP, whatever it holds.
 - **Two-factor policy applies.** If the team requires it and the token's
-  creator has not enrolled, the token resolves nothing.
-- **Any team the token reaches can revoke it**, not just the team it was
-  created in.
+  owner has not enrolled, the token resolves nothing there.
+- **Only its owner can revoke it.** A team takes the access away through
+  the member: remove them, or take away their **Use API tokens** or
+  **Connect AI agents** capability.
 </Callout>
 
 ---
@@ -185,8 +205,9 @@ edit them.
 - **401** - missing, revoked, or expired.
 - **403 on one field** - the token lacks that capability, or the scope
   excludes that resource.
-- **It worked yesterday** - its creator's capabilities changed, it expired,
-  or the team turned on two-factor.
+- **It worked yesterday** - your capabilities changed (**Use API tokens**
+  gone means the token no longer reaches that team), it expired, or the
+  team turned on two-factor.
 
 <Callout type="info">
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).

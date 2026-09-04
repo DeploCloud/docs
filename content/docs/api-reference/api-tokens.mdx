@@ -8,7 +8,9 @@ can never reach, see [Authentication](/api-reference/authentication).
 
 ## Queries
 
-`apiTokens` lists the tokens visible in the active team.
+`apiTokens` lists **your own** tokens. A token is personal: nobody else
+lists, edits or revokes it, an instance admin included. A bearer request
+sees only the token it is made with.
 
 ## Mutations
 
@@ -28,7 +30,8 @@ token that names no capabilities is view-only. The scope is four optional
 lists on the same input (`teamIds`, `projectIds`, `folderIds`, `appIds`):
 
 - Ticking a node grants everything under it, now and later.
-- Ticking nothing means every team its creator belongs to.
+- Ticking nothing means every team where its owner holds `manage_tokens`,
+  read live on each request.
 - Filing an app into a folder clears its project link, so a folder is
   where most apps actually live. A project scope also covers the folders
   filed under it.
@@ -39,8 +42,10 @@ lists on the same input (`teamIds`, `projectIds`, `folderIds`, `appIds`):
 
 <Callout type="info">
   A token's effective power is the **intersection** of two things: what
-  the token was granted, and what its creator can still do in that team.
-  Revoking a person's access also blunts every token they minted.
+  the token was granted, and what its owner can still do in that team.
+  Two capabilities decide where it acts at all: `manage_tokens` (the
+  owner's tokens reach the team) and `manage_mcp` (they may drive it over
+  MCP). Any member may mint a token; it needs no capability of its own.
 </Callout>
 
 Settings -> API tokens ships templates that pre-fill common capability
@@ -53,7 +58,7 @@ Changes a live token's permissions or scope without re-minting it.
 
 ### `revokeToken`
 
-Ends the credential. For a token minted by an OAuth consent (see
+Ends the credential. Only its owner can. For a token minted by an OAuth consent (see
 [Authentication](/api-reference/authentication)), this also clears the
 consent and its refresh token together, so the client is disconnected
 everywhere it reached and has to be authorized again.
