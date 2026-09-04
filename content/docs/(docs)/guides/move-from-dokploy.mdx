@@ -100,6 +100,14 @@ A private address - the same machine (`http://172.17.0.1:3000`) or another
 box on your network - works too, but only for an **instance admin**. There
 is nothing to switch on: the address itself is what decides.
 
+<Callout type="info" title="Mint the key from Dokploy's own dialog">
+  A key created there has no rate limit. One created through Dokploy's API
+  without rate-limit settings is born at 10 requests a day, and an import reads
+  the panel hundreds of times: it stops part-way, and Dokploy answers 401 for
+  it, the same as for a wrong key. Deplo says which it was, and where to raise
+  the limit (Settings, Profile, API/CLI).
+</Callout>
+
 <Callout type="warn" title="One key reads one organization">
   A Dokploy key is minted **for** one organization and reads only that one. If
   your Dokploy has three, mint a key each: paste the next one and press **Add**,
@@ -296,6 +304,21 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **A masked variable cannot be edited.** To put one back in the clear, open
   it under **Variables** and press **Make it plain**. A secret is write-only,
   so Deplo cannot read the old value out: you type it again.
+- **Preview deployments come across with their own variables.** The base
+  domain, the port and the limit land under **Previews**, and a variable
+  Dokploy kept for previews only becomes one of the app's preview variables
+  here.
+- **Backup destinations and schedules come across.** Dokploy hands over its
+  S3 destinations with their credentials, so each one is created and tested
+  on arrival, and a database that was backed up to it keeps its schedule on
+  that destination.
+- **A middleware written into an app's own Traefik file is named.** Dokploy's
+  forms never produce one, so it is the one route setting the import cannot
+  carry. The report names it with its kind; define it in the proxy's
+  configuration here, then add it to the domain.
+- **A service on a remote server is read on that server.** Its containers,
+  its volumes and whether it is running are asked of the machine Dokploy says
+  it runs on, never of the panel's own host.
 - **Imported basic-auth credentials are flagged.** They never went
   through Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report
@@ -358,6 +381,9 @@ are cheaper to read now than to find out later.
   access. Dokploy keys are scoped per organisation.
 - **The panel's certificate is not trusted**: Deplo cannot be told to accept
   one, so use Dokploy's plain http address instead.
+- **Dokploy stopped accepting this API key part-way**: the key has a rate
+  limit and ran out. Raise or disable it under Settings, Profile, API/CLI, and
+  run the import again - nothing is lost, everything already here is skipped.
 - **Stuck on Waiting for the agent**: the install command has not run on
   the source, or that machine cannot reach this one.
 - **A volume arrives empty**: the report says so, and the app it belongs

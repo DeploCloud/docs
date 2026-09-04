@@ -70,6 +70,8 @@ covered on every release and they arrive byte for byte.
 | **Domains and routes** | Including a path prefix and a per-domain port. |
 | **Basic auth** | Users and passwords, re-hashed on arrival. |
 | **Cron jobs** | Schedule and command. |
+| **Backup destinations and schedules** | The store's credentials, tested on arrival, and the schedule of every database that saved to it. |
+| **Preview-only variables** | As the app's own preview variables here. |
 
 What is preserved inside a volume, and verified on every release:
 
@@ -114,16 +116,20 @@ the same amount.
 | | Dokploy | Coolify |
 | --- | --- | --- |
 | Compose file over the API | Inline files, yes. A file kept in git, no. | Needs a token with `read:sensitive`, or values and database passwords arrive empty. |
+| Stopping a service for the copy | Any key of the organization. | Needs the `deploy` permission on the token, or nothing can be stopped and nothing is copied. |
+| The API key itself | Mint it from Dokploy's own dialog. One created through its API without rate-limit settings is born at 10 requests a day. | Mint it with `deploy` first, then `read` and `read:sensitive`. |
 | Volume names | Taken from the stack's own file. | Taken from the panel's storage rows. A volume the compose pins by name is worth checking in the report. |
 | Environment variables | Handed over in full. | Needs `read:sensitive` for the values. |
 | Multiple machines | Both handled, and each machine needs the agent before its apps can move. | Same. |
 | Organizations | An API key covers one organization. Anything under another needs a second import with a key from it. | Same, and the report says so. |
 
 <Callout type="info" title="Coolify tokens">
-  Mint the token with `read:sensitive` ticked. Without it Coolify hands over
-  empty values and Deplo cannot tell an empty variable from one it was not
-  allowed to read. The report says when it saw a masked value and refuses
-  rather than importing blanks.
+  Tick `deploy` first, then `read` and `read:sensitive` - Coolify's dialog
+  clears the list when `deploy` is ticked, so the order matters. Without
+  `read:sensitive` Coolify hands over empty values and Deplo cannot tell an
+  empty variable from one it was not allowed to read; without `deploy` Deplo
+  cannot stop a service before copying its data. Deplo checks both at Connect
+  and refuses rather than importing blanks or copying live volumes.
 </Callout>
 
 ---

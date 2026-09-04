@@ -61,7 +61,7 @@ Any pending teardowns for that server are dropped with it, so Deplo stops retryi
 
 ## Uninstall the agent from a host
 
-One script does both jobs: `uninstall.sh`. `--agent-only` is what keeps it to the agent, and it is already in the command the dashboard prints for you.
+One script does both jobs: `uninstall.sh`. `--agent-only` is what keeps it to the agent, and it is already in the command the dashboard prints for you. That printed command downloads the script first and runs it second (`curl -fsSL .../uninstall.sh -o /tmp/deplo-uninstall.sh && sudo bash /tmp/deplo-uninstall.sh --yes --agent-only`); the piped forms below do the same job when you type it yourself.
 
 <Callout type="info">
 The script is a **dry run by default**. Running it with no flags prints

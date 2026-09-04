@@ -144,9 +144,10 @@ Its first step asks the one question that cannot be undone later:
 - **Bring your data over** - your apps, databases and their data move to Deplo,
   and the old panel comes off the machine once they are here. This is the rest
   of this page.
-- **Start clean** - the old panel and everything on it is deleted: apps, data,
-  teams. Nothing comes across, and nothing can be brought back. Deplo skips
-  straight to **Take over**.
+- **Start clean** - the old panel comes off the machine with everything it
+  ran: apps, teams, networks, images and its directory. Nothing comes across.
+  The volumes its apps held stay on the disk until you remove them yourself,
+  the same as after a migration. Deplo skips straight to **Take over**.
 
 The wizard's steps are **Choose**, **Connect**, **Install**, **Review**,
 **People**, **Take over** and **Done**. A step opens only when the one before it
@@ -167,6 +168,14 @@ says so and you acknowledge it before the wizard moves on.
 
 <Callout type="warn">
   What you leave unticked stays behind, and goes when the old panel is removed.
+</Callout>
+
+<Callout type="info" title="A panel with more than one machine">
+  The **Install** step lists every other machine behind the panel with an
+  install line each, exactly as the external migration does. Until the ports
+  move, that line reaches Deplo through the same address you are using - the
+  old panel's proxy - so it works before Deplo has ports of its own. Its apps
+  land on this machine.
 </Callout>
 
 <Callout type="warn" title="Every team, before the ports move">

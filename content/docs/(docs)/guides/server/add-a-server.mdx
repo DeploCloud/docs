@@ -100,8 +100,11 @@ Click **Add**. Deplo prints the command.
 Paste it on the server, as root:
 
 ```bash
-curl -fsSL https://deplo.example.com/install-agent.sh | sudo bash -s -- <TOKEN> <URL> [FINGERPRINT]
+curl -fsSL https://deplo.example.com/install-agent.sh -o /tmp/deplo-agent-install.sh && sudo bash /tmp/deplo-agent-install.sh <TOKEN> <URL> [FINGERPRINT]
 ```
+
+It downloads the script first and runs it second, so an address that does not
+answer fails out loud instead of running an empty script.
 
 Watch the card. It goes from **provisioning** to **online** on its own.
 

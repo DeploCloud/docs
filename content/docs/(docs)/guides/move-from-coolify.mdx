@@ -50,11 +50,12 @@ under Coolify's **Settings**.
 </Step>
 <Step>
 
-### Mint a token that can read secrets
+### Mint a token that can read secrets and stop a service
 
-Coolify: **Keys & Tokens -> API tokens**. Tick **read** and
-**`read:sensitive`**, and mint it from an account that is an **admin or
-owner** of the team.
+Coolify: **Keys & Tokens -> API tokens**. Tick **`deploy`** first, then
+**`read`** and **`read:sensitive`**, and mint it from an account that is an
+**admin or owner** of the team. The order matters: Coolify's dialog clears the
+list the moment `deploy` is ticked, so tick it before the other two.
 
 <Callout type="warn" title="read:sensitive is not optional">
   Without it Coolify does not blank your secrets, it removes them from the
@@ -62,6 +63,13 @@ owner** of the team.
   one-click stack's **compose file** would arrive **empty**, and the migration
   would look like it worked. Deplo refuses to scan at all rather than let that
   happen.
+</Callout>
+
+<Callout type="warn" title="deploy is not optional either">
+  The data step stops each service on Coolify before it copies its data, and
+  Coolify allows that only with the `deploy` permission. Without it every
+  service would arrive with its configuration and none of its data. Deplo
+  checks at Connect and refuses with **This token cannot stop a service.**
 </Callout>
 
 <Callout type="warn" title="One token reads one team">
@@ -257,6 +265,7 @@ when you want the traffic. The report of every past run stays under the
 | Persistent storage                                     | Volume, with its data                                                       |
 | File storage                                           | Config file under **Storage**                                               |
 | Environment variables                                  | The app's variables, magic `SERVICE_*` values already resolved              |
+| Preview-only variables                                 | The app's preview variables                                                 |
 | Shared variables (team, project, environment, server)  | Shared variables at the same level, linked to the apps that referenced them |
 | Domains, with their port and path                      | Domains                                                                     |
 | HTTP basic auth                                        | **Access**                                                                  |
@@ -265,6 +274,7 @@ when you want the traffic. The report of every past run stays under the
 | Published host ports                                   | **Advanced -> Published ports**, with the publish-ports permission          |
 | Scheduled tasks                                        | Cron jobs                                                                   |
 | S3 storages                                            | Backup destinations, tested on arrival                                      |
+| Scheduled database backups that save to an S3 storage  | Backup schedules, on the destination that came with them                    |
 
 ---
 
@@ -381,9 +391,14 @@ when you want the traffic. The report of every past run stays under the
   An older panel has no endpoint for one of them. Nothing is imported from that
   level and the report names it, so you copy those in by hand instead of
   discovering them missing later.
-- **Preview-only variables stay behind.** Deplo's pull-request previews
-  inherit the app's variables, so importing a preview-only one would leak
-  it into production. The report lists them by key.
+- **Preview-only variables come across as preview variables.** Deplo's
+  pull-request previews inherit the app's variables and add their own on
+  top, so a variable Coolify kept for previews only lands there - never in
+  production. The report lists them by key.
+- **A backup schedule follows its destination.** A database that saved to
+  an S3 storage arrives with the same schedule on the destination Deplo
+  created from that storage. One that saved only to the local disk is named
+  in the report, because there is no destination here to put it on.
 - **KeyDB and Dragonfly have no engine here.** They are named in the
   report rather than quietly skipped, so you can decide what to do with
   them.
@@ -480,6 +495,8 @@ it would run it on empty storage. Bring that data over yourself, or press
 - **This token cannot read values** or **This token cannot read compose
   files**: the token has no `read:sensitive`, or it belongs to an account
   that is not an admin or owner of the team. Both are the same scope.
+- **This token cannot stop a service**: the token has no `deploy`. Mint a
+  new one with `deploy` ticked first, then `read` and `read:sensitive`.
 - **Rate limited**: Coolify allows 200 requests a minute and Deplo stays
   under it, but a busy panel can still hit the ceiling. Wait and try
   again.
