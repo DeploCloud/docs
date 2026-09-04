@@ -83,11 +83,11 @@ finish says so in ten seconds. **These stop the run**, unless you pass
 
 **These only warn:**
 
-- **Less than 4 GB of RAM, fewer than 4 cores, or less than 30 GB free.**
-  Those are the recommended numbers, and they are about the apps: Deplo
-  and Postgres fit in about 1 GB, so a 2 GB server runs the platform and
-  leaves nearly nothing to deploy on it. No amount of memory or CPU blocks
-  the install.
+- **Less than 4 GB of RAM, fewer than 2 cores, or less than 30 GB free.**
+  That is the minimum, 4 cores and 8 GB is the comfortable size, and both
+  are about the apps: Deplo and Postgres fit in about 1 GB, so a 2 GB
+  server runs the platform and leaves nearly nothing to deploy on it. No
+  amount of memory or CPU blocks the install.
 - No `systemd`: the control plane runs, but this machine cannot become a
   Deplo server.
 - The domain does not resolve here yet, or Let's Encrypt is unreachable,
