@@ -15,7 +15,9 @@ A wizard that reads an existing Dokploy installation over its API and
 recreates it here: projects, apps, domains, environment variables, volumes
 and databases, with the data copied across.
 
-**Settings -> Migrations**, which needs `create_projects`.
+**Settings -> System -> Migrations**, for instance admins. Each Dokploy
+organization lands in a Deplo team of your choosing - one that exists, where
+you hold `create_projects`, or a new one named after it.
 
 <Callout type="info" title="Deplo going on the same machine?">
   If Deplo installs on the machine Dokploy already runs on, the installer does
@@ -92,9 +94,13 @@ finished.
 
 ### Connect
 
-Open **Settings -> Migrations**, the **Migrate** tab, and enter the **Panel
-address** and the **API key** of the source installation. Deplo reads the
-panel and shows which organization the key covers.
+Open **Settings -> System -> Migrations**, the **Migrate** tab, and enter the
+**Panel address** and the **API key** of the source installation. Deplo reads
+the panel and puts the organization the key covers on the **Teams to bring
+over** list, with the Deplo team it **lands in** beside it: the team of the
+same name when there is one, otherwise a new team named after it. Change it
+from the dropdown - any team where you hold `create_projects`, or **New
+team**. A new team is created when its migration starts, not before.
 
 A private address - the same machine (`http://172.17.0.1:3000`) or another
 box on your network - works too, but only for an **instance admin**. There
@@ -111,9 +117,10 @@ is nothing to switch on: the address itself is what decides.
 <Callout type="warn" title="One key reads one organization">
   A Dokploy key is minted **for** one organization and reads only that one. If
   your Dokploy has three, mint a key each: paste the next one and press **Add**,
-  and it joins the **Teams to bring over** list. Deplo names the organizations
-  the key does not cover, so you can see what is still missing, and brings them
-  over one at a time - each into a Deplo team of its own.
+  and it joins the **Teams to bring over** list with its own landing team.
+  Deplo names the organizations the key does not cover, so you can see what is
+  still missing. Two organizations may land in the same team, or each in its
+  own.
 </Callout>
 
 </Step>
@@ -159,13 +166,16 @@ what that means once the data step has begun.
 the first is still going is refused by name, so a double click cannot
 create the same app twice.
 
-At the end the report is on the same step. It names everything that did not
-come across cleanly, and you acknowledge it to move on.
+With several organizations on the list, the review shows one section per
+organization, each headed by the team it lands in, and **Migrate N teams**
+runs them one after another on its own: a new team is created as its turn
+comes, and Deplo leaves its agents on the source machines until the last one
+is over, so only the first pays for the install. An organization with nothing
+ticked is skipped.
 
-With several organizations on the list, the report says which one is next:
-press **Migrate \<organization\>** and the wizard walks the same steps again
-with that key. Deplo leaves its agents on the source machines until the last
-one is over, so only the first pays for the install.
+At the end the report is on the same step, one line per organization. It
+names everything that did not come across cleanly, and you acknowledge it to
+move on.
 
 </Step>
 <Step>

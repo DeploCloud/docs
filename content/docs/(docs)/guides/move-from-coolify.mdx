@@ -16,8 +16,10 @@ recreates it here: projects, applications, one-click services, databases,
 domains, environment variables, volumes and backup destinations, with the
 data copied across.
 
-**Settings -> Migrations**, which needs `create_projects`. Paste the panel
-address and a token, and Deplo works out which product is answering.
+**Settings -> System -> Migrations**, for instance admins. Paste the panel
+address and a token, and Deplo works out which product is answering. Each
+Coolify team lands in a Deplo team of your choosing - one that exists, where
+you hold `create_projects`, or a new one named after it.
 
 <Callout type="info" title="Deplo going on the same machine?">
   If Deplo installs on the machine Coolify already runs on, the installer does
@@ -155,9 +157,13 @@ finished.
 
 ### Connect
 
-Open **Settings -> Migrations**, the **Migrate** tab, and enter the **Panel
-address** and the **API token**. Deplo reads the panel and shows which team
-the token covers.
+Open **Settings -> System -> Migrations**, the **Migrate** tab, and enter the
+**Panel address** and the **API token**. Deplo reads the panel and puts the
+team the token covers on the **Teams to bring over** list, with the Deplo
+team it **lands in** beside it: the team of the same name when there is one,
+otherwise a new team named after it. Change it from the dropdown - any team
+where you hold `create_projects`, or **New team**. A new team is created when
+its migration starts, not before.
 
 A private address - the same machine (`http://172.17.0.1:8000`) or another
 box on your network - works too, but only for an **instance admin**.
@@ -165,8 +171,8 @@ box on your network - works too, but only for an **instance admin**.
 <Callout type="warn" title="One token reads one team">
   A Coolify token is bound to the team it was minted in. For a second team,
   mint a token there, paste it and press **Add**. Each one joins the **Teams
-  to bring over** list, and Deplo brings them across one at a time - each into
-  a Deplo team of its own, named after the team it came from.
+  to bring over** list with its own landing team: two Coolify teams may land
+  in the same Deplo team, or each in its own.
 </Callout>
 
 </Step>
@@ -212,13 +218,15 @@ what that means once the data step has begun.
 the first is still going is refused by name, so a double click cannot
 create the same app twice.
 
-At the end the report is on the same step. It names everything that did not
-come across cleanly, and you acknowledge it to move on.
+With several teams on the list, the review shows one section per team, each
+headed by the Deplo team it lands in, and **Migrate N teams** runs them one
+after another on its own: a new team is created as its turn comes, and Deplo
+leaves its agents on the source machines until the last team is over, so only
+the first team pays for the install. A team with nothing ticked is skipped.
 
-With several teams on the list, the report says which team is next: press
-**Migrate \<team\>** and the wizard walks the same steps again with that
-team's token. Deplo leaves its agents on the source machines until the last
-team is over, so only the first team pays for the install.
+At the end the report is on the same step, one line per team. It names
+everything that did not come across cleanly, and you acknowledge it to move
+on.
 
 </Step>
 <Step>
