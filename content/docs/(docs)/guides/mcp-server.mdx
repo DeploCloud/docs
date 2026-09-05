@@ -195,7 +195,7 @@ remove them from the team.
 ## What an agent can and cannot do
 
 **Can, if the token holds it:** almost everything the dashboard does. Apps
-and every one of their settings, deployments, environment variables and
+and every one of their settings, a Compose app's file itself, deployments, environment variables and
 shared variables, domains, databases and their configuration, logs and
 metrics, backups, destinations and restores, cron jobs, previews,
 projects, environments and folders with their grants, roles and members,
@@ -268,12 +268,323 @@ always flagged destructive, so your agent asks before using it.
 
 ---
 
-## How many tools there are
+## Every tool
 
-Deplo exposes **181 tools** today, plus the two above. The number moves with
+Deplo exposes **182 tools** today, plus the two above. The number moves with
 the product, so treat it as a snapshot: while creating a token, **See which**
 lists them all, marks the ones that token would reach and flags the
 destructive ones. An agent only ever sees the tools its own token can use.
+
+**Needs** is the capability the token must hold; **Kind** is what the agent's
+client is told before it runs the tool, so a **destructive** one is where a
+well-behaved client asks you first.
+
+<Accordions>
+<Accordion title="Diagnostics (2)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `whoami` | Who am I | any token | read |
+| `list_teams` | List teams | any token | read |
+
+</Accordion>
+<Accordion title="Apps (39)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_templates` | List templates | `view` | read |
+| `list_apps` | List apps | `view` | read |
+| `find` | Find an app or database in any team | `view` | read |
+| `get_app` | Get an app | `view` | read |
+| `list_deployments` | List deployments | `view` | read |
+| `get_deployment` | Get a deployment | `view` | read |
+| `render_compose` | Render an app's compose file | `view` | read |
+| `deploy_app` | Deploy an app | `deploy_apps` | write |
+| `rebuild_app` | Rebuild an app | `deploy_apps` | **destructive** |
+| `rollback_deployment` | Roll back to a deployment | `rollback_apps` | **destructive** |
+| `cancel_deployment` | Cancel a deployment | `deploy_apps` | write |
+| `control_app` | Start or reload an app | `control_apps` | write |
+| `stop_app` | Stop an app | `control_apps` | **destructive** |
+| `bulk_app_action` | Start, stop or restart a whole folder or project | `control_apps` | **destructive** |
+| `bulk_redeploy_apps` | Redeploy a whole folder or project | `deploy_apps` | **destructive** |
+| `create_app_from_template` | Create an app from a template | `create_apps` | write |
+| `create_app` | Create an app | `create_apps` | write |
+| `rename_app` | Rename an app | `configure_apps` | write |
+| `update_app_build` | Change build settings | `configure_apps` | write |
+| `update_app_source` | Change where an app deploys from | `configure_apps` | write |
+| `update_app_compose` | Edit an app's compose file | `configure_apps` | write |
+| `set_app_resources` | Set an app's resource limits | `configure_apps` | write |
+| `set_app_volumes` | Set an app's volumes | `configure_apps` | write |
+| `set_app_auto_deploy` | Turn auto-deploy on or off | `configure_apps` | write |
+| `delete_app` | Delete an app | `delete_apps` | **destructive** |
+| `get_app_runtime` | Get an app's containers | `view` | read |
+| `set_app_ports` | Publish ports on the host | `configure_apps` | write |
+| `set_app_framework` | Override the detected framework | `configure_apps` | write |
+| `set_app_health_check` | Set an app's health check | `configure_apps` | write |
+| `set_app_rollback_keep` | Set how many builds are kept for rollback | `configure_apps` | write |
+| `set_app_build_server` | Choose where an app is built | `configure_apps` | write |
+| `list_build_servers` | List servers that can build | `view` | read |
+| `set_app_compose_args` | Set extra docker compose up arguments | `configure_apps` | write |
+| `set_app_deploy_hook_enabled` | Turn an app's deploy hook on or off | `configure_apps` | write |
+| `set_app_console_enabled` | Allow or forbid the web console for an app | `configure_apps` | write |
+| `clear_app_build_cache` | Clear an app's build cache | `configure_apps` | write |
+| `detect_app_logo` | Detect an app's logo | `configure_apps` | write |
+| `read_app_file` | Read a file from an app's storage | `configure_apps` | read |
+| `write_app_file` | Write a file into an app's storage | `configure_apps` | **destructive** |
+
+</Accordion>
+<Accordion title="Environment (10)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_env` | List environment variables | `manage_env` | read |
+| `set_env_var` | Set an environment variable | `manage_env` | write |
+| `delete_env_var` | Delete an environment variable | `manage_env` | **destructive** |
+| `import_env` | Import a .env file | `manage_env` | write |
+| `list_shared_vars` | List shared variables | `manage_env` | read |
+| `list_app_shared_vars` | List the shared variables an app can use | `manage_env` | read |
+| `save_shared_var` | Create or edit a shared variable | `manage_env` | write |
+| `link_shared_var` | Link or unlink a shared variable to an app | `manage_env` | write |
+| `delete_shared_var` | Delete a shared variable | `manage_env` | **destructive** |
+| `set_env` | Replace an app's environment variables | `manage_env` | **destructive** |
+
+</Accordion>
+<Accordion title="Domains (6)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_domains` | List domains | `view` | read |
+| `add_domain` | Add a domain | `manage_domains` | write |
+| `update_domain` | Update a domain | `manage_domains` | write |
+| `verify_domain` | Verify a domain | `manage_domains` | write |
+| `set_primary_domain` | Make a domain primary | `manage_domains` | write |
+| `remove_domain` | Remove a domain | `manage_domains` | **destructive** |
+
+</Accordion>
+<Accordion title="Databases (14)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_databases` | List databases | `view` | read |
+| `get_database` | Get a database | `view` | read |
+| `create_database` | Create a database | `create_databases` | write |
+| `control_database` | Start, stop or restart a database | `control_databases` | write |
+| `redeploy_database` | Redeploy a database | `control_databases` | write |
+| `rebuild_database` | Rebuild a database (factory reset) | `delete_databases` | **destructive** |
+| `delete_database` | Delete a database | `delete_databases` | **destructive** |
+| `update_database` | Expose a database or move it to another server | `configure_databases` | write |
+| `rename_database` | Rename a database | `configure_databases` | write |
+| `set_database_resources` | Cap a database's CPU, memory or disk | `configure_databases` | write |
+| `set_database_config_files` | Set a database's config files | `configure_databases` | **destructive** |
+| `set_database_image` | Change a database's engine version or image | `configure_databases` | write |
+| `move_database` | Move a database into an environment | `configure_databases` | write |
+| `check_host_ports` | Check whether host ports are free | `create_databases` | read |
+
+</Accordion>
+<Accordion title="Logs (1)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `logs` | Read logs | `view_logs` | read |
+
+</Accordion>
+<Accordion title="Monitoring (4)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `metrics` | Live metrics | `view_metrics` | read |
+| `metrics_history` | Read metrics history | `view_metrics` | read |
+| `fleet_metrics` | Read the fleet's live metrics | `view_metrics` | read |
+| `set_metrics_retention` | Turn metrics history on or off | `manage_monitoring` | write |
+
+</Accordion>
+<Accordion title="Backups (14)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_backups` | List backup schedules | `view` | read |
+| `list_backup_runs` | List backup runs | `view` | read |
+| `run_backup` | Back up now | `manage_backups` | write |
+| `restore_backup` | Restore a backup | `restore_backups` | **destructive** |
+| `list_destinations` | List backup destinations | `view` | read |
+| `set_backup_schedule` | Create or edit a backup schedule | `manage_backups` | write |
+| `delete_backup_schedule` | Delete a backup schedule | `manage_backups` | **destructive** |
+| `cancel_backup_run` | Cancel a running backup | `manage_backups` | write |
+| `delete_backup_run` | Delete a backup | `delete_backups` | **destructive** |
+| `delete_backup_artifacts` | Delete every backup of an app or database | `delete_backups` | **destructive** |
+| `list_backup_destination_options` | List where a backup can go | `manage_backups` | read |
+| `create_destination` | Add a backup destination | `manage_backup_destinations` | write |
+| `test_destination` | Test a backup destination | `manage_backup_destinations` | write |
+| `delete_destination` | Delete a backup destination | `manage_backup_destinations` | **destructive** |
+
+</Accordion>
+<Accordion title="Cron (8)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_cron_jobs` | List cron jobs | `manage_crons` | read |
+| `create_cron_job` | Create a cron job | `manage_crons` | write |
+| `run_cron_job_now` | Run a cron job now | `manage_crons` | write |
+| `delete_cron_job` | Delete a cron job | `manage_crons` | **destructive** |
+| `update_cron_job` | Edit a cron job | `manage_crons` | write |
+| `set_cron_enabled` | Turn cron on or off for an app or database | `manage_crons` | write |
+| `list_cron_runs` | List a cron job's runs | `manage_crons` | read |
+| `cancel_cron_run` | Cancel a running cron job | `manage_crons` | write |
+
+</Accordion>
+<Accordion title="Previews (9)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_previews` | List pull-request previews | `manage_previews` | read |
+| `deploy_pull_request` | Deploy a pull request preview | `manage_previews` | write |
+| `destroy_preview` | Destroy a preview | `manage_previews` | **destructive** |
+| `list_open_pull_requests` | List an app's open pull requests | `manage_previews` | read |
+| `set_app_preview_settings` | Configure pull request previews for an app | `manage_previews` | write |
+| `approve_preview` | Approve a preview from a fork | `manage_previews` | write |
+| `redeploy_preview` | Redeploy a preview | `manage_previews` | write |
+| `list_preview_env` | List an app's preview-only variables | `manage_env` | read |
+| `set_preview_env_var` | Set or delete a preview-only variable | `manage_env` | write |
+
+</Accordion>
+<Accordion title="Organization (17)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_projects` | List projects | `view` | read |
+| `list_folders` | List folders | `view` | read |
+| `list_environments` | List a project's environments | `view` | read |
+| `create_folder` | Create a folder | `create_folders` | write |
+| `move_app` | Move an app | `move_apps` | write |
+| `get_project` | Get a project | `view` | read |
+| `create_project` | Create a project | `create_projects` | write |
+| `update_project` | Rename or recolour a project | `organize_projects` | write |
+| `delete_project` | Delete a project | `delete_projects` | **destructive** |
+| `create_environment` | Create an environment | `manage_environments` | write |
+| `update_environment` | Update an environment | `manage_environments` | write |
+| `delete_environment` | Delete an environment | `manage_environments` | **destructive** |
+| `update_folder` | Rename, recolour or move a folder | `organize_folders` | write |
+| `delete_folder` | Delete a folder | `delete_folders` | **destructive** |
+| `move_apps_to_folder` | Move several apps into a folder | `move_apps` | write |
+| `list_folder_grants` | List who can access a folder | `view` | read |
+| `set_folder_grant` | Grant or change someone's access to a folder | `organize_folders` | write |
+
+</Accordion>
+<Accordion title="Team (12)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_members` | List team members | `view` | read |
+| `list_activity` | Read the activity trail | `view_activity` | read |
+| `list_roles` | List the team's roles | `view` | read |
+| `create_role` | Create a role | `manage_roles` | write |
+| `update_role` | Edit a role | `manage_roles` | write |
+| `delete_role` | Delete a role | `manage_roles` | **destructive** |
+| `reset_role` | Reset a default role | `manage_roles` | write |
+| `add_member` | Add an existing user to the team | `manage_members` | write |
+| `update_member` | Change a member's role or access | `manage_members` | write |
+| `remove_member` | Remove a member from the team | `manage_members` | **destructive** |
+| `update_team` | Rename the team or set its two-factor policy | `manage_team` | write |
+| `transfer_app` | Move an app to another team | `move_apps` | write |
+
+</Accordion>
+<Accordion title="Git (7)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_git_sources` | List git connections | `view` | read |
+| `list_repos` | List repositories or branches | `view` | read |
+| `list_git_providers` | List the git providers Deplo can connect | `view` | read |
+| `connect_git_provider` | Connect a git provider with a token | `manage_git` | write |
+| `update_git_connection` | Rotate a git connection's token or rename it | `manage_git` | write |
+| `test_git_connection` | Test a git connection | `manage_git` | write |
+| `remove_git_connection` | Disconnect a git provider | `manage_git` | **destructive** |
+
+</Accordion>
+<Accordion title="Registries (3)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_registries` | List registry credentials | `view` | read |
+| `add_registry` | Add a registry credential | `manage_registries` | write |
+| `delete_registry` | Delete a registry credential | `manage_registries` | **destructive** |
+
+</Accordion>
+<Accordion title="Access (3)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_basic_auth_users` | List an app's basic-auth logins | `manage_basic_auth` | read |
+| `set_basic_auth_user` | Add a basic-auth login, or change its password | `manage_basic_auth` | write |
+| `remove_basic_auth_user` | Remove a basic-auth login | `manage_basic_auth` | **destructive** |
+
+</Accordion>
+<Accordion title="Servers (20)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_servers` | List servers | `view` | read |
+| `get_server` | Get a server | `view` | read |
+| `check_server_health` | Check a server's health | instance admin | write |
+| `check_server_readiness` | Check whether a server can deploy | instance admin | read |
+| `update_server_agent` | Update a server's agent | instance admin | **destructive** |
+| `restart_server_workloads` | Restart everything on a server | instance admin | **destructive** |
+| `restart_server_traefik` | Restart a server's proxy | instance admin | **destructive** |
+| `run_docker_cleanup` | Reclaim disk on a server | instance admin | write |
+| `add_server` | Register a new server | instance admin | write |
+| `remove_server` | Remove a server | instance admin | **destructive** |
+| `update_server` | Change a server's address, role, teams or limits | instance admin | write |
+| `get_server_host_info` | Read a server's host facts | instance admin | write |
+| `check_agent_updates` | Check for server agent updates | instance admin | write |
+| `uninstall_server_agent` | Uninstall a server's agent | instance admin | **destructive** |
+| `add_server_certificate` | Add a custom TLS certificate to a server | instance admin | write |
+| `remove_server_certificate` | Remove a custom TLS certificate | instance admin | **destructive** |
+| `set_certificate_email` | Set the Let's Encrypt account email | instance admin | write |
+| `get_docker_cleanup_policy` | Read the Docker cleanup policy | instance admin | read |
+| `update_docker_cleanup_policy` | Change the Docker cleanup policy | instance admin | write |
+| `set_server_cleanup_excluded` | Exclude a server from Docker cleanup | instance admin | write |
+
+</Accordion>
+<Accordion title="Deployments (2)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `delete_deployments` | Delete deployment records | `delete_apps` | **destructive** |
+| `cancel_all_deployments` | Cancel every running deployment | `deploy_apps` | write |
+
+</Accordion>
+<Accordion title="Notifications (4)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_notification_channels` | List notification channels | `manage_notifications` | read |
+| `save_notification_channel` | Create or edit a notification channel | `manage_notifications` | write |
+| `test_notification_channel` | Send a test notification | `manage_notifications` | write |
+| `delete_notification_channel` | Delete a notification channel | `manage_notifications` | **destructive** |
+
+</Accordion>
+<Accordion title="Instance (7)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `get_instance` | Read this Deplo's own settings | instance admin | read |
+| `check_for_updates` | Check for a Deplo update | instance admin | write |
+| `read_changelog` | Read Deplo's changelog | instance admin | read |
+| `set_panel_url` | Set the panel's public address | instance admin | write |
+| `set_panel_https` | Turn HTTPS for the panel on or off | instance admin | write |
+| `set_log_retention` | Set how many days of logs are kept | instance admin | write |
+| `restart_panel` | Restart the Deplo panel | instance admin | **destructive** |
+
+</Accordion>
+<Accordion title="Escape hatch (2)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `graphql_query` | Run a GraphQL read | any token | read |
+| `graphql_mutate` | Run a GraphQL write | any token | **destructive** |
+
+</Accordion>
+</Accordions>
 
 ---
 
