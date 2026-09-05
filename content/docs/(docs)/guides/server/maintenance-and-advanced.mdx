@@ -17,11 +17,13 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
   type={{
     "Restart Traefik": {
       type: "action",
-      description: "Restarts the proxy on this host.",
+      description:
+        "Restarts the proxy on this host. Every site there is unreachable for the few seconds it takes to come back, and the containers keep running.",
     },
     Restart: {
       type: "action",
-      description: "Restarts the workloads.",
+      description:
+        "Restarts the workloads, one at a time, so each is briefly unreachable. Anything already stopped stays stopped, and anything mid-deploy is left to finish.",
     },
     "Restart all": {
       type: "action",
@@ -30,7 +32,7 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
     "Restart Deplo": {
       type: "action",
       description:
-        "Only on the host running the control plane. It restarts the panel itself.",
+        "Only on the host running the control plane. It restarts the panel itself, which goes away for a few seconds while your apps and databases keep serving traffic.",
     },
     Timezone: {
       type: "select",
