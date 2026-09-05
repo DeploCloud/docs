@@ -322,6 +322,11 @@ it would run it on empty storage. Bring that data over yourself, or press
   S3 destinations with their credentials, so each one is created and tested
   on arrival, and a database that was backed up to it keeps its schedule on
   that destination.
+- **A volume backup becomes an app backup.** A volume backed up from an app or
+  from a stack's service, and a stack's own database dump, arrive as backups
+  of the app on that destination, one per schedule. An app backup here covers
+  every volume of the app, so two volumes on one schedule become one backup,
+  and the report says so.
 - **A middleware written into an app's own Traefik file is named.** Dokploy's
   forms never produce one, so it is the one route setting the import cannot
   carry. The report names it with its kind; define it in the proxy's
@@ -377,13 +382,16 @@ are cheaper to read now than to find out later.
   your registrar.
 - **Copying data takes as long as the data is big.** Volumes stream host to
   host through the control plane.
-- **Running it again is safe.** Everything already here is skipped, so a second
-  run brings newer data across without undoing the first one and without taking
-  the agent off the source machine.
+- **Running it again is safe.** Everything already here is kept, its data is
+  copied across again when you tick it, and a backup schedule the first run
+  could not set because its destination was not here yet is added. Deplo took
+  its agent off the source machine when the first run finished, so **Install**
+  shows the line to paste once more.
 - **Check the report, always.** A migration that says "done" with twelve lines
   in the report has twelve things waiting for you.
-- **Uninstall the migration source afterwards.** It is a live agent on a
-  machine you are about to decommission.
+- **Check that the source is gone afterwards.** Deplo takes its agent off the
+  machine when the run finishes; if it could not, **Agent still installed**
+  says so, with the command to run there.
 </Callout>
 
 <Callout type="error" title="If it does not work">

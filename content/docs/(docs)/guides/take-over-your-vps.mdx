@@ -216,7 +216,9 @@ On the host, `deplo-takeover.service`:
 - moves Traefik onto 80 and 443, with the dashboard served behind it
 - takes the old panel off the disk: its containers, the workloads it ran and
   their networks, its images and its directory. The **volumes** those workloads
-  held stay on the disk, so a copy that went wrong can still be recovered
+  held stay on the disk, so a copy that went wrong can still be recovered, and
+  so do the **backups** the panel wrote to its own disk - the installer prints
+  where they are
 - restarts Docker, which applies the address pools the install wrote and puts
   Docker's own DNS back after the old panel's swarm is left
 
@@ -233,6 +235,8 @@ nothing to reload.
 
 If the port move fails, the unit puts the ports back and starts the old panel
 again, and the step says why, in the installer's words, next to **Try again**.
+The reason names what is holding the port: a container of yours that grabbed
+80 while the proxy was down is the usual one. Remove it, then **Try again**.
 
 <Callout type="info" title="What it does not touch">
   No volume of an app is ever removed: the ones the old panel's apps held and
@@ -295,7 +299,8 @@ ports move. Deplo:
 - starts again every service the migration stopped on the old panel
 - starts the old platform's own containers again, each with the restart policy
   it had and only if it was running
-- removes everything it created here
+- removes everything it created here: its stacks, with their volumes and
+  networks, so nothing of the copy is left on the disk
 - uninstalls itself
 
 The old panel keeps all of its data. It needs its API token again to start

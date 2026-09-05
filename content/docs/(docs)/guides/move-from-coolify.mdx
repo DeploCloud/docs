@@ -407,6 +407,10 @@ when you want the traffic. The report of every past run stays under the
   an S3 storage arrives with the same schedule on the destination Deplo
   created from that storage. One that saved only to the local disk is named
   in the report, because there is no destination here to put it on.
+- **A volume's own backup to an S3 storage does not come across.** Coolify's
+  API writes those schedules but never lists them, so there is nothing to
+  read. Set it again under **Backups**: one app backup here covers every
+  volume of the app.
 - **KeyDB and Dragonfly have no engine here.** They are named in the
   report rather than quietly skipped, so you can decide what to do with
   them.
@@ -414,6 +418,10 @@ when you want the traffic. The report of every past run stays under the
   http.** It answered on `:80` over there, so it answers on `:80` here and every
   link anyone had written keeps working. The report names it; add a certificate
   under **Domains** when you want https.
+- **A `$` Coolify would have expanded is named.** Unless a variable is marked
+  literal there, Coolify lets compose expand every `$` in its value, so the
+  running value could differ from the one you typed. It arrives here written
+  as it was, and the report names the variable so you can check it.
 - **A variable that looks like a credential arrives masked.** Coolify's API
   never says a variable is a secret, so Deplo reads the name. One holding
   `password`, `passwd`, `secret`, `token`, `credentials`, `salt` or
@@ -485,13 +493,16 @@ it would run it on empty storage. Bring that data over yourself, or press
   your registrar.
 - **Copying data takes as long as the data is big.** Volumes stream host to
   host through the control plane.
-- **Running it again is safe.** Everything already here is skipped, so a second
-  run brings newer data across without undoing the first one and without taking
-  the agent off the source machine.
+- **Running it again is safe.** Everything already here is kept, its data is
+  copied across again when you tick it, and a backup schedule the first run
+  could not set because its destination was not here yet is added. Deplo took
+  its agent off the source machine when the first run finished, so **Install**
+  shows the line to paste once more.
 - **Check the report, always.** A migration that says "done" with twelve lines
   in the report has twelve things waiting for you.
-- **Uninstall the migration source afterwards.** It is a live agent on a
-  machine you are about to decommission.
+- **Check that the source is gone afterwards.** Deplo takes its agent off the
+  machine when the run finishes; if it could not, **Agent still installed**
+  says so, with the command to run there.
 </Callout>
 
 <Callout type="error" title="If it does not work">
@@ -505,6 +516,9 @@ it would run it on empty storage. Bring that data over yourself, or press
   that is not an admin or owner of the team. Both are the same scope.
 - **This token cannot stop a service**: the token has no `deploy`. Mint a
   new one with `deploy` ticked first, then `read` and `read:sensitive`.
+- **Coolify refused the token**: every token is minted with an expiry, and
+  this one has run out or was revoked. Mint a new one under **Keys &
+  Tokens**.
 - **Rate limited**: Coolify allows 200 requests a minute and Deplo stays
   under it, but a busy panel can still hit the ceiling. Wait and try
   again.
