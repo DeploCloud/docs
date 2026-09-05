@@ -221,6 +221,22 @@ The same suite runs under conditions that are not a clean lab:
 - A crowded instance: several organizations, projects and environments, a
   private registry, stopped apps, apps in a crash loop, clashing service names
 
+### Latest run
+
+Measured on 4 September 2026, each panel spread over two machines, external
+route landing on a third.
+
+| Source  | Route                 | Apps that landed untouched | What did not                                                                                  |
+| ------- | --------------------- | -------------------------- | --------------------------------------------------------------------------------------------- |
+| Dokploy | Takeover and external | **66 of 67**               | One app on a private Git repository: the deploy key never leaves the old panel, the report names it. |
+| Coolify | Takeover and external | **60 of 62**               | The same private repository, plus one app the token could not stop (see the `deploy` permission). |
+
+<Callout type="info" title="A failed copy costs you nothing">
+  The source is only ever read. If a copy stops half way, whatever Deplo had
+  already created for that app is taken back out, and the old panel is left
+  exactly as it was. You can run the same migration again.
+</Callout>
+
 <Accordions>
 <Accordion title="Check your own migration by hand">
 
