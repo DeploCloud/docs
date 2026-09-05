@@ -94,11 +94,13 @@ A **Pull requests** tab appears on the app.
     },
     Server: {
       type: "select",
-      description: "Where previews run. Often a cheaper machine than production.",
+      description:
+        "Where previews run. Often a cheaper machine than production. Changing it stops the previews that are up; Redeploy brings each back on the new server, and a nip.io address follows it.",
     },
     "Build them automatically": {
       type: "toggle",
-      description: "Rebuild on every new commit, or only on demand.",
+      description:
+        "Rebuild on every new commit, or only on demand. Off, a new commit is still recorded, a fork has to be approved again, and Redeploy builds the branch tip.",
     },
     "Only pull requests labelled": {
       type: "text",
@@ -114,7 +116,8 @@ A **Pull requests** tab appears on the app.
     },
     Port: {
       type: "number",
-      description: "Per-preview container port, if it differs.",
+      description:
+        "The port a preview answers on, if it differs from the app's. Traefik forwards there and PORT is set to it. Empty means the app's own port.",
     },
   }}
 />
@@ -132,6 +135,14 @@ one on demand.
 
 A preview from a fork shows **Needs approval** until somebody with
 `manage_previews` reviews it.
+
+What the list follows on its own:
+
+- **A title edit** updates the row without building.
+- **Retargeting** the pull request at another branch tears its preview down.
+- **A closed pull request** keeps its row for a week, then disappears.
+- **The comment on the pull request** always says the current state:
+  Building, Ready, Stopped, Waiting for approval, Torn down.
 
 ---
 
@@ -153,10 +164,13 @@ activity. The evicted row **survives** and keeps its deploy key and its
 hostname, so clicking **Redeploy** brings the same URL back.
 
 A push never revives an evicted preview. Only a person does. It renders
-grey, never red, because nothing failed.
+grey, never red, because nothing failed, and the comment on the pull
+request says **Stopped** so nobody clicks a dead link.
 
 <Callout type="warn" title="Limits and gotchas">
 - **Turning previews off destroys every live preview**, right then.
+- **Moving the app to another server stops its previews** unless they
+  are pinned to a server of their own. Redeploy brings each one back.
 - **Previews share the app's database unless you point them elsewhere.** A
   [preview override](/guides/config/environment-variables) on the connection
   string is how you give them a scratch one, and it is worth doing before
