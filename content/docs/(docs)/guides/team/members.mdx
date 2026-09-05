@@ -115,6 +115,11 @@ tree) and **Advanced** (instance admin, transfer ownership, remove them),
 plus **[Activity](/guides/team/activity)** - the full trail, narrowed to
 what they have done.
 
+A member whose permissions were edited by hand stops following their role:
+editing the role no longer rewrites their set. **Assigning them a role
+again**, from the member page or the API, puts them back on it, and the
+next role edit reaches them like everyone else.
+
 ---
 
 ## Remove somebody
@@ -123,6 +128,17 @@ From the member's **Advanced** tab. Their memberships end, their sessions
 in that team stop resolving, and every API token they created loses
 whatever it inherited from them. Their account and their own team are
 untouched.
+
+Two more things go with them, so adding the person back later starts
+clean:
+
+- **Every folder share and per-app grant they held** in this team is
+  revoked.
+- **Folders they owned pass to the primary owner.** A folder is private to
+  its owner and the people it is shared with, so one left with somebody
+  who is gone would vanish from everyone's Overview. The hand-over is
+  written to [Activity](/guides/team/activity), and the primary owner can
+  share the folder on from there.
 
 <Callout type="warn" title="Limits and gotchas">
 - **A team always keeps somebody who can administer it.** No role edit and
