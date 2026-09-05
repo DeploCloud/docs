@@ -214,6 +214,11 @@ shows the progress, the log is one click away under **Show log**, and you
 can close the tab. **Stop and undo** takes the run back out - see below for
 what that means once the data step has begun.
 
+The chip at the top of every page shows the same progress to the whole team.
+When the run ends it turns green and says **Migration finished**, and it stays
+there until somebody closes the report: a run that ends while you are on
+another page is not missed.
+
 **One migration runs at a time per team.** Starting a second one while
 the first is still going is refused by name, so a double click cannot
 create the same app twice.
@@ -422,23 +427,19 @@ when you want the traffic. The report of every past run stays under the
   literal there, Coolify lets compose expand every `$` in its value, so the
   running value could differ from the one you typed. It arrives here written
   as it was, and the report names the variable so you can check it.
-- **A variable that looks like a credential arrives masked.** Coolify's API
-  never says a variable is a secret, so Deplo reads the name. One holding
-  `password`, `passwd`, `secret`, `token`, `credentials`, `salt` or
-  `passphrase`, or an `api` / `private` / `access` / `signing` /
-  `encryption` / `license` key, lands as a **secret**: write-only, and
-  never shown again. `MYSQL_ROOT_PASSWORD` and `SERVICE_PASSWORD_ROOT` are
-  masked; everything else stays plain and readable, `DATABASE_URL` and
-  `SMTP_DSN` included, and a name that announces itself as public
-  (`NEXT_PUBLIC_`, `VITE_`, `PUBLIC_`) is never masked. The report lists
-  every key it masked.
-- **A masked variable cannot be edited.** To put one back in the clear, open
-  it under **Variables** and press **Make it plain**. A secret is write-only,
-  so Deplo cannot read the old value out: you type it again.
-- **A variable Coolify shows once arrives empty.** Coolify's API answers
-  with no value for it, whatever the token holds, so Deplo has nothing to
-  import. The report names those keys - fill them in under **Variables**
-  before you deploy.
+- **A variable is a secret here only if Coolify marked it one.** Deplo never
+  types a variable secret from its name: a
+  [secret](/guides/config/environment-variables) is write-only and can never
+  be edited or turned back, so a guess would lock away a value nobody can
+  check against Coolify. `MYSQL_ROOT_PASSWORD` arrives as readable as `PORT`,
+  and you mark what you want **Secret** under **Variables** afterwards. A
+  variable Coolify marks **shown once** is the exception: when its API hands
+  the value over, it lands as a secret, and the report names it.
+- **A shown-once variable usually arrives empty.** Coolify's API answers
+  with no value for most of them, whatever the token holds, so Deplo has
+  nothing to import. It lands plain and empty - an empty secret could never
+  be filled in - and the report names those keys: fill them in under
+  **Variables** before you deploy, then mark them **Secret** if you want.
 - **Imported basic-auth credentials are flagged.** They never went through
   Deplo's password policy or the breach check.
 - **Anything needing a permission you do not hold lands in the report

@@ -162,6 +162,11 @@ shows the progress, the log is one click away under **Show log**, and you
 can close the tab. **Stop and undo** takes the run back out - see below for
 what that means once the data step has begun.
 
+The chip at the top of every page shows the same progress to the whole team.
+When the run ends it turns green and says **Migration finished**, and it stays
+there until somebody closes the report: a run that ends while you are on
+another page is not missed.
+
 **One migration runs at a time per team.** Starting a second one while
 the first is still going is refused by name, so a double click cannot
 create the same app twice.
@@ -301,19 +306,13 @@ it would run it on empty storage. Bring that data over yourself, or press
   it; the others still see it offered under **Variables**.
   A `${{ <service>.<field> }}` reference to a sibling service is a different
   thing and still arrives as it is written - the report names those keys.
-- **A variable that looks like a credential arrives masked.** Dokploy has
-  no notion of a secret variable, so Deplo reads the name. One holding
-  `password`, `passwd`, `secret`, `token`, `credentials`, `salt` or
-  `passphrase`, or an `api` / `private` / `access` / `signing` /
-  `encryption` / `license` key, lands as a **secret**: write-only, and
-  never shown again. `MYSQL_ROOT_PASSWORD` and `APP_SECRET` are masked;
-  everything else stays plain and readable, `DATABASE_URL` and `SMTP_DSN`
-  included, and a name that announces itself as public
-  (`NEXT_PUBLIC_`, `VITE_`, `PUBLIC_`) is never masked. The report lists
-  every key it masked.
-- **A masked variable cannot be edited.** To put one back in the clear, open
-  it under **Variables** and press **Make it plain**. A secret is write-only,
-  so Deplo cannot read the old value out: you type it again.
+- **Every variable arrives plain.** Dokploy has no notion of a secret
+  variable, and Deplo never types one secret on its own: a
+  [secret](/guides/config/environment-variables) is write-only and can never
+  be edited or turned back, so guessing from the name would lock away a value
+  nobody can check against Dokploy. `MYSQL_ROOT_PASSWORD` arrives as readable
+  as `PORT`. Once you have checked a value, mark it **Secret** under
+  **Variables**; that direction is always open.
 - **Preview deployments come across with their own variables.** The base
   domain, the port and the limit land under **Previews**, and a variable
   Dokploy kept for previews only becomes one of the app's preview variables

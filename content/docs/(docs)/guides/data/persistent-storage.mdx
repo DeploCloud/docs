@@ -175,11 +175,19 @@ The propagation choice is not cosmetic. Without `rslave`, a network share or a F
 - **Do not put a database's data in a Bind unless you mean it.** A managed [database](/guides/data/databases) already has its own managed volume.
 - **A File is a config file, not a blob.** The editor writes at most 1 MiB, and only text: a binary or oversized file already on the path stays mounted exactly as it is, and says so.
 - **Backups of an app include its files.** They do not include its databases.
-- **Moving to another server copies the data first, and only then tears the
-  old one down.** If a volume is not on the old server, a database move
-  stops and stays where it is - a volume that cannot be found is also what
-  a wrong volume name looks like, and the old copy is the only one there
-  is. An app move says so and carries on.
+- **Moving to another server copies the data across, and only then tears
+  the old one down.** The app is offline while the copy runs. If the copy
+  fails, the move is rolled back: the app is back on its old server, running
+  on its data, and the deployment that carried the move is marked failed.
+  If the old server cannot be reached at all, the app is kept **stopped** on
+  the new one and its page says so - redeploy once the old server is back to
+  copy the data, or press **Deploy anyway** to start without it.
+- **A volume Deplo cannot find on the old server is kept there.** A volume
+  that cannot be found is also what a wrong volume name looks like, so the
+  old server keeps its volumes and the deploy log names them. A database
+  move goes further and stays where it is.
+- **A Bind and an `external:` volume do not move.** They belong to the
+  server, not to the app; the deploy log names each one left behind.
 </Callout>
 
 ---
