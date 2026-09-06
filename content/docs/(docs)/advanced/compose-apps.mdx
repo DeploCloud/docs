@@ -156,6 +156,7 @@ same hostname and a **Path** of `/api`.
 | **No build server** | Same reason. |
 | **Storage names a service** | Every storage row says which service to mount into. A name your file does not contain is a hard error, never a silent remount. |
 | **Cron jobs name a service** | Blank means the stack's main container. |
+| **Redeploy pulls every image** | A redeploy fetches what each service's tag points at now, so a stack on `:latest` updates when you click **Redeploy**. Nothing watches the registry for you. |
 
 ### Your file is read as you wrote it
 
@@ -176,7 +177,15 @@ passes additional flags to `docker compose up`, exactly as typed.
 
 It is additive only: anything that would change the project name, the stack
 file or the env file is refused, because those are how Deplo finds your
-stack again.
+stack again. The page shows the whole command as the server will run it.
+
+Deplo's own part already ends in `--pull always`, which is what makes a
+redeploy pick up a moved tag. A `--pull` of your own replaces it:
+
+- **`--pull missing`** keeps an image that exists only on the server, for
+  example one you loaded by hand. Without it, a redeploy fails with
+  `pull access denied`.
+- **`--wait`** makes the deploy wait for every service's health check.
 
 <Callout type="warn" title="Limits and gotchas">
 - **`version:` and `ports:` are usually noise here.** Deplo routes through
@@ -214,6 +223,10 @@ stack again.
   in front of it.
 - **`compose up` fails on a flag** - your extra flags are passed verbatim.
   Check them.
+- **`pull access denied` on a redeploy, and the image was never in a
+  registry** - it exists only on the server. Add `--pull missing` to the
+  extra flags. A private registry image wants a credential instead, see
+  [Container registries](/guides/server/container-registries).
 - **Domains show no container to pick** - the file did not parse. Fix the
   lint errors first.
 
