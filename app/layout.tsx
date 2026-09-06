@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Funnel_Display, Funnel_Sans } from "next/font/google";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { DocsRootProvider } from "@/components/docs-root-provider";
+import Script from "next/script";
 
 const funnelDisplay = Funnel_Display({
   variable: "--font-funnel-display",
@@ -31,6 +32,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${funnelDisplay.variable} ${funnelSans.variable} selection:bg-white/10`}
       suppressHydrationWarning
     >
+      <Script
+        src="https://stats.deplo.build/api/script.js"
+        data-site-id="92b1aeff6a32"
+        strategy="afterInteractive"
+      />
       <body className="flex min-h-screen flex-col font-sans">
         <DocsRootProvider>
           <ScrollToTop />
