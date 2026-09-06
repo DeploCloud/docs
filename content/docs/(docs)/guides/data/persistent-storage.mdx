@@ -27,7 +27,7 @@ Three kinds, and the interface names them exactly this way.
 
 A **Volume** is namespaced on the host as `deplo-<slug>-<name>`, so it can never collide with another team's app and it survives the app changing source. Its data is never deleted automatically: removing the row stops mounting it, it does not erase it.
 
-A **File** is written into the app's files directory before the container starts, and the content is edited right there in the storage editor. That ordering matters: Docker answers a missing bind source by inventing an empty directory, which is how a config file silently becomes a folder in other tools.
+A **File** is written into the app's files directory before the container starts, and the content is edited right there in the storage editor. That ordering matters: Docker answers a missing bind source by inventing an empty directory, which is how a config file silently becomes a folder in other tools. The same guard covers a `./config.yml` written in a Compose file, see below.
 
 A **Bind** reaches outside Deplo's control, which is why it needs the "Bind server folders" permission and why the row reads **Needs permission** instead of **Advanced** when you do not hold it.
 
@@ -35,21 +35,33 @@ A **Bind** reaches outside Deplo's control, which is why it needs the "Bind serv
 
 ## A Compose app's own mounts
 
-A [Compose app](/advanced/compose-apps) declares its storage in its own
-`docker-compose.yml`, so there is no Storage row to add for it.
+A [Compose app](/advanced/compose-apps) can declare storage in its own
+`docker-compose.yml`, and it can take Storage rows too: a row names the
+service it mounts into, and the two are merged at deploy time.
 
-**Settings -> Storage** lists those mounts read-only, under **From
-docker-compose.yml**, one line each: the volume name or host path, then the path
-inside the container. Change them where they are written, in the compose file
-under **Deployments**.
+**Settings -> Storage** lists what the compose file mounts read-only, under
+**From docker-compose.yml**, one line each: the volume name, the `./` path or
+the host path, then the path inside the container. Change those where they are
+written, in the compose file under **Deployments**.
+
+A `./<path>` source in the compose is a path in the app's files directory, the
+same place a **File** row lives. When it is not there yet, Deplo creates it
+before the container starts:
+
+- a name that looks like a file (`config.yml`, `nginx.conf`, `Caddyfile`,
+  `.env`) becomes an empty file, and the deploy log says so
+- anything else (`./data`, `./conf.d`, `./html`) comes up as an empty folder
+
+An empty folder a previous deploy left in a file's place is replaced by the
+file. A folder with content stays a folder, and the deploy log names it.
 
 **No storage yet** appears only when the app has neither kind, so a stack whose
 data is perfectly safe no longer reads as one that throws everything away.
 
-<Callout type="warn" title="On a Compose app, edit the compose">
+<Callout type="warn" title="The compose wins on the same path">
   A Storage row added at a container path the compose file already mounts is
-  dropped at deploy time: the compose you wrote wins. Change the YAML, not the
-  Storage tab.
+  dropped at deploy time. For a path the YAML already declares, change the
+  YAML, not the Storage tab.
 </Callout>
 
 ---
