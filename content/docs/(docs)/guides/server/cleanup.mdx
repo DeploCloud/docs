@@ -33,20 +33,39 @@ add tomorrow can never silently go unswept.
       type: "scope",
       description: "Untagged layers nothing references.",
     },
-    "Orphaned build caches": {
+    "Orphaned volumes": {
       type: "scope",
-      description: "Cache from builders that no longer exist.",
+      description:
+        "Anonymous volumes no container references: the data dirs of removed containers and abandoned build caches. A named volume is never touched.",
     },
     "Unused app images": {
       type: "scope",
-      description: "Old images of your apps, past Images kept per app.",
+      description:
+        "Old images of your apps, past Images kept per app. An app that was deleted keeps none.",
+    },
+    "Unused pulled images": {
+      type: "scope",
+      description:
+        "Images Deplo did not build that no container uses: what a deleted stack pulled, or the tag a redeploy moved past. A deploy that needs one pulls it again.",
     },
     "Leftover app files": {
       type: "scope",
       description: "Directories of apps that no longer exist.",
     },
+    "Leftover networks": {
+      type: "scope",
+      description:
+        "Networks of environments, previews and stacks that are gone. They take no disk, but each one holds a slice of the server's address range.",
+    },
   }}
 />
+
+Every scope judges against what this Deplo still knows about, so a live app
+keeps its images, files and network even while it is moving between servers,
+and a stopped app keeps everything.
+
+**Unused app images** and the **build cache** are also swept right after every
+deploy, so a day of builds cannot fill the disk before the schedule fires.
 
 ## Settings
 
@@ -58,7 +77,8 @@ add tomorrow can never silently go unswept.
     },
     "Minimum age (hours)": {
       type: "number",
-      description: "Gates the cache scopes only.",
+      description:
+        "Gates the build cache, dangling images, orphaned volumes and pulled images. App images are count-based.",
     },
     "Images kept per app": {
       type: "number",
@@ -78,8 +98,10 @@ add tomorrow can never silently go unswept.
 
 <Callout type="info">
 What it deliberately never does: `system prune`, container prune, volume
-prune, network prune. On a Deplo host a *stopped* app is a live app, and
-a dangling volume may hold somebody's data.
+prune, network prune. A **named** volume, a container, and anything a
+container still uses are never touched: on a Deplo host a *stopped* app is
+a live app. Only an anonymous volume nothing can mount again by name is a
+candidate.
 </Callout>
 
 <Callout type="warn" title="Limits and gotchas">
@@ -87,10 +109,13 @@ a dangling volume may hold somebody's data.
   working, **Images kept per app** is too low for the app's **Keep**.
 - **This is not what frees the disk after you delete something.** Cleanup
   reclaims images, caches and the directories of apps that are gone. It
-  never touches a volume, and it never touches a server folder an app
+  never touches a named volume, and it never touches a server folder an app
   reached through a
   [Bind](/guides/data/persistent-storage#what-deleting-the-app-removes) -
   those are yours to remove.
+- **A pulled image comes back with the next deploy.** Removing one costs a
+  pull, never data. Untick **Unused pulled images** on a server without
+  registry access.
 - **Backup files are not on this list either.** Deleting a backup schedule
   leaves the copies it already made in the
   [destination](/guides/data/backups-and-restore).
