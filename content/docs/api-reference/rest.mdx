@@ -1,0 +1,223 @@
+---
+title: REST endpoints
+description: The endpoints that stay outside GraphQL because they carry bytes, receive webhooks or serve a browser flow, each with its request and its errors.
+---
+
+GraphQL is the wrong transport for a 500 MB archive, a log stream that never ends, or a webhook sender that can only post a URL. Those stay REST. Everything else is on the GraphQL pages.
+
+Two kinds of credential apply. The **deploy hook** takes an [API token](/api-reference/authentication). The byte streams take the **session cookie** only: they are what the dashboard uses, and a bearer token is not accepted there.
+
+| Endpoint | Auth | What it is |
+| --- | --- | --- |
+| `POST /api/apps/[id]/deploy-hook/[token]` | API token | Deploy an app from a webhook sender |
+| `POST /api/apps/[id]/upload` | Session | Upload an archive to deploy |
+| `GET /api/apps/[id]/logs` | Session | Live log stream of an app |
+| `GET /api/databases/[id]/logs` | Session | Live log stream of a database |
+| `GET POST DELETE /api/apps/[id]/attach` | Session | Interactive console into an app |
+| `GET POST DELETE /api/databases/[id]/attach` | Session | Interactive console into a database |
+| `GET /api/backups/[runId]/download` | Session | Download one backup artifact |
+| `POST /api/backups/restore-upload` | Session | Restore from an uploaded file |
+| `POST /api/git/webhook/[token]` | Signature | Push receiver for GitLab, Gitea, Bitbucket, plain git |
+| `POST /api/github/webhook` | Signature | Push receiver for the GitHub App |
+| `GET /api/github/callback`, `GET /api/github/setup` | Browser | The GitHub App install flow |
+| `GET POST /api/auth/*` | Varies | Sign-in and OAuth, see below |
+| `POST /api/mcp` | API token | The MCP server, see [MCP](/api-reference/mcp) |
+| `GET /api/health` | None | Liveness |
+
+---
+
+## Deploy hook
+
+```
+POST /api/apps/[id]/deploy-hook/[token]
+```
+
+Two secrets are required. The `[token]` in the URL says **which app**: read the URL with `revealAppDeployHook`, replace it with `rotateAppDeployHook`, switch the hook off with `setAppDeployHookEnabled`, all on [Deployments](/api-reference/deployments). The bearer token says **who**, and must hold `deploy_apps` in that app's team. The **Deploy hook & CI** token template is exactly that. The deploy runs through the same gates the dashboard button does.
+
+```bash
+curl -X POST https://<deplo>/api/apps/prj_9f1c2ab7d3e4f5a6/deploy-hook/<token> \
+  -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+Answers `200` with the queued deployment:
+
+```json
+{
+  "deploymentId": "dpl_1a2b3c4d5e6f7a8b",
+  "appId": "prj_9f1c2ab7d3e4f5a6",
+  "status": "queued",
+  "url": "https://shop.example.com"
+}
+```
+
+| Status | Meaning |
+| --- | --- |
+| `401` | No or invalid API token. |
+| `403` | The hook is switched off, or the token may not deploy this app. |
+| `404` | No such app, wrong URL token, the app is in another team, or outside the token's scope. |
+
+---
+
+## Upload an archive
+
+```
+POST /api/apps/[id]/upload
+```
+
+The body is the archive itself, streamed, not multipart. Name it with `X-Upload-Filename`; the extension picks the format: `.tar.gz`, `.tgz`, `.tar` or `.zip`. The app must have been created with `source: UPLOAD`. Nothing deploys: the archive is stored and the app points at it, and `redeploy` builds it. Needs `deploy_apps`.
+
+```bash
+curl -X POST https://<deplo>/api/apps/prj_9f1c2ab7d3e4f5a6/upload \
+  -b "deplo.session_token=..." \
+  -H "X-Upload-Filename: shop.tar.gz" \
+  --data-binary @shop.tar.gz
+```
+
+```json
+{ "ok": true, "upload": { "filename": "shop.tar.gz", "size": 1834021, "uploadedAt": "2026-09-01T10:00:00.000Z" } }
+```
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Empty archive. |
+| `403` | Cross-site request, or missing capability. |
+| `409` | An upload or a deploy is already running for this app. |
+| `413` | Over 512 MiB. |
+| `415` | Not one of the four archive formats. |
+
+---
+
+## Log streams
+
+```
+GET /api/apps/[id]/logs
+GET /api/databases/[id]/logs
+```
+
+`docker logs -f` of one container, as Server-Sent Events. Needs `view_logs`.
+
+| Query parameter | Meaning |
+| --- | --- |
+| `container` | Which container, for a compose stack. Omit for the default. |
+| `tail` | Lines of history before following, `0` to `5000`. Default `500`. |
+| `sinceMinutes` | Only lines newer than this many minutes. Capped by the instance's `logMaxDays`. |
+| `timestamps` | `1` to prefix every line with its write time. |
+
+```bash
+curl -N "https://<deplo>/api/apps/prj_9f1c2ab7d3e4f5a6/logs?tail=100&timestamps=1" \
+  -b "deplo.session_token=..."
+```
+
+```
+event: session
+data: "ses_..."
+
+event: data
+data: "2026-09-01T10:00:00.123Z listening on :3000\n"
+
+event: exit
+data: ""
+```
+
+Events are `session` (the id, first), `data` (log bytes, JSON-encoded so newlines survive), `failure` (a reason, then the stream closes) and `exit`. `DELETE` the same path with `?sessionId=` to close it early. `503` means the owning agent could not be reached.
+
+---
+
+## Console streams
+
+```
+GET    /api/apps/[id]/attach          open a session
+POST   /api/apps/[id]/attach          send keystrokes or a resize
+DELETE /api/apps/[id]/attach          close it
+```
+
+The same three for `/api/databases/[id]/attach`. An interactive `docker attach` to the running container, needing `open_app_console` or `open_database_console`. `GET` takes `container`, `cols` and `rows` and answers the same SSE frames as a log stream. Then:
+
+```bash
+curl -X POST https://<deplo>/api/apps/prj_9f1c2ab7d3e4f5a6/attach \
+  -b "deplo.session_token=..." \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"ses_...","data":"ls -la\n"}'
+```
+
+A body of `{ "sessionId": "...", "resize": { "cols": 120, "rows": 40 } }` resizes the terminal instead. Every write re-checks that the caller is the person who opened the session and still holds the capability, so a session id alone keeps nobody typing. For one command with no session, use `execConsole` on [Console and logs](/api-reference/console-and-logs).
+
+---
+
+## Backups
+
+```
+GET  /api/backups/[runId]/download
+POST /api/backups/restore-upload?app=[id]      or ?database=[id]
+```
+
+**Download** streams one artifact as `application/gzip`, server destinations only: an S3 artifact is fetched from the bucket with your own credentials. Needs `restore_backups`.
+
+**Restore from a file** takes the artifact as the request body and overwrites the live target. Needs `restore_backups`. An encrypted artifact needs its recovery key in `X-Recovery-Key`. The response is a streamed text log of the restore; a failure this late arrives as its last line, not as a status.
+
+```bash
+curl -X POST "https://<deplo>/api/backups/restore-upload?database=db_9f1c2ab7d3e4f5a6" \
+  -b "deplo.session_token=..." \
+  -H "X-Recovery-Key: ..." \
+  --data-binary @orders-2026-09-01.tar.gz
+```
+
+---
+
+## Git webhooks
+
+```
+POST /api/git/webhook/[token]
+POST /api/github/webhook
+```
+
+The push receivers Deplo registers on your git host. You do not call them; the host does. Deploy hooks and previews build from what they deliver.
+
+- `/api/git/webhook/[token]` serves every provider except GitHub. The token identifies the git connection, which says how the delivery is verified (a signature header for GitLab and Gitea, the unguessable token alone for Bitbucket with no secret). Answers `200 ok`, `401 invalid signature`, `404` for an unknown token.
+- `/api/github/webhook` verifies `X-Hub-Signature-256` against the App's secret and acts on `push` only. Other events answer `200 ok`; a delivery for an App this instance does not know answers `202 ignored`.
+- `/api/github/callback` and `/api/github/setup` are where GitHub sends the browser during the App install flow that `startGithubConnect` opens. See [Git providers](/api-reference/git).
+
+---
+
+## Sign-in and OAuth
+
+```
+/api/auth/*
+/.well-known/oauth-protected-resource
+/.well-known/oauth-authorization-server
+```
+
+`/api/auth/*` is the session and OAuth provider. The dashboard signs in through the GraphQL sign-in mutations on [Account](/api-reference/account), so the only paths a client needs by hand are the OAuth 2.1 ones under `/api/auth/oauth2/`: registration (the one unauthenticated write endpoint Deplo exposes, rate-limited per address), authorization, token and userinfo. Read their exact URLs from the discovery documents under `/.well-known` rather than hard-coding them. The flow is on [Authentication](/api-reference/authentication).
+
+---
+
+## Liveness
+
+```
+GET /api/health
+```
+
+Answers `{ "ok": true }` with `Cache-Control: no-store`. No auth, no database: it says one thing, that the web server hosting the panel answered this request.
+
+---
+
+## Internal endpoints
+
+These exist for the installer, the agent and the dashboard's own inputs. They are listed so nothing is hidden, not because you would call them.
+
+| Endpoint | Who calls it |
+| --- | --- |
+| `POST /api/agent/bootstrap` | A freshly installed agent, once, with its bootstrap token, to be issued its certificate. |
+| `GET POST /api/takeover` | The installer during a [takeover](/api-reference/migration#takeover), with the host bootstrap token: `GET` polls the state, `POST` reports `done`, `removing`, `removed` or `failed`. |
+| `GET /api/avatar/[style]/[preset]/[seed]` | The browser, for generated profile pictures. Public. |
+| `GET /api/database-versions?engine=` | The database version picker. Live engine tags from Docker Hub. |
+| `GET /api/node-versions`, `GET /api/railpack-versions` | The build settings pickers. |
+| `GET /api/registry/images?action=search&q=` | The image inputs. `action=tags&image=&filter=` lists tags. |
+
+## See also
+
+<Cards>
+  <Card title="Deployments" description="The GraphQL side of the deploy hook" href="/api-reference/deployments" />
+  <Card title="Console and logs" description="Which containers exist, and one-off commands" href="/api-reference/console-and-logs" />
+  <Card title="Upload your code" description="The upload flow, in the dashboard" href="/guides/deploy/upload-code" />
+</Cards>

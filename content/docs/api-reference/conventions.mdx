@@ -1,39 +1,82 @@
 ---
 title: Conventions
-description: How mutations return data, and how subscriptions stream it, across the whole schema.
+description: The request format, ids and slugs, return shapes, errors, paging and subscriptions, once, so the domain pages do not repeat them.
 ---
 
-Two patterns repeat across every domain in this reference, worth reading
-once instead of re-explained on every page.
+## Requests
+
+A `POST` to `/api/graphql` with `Content-Type: application/json` and a body of `{ "query": "...", "variables": { ... } }`. Any other content type is refused with **415**. `GET` serves GraphiQL to a browser and accepts a query in the URL.
+
+Every example in this reference is a bare document with inline values, so it pastes into GraphiQL or a `curl` body as is. In real code, send values as variables:
+
+```json
+{
+  "query": "mutation Redeploy($id: String!) { redeploy(appId: $id) { id status } }",
+  "variables": { "id": "prj_9f1c2ab7d3e4f5a6" }
+}
+```
+
+The schema itself is served by introspection at the endpoint, and published as `schema.graphql` at the root of the `DeploCloud/deplo` repository.
+
+## Ids and slugs
+
+Every entity has an opaque `id` with a type prefix: `prj_` for an app, `db_` for a database, `srv_` for a server, `dpl_` for a deployment, `fld_` for a folder, `prc_` for a project, `environ_` for an environment, `dom_` for a domain, `tok_` for a token, `team_` for a team. Apps, teams, projects and environments also have a `slug`, unique inside their parent, which is what `app(slug:)` and `X-Deplo-Team` take. The ids in the examples are made up.
 
 ## Return shapes
 
-A mutation returns the affected entity where natural, so a client needs no
-second fetch. It returns `Boolean` for deletes and toggles, and a `String`
-for reveal-secret operations, `revealConnection` and
-`rotateDatabasePassword` both return the connection string.
+- A mutation returns the entity it changed, so a client needs no second fetch.
+- Deletes and toggles return `Boolean`. Bulk operations return `Int`, the number affected.
+- A reveal returns a `String`: `revealConnection`, `rotateDatabasePassword`, `revealAppDeployHook`, `revealBasicAuthPassword`, `revealRegistrationLink`. Reveals are mutations, never queries, so nothing caches or prefetches a secret.
+- A few operations that only read are mutations anyway, because they dial a server: `serverCertificates`, `serverCertificateAccounts`, `panelHttps`, `panelDns`, `checkServerHostInfo`, `checkServerReadiness`, `testDestination`.
 
 <Callout type="info" title="A verdict is a return value, not an error">
-  Where a mutation asks another system whether something works, the answer
-  comes back in the payload and a failure resolves normally. A client that
-  treats "the request succeeded" as "the thing it tested actually works"
-  will report success over a check that just failed. See
-  [Backup destinations](/api-reference/backup-destinations) for the
-  concrete example.
+  Where an operation asks another system whether something works, the answer is in the payload and a failure resolves normally: `testDestination` answers `report.ok: false`, `checkServerHealth` answers a server with `status: error`. A client that treats "the request succeeded" as "the thing it tested works" reports success over a failed check.
 </Callout>
+
+## Errors
+
+Errors come back in the standard `errors[]` array. The `message` is safe to show a user: `You don't have permission to deploy`, `Not authorized to resolve deleteApp`, `An API token can't access your account settings`. Internal errors are masked; a stack trace never leaks.
+
+```json
+{
+  "data": { "deleteApp": null },
+  "errors": [{ "message": "You don't have permission to delete apps", "path": ["deleteApp"] }]
+}
+```
+
+Validation happens **after** authorization: a caller refused for the wrong permission is refused before an argument is read.
+
+## Lists and paging
+
+Lists come back whole, newest first unless the page says otherwise, filtered to the active team. Two reads look further:
+
+- `activity` pages with a cursor: pass the last row's `cursor` back as `cursor` for the next page, and cap a page with `limit`.
+- `search` is the one read that spans every team the caller can reach. Everything else is scoped to the active team.
 
 ## Subscriptions
 
-Server-Sent Events, via graphql-yoga, not WebSockets. Each subscription
-emits the entity on every state change: an initial snapshot, then live
-updates, so a client tracks state with no polling. `appStatus` and
-`databaseStatus` are the two subscriptions in the schema today, see
-[Apps](/api-reference/apps) and [Databases](/api-reference/databases).
+Five subscriptions stream over **Server-Sent Events**, not WebSockets. Each fires once immediately with the current snapshot, then on every change, so a client tracks state with no polling.
+
+```bash
+curl -N https://<deplo>/api/graphql \
+  -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
+  -H "Accept: text/event-stream" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"subscription { appStatus(slug: \"shop\") { status latestDeployment { status } } }"}'
+```
+
+| Subscription | Emits | Page |
+| --- | --- | --- |
+| `appStatus(slug)` | The app, on every power or deployment change | [Apps](/api-reference/apps) |
+| `databaseStatus(id)` | The database, on every status change | [Databases](/api-reference/databases) |
+| `activeDeployments` | How many deployments are in flight in the team | [Deployments](/api-reference/deployments) |
+| `activeMigration` | The migration in flight, or the finished run until its report is closed | [Migration](/api-reference/migration) |
+| `dockerCleanupRuns` | The whole cleanup history, on every change | [Docker cleanup](/api-reference/docker-cleanup) |
 
 ## See also
 
 <Cards>
-  <Card title="Apps" description="createApp, redeploy, appStatus" href="/api-reference/apps" />
-  <Card title="Databases" description="createDatabase, databaseStatus" href="/api-reference/databases" />
-  <Card title="Servers" description="Registration and fleet operations" href="/api-reference/servers" />
+  <Card title="Authentication" description="Credentials, the team header, the gate line on every operation" href="/api-reference/authentication" />
+  <Card title="Object types" description="What every operation returns" href="/api-reference/types/objects" />
+  <Card title="REST endpoints" description="What stays outside GraphQL, and why" href="/api-reference/rest" />
 </Cards>

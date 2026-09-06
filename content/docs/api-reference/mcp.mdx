@@ -1,0 +1,55 @@
+---
+title: MCP
+description: The wire protocol behind the MCP server. Every tool runs a GraphQL document as the caller, so this whole reference applies to it.
+---
+
+<Callout type="info" title="Beta">
+  This feature is currently beta/experimental. It works and is gated like everything else, but the spec revision is new and the tool surface will move.
+</Callout>
+
+AI agents reach Deplo at `POST /api/mcp`, speaking the Model Context Protocol, **revision 2026-07-28**. This page is the wire-level reference. Setup, connecting an agent, and the full list of tools are on [MCP server](/guides/mcp-server).
+
+The MCP server is a different framing of this same API, not a second one: each tool runs a GraphQL document in-process as the caller's own principal, so every capability gate, folder grant, token scope and two-factor policy on the GraphQL pages applies identically.
+
+## Authentication
+
+An ordinary [API token](/api-reference/authentication), or the OAuth access token a web client obtains. There is no MCP-specific credential.
+
+```bash
+claude mcp add --transport http deplo https://<deplo>/api/mcp \
+  --header "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
+  --header "X-Deplo-Team: acme"
+```
+
+A request with no usable token answers `401` with `WWW-Authenticate: Bearer resource_metadata="<url>"`, which is where an OAuth client starts discovery.
+
+## Protocol
+
+JSON-RPC over plain HTTP `POST`, stateless: no session, no `initialize` handshake to keep alive. Every call runs in **one team**. The default is chosen by `X-Deplo-Team` when the agent is connected, and every tool takes an optional `team` argument (id or slug) to work in another. `list_teams` names the ones the connection can act in.
+
+`tools/list` returns only the tools the token can actually call. Destructive tools carry `destructiveHint`, which is what makes a well-behaved MCP client ask its own user first.
+
+```bash
+curl https://<deplo>/api/mcp \
+  -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_apps","arguments":{}}}'
+```
+
+| Status | Meaning |
+| --- | --- |
+| `401` | No or invalid token. |
+| `403` | The team has switched MCP off (`setMcpSettings`, needs `manage_team`), or the token's owner lacks `manage_mcp` there. |
+| `429` | The per-token rate limit: 120 calls a minute. Failed authentications are limited separately, 60 a minute per address. |
+
+<Callout type="warn">
+  **No tool can reveal a secret**, whatever capabilities the token holds: `list_env` shows keys with masked values and there is no `reveal_env`. That holds for `graphql_query` and `graphql_mutate` too, the two tools that run a document the agent wrote: they refuse by name any field that returns a credential or runs a command in a container. Everything else the token's capabilities allow, it can do; Deplo adds no confirmation step of its own.
+</Callout>
+
+## See also
+
+<Cards>
+  <Card title="MCP server" description="Setup, connecting agents, the security model, every tool" href="/guides/mcp-server" />
+  <Card title="Teams" description="The MCP switch and mcpTeams" href="/api-reference/teams" />
+  <Card title="API tokens" description="The credential an agent uses" href="/api-reference/api-tokens" />
+</Cards>

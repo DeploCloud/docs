@@ -1,100 +1,78 @@
 ---
 title: Authentication
-description: Session cookie, API token or OAuth access token, all resolving to the same per-request identity and team scope.
+description: Session cookie, API token or OAuth access token. All three resolve to one identity acting in one team.
 ---
 
-Three ways to authenticate, all resolving to the same per-request identity
-and team scope.
+Three credentials, one model: every request resolves to a **principal** (a person or a token) acting in **one team**, and every query and mutation is filtered to that team.
 
-<Tabs items={['Session cookie', 'API token', 'OAuth access token']}>
-<Tab value="Session cookie">
-
-**Browser, same-origin.** The web app calls the API same-origin; the
-Better Auth session cookie (`deplo.session_token`, `__Secure-` prefixed
-over https) is sent automatically. You never handle tokens in the UI. The
-active team comes from the `deplo_team` cookie.
-
-If the account has two-factor authentication, `login` returns
-`requiresTwoFactor: true` and no session. Finish with
-`verifyTwoFactorLogin`. Full operation reference: see
-[Session and login](/api-reference/session-and-login).
-
-</Tab>
+<Tabs items={['API token', 'Session cookie', 'OAuth access token']}>
 <Tab value="API token">
 
-**External clients.** Create a token in **Settings -> API tokens**. It is
-shown **once**, store it securely. Send it as a bearer token:
+**For CI, scripts and your own tooling.** Create one under **Settings -> API tokens**. It is shown once. Send it as a bearer token:
 
 ```bash
-curl https://your-host/api/graphql \
+curl https://<deplo>/api/graphql \
   -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
-  -d '{"query":"{ me { username } apps { name status } }"}'
+  -H "X-Deplo-Team: acme" \
+  -d '{"query":"{ viewerTeam { slug } apps { slug status } }"}'
 ```
 
-A POST must be `Content-Type: application/json`; anything else is refused
-with **415**. GET still serves GraphiQL and query-over-GET.
+**Picking the team.** `X-Deplo-Team` takes a team id or slug. Without it, the first team in the token's scope is used. A team the token does not hold is ignored, not honoured. `myTeams` lists the ones it may switch between.
 
-**Capabilities.** Chosen at creation and capped by its creator's own
-access, the same fine-grained set a role is built from; full lifecycle in
-[API tokens](/api-reference/api-tokens).
+**What it can do.** The capabilities chosen at creation, capped by what its owner can still do in that team. A token that names no capabilities is view-only. The full lifecycle is on [API tokens](/api-reference/api-tokens).
 
-**A token is a principal, not a stand-in for its creator.** It can never
-reach personal-account actions, see
-[API tokens](/api-reference/api-tokens) for the exact list.
+**What it can never do.** A token is a principal of its own, never a stand-in for the person who minted it. Every personal-account operation on [Account](/api-reference/account) answers `An API token can't access <that resource>`, whatever the token holds.
 
-**Picking the team.** A request acts in exactly one team. Send
-**`X-Deplo-Team: <team id or slug>`** to pick which; without it, the first
-team in the token's scope is used, and a team the token doesn't hold is
-ignored rather than honoured. `myTeams` lists the ones it may switch
-between. Every query and mutation is then filtered to that team
-automatically.
+</Tab>
+<Tab value="Session cookie">
+
+**The browser.** The dashboard calls the API same-origin and the session cookie (`deplo.session_token`, `__Secure-` prefixed over HTTPS) goes along automatically. The active team comes from the `deplo_team` cookie, set by `switchTeam`.
+
+The cookie is minted by the sign-in mutations on [Account](/api-reference/account): `login` (then `verifyTwoFactorLogin` when the account has two-factor on) or `passkeyChallenge` + `verifyPasskeyLogin`.
+
+A session is what the REST byte streams (upload, logs, console, backup download) accept. They do not take a bearer token.
 
 </Tab>
 <Tab value="OAuth access token">
 
-**Web AI clients.** A web AI client, Claude, ChatGPT, cannot be handed a
-token by hand, so Deplo is also an OAuth 2.1 authorization server for
-them: the client registers itself (RFC 7591), the user approves a consent
-screen, and **that approval mints an ordinary API token**. The
-`dplo_at_` access token the client then sends is a pointer at that row,
-so everything from the API token tab applies to it unchanged: same
-capabilities, same scope, same clamp, same revocation.
+**Web AI clients.** A hosted client (Claude, ChatGPT) cannot be handed a token, so Deplo is also an OAuth 2.1 authorization server. The client registers itself (RFC 7591), the user approves a consent screen, and that approval mints an ordinary API token. The `dplo_at_` access token the client then sends points at that token, so everything on the API token tab applies unchanged: same capabilities, same cap, same revocation.
 
 ```bash
-curl https://your-host/api/graphql \
+curl https://<deplo>/api/graphql \
   -H "Authorization: Bearer dplo_at_xxxxxxxxxxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -d '{"query":"{ me { username } }"}'
 ```
 
-Discovery starts from the MCP endpoint's 401, which carries
-`WWW-Authenticate: Bearer resource_metadata="<url>"`; the documents live
-at `/.well-known/oauth-protected-resource` and
-`/.well-known/oauth-authorization-server`.
+Discovery starts from the MCP endpoint's `401`, which carries `WWW-Authenticate: Bearer resource_metadata="<url>"`. The documents are `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`.
 
-Unlike an API token, the team is **not** chosen with `X-Deplo-Team`, it
-is fixed at consent time, so the header cannot move a connection
-somewhere else. Connections are listed and revoked under **Settings ->
-MCP Server**, and appear in Settings -> API tokens marked with the
-client's name.
-
-One consent can grant several teams. Revoking ends the credential
-everywhere it reached in one call, see
-[`revokeToken`](/api-reference/api-tokens). Any team the connection
-reaches can call it.
+The team is fixed at consent time: `X-Deplo-Team` cannot move a connection. One consent can grant several teams. Connections are listed and revoked under **Settings -> MCP Server**, and `revokeToken` on the minted token ends the credential everywhere it reached.
 
 </Tab>
 </Tabs>
 
-Unauthenticated requests resolve `me` to `null` and are rejected by any
-field that requires a login (`Not authorized to resolve <field>`).
+## Unauthenticated requests
+
+`me` resolves to `null`. Anything else that needs a login fails with `Not authorized to resolve <field>`. The only public operations are the sign-in and registration mutations, listed as such on their pages.
+
+## Gates
+
+Every operation in this reference states who may call it, in one of four forms:
+
+| Line | Meaning |
+| --- | --- |
+| Needs `deploy_apps` | The principal must hold that [capability](/reference/capabilities) in the active team. Some add "or instance admin". |
+| Instance admin only | A global instance admin. For a token, instance admin is opt-in per token, never inherited from its owner. |
+| Any signed-in principal | A session or a token, any capabilities. |
+| Public, no authentication | Sign-in and registration. |
+
+A capability gate is the same one the dashboard button behind it uses. A token or a role narrowed to part of a team (a folder, a project, an app) is refused by team-wide operations in that team, members and roles included.
 
 ## See also
 
 <Cards>
   <Card title="API tokens" description="Creating, scoping and revoking a token" href="/api-reference/api-tokens" />
-  <Card title="Session and login" description="The operations behind the session cookie" href="/api-reference/session-and-login" />
-  <Card title="Authorization" description="Capabilities and instance-admin operations" href="/api-reference/authorization" />
+  <Card title="Account" description="The sign-in mutations and everything else a token cannot touch" href="/api-reference/account" />
   <Card title="API tokens and OAuth" description="The same model, from the dashboard" href="/advanced/api-tokens-and-oauth" />
 </Cards>

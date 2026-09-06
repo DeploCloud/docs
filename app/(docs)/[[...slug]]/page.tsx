@@ -21,7 +21,7 @@ const BETA_PAGES = new Set([
   "/guides/take-over-your-vps",
   "/guides/move-from-dokploy",
   "/guides/move-from-coolify",
-  "/api-reference/rest-and-mcp",
+  "/api-reference/mcp",
 ]);
 
 export default async function Page(props: PageProps<"/[[...slug]]">) {

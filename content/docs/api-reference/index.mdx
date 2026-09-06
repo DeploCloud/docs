@@ -1,72 +1,87 @@
 ---
 title: API reference
-description: GraphQL, the REST exceptions, the deploy hook and the MCP server.
+description: One GraphQL endpoint for everything, a few REST endpoints for byte streams and webhooks, and the MCP server for AI agents.
 ---
 
-There is no separate REST resource API: everything routes through one
-GraphQL endpoint, except a handful of transports GraphQL is the wrong shape
-for. If you are looking for how to create and scope a credential first,
-read [API tokens](/api-reference/api-tokens).
-
----
-
-## GraphQL
-
-Deplo exposes a single GraphQL endpoint that is the canonical way to drive
-the platform. The dashboard UI and any external client (CI, a script, your
-own tooling) speak the same API.
+Deplo has one API. The dashboard, the MCP server, your CI and your scripts all speak it.
 
 ```
-POST  https://<your-deplo-host>/api/graphql
-GET   https://<your-deplo-host>/api/graphql      # GraphiQL explorer (in a browser)
+POST  https://<deplo>/api/graphql      # the API
+GET   https://<deplo>/api/graphql      # GraphiQL, in a browser
 ```
 
-The full schema is published as `schema.graphql` at the repo root, and
-browsable interactively via GraphiQL at the endpoint above. Read
-[Conventions](/api-reference/conventions) once before the domain pages
-below, it covers what every mutation and subscription has in common so
-each domain page doesn't have to repeat it.
+Every page in this section is generated from the live schema, so every query, mutation and subscription is here, each with who may call it, its arguments, and a working example.
 
 ---
 
-## Identity and access
+## First call
 
-<Cards>
-  <Card title="Authentication" description="Session cookie, API token, OAuth" href="/api-reference/authentication" />
-  <Card title="API tokens" description="Creating, scoping and revoking a token" href="/api-reference/api-tokens" />
-  <Card title="Session and login" description="What only a signed-in person can do" href="/api-reference/session-and-login" />
-  <Card title="Authorization" description="The capability model" href="/api-reference/authorization" />
-  <Card title="Instance-admin operations" description="Users, Docker cleanup, the panel's own address" href="/api-reference/instance-admin-operations" />
-</Cards>
+Create a token under **Settings -> API tokens**, then:
 
-## The platform
+```bash
+curl https://<deplo>/api/graphql \
+  -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ me { username } apps { slug status } }"}'
+```
 
-<Cards>
-  <Card title="Apps" description="Catalogue, deployments, framework detection" href="/api-reference/apps" />
-  <Card title="Environment variables" description="App-level and team-owned shared variables" href="/api-reference/environment-variables" />
-  <Card title="Domains and TLS" description="Hostnames and a host's own certificates" href="/api-reference/domains-and-tls" />
-  <Card title="Projects and environments" description="The containers apps live in" href="/api-reference/projects-and-environments" />
-  <Card title="Databases" description="Managed Postgres, MySQL, MongoDB and more" href="/api-reference/databases" />
-  <Card title="Servers" description="Enrolling, roling and removing a machine" href="/api-reference/servers" />
-  <Card title="Teams and members" description="Membership, roles and the team itself" href="/api-reference/teams-and-members" />
-  <Card title="Activity" description="The read-only audit trail" href="/api-reference/activity" />
-  <Card title="Backup destinations" description="Testing a destination before you trust it" href="/api-reference/backup-destinations" />
-</Cards>
+```json
+{
+  "data": {
+    "me": { "username": "ada" },
+    "apps": [{ "slug": "shop", "status": "active" }]
+  }
+}
+```
 
-## Migration and other transports
-
-<Cards>
-  <Card title="Importing from Dokploy" description="The migration API" href="/api-reference/dokploy-import" />
-  <Card title="REST and MCP" description="What stays outside GraphQL" href="/api-reference/rest-and-mcp" />
-</Cards>
+Read [Authentication](/api-reference/authentication) for the three credentials and how a request picks its team, then [Conventions](/api-reference/conventions) for what every operation has in common.
 
 ---
 
-## Errors
+## GraphQL, by domain
 
-Errors come back in the standard GraphQL `errors[]` array. The `message`
-is safe to show a user (e.g. `"You don't have permission to deploy"`);
-internal stack traces are never leaked.
+<Cards>
+  <Card title="Account" description="Sign in, sessions, profile, two-factor, passkeys" href="/api-reference/account" />
+  <Card title="API tokens" description="Create, scope, update and revoke a token" href="/api-reference/api-tokens" />
+  <Card title="Teams" description="The active team, switching, settings, ownership, MCP" href="/api-reference/teams" />
+  <Card title="Members and roles" description="Who is in the team, what each role grants" href="/api-reference/members-and-roles" />
+  <Card title="Users and registration" description="Instance-admin account operations, registration links" href="/api-reference/users" />
+  <Card title="Folders, projects and environments" description="The containers apps live in, sharing, moving" href="/api-reference/folders-and-projects" />
+  <Card title="Apps" description="Catalogue, creating, running, stopping, deleting" href="/api-reference/apps" />
+  <Card title="App settings" description="Source, build, resources, ports, volumes, files" href="/api-reference/app-settings" />
+  <Card title="Deployments" description="History, redeploy, cancel, roll back, the deploy hook" href="/api-reference/deployments" />
+  <Card title="Pull request previews" description="Settings, previews, preview-only variables" href="/api-reference/previews" />
+  <Card title="Environment variables" description="App variables and shared variables" href="/api-reference/environment-variables" />
+  <Card title="Domains and basic auth" description="Hostnames, routing, certificates, the password gate" href="/api-reference/domains" />
+  <Card title="Databases" description="Managed databases, settings, credentials" href="/api-reference/databases" />
+  <Card title="Console and logs" description="Containers, shells, one-off commands" href="/api-reference/console-and-logs" />
+  <Card title="Cron jobs" description="Scheduled commands and their runs" href="/api-reference/cron-jobs" />
+  <Card title="Backups" description="Schedules, runs, restores, destinations" href="/api-reference/backups" />
+  <Card title="Git providers" description="Git connections and GitHub Apps" href="/api-reference/git" />
+  <Card title="Container registries" description="Credentials for private images" href="/api-reference/registries" />
+  <Card title="Servers" description="Enrolling, roles, health, maintenance, certificates" href="/api-reference/servers" />
+  <Card title="Monitoring" description="Live and historical metrics" href="/api-reference/monitoring" />
+  <Card title="Notifications" description="Alert channels and browser push" href="/api-reference/notifications" />
+  <Card title="Activity" description="The audit trail" href="/api-reference/activity" />
+  <Card title="Docker cleanup" description="Policy, exclusions, sweeps" href="/api-reference/docker-cleanup" />
+  <Card title="Instance settings" description="Panel address, HTTPS, updates, ownership" href="/api-reference/instance" />
+  <Card title="Migration and takeover" description="Importing another panel and taking over its machine" href="/api-reference/migration" />
+</Cards>
+
+## Types
+
+<Cards>
+  <Card title="Object types" description="Everything an operation can return" href="/api-reference/types/objects" />
+  <Card title="Input types" description="Everything an argument can take" href="/api-reference/types/inputs" />
+  <Card title="Enums" description="Every enum and its values" href="/api-reference/types/enums" />
+</Cards>
+
+## Other transports
+
+<Cards>
+  <Card title="REST endpoints" description="Deploy hook, upload, log and console streams, webhooks" href="/api-reference/rest" />
+  <Card title="MCP" description="The wire protocol AI agents speak" href="/api-reference/mcp" />
+</Cards>
 
 ---
 
@@ -74,5 +89,6 @@ internal stack traces are never leaked.
 
 <Cards>
   <Card title="API tokens and OAuth" description="Creating and scoping a credential, from the dashboard" href="/advanced/api-tokens-and-oauth" />
-  <Card title="Automatic deployments" description="The deploy hook in context" href="/guides/releases/automatic-deployments" />
+  <Card title="MCP server" description="Connecting an AI agent, and every tool it gets" href="/guides/mcp-server" />
+  <Card title="Capabilities" description="The 44 capabilities every gate is built from" href="/reference/capabilities" />
 </Cards>

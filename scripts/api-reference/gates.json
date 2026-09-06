@@ -1,0 +1,1433 @@
+{
+ "Query.activity": {
+  "kind": "capability",
+  "cap": "view_activity",
+  "orInstanceAdmin": false
+ },
+ "Query.agentUninstallCommand": {
+  "kind": "loggedIn"
+ },
+ "Query.allAppEnv": {
+  "kind": "loggedIn"
+ },
+ "Query.allTeamsForAdmin": {
+  "kind": "instanceAdmin"
+ },
+ "Query.allUsers": {
+  "kind": "instanceAdmin"
+ },
+ "Query.apiContext": {
+  "kind": "none"
+ },
+ "Query.apiTokens": {
+  "kind": "loggedIn"
+ },
+ "Query.app": {
+  "kind": "loggedIn"
+ },
+ "Query.appCronJobs": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Query.appMetrics": {
+  "kind": "capability",
+  "cap": "view_metrics",
+  "orInstanceAdmin": false
+ },
+ "Query.appMetricsHistory": {
+  "kind": "capability",
+  "cap": "view_metrics",
+  "orInstanceAdmin": false
+ },
+ "Query.appPreviews": {
+  "kind": "capability",
+  "cap": "manage_previews",
+  "orInstanceAdmin": false
+ },
+ "Query.appRuntime": {
+  "kind": "loggedIn"
+ },
+ "Query.appStorageFile": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Query.appTransferInfo": {
+  "kind": "capability",
+  "cap": "move_apps",
+  "orInstanceAdmin": false
+ },
+ "Query.apps": {
+  "kind": "loggedIn"
+ },
+ "Query.backupArtifactCount": {
+  "kind": "loggedIn"
+ },
+ "Query.backupDestinationOptions": {
+  "kind": "loggedIn"
+ },
+ "Query.backupDestinations": {
+  "kind": "loggedIn"
+ },
+ "Query.backupRuns": {
+  "kind": "loggedIn"
+ },
+ "Query.backups": {
+  "kind": "loggedIn"
+ },
+ "Query.basicAuthUsers": {
+  "kind": "loggedIn"
+ },
+ "Query.buildServerChoices": {
+  "kind": "loggedIn"
+ },
+ "Query.composeNameClashes": {
+  "kind": "capability",
+  "cap": "create_apps",
+  "orInstanceAdmin": false
+ },
+ "Query.consoleInfo": {
+  "kind": "loggedIn"
+ },
+ "Query.cronRuns": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Query.dataRecopySource": {
+  "kind": "capability",
+  "cap": "restore_backups",
+  "orInstanceAdmin": false
+ },
+ "Query.database": {
+  "kind": "loggedIn"
+ },
+ "Query.databaseConsoleInfo": {
+  "kind": "loggedIn"
+ },
+ "Query.databaseCronJobs": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Query.databaseLogsInfo": {
+  "kind": "capability",
+  "cap": "view_logs",
+  "orInstanceAdmin": false
+ },
+ "Query.databaseMetrics": {
+  "kind": "capability",
+  "cap": "view_metrics",
+  "orInstanceAdmin": false
+ },
+ "Query.databaseMetricsHistory": {
+  "kind": "capability",
+  "cap": "view_metrics",
+  "orInstanceAdmin": false
+ },
+ "Query.databaseRuntime": {
+  "kind": "loggedIn"
+ },
+ "Query.databaseShellLabel": {
+  "kind": "loggedIn"
+ },
+ "Query.databases": {
+  "kind": "loggedIn"
+ },
+ "Query.deleteUserImpact": {
+  "kind": "instanceAdmin"
+ },
+ "Query.deploChangelog": {
+  "kind": "instanceAdmin"
+ },
+ "Query.deployment": {
+  "kind": "loggedIn"
+ },
+ "Query.deployments": {
+  "kind": "loggedIn"
+ },
+ "Query.destinationRemovalImpact": {
+  "kind": "loggedIn"
+ },
+ "Query.destinationTestReport": {
+  "kind": "capability",
+  "cap": "manage_backup_destinations",
+  "orInstanceAdmin": false
+ },
+ "Query.detectRepoFramework": {
+  "kind": "capability",
+  "cap": "create_apps",
+  "orInstanceAdmin": false
+ },
+ "Query.dockerCleanupPolicy": {
+  "kind": "instanceAdmin"
+ },
+ "Query.dockerCleanupRuns": {
+  "kind": "instanceAdmin"
+ },
+ "Query.domains": {
+  "kind": "loggedIn"
+ },
+ "Query.env": {
+  "kind": "loggedIn"
+ },
+ "Query.environments": {
+  "kind": "loggedIn"
+ },
+ "Query.fleetMetrics": {
+  "kind": "capability",
+  "cap": "view_metrics",
+  "orInstanceAdmin": false
+ },
+ "Query.folderGrants": {
+  "kind": "loggedIn"
+ },
+ "Query.folderShareCandidates": {
+  "kind": "loggedIn"
+ },
+ "Query.folders": {
+  "kind": "loggedIn"
+ },
+ "Query.gitBranches": {
+  "kind": "loggedIn"
+ },
+ "Query.gitConnections": {
+  "kind": "loggedIn"
+ },
+ "Query.gitProviders": {
+  "kind": "loggedIn"
+ },
+ "Query.gitRepos": {
+  "kind": "loggedIn"
+ },
+ "Query.githubApps": {
+  "kind": "loggedIn"
+ },
+ "Query.githubBranches": {
+  "kind": "loggedIn"
+ },
+ "Query.githubInstallations": {
+  "kind": "loggedIn"
+ },
+ "Query.githubRepos": {
+  "kind": "loggedIn"
+ },
+ "Query.grantableFolderCapabilities": {
+  "kind": "loggedIn"
+ },
+ "Query.hostPortsInUse": {
+  "kind": "capability",
+  "cap": "create_databases",
+  "orInstanceAdmin": false
+ },
+ "Query.instanceSettings": {
+  "kind": "instanceAdmin"
+ },
+ "Query.logsInfo": {
+  "kind": "capability",
+  "cap": "view_logs",
+  "orInstanceAdmin": false
+ },
+ "Query.mcpAgentCount": {
+  "kind": "loggedIn"
+ },
+ "Query.mcpConnected": {
+  "kind": "loggedIn"
+ },
+ "Query.mcpSettings": {
+  "kind": "loggedIn"
+ },
+ "Query.mcpTeams": {
+  "kind": "loggedIn"
+ },
+ "Query.me": {
+  "kind": "none"
+ },
+ "Query.members": {
+  "kind": "loggedIn"
+ },
+ "Query.migrationRun": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Query.migrationRuns": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Query.monitoringSettings": {
+  "kind": "loggedIn"
+ },
+ "Query.myPasskeys": {
+  "kind": "loggedIn"
+ },
+ "Query.mySessions": {
+  "kind": "loggedIn"
+ },
+ "Query.myTeams": {
+  "kind": "loggedIn"
+ },
+ "Query.notificationChannels": {
+  "kind": "loggedIn"
+ },
+ "Query.openPullRequests": {
+  "kind": "capability",
+  "cap": "manage_previews",
+  "orInstanceAdmin": false
+ },
+ "Query.panelAddressImpact": {
+  "kind": "instanceAdmin"
+ },
+ "Query.previewEnvVars": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Query.primaryServer": {
+  "kind": "loggedIn"
+ },
+ "Query.project": {
+  "kind": "loggedIn"
+ },
+ "Query.projects": {
+  "kind": "loggedIn"
+ },
+ "Query.registrationLinks": {
+  "kind": "instanceAdmin"
+ },
+ "Query.registries": {
+  "kind": "loggedIn"
+ },
+ "Query.search": {
+  "kind": "loggedIn"
+ },
+ "Query.searchUsers": {
+  "kind": "loggedIn"
+ },
+ "Query.server": {
+  "kind": "loggedIn"
+ },
+ "Query.serverMetrics": {
+  "kind": "capability",
+  "cap": "view_metrics",
+  "orInstanceAdmin": false
+ },
+ "Query.serverMetricsHistory": {
+  "kind": "capability",
+  "cap": "view_metrics",
+  "orInstanceAdmin": false
+ },
+ "Query.servers": {
+  "kind": "loggedIn"
+ },
+ "Query.sharedVars": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Query.sharedVarsForApp": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Query.shellLabel": {
+  "kind": "loggedIn"
+ },
+ "Query.takeover": {
+  "kind": "instanceAdmin"
+ },
+ "Query.takeoverPreflight": {
+  "kind": "instanceAdmin"
+ },
+ "Query.teamRoles": {
+  "kind": "loggedIn"
+ },
+ "Query.templateVariants": {
+  "kind": "loggedIn"
+ },
+ "Query.updateInfo": {
+  "kind": "loggedIn"
+ },
+ "Query.userDetail": {
+  "kind": "instanceAdmin"
+ },
+ "Query.viewerIsInstanceOwner": {
+  "kind": "loggedIn"
+ },
+ "Query.viewerTeam": {
+  "kind": "loggedIn"
+ },
+ "Query.webPushPublicKey": {
+  "kind": "loggedIn"
+ },
+ "Mutation.abandonMigration": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": true
+ },
+ "Mutation.addBasicAuthUser": {
+  "kind": "capability",
+  "cap": "manage_basic_auth",
+  "orInstanceAdmin": false
+ },
+ "Mutation.addDomain": {
+  "kind": "capability",
+  "cap": "manage_domains",
+  "orInstanceAdmin": false
+ },
+ "Mutation.addExistingMember": {
+  "kind": "capability",
+  "cap": "manage_members",
+  "orInstanceAdmin": false
+ },
+ "Mutation.addRegistry": {
+  "kind": "capability",
+  "cap": "manage_registries",
+  "orInstanceAdmin": false
+ },
+ "Mutation.addServer": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.addServerCertificate": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.addUserToTeam": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.approvePreview": {
+  "kind": "capability",
+  "cap": "manage_previews",
+  "orInstanceAdmin": false
+ },
+ "Mutation.authorizeMcpClient": {
+  "kind": "loggedIn"
+ },
+ "Mutation.beginMigration": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.bulkAppAction": {
+  "kind": "capability",
+  "cap": "control_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.bulkRedeployApps": {
+  "kind": "capability",
+  "cap": "deploy_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.cancelAllDeployments": {
+  "kind": "capability",
+  "cap": "deploy_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.cancelBackupRun": {
+  "kind": "capability",
+  "cap": "manage_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.cancelCronRun": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Mutation.cancelDeployment": {
+  "kind": "capability",
+  "cap": "deploy_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.cancelTakeover": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.changePassword": {
+  "kind": "loggedIn"
+ },
+ "Mutation.checkAgentUpdates": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.checkAllServerHealth": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.checkForUpdates": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.checkServerHealth": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.checkServerHostInfo": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.checkServerReadiness": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.clearAppBuildCache": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.completeSetup": {
+  "kind": "none"
+ },
+ "Mutation.confirmTwoFactorEnrolment": {
+  "kind": "loggedIn"
+ },
+ "Mutation.connectGitProvider": {
+  "kind": "capability",
+  "cap": "manage_git",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createApp": {
+  "kind": "capability",
+  "cap": "create_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createAppFromTemplate": {
+  "kind": "capability",
+  "cap": "create_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createBackup": {
+  "kind": "capability",
+  "cap": "manage_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createCronJob": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createDatabase": {
+  "kind": "capability",
+  "cap": "create_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createDestination": {
+  "kind": "capability",
+  "cap": "manage_backup_destinations",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createEnvironment": {
+  "kind": "capability",
+  "cap": "manage_environments",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createFolder": {
+  "kind": "capability",
+  "cap": "create_folders",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createProject": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createRole": {
+  "kind": "capability",
+  "cap": "manage_roles",
+  "orInstanceAdmin": false
+ },
+ "Mutation.createTeam": {
+  "kind": "loggedIn"
+ },
+ "Mutation.createToken": {
+  "kind": "loggedIn"
+ },
+ "Mutation.deleteAllDeployments": {
+  "kind": "capability",
+  "cap": "delete_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteApp": {
+  "kind": "capability",
+  "cap": "delete_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteApps": {
+  "kind": "capability",
+  "cap": "delete_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteBackup": {
+  "kind": "capability",
+  "cap": "manage_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteBackupArtifacts": {
+  "kind": "loggedIn"
+ },
+ "Mutation.deleteBackupRun": {
+  "kind": "capability",
+  "cap": "delete_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteCronJob": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteDatabase": {
+  "kind": "capability",
+  "cap": "delete_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteDeployments": {
+  "kind": "capability",
+  "cap": "delete_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteDestination": {
+  "kind": "capability",
+  "cap": "manage_backup_destinations",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteEnv": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteEnvironment": {
+  "kind": "capability",
+  "cap": "manage_environments",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteFolder": {
+  "kind": "loggedIn"
+ },
+ "Mutation.deleteNotificationChannel": {
+  "kind": "loggedIn"
+ },
+ "Mutation.deletePasskey": {
+  "kind": "loggedIn"
+ },
+ "Mutation.deletePreviewEnvVar": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteProject": {
+  "kind": "capability",
+  "cap": "delete_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteRegistry": {
+  "kind": "capability",
+  "cap": "manage_registries",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteRole": {
+  "kind": "capability",
+  "cap": "manage_roles",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteSharedVar": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deleteTeam": {
+  "kind": "loggedIn"
+ },
+ "Mutation.deleteUser": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.deployPullRequest": {
+  "kind": "capability",
+  "cap": "manage_previews",
+  "orInstanceAdmin": false
+ },
+ "Mutation.deployWithoutMigratedData": {
+  "kind": "capability",
+  "cap": "deploy_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.destinationRecoveryKey": {
+  "kind": "capability",
+  "cap": "manage_backup_destinations",
+  "orInstanceAdmin": false
+ },
+ "Mutation.destroyPreview": {
+  "kind": "capability",
+  "cap": "manage_previews",
+  "orInstanceAdmin": false
+ },
+ "Mutation.detectAppLogo": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.disableTwoFactor": {
+  "kind": "loggedIn"
+ },
+ "Mutation.dismissImportedDomains": {
+  "kind": "capability",
+  "cap": "manage_domains",
+  "orInstanceAdmin": false
+ },
+ "Mutation.dismissMigrationReport": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.execConsole": {
+  "kind": "capability",
+  "cap": "open_app_console",
+  "orInstanceAdmin": false
+ },
+ "Mutation.execDatabaseConsole": {
+  "kind": "capability",
+  "cap": "open_database_console",
+  "orInstanceAdmin": false
+ },
+ "Mutation.finishMigration": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.finishPasskeyRegistration": {
+  "kind": "loggedIn"
+ },
+ "Mutation.generateAvailableDbPort": {
+  "kind": "capability",
+  "cap": "create_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.handOverMigrationSources": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.identifyMigrationSource": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": true
+ },
+ "Mutation.importEnv": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.importMigrationMembers": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.importMigrationProject": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.login": {
+  "kind": "none"
+ },
+ "Mutation.logout": {
+  "kind": "none"
+ },
+ "Mutation.mintRegistrationLink": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.moveAppToEnvironment": {
+  "kind": "capability",
+  "cap": "move_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.moveAppToFolder": {
+  "kind": "loggedIn"
+ },
+ "Mutation.moveAppToProject": {
+  "kind": "capability",
+  "cap": "move_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.moveAppsToFolder": {
+  "kind": "loggedIn"
+ },
+ "Mutation.moveDatabaseToEnvironment": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.moveFolder": {
+  "kind": "loggedIn"
+ },
+ "Mutation.moveMigrationServiceData": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.panelDns": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.panelHttps": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.passkeyChallenge": {
+  "kind": "none"
+ },
+ "Mutation.planMigrationDataMove": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.rebuildApp": {
+  "kind": "capability",
+  "cap": "deploy_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.rebuildDatabase": {
+  "kind": "capability",
+  "cap": "delete_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.redeploy": {
+  "kind": "capability",
+  "cap": "deploy_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.redeployDatabase": {
+  "kind": "capability",
+  "cap": "control_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.redeployPreview": {
+  "kind": "capability",
+  "cap": "manage_previews",
+  "orInstanceAdmin": false
+ },
+ "Mutation.refreshTemplates": {
+  "kind": "loggedIn"
+ },
+ "Mutation.regenerateRecoveryCodes": {
+  "kind": "loggedIn"
+ },
+ "Mutation.registerThroughLink": {
+  "kind": "none"
+ },
+ "Mutation.reissueServerBootstrap": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.reloadApp": {
+  "kind": "capability",
+  "cap": "control_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.removeBasicAuthUser": {
+  "kind": "capability",
+  "cap": "manage_basic_auth",
+  "orInstanceAdmin": false
+ },
+ "Mutation.removeDomain": {
+  "kind": "capability",
+  "cap": "manage_domains",
+  "orInstanceAdmin": false
+ },
+ "Mutation.removeFolderGrant": {
+  "kind": "loggedIn"
+ },
+ "Mutation.removeGitConnection": {
+  "kind": "capability",
+  "cap": "manage_git",
+  "orInstanceAdmin": false
+ },
+ "Mutation.removeGithubApp": {
+  "kind": "capability",
+  "cap": "manage_git",
+  "orInstanceAdmin": false
+ },
+ "Mutation.removeMember": {
+  "kind": "capability",
+  "cap": "manage_members",
+  "orInstanceAdmin": false
+ },
+ "Mutation.removeServer": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.removeServerCertificate": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.removeUserFromTeam": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.renameApp": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.renameDatabase": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.renameEnv": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.renameEnvironment": {
+  "kind": "capability",
+  "cap": "manage_environments",
+  "orInstanceAdmin": false
+ },
+ "Mutation.renameFolder": {
+  "kind": "loggedIn"
+ },
+ "Mutation.renamePasskey": {
+  "kind": "loggedIn"
+ },
+ "Mutation.renameProject": {
+  "kind": "capability",
+  "cap": "organize_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.renderComposeStack": {
+  "kind": "loggedIn"
+ },
+ "Mutation.reorderApps": {
+  "kind": "capability",
+  "cap": "manage_team",
+  "orInstanceAdmin": true
+ },
+ "Mutation.reorderDatabases": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.reorderFolders": {
+  "kind": "capability",
+  "cap": "manage_team",
+  "orInstanceAdmin": true
+ },
+ "Mutation.reorderMyTeams": {
+  "kind": "loggedIn"
+ },
+ "Mutation.reorderProjects": {
+  "kind": "capability",
+  "cap": "manage_team",
+  "orInstanceAdmin": true
+ },
+ "Mutation.requestTakeover": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.resetRole": {
+  "kind": "capability",
+  "cap": "manage_roles",
+  "orInstanceAdmin": false
+ },
+ "Mutation.resetUserPasskeys": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.resetUserTwoFactor": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.restartDatabase": {
+  "kind": "capability",
+  "cap": "control_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.restartDeploPanel": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.restartServerTraefik": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.restartServerWorkloads": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.restoreBackup": {
+  "kind": "capability",
+  "cap": "restore_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.retryNetworkIsolation": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.revealAppDeployHook": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.revealBasicAuthPassword": {
+  "kind": "capability",
+  "cap": "manage_basic_auth",
+  "orInstanceAdmin": false
+ },
+ "Mutation.revealConnection": {
+  "kind": "capability",
+  "cap": "reveal_secrets",
+  "orInstanceAdmin": false
+ },
+ "Mutation.revealRegistrationLink": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.revertMigration": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.revokeAllRegistrationLinks": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.revokeOtherSessions": {
+  "kind": "loggedIn"
+ },
+ "Mutation.revokeRegistrationLink": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.revokeSession": {
+  "kind": "loggedIn"
+ },
+ "Mutation.revokeToken": {
+  "kind": "loggedIn"
+ },
+ "Mutation.rollbackDeployment": {
+  "kind": "capability",
+  "cap": "rollback_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.rotateAppDeployHook": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.rotateDatabasePassword": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.runAppBackup": {
+  "kind": "capability",
+  "cap": "manage_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.runBackup": {
+  "kind": "capability",
+  "cap": "manage_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.runCronJobNow": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Mutation.runDatabaseBackup": {
+  "kind": "capability",
+  "cap": "manage_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.runDockerCleanupNow": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.saveNotificationChannel": {
+  "kind": "loggedIn"
+ },
+ "Mutation.saveSharedVar": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.scanMigrationSource": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": true
+ },
+ "Mutation.serverCertificateAccounts": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.serverCertificates": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setAppAutoDeploy": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppBuildServer": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppComposeUpArgs": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppDeployHookEnabled": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppEnv": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppFramework": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppPorts": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppPreviewSettings": {
+  "kind": "capability",
+  "cap": "manage_previews",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppRollbackKeep": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppVolumes": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setCertificateEmail": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setConsoleEnabled": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setCronEnabled": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setDatabaseMounts": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setDatabaseRunning": {
+  "kind": "capability",
+  "cap": "control_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setDefaultEnvironment": {
+  "kind": "capability",
+  "cap": "manage_environments",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setEnvironmentBranch": {
+  "kind": "capability",
+  "cap": "manage_environments",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setFolderColor": {
+  "kind": "loggedIn"
+ },
+ "Mutation.setFolderGrant": {
+  "kind": "loggedIn"
+ },
+ "Mutation.setGravatarEnabled": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setLogMaxDays": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setMcpSettings": {
+  "kind": "capability",
+  "cap": "manage_team",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setMemberAccess": {
+  "kind": "capability",
+  "cap": "manage_members",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setMigrationMachineAddress": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setPanelHttps": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setPanelUrl": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setPreviewEnvVar": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setPrimaryDomain": {
+  "kind": "capability",
+  "cap": "manage_domains",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setProjectColor": {
+  "kind": "capability",
+  "cap": "organize_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setSaveMetrics": {
+  "kind": "capability",
+  "cap": "manage_monitoring",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setServerBuildFallback": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setServerCleanupExcluded": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setServerDeployConcurrency": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setServerRole": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setServerTeams": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setServerTimezone": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.setSharedVarAppLink": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setUserTeamAccess": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.startApp": {
+  "kind": "capability",
+  "cap": "control_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.startGithubConnect": {
+  "kind": "capability",
+  "cap": "manage_git",
+  "orInstanceAdmin": false
+ },
+ "Mutation.startMigration": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.startPasskeyRegistration": {
+  "kind": "loggedIn"
+ },
+ "Mutation.startTwoFactorEnrolment": {
+  "kind": "loggedIn"
+ },
+ "Mutation.startWithoutMigratedData": {
+  "kind": "capability",
+  "cap": "control_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.stopApp": {
+  "kind": "capability",
+  "cap": "control_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.stopMigration": {
+  "kind": "capability",
+  "cap": "create_projects",
+  "orInstanceAdmin": false
+ },
+ "Mutation.subscribeWebPush": {
+  "kind": "loggedIn"
+ },
+ "Mutation.switchTeam": {
+  "kind": "loggedIn"
+ },
+ "Mutation.testDestination": {
+  "kind": "capability",
+  "cap": "manage_backup_destinations",
+  "orInstanceAdmin": false
+ },
+ "Mutation.testDestinations": {
+  "kind": "capability",
+  "cap": "manage_backup_destinations",
+  "orInstanceAdmin": false
+ },
+ "Mutation.testGitConnection": {
+  "kind": "capability",
+  "cap": "manage_git",
+  "orInstanceAdmin": false
+ },
+ "Mutation.testNotificationChannel": {
+  "kind": "loggedIn"
+ },
+ "Mutation.toggleBackup": {
+  "kind": "capability",
+  "cap": "manage_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.transferAppToTeam": {
+  "kind": "capability",
+  "cap": "move_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.transferInstanceOwner": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.transferTeamOwnership": {
+  "kind": "capability",
+  "cap": "manage_team",
+  "orInstanceAdmin": false
+ },
+ "Mutation.uninstallServerAgent": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.unsubscribeWebPush": {
+  "kind": "loggedIn"
+ },
+ "Mutation.updateAppBuild": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateAppHealthCheck": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateAppLogo": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateAppResources": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateAppSource": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateBackup": {
+  "kind": "capability",
+  "cap": "manage_backups",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateBasicAuthUserPassword": {
+  "kind": "capability",
+  "cap": "manage_basic_auth",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateCronJob": {
+  "kind": "capability",
+  "cap": "manage_crons",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateDatabase": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateDatabaseImage": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateDatabaseLogo": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateDatabaseResources": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateDockerCleanupPolicy": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.updateDomain": {
+  "kind": "capability",
+  "cap": "manage_domains",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateEmail": {
+  "kind": "loggedIn"
+ },
+ "Mutation.updateGitConnection": {
+  "kind": "capability",
+  "cap": "manage_git",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateMember": {
+  "kind": "capability",
+  "cap": "manage_members",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateMyAvatar": {
+  "kind": "loggedIn"
+ },
+ "Mutation.updateProfile": {
+  "kind": "loggedIn"
+ },
+ "Mutation.updateRole": {
+  "kind": "capability",
+  "cap": "manage_roles",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateServerAddress": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.updateServerAgent": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.updateTeam": {
+  "kind": "capability",
+  "cap": "manage_team",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateTeamAvatar": {
+  "kind": "capability",
+  "cap": "manage_team",
+  "orInstanceAdmin": false
+ },
+ "Mutation.updateToken": {
+  "kind": "loggedIn"
+ },
+ "Mutation.updateUserAdmin": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.upsertEnv": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.verifyDomain": {
+  "kind": "capability",
+  "cap": "manage_domains",
+  "orInstanceAdmin": false
+ },
+ "Mutation.verifyPasskeyLogin": {
+  "kind": "none"
+ },
+ "Mutation.verifyTwoFactorLogin": {
+  "kind": "none"
+ },
+ "Mutation.writeAppFile": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Subscription.activeDeployments": {
+  "kind": "loggedIn"
+ },
+ "Subscription.activeMigration": {
+  "kind": "loggedIn"
+ },
+ "Subscription.appStatus": {
+  "kind": "loggedIn"
+ },
+ "Subscription.databaseStatus": {
+  "kind": "loggedIn"
+ },
+ "Subscription.dockerCleanupRuns": {
+  "kind": "instanceAdmin"
+ }
+}
