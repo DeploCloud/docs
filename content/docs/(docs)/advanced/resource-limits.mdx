@@ -29,6 +29,10 @@ oblige you to set anything else.
 
 ## The two that matter
 
+**Size** sets both at once. Pick a tile from Nano to Large, or **No limit**
+to leave the app uncapped. A tile bigger than the app's server is greyed
+out and says why.
+
 <TypeTable
   type={{
     "Memory limit": {
@@ -42,8 +46,15 @@ oblige you to set anything else.
   }}
 />
 
-**Quick size** presets both together for the common cases, and is what most
-people should use. **Clear all** removes every limit.
+Under each field a bar shows the cap against the server's total. With the
+**View metrics** permission it also shows what the app uses right now and
+its peak over the last 15 minutes, and Deplo suggests a size with 1.5x
+headroom over that peak: **Apply** fills the fields, **Save limits** keeps
+them. A cap under the recent peak is flagged before you save.
+
+Limits apply on the next deploy, so the confirmation offers **Deploy now**
+(**Redeploy now** on a database). **Clear all** removes every limit,
+advanced ones included.
 
 <Callout type="warn">
 A memory limit is a kill switch, not a throttle. A process that goes past
@@ -113,6 +124,8 @@ tightening.
   same size every time, this is why.
 - **CPU limit and CPU shares are different things.** A limit is a ceiling
   that applies always. Shares only matter when the machine is contended.
+- **A negative OOM priority needs the host-volumes grant.** It asks the
+  kernel to kill other containers first, so it is gated like a bind mount.
 </Callout>
 
 ---
