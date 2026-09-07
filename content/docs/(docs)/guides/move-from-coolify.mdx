@@ -52,26 +52,27 @@ under Coolify's **Settings**.
 </Step>
 <Step>
 
-### Mint a token that can read secrets and stop a service
+### Mint a token with root
 
-Coolify: **Keys & Tokens -> API tokens**. Tick **`deploy`** first, then
-**`read`** and **`read:sensitive`**, and mint it from an account that is an
-**admin or owner** of the team. The order matters: Coolify's dialog clears the
-list the moment `deploy` is ticked, so tick it before the other two.
+Coolify: **Keys & Tokens -> API tokens**. Tick **`root`**, and mint it from an
+account that is an **admin or owner** of the team. Root is one box and it covers
+both things a migration needs: reading your secrets, and stopping a service
+before its data is copied.
 
-<Callout type="warn" title="read:sensitive is not optional">
-  Without it Coolify does not blank your secrets, it removes them from the
-  response. Every environment variable, every database password and every
-  one-click stack's **compose file** would arrive **empty**, and the migration
-  would look like it worked. Deplo refuses to scan at all rather than let that
-  happen.
+<Callout type="info" title="Rather not hand over root?">
+  Tick **`deploy`** first, then **`read`** and **`read:sensitive`** - that set
+  does the same job. The order matters: Coolify's dialog clears the list the
+  moment `deploy` is ticked, so tick it before the other two. Deplo's own
+  refusals name root, because it is the one tick that cannot go wrong.
 </Callout>
 
-<Callout type="warn" title="deploy is not optional either">
-  The data step stops each service on Coolify before it copies its data, and
-  Coolify allows that only with the `deploy` permission. Without it every
-  service would arrive with its configuration and none of its data. Deplo
-  checks at Connect and refuses with **This token cannot stop a service.**
+<Callout type="warn" title="A narrower token is refused at Connect">
+  Without `read:sensitive` Coolify does not blank your secrets, it removes them
+  from the response: every variable, every database password and every one-click
+  stack's **compose file** would arrive **empty**, and the migration would look
+  like it worked. Without `deploy` the data step cannot stop a service, so apps
+  would arrive with their configuration and none of their data. Deplo checks
+  both at Connect and refuses rather than let either happen.
 </Callout>
 
 <Callout type="warn" title="One token reads one team">
@@ -529,10 +530,10 @@ it would run it on empty storage. Bring that data over yourself, or press
   from what sits in front of the panel, not the panel. Start it, or point
   Deplo at the panel's own address.
 - **This token cannot read values** or **This token cannot read compose
-  files**: the token has no `read:sensitive`, or it belongs to an account
-  that is not an admin or owner of the team. Both are the same scope.
-- **This token cannot stop a service**: the token has no `deploy`. Mint a
-  new one with `deploy` ticked first, then `read` and `read:sensitive`.
+  files**: the token is not `root` and has no `read:sensitive`, or it
+  belongs to an account that is not an admin or owner of the team.
+- **This token cannot stop a service**: the token is not `root` and has no
+  `deploy`. Mint a new one with `root` ticked.
 - **Coolify refused the token**: every token is minted with an expiry, and
   this one has run out or was revoked. Mint a new one under **Keys &
   Tokens**.

@@ -24,7 +24,7 @@ WHICH team a token reads, without reading it all. A token covers one team of the
 | Argument | Type | Description |
 | --- | --- | --- |
 | `input` | [`MigrationSourceInput!`](/api-reference/types/inputs#migrationsourceinput) |  |
-| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `deploy` ticked first, then `read` and `read:sensitive` - without deploy the data step cannot stop a service, without read:sensitive the values and database passwords arrive empty. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
+| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 
@@ -49,7 +49,7 @@ Read a source panel and describe what an import would do. Works out which produc
 | Argument | Type | Description |
 | --- | --- | --- |
 | `input` | [`MigrationSourceInput!`](/api-reference/types/inputs#migrationsourceinput) |  |
-| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `deploy` ticked first, then `read` and `read:sensitive` - without deploy the data step cannot stop a service, without read:sensitive the values and database passwords arrive empty. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
+| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 | `newTeam` | `Boolean` | Describe the import into a team that does not exist yet: nothing counts as already here, and every hostname another team serves is another team's. Instance admins only; the wizard sends it for a source team it will land in a team made at Start. |
@@ -83,7 +83,7 @@ Start a migration and hand it to the control plane. Returns the run id as soon a
 | Argument | Type | Description |
 | --- | --- | --- |
 | `input` | [`MigrationSourceInput!`](/api-reference/types/inputs#migrationsourceinput) |  |
-| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `deploy` ticked first, then `read` and `read:sensitive` - without deploy the data step cannot stop a service, without read:sensitive the values and database passwords arrive empty. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
+| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 | `keepSources` | `Boolean` | Another team of the SAME panel is still to come, so this run must leave Deplo's agents on the source machines - the next team reads the same disks, and an uninstall scheduled here would race the install that follows it. The last run of a series leaves this false, and it is that one that clears them. It also holds the takeover: the ports cannot be taken while a run says more teams are owed. |
@@ -137,7 +137,7 @@ Import ONE project from the source panel into the active team: its environments,
 | Argument | Type | Description |
 | --- | --- | --- |
 | `input` | [`MigrationSourceInput!`](/api-reference/types/inputs#migrationsourceinput) |  |
-| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `deploy` ticked first, then `read` and `read:sensitive` - without deploy the data step cannot stop a service, without read:sensitive the values and database passwords arrive empty. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
+| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 | `placements` | [`[MigrationPlacementInput!]`](/api-reference/types/inputs#migrationplacementinput) | Where each service lands, one entry per service. Wins over `servers`, which stays the fallback for anything not listed here. Both are about where a service RUNS; where its data is READ FROM is derived from that machine's own address and is never a caller's choice. A server this team cannot deploy to is refused into a report line, never used. |
@@ -178,7 +178,7 @@ Bring the source team's people over. Someone who already has a Deplo account is 
 | Argument | Type | Description |
 | --- | --- | --- |
 | `input` | [`MigrationSourceInput!`](/api-reference/types/inputs#migrationsourceinput) |  |
-| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `deploy` ticked first, then `read` and `read:sensitive` - without deploy the data step cannot stop a service, without read:sensitive the values and database passwords arrive empty. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
+| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 | `runId` | `String!` |  |
@@ -349,7 +349,7 @@ The services THIS RUN imported whose DATA can still be moved, with each volume p
 | Argument | Type | Description |
 | --- | --- | --- |
 | `input` | [`MigrationSourceInput!`](/api-reference/types/inputs#migrationsourceinput) |  |
-| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `deploy` ticked first, then `read` and `read:sensitive` - without deploy the data step cannot stop a service, without read:sensitive the values and database passwords arrive empty. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
+| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 | `runId` | `String!` |  |
@@ -379,7 +379,7 @@ Cut ONE service's data over: STOP it on the panel (and leave it stopped - a volu
 | Argument | Type | Description |
 | --- | --- | --- |
 | `input` | [`MigrationSourceInput!`](/api-reference/types/inputs#migrationsourceinput) |  |
-| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `deploy` ticked first, then `read` and `read:sensitive` - without deploy the data step cannot stop a service, without read:sensitive the values and database passwords arrive empty. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
+| `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 | `runId` | `String!` |  |

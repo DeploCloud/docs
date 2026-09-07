@@ -117,19 +117,18 @@ the same amount.
 | --- | --- | --- |
 | Compose file over the API | Inline files, yes. A file kept in git, no. | Needs a token with `read:sensitive`, or values and database passwords arrive empty. |
 | Stopping a service for the copy | Any key of the organization. | Needs the `deploy` permission on the token, or nothing can be stopped and nothing is copied. |
-| The API key itself | Mint it from Dokploy's own dialog. One created through its API without rate-limit settings is born at 10 requests a day. | Mint it with `deploy` first, then `read` and `read:sensitive`. |
+| The API key itself | Mint it from Dokploy's own dialog. One created through its API without rate-limit settings is born at 10 requests a day. | Mint it with `root` ticked. |
 | Volume names | Taken from the stack's own file. | Taken from the panel's storage rows. A volume the compose pins by name is worth checking in the report. |
 | Environment variables | Handed over in full. | Needs `read:sensitive` for the values. |
 | Multiple machines | Both handled, and each machine needs the agent before its apps can move. | Same. |
 | Organizations | An API key covers one organization. Anything under another needs a second import with a key from it. | Same, and the report says so. |
 
 <Callout type="info" title="Coolify tokens">
-  Tick `deploy` first, then `read` and `read:sensitive` - Coolify's dialog
-  clears the list when `deploy` is ticked, so the order matters. Without
-  `read:sensitive` Coolify hands over empty values and Deplo cannot tell an
-  empty variable from one it was not allowed to read; without `deploy` Deplo
-  cannot stop a service before copying its data. Deplo checks both at Connect
-  and refuses rather than importing blanks or copying live volumes.
+  Tick `root`: it is one box, and it covers both. A token without
+  `read:sensitive` hands over empty values, and one without `deploy` cannot
+  stop a service before its data is copied - so if you would rather not grant
+  root, tick `deploy` first, then `read` and `read:sensitive`. Deplo checks
+  both at Connect and refuses rather than importing blanks.
 </Callout>
 
 ---
