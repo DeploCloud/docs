@@ -143,7 +143,7 @@ target server named on it so you can see where the app lands without opening it.
 | --- | --- |
 | Deploy to | Which server runs it. A single-machine install has one, already picked. |
 | Environment variables | Type them, or tick the team's [shared variables](/guides/config/shared-variables). Both reach the first build. |
-| Build method | Nixpacks, Railpack, a Dockerfile, or a static site, with its version and the container port. |
+| Build method | Railpack, Nixpacks, a Dockerfile, or a static site, with its version and the container port. |
 | Build path | The sub-folder to build from, for a monorepo. |
 | Build on | Another server to compile on. Automatic uses a [build server](/guides/server/add-a-server#choose-what-its-for) if the fleet has one. |
 | Git | Deploy on push or on tag, watch paths, submodules. |
@@ -167,7 +167,7 @@ It's served over **plain HTTP**: a `nip.io` hostname can't hold a certificate. S
 
 Creating an app writes one row and nothing else. The first deploy is what does the work, and it happens on the server you pick, never on the control plane. What that first deploy does depends on the source:
 
-- **GitHub and Git**: the agent clones the repository, detects the framework, and builds an image, by default with **Nixpacks**, so there's no Dockerfile to write.
+- **GitHub and Git**: the agent clones the repository, detects the framework, and builds an image, by default with **Railpack**, so there's no Dockerfile to write.
 - **Docker Image**: nothing is built. The agent pulls the image reference you gave it.
 - **Upload**: the agent unpacks your archive and builds it exactly like a clone, framework detection included.
 - **Compose**: your `docker-compose.yml` is parsed, checked, and folded with routing, variables and volumes, then brought up as written.

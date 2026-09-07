@@ -17,6 +17,8 @@ How your source becomes a container image: which builder runs, what commands it 
 
 For a source Deplo builds, it re-derives the framework from `package.json` and the root configuration **on every deploy**. Detection is never stored, so upgrading your framework changes the build without you editing anything.
 
+From the framework it fills in three things: the **container port**, the **output directory** for a framework that builds a directory and runs no server, and a **deploy command** for the few frameworks that publish exactly one. It never copies your `start` script: in most projects that script is the dev server.
+
 Anything you type by hand is stored, and it wins from then on. The fields sit empty and show the detected value as a placeholder, which is how you can always tell "detected" from "set by me". Clearing a field hands it back to detection.
 
 ---
@@ -27,8 +29,8 @@ Pick one under **Build method**.
 
 | Method | Use it when | Fields it adds |
 | --- | --- | --- |
-| **Nixpacks** (default) | Normal application code, any common language | none |
-| **Railpack** | The same job, different builder. Try it if Nixpacks mis-detects | **Builder** version |
+| **Railpack** (default) | Normal application code, any common language | **Builder** version |
+| **Nixpacks** | The same job, different builder. Try it if Railpack mis-detects | none |
 | **Dockerfile** | You already have a `Dockerfile` and want it used exactly | **Dockerfile path**, **Build context path**, **Build stage (target)** |
 | **Static** | The build produces plain files to serve | **Publish directory**, **Single-page application** |
 
@@ -54,6 +56,10 @@ Dockerfile and Static skip framework detection entirely. You have already said w
       type: "text",
       description: "Overrides the detected start step, for example node dist/server.js",
     },
+    "Output directory": {
+      type: "path",
+      description: "The directory to serve, for a framework that builds one. Filled in for Gatsby, Eleventy, Docusaurus, Vue CLI and Angular",
+    },
     "Node.js version": {
       type: "select",
       description: "Pins the runtime instead of taking the detected default",
@@ -66,6 +72,10 @@ Dockerfile and Static skip framework detection entirely. You have already said w
 />
 
 Click **Save build settings**. Saving does not deploy: click **Redeploy** when you want the change to take effect.
+
+### An empty command is not a missing one
+
+Both auto-detecting builders work the commands out themselves, and an empty field is how you let them. Type one only when you want something else to run: what you type is stored and wins from then on.
 
 ### The port is the one people get wrong
 

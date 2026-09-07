@@ -17,7 +17,7 @@ Use it for a project that is not in Git, for a one-off, or when the code lives s
 
 ## How it works
 
-You upload a compressed archive of the project. It is stored in the control plane's staging directory, and the agent unpacks it on the target server and builds it with the same pipeline a Git source uses: framework detection, then Nixpacks, Railpack, a Dockerfile or a Static build.
+You upload a compressed archive of the project. It is stored in the control plane's staging directory, and the agent unpacks it on the target server and builds it with the same pipeline a Git source uses: framework detection, then Railpack, Nixpacks, a Dockerfile or a Static build.
 
 An upload app is **created idle**. It has no source until the first archive lands, so nothing deploys at creation time.
 
