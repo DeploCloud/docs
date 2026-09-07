@@ -404,6 +404,9 @@ are cheaper to read now than to find out later.
   access. Dokploy keys are scoped per organisation.
 - **The panel's certificate is not trusted**: Deplo cannot be told to accept
   one, so use Dokploy's plain http address instead.
+- **Nothing is running behind the proxy**: a 502 or a Cloudflare 521 comes
+  from what sits in front of the panel, not the panel. Start it, or point
+  Deplo at the panel's own address.
 - **Dokploy stopped accepting this API key part-way**: the key has a rate
   limit and ran out. Raise or disable it under Settings, Profile, API/CLI, and
   run the import again - nothing is lost, everything already here is skipped.

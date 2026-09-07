@@ -518,6 +518,9 @@ it would run it on empty storage. Bring that data over yourself, or press
   not include this machine.
 - **The panel's certificate is not trusted**: Deplo cannot be told to accept
   one, so use Coolify's plain http address instead.
+- **Nothing is running behind the proxy**: a 502 or a Cloudflare 521 comes
+  from what sits in front of the panel, not the panel. Start it, or point
+  Deplo at the panel's own address.
 - **This token cannot read values** or **This token cannot read compose
   files**: the token has no `read:sensitive`, or it belongs to an account
   that is not an admin or owner of the team. Both are the same scope.
