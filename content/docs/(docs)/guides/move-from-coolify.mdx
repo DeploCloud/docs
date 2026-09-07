@@ -198,6 +198,13 @@ Cloudflare is recognised on sight. The wizard says **This address is
 Cloudflare's, not the machine's** and asks for the IP straight away,
 instead of printing an install command that could never answer.
 
+A machine Deplo already reaches is never registered twice. If the address
+you type is one of your own servers, or the machine an earlier attempt
+already registered, there is nothing to install: the wizard says **Deplo
+already reaches this machine** and offers to use that server as the source.
+Your own servers keep their agent when the migration ends - only a machine
+Deplo installed on for the migration gets it taken back off.
+
 A machine that already answers has a **Change address** link too: a live
 agent on the wrong box reads as connected, and every volume of the
 services on it would then arrive empty.
