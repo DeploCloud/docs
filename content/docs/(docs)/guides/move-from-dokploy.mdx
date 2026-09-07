@@ -134,11 +134,17 @@ it, and wait here. It shows **Waiting for the agent** until the machine calls
 home, and **Connected** once it has. Deplo takes the agent back off when the
 migration is done.
 
-<Callout type="info" title="The machine's own address, not the panel's">
+<Callout type="info" title="The machine's own IP, not the panel's">
 Deplo's first guess for a machine is the address you gave the panel. Behind
 a proxy or a CDN that address is the proxy, so nothing answers on `9443`
 and the wizard shows **Cannot connect** with a box to type the machine's
-real address into. That address is remembered for the next attempt.
+own address into. It asks for the **IP** - a hostname that resolves
+straight to the machine works just as well, and either one is remembered
+for the next attempt.
+
+Cloudflare is recognised on sight. The wizard says **This address is
+Cloudflare's, not the machine's** and asks for the IP straight away,
+instead of printing an install command that could never answer.
 
 A machine that already answers has a **Change address** link too: a live
 agent on the wrong box reads as connected, and every volume of the
