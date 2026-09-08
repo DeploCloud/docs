@@ -5,18 +5,12 @@ description: Why Deplo never exposes a Docker socket, and how one grant gates ev
 
 import { Layers, HardDrive, Users, Library } from "lucide-react";
 
----
-
-## What it is
-
 Everything that lets a container reach outside its own sandbox and touch
 the server: bind mounts, kernel capabilities, devices, host namespaces,
 foreign networks and foreign volumes.
 
 All of it sits behind one grant: **"Bind server folders"** in the
 permission picker, `canMountHostVolumes` in the API.
-
----
 
 ## Why one grant covers all of it
 
@@ -38,16 +32,21 @@ capability wearing different clothes:
 - `driver_opts: {type: none, device: /, o: bind}` is a bind mount of the
   host, declared one level up from where a service-level check would look.
 
----
-
 ## What is gated
 
-**Service keys**
+**Service keys**, twenty-four of them:
 
-`privileged`, `cap_add`, `devices`, `device_cgroup_rules`, `security_opt`,
-`cgroup_parent`, `cgroup`, `pid`, `ipc`, `uts`, `network_mode`,
-`volumes_from`, `env_file`, `oom_kill_disable`, `oom_score_adj`,
-`group_add`, `logging`, `userns_mode`.
+`privileged`, `cap_add`, `devices`, `device_cgroup_rules`, `security_opt`, `cgroup_parent`,
+`pid`, `ipc`, `uts`, `network_mode`, `cgroup`, `volumes_from`, `env_file`, `oom_kill_disable`,
+`oom_score_adj`, `group_add`, `logging`, `userns_mode`, `post_start`, `pre_stop`, `deploy`,
+`gpus`, `runtime`, `extra_hosts`.
+
+Most are conditional rather than absolute: `oom_score_adj` only when negative, `pid` / `ipc` /
+`uts` / `cgroup` only on `host`, `container:` or `service:`, `runtime` only when it is not `runc`,
+`extra_hosts` only for `host-gateway`, `logging` only for a driver that is not `json-file` or
+`local`, `deploy` only its `resources.reservations.devices`, and `post_start` / `pre_stop` only
+when the hook itself asks for privilege. `network_mode` is the strictest: it is an **allowlist**,
+so only `none` and `default` are free and even `bridge` is gated.
 
 **Paths, not keys**
 
@@ -61,64 +60,59 @@ while `env_file: - /etc/app.env` does.
 
 **Top-level blocks**
 
-A `volumes:` entry that is `external: true`, pins a `name:`, or uses
-`driver_opts` to bind a path. A `networks:` entry that joins a network
-belonging to something else - another Compose project's, or the host's own
-segment through `macvlan`. A network **Deplo** owns is not one of these: it is
-rewritten onto your app's own network instead of being refused, so it needs no
-grant and reaches nothing.
+A `volumes:` entry that is `external: true`, pins a `name:`, or uses `driver_opts` to bind a path,
+and a top-level `secrets:` or `configs:` whose `file:` names a path on the server.
+
+A `networks:` entry that joins a network belonging to something else: another Compose project's,
+or the host's own segment through `macvlan` or `ipvlan`, `driver: host`, any non-empty
+`driver_opts`, or a pinned `name:`. It counts only when a service actually joins it - declaring a
+network and never attaching it deploys nothing. A network **Deplo** owns is not one of these: it
+is rewritten onto your app's own network instead of being refused, so it needs no grant and
+reaches nothing.
 
 **Builds**
 
 A `build:` whose context or Dockerfile is an absolute or `..` path, that
 loads host SSH keys or agents, or that runs privileged.
 
-**Merges**
+**Merges are refused outright, not gated.** `extends:`, `include:` and `label_file:` pull in keys
+from a file nobody showed Deplo, and those keys can be any of the above. No permission makes them
+work; inline what they were bringing in.
 
-`extends:` and `label_file:`, because they pull in keys from a file you
-did not show, and those keys can be any of the above.
+**What a refusal tells you.** A refusal names what tripped it - the key, or the mount - and who can turn the
+permission on. If you are told an app reaches the server and you cannot see
+where, that sentence is where to look.
 
-<Callout type="info" title="What a refusal tells you">
-  A refusal names what tripped it - the key, or the mount - and who can turn the
-  permission on. If you are told an app reaches the server and you cannot see
-  where, that sentence is where to look.
-</Callout>
+**What is never gated: hardening.** `cap_drop` and `read_only` are on no list at all, and
+`security_opt: no-new-privileges` is allowed by name. That is deliberate: a permission prompt in
+front of the safer choice is one people learn to route around, and then they route around the one
+that mattered.
 
-<Callout type="success" title="What is never gated">
-Hardening is free. `no-new-privileges`, `cap_drop` and `read_only` are not
-on any list and never ask for a permission.
-
-That is deliberate: a permission prompt in front of the safer choice is
-one people learn to route around, and then they route around the one that
-mattered.
-
-</Callout>
-
----
+The value is read, though. `no-new-privileges:true` is the hardening; `no-new-privileges:false`
+turns it off, and that is gated like anything else.
 
 ## Publishing a port is a separate grant
 
 `canExposePorts` covers publishing a container port on the host: an app's
-[**Published ports**](/advanced/published-ports), a `ports:` entry in a
-Compose file, and a database's **Host port**.
+[**Published ports**](/advanced/published-ports), a `ports:` entry in a Compose file, and a
+database's **Host port**. `expose:` is deliberately not counted - it publishes nothing, it only
+documents a port for other containers on the same network.
 
 It is separate because it is a different risk. A published port is
 reachable from the network, but it does not give the container the
 machine.
 
----
-
 ## How to grant it
 
-Both grants sit on the member, alongside their role: **Settings ->
-Members -> the member -> Permissions**.
+Neither grant is a team capability, so neither is on a role or on the Members page. They are
+properties of the **account**, instance-wide: **Settings -> Users -> the user -> Permissions ->
+Advanced grants**, holding **Publish ports** and **Bind server folders**.
 
-<Callout type="warn">
-  Grant them to somebody who administers the servers. Not to everybody who
-  deploys apps, and never as a shortcut to make one Compose file save.
-</Callout>
+An instance admin holds both implicitly, which is why both switches show as on and disabled while
+that toggle is set.
 
----
+Grant them to somebody who administers the servers. Not to everybody who
+deploys apps, and never as a shortcut to make one Compose file save.
 
 ## What to do when you hit the wall
 
@@ -133,8 +127,6 @@ grant:
 | A published port so another app can reach it       | Nothing. Apps in one environment, on one server, reach each other by name.   |
 | A port for a game server, a mail server or raw TCP | [Published ports](/advanced/published-ports). That is what the grant is for. |
 | `privileged` because the README said so            | Check whether it is needed. Many images copy it from an older example.       |
-
----
 
 ## Taking it away
 
@@ -152,15 +144,12 @@ permission to let an app reach the server.
 Two ways to clear it: give the grant back, or have someone who holds it open the
 app's Compose and save it again, which makes the reach theirs.
 
-<Callout type="warn">
-  Containers that are already running keep running. Revoking a grant is not a
-  kill switch - it stops the next deploy, it does not stop what is up. Stop the
-  app if that is what you need.
-</Callout>
+Containers that are already running keep running. Revoking a grant is not a
+kill switch - it stops the next deploy, it does not stop what is up. Stop the
+app if that is what you need.
 
----
+## Good to know
 
-<Callout type="warn" title="Limits and gotchas">
   - **A key that is present but empty declares nothing.** `cap_add: []` and
   `privileged: false` do not trip the gate. - **Deplo's own render-time entries
   never trip it.** The check reads what you authored, not the finished file. -
@@ -168,16 +157,11 @@ app's Compose and save it again, which makes the reach theirs.
   the migration report rather than being created. - **This is a real trust
   boundary, not a formality.** Somebody with this grant can read every other
   team's data on that machine.
-</Callout>
 
-<Callout type="info">
-  Save or deploy refused for a permission you don't hold? See [Sign-in and
-  access troubleshooting](/troubleshooting/sign-in-and-access).
-</Callout>
+Save or deploy refused for a permission you don't hold? See [Sign-in and
+access troubleshooting](/troubleshooting/sign-in-and-access).
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card
@@ -195,7 +179,7 @@ app's Compose and save it again, which makes the reach theirs.
   <Card
     icon={<Users className="text-blue-400" />}
     title="Roles and permissions"
-    description="Grant this on a member"
+    description="The capability model"
     href="/guides/roles-and-permissions"
   />
   <Card

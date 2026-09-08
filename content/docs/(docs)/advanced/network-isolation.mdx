@@ -5,31 +5,23 @@ description: Every environment gets its own private network, so a service name m
 
 import { Boxes, Database, FolderTree, Layers } from "lucide-react";
 
----
+Each **environment** gets its own private Docker network, named `deplo-env-<environment id>`. The
+apps and managed databases placed there reach each other by name. Nothing outside reaches in.
 
-## What it is
+Apps that are not in a project sit on their **team's** network, `deplo-team-<team id>`, so a solo
+setup behaves exactly as it always did: everything you own can talk to everything else you own. A
+pull request preview gets a third shape, `deplo-preview-<key>`, sealed on its own. The platform's
+own networks - `deplo`, `deplo-internal` and the proxy's socket network - are none of these, and
+no tenant stack ever joins one.
 
-Each **environment** gets its own private Docker network. The apps and managed
-databases placed there reach each other by name. Nothing outside reaches in.
-
-Apps that are not in a project sit on their **team's** network instead, so a
-solo setup behaves exactly as it always did: everything you own can talk to
-everything else you own.
-
-<Callout type="warn" title="Without projects, nothing is separated">
-Everything outside a project - the top level, and anything in a folder - shares
+**Without projects, nothing is separated.** Everything outside a project - the top level, and anything in a folder - shares
 one network per team. That is deliberate (it is what keeps the simple setup
 simple), but it means **the boundary only exists once you use environments**. If
 you want two things separated, put them in different environments; a folder will
 not do it.
-</Callout>
 
-<Callout type="info">
 You never create or pick a network. Deplo derives it from where the app lives,
 and the proxy joins it on every deploy.
-</Callout>
-
----
 
 ## What sees what
 
@@ -60,8 +52,7 @@ it at a database you have published a port for. There is no way to let a preview
 into an environment's network: that is the thing the seal is for.
 </Callout>
 
-<Callout type="warn" title="A published port is not behind the boundary">
-A port published on the host (an app's `ports:`, or a database you exposed) is
+**A published port is not behind the boundary.** A port published on the host (an app's `ports:`, or a database you exposed) is
 bound on the machine itself, so **any container on that server reaches it**,
 whatever team or environment it belongs to - through the docker gateway or the
 server's own address. Closing the port in `ufw` does not change that: the traffic
@@ -70,25 +61,20 @@ never crosses the public interface.
 Publish a port only for what you mean to make reachable. To let one app talk to
 another, put them in the same environment and use the name - that path IS behind
 the boundary.
-</Callout>
 
-<Callout type="warn" title="The proxy answers from every network">
-Traefik sits on every environment's network in order to route it, so a container
+**The proxy answers from every network.** Traefik sits on every environment's network in order to route it, so a container
 can reach it directly and ask for **any hostname this server serves** - including
 apps of other teams, and including a request that never went through Cloudflare,
 an IP allowlist, or a WAF in front of your domain.
 
 Anything you give a domain is public in that sense. Keep what must not be reached
 without a domain, and it stays inside its environment.
-</Callout>
 
-<Callout type="warn" title="A network does not span servers">
-A Docker network lives on one machine. Two apps in the same environment but on
+**A network does not span servers.** A Docker network lives on one machine. Two apps in the same environment but on
 different servers do **not** reach each other by name - that was true before this
 change too, and no placement fixes it. Put both on the same server, or publish a
 port and use the server's address. A deploy that points at a name on another
 server says so in its log.
-</Callout>
 
 Folders have no network of their own. Moving an app **between** folders, or in
 and out of one at the team level, never changes what it can reach.
@@ -99,8 +85,7 @@ environment and puts it on the team's network - it leaves that environment's
 databases behind. Deplo brings the stack up again on the new network before the
 move returns, and the deploy log names anything it can no longer resolve.
 
-<Callout type="warn" title="A folder is permissions, not a network">
-Two apps in different folders are on the same team network and reach each other
+**A folder is permissions, not a network.** Two apps in different folders are on the same team network and reach each other
 by name. Folders decide who may **see and change** an app, not what an app may
 **talk to**. If two things must not reach each other, put them in different
 environments.
@@ -110,15 +95,12 @@ the folder, but because an app lives in one place, so filing it into a folder
 takes it out of its environment and onto the team's. Deplo brings the stack up
 again on the new network, and refuses the move if a name it answers to is already
 taken there.
-</Callout>
 
 A domain is a separate question. Anything you give a hostname is served by the
 proxy, and the proxy answers from every network - so an app with a domain is
 reachable at that domain from inside another environment exactly as it is from
 the internet. The boundary is about names and addresses inside the machine, not
 about what you publish.
-
----
 
 ## Which services are on the network
 
@@ -127,7 +109,7 @@ the environment's network to the ones you declared, it never replaces them - so 
 `frontend`/`backend` split keeps working exactly as written, and a worker with no
 domain reaches `db-<name>` like everything else.
 
-Three kinds of service stay off it:
+Four kinds of service stay off it:
 
 - One with `network_mode:`. It joins no network of its own by definition, so
   there is nothing to add it to - and a domain pointed at it will not answer.
@@ -135,9 +117,12 @@ Three kinds of service stay off it:
   `traefik`, `deplo`, and the three others). It stays on the stack's own private
   network, and Deplo keeps every other service on that network too, so the app
   still reaches it by name.
-- One whose networks you **all** marked `internal: true`. That is a deliberate
-  seal and Deplo leaves it alone. A domain still wins: route to the service and
-  it joins, because otherwise the proxy cannot reach it.
+- One whose networks you **all** marked `internal: true`. That is a deliberate seal and Deplo
+  leaves it alone. A domain still wins: route to the service and it joins, because otherwise the
+  proxy cannot reach it.
+- One whose name is already answered by a neighbouring stack on that network. Two containers
+  claiming one name would round-robin, so the newcomer is left off with a warning rather than
+  quietly taking half the traffic.
 
 ```yaml
 services:
@@ -154,8 +139,6 @@ networks:
   sealed:
     internal: true
 ```
-
----
 
 ## Where a database lives
 
@@ -175,15 +158,11 @@ list's card menu has the same **Move to environment**.
 A database you stopped stays stopped: it follows the move the next time you
 start it.
 
-<Callout type="warn" title="A published port is outside the boundary">
-Exposing a database on a host port takes it out of all of this. Docker binds
+**A published port is outside the boundary.** Exposing a database on a host port takes it out of all of this. Docker binds
 the port on the machine, so it answers **every container on that server**,
 whatever network they are on - and the server's own firewall does not stop
 them, because Docker publishes below it. The password is the only thing in the
 way. Leave the port off unless something outside the server really needs it.
-</Callout>
-
----
 
 ## Two stacks, one name
 
@@ -233,8 +212,6 @@ everything that named it moves with it - the route, the variables, the config
 files. The app's Activity says what was renamed; a migration puts it in the report
 too. A compose file you wrote yourself is yours, so it is refused with the free
 name instead of edited behind your back.
-
----
 
 ## `cannot resolve host`
 
@@ -293,8 +270,6 @@ opened it for.
 </Step>
 </Steps>
 
----
-
 ## Upgrading an existing instance
 
 The first time a Deplo with this feature starts, it moves every existing app
@@ -314,8 +289,6 @@ for you to decide, because moving it would take it away from half its callers.
 
 Stopped apps and stopped databases are left alone and follow when you start
 them. So does anything that was mid-deploy, on its next deploy.
-
----
 
 ## What stays exactly the same
 

@@ -5,10 +5,6 @@ description: Reach an app on a port of the server, for anything that is not a we
 
 import { Globe, Server } from "lucide-react";
 
----
-
-## What it is
-
 Deplo routes apps through its proxy: you add a domain, and the app answers
 on it over HTTPS. That covers websites and APIs, and it does not cover a
 Minecraft server, an SMTP relay, a cache or a TCP game protocol.
@@ -18,8 +14,6 @@ container, so clients connect to `your-server:16379` instead of to a name.
 
 **Settings -> Advanced -> Published ports**, on an app.
 
----
-
 ## How to publish one
 
 <Steps>
@@ -27,7 +21,7 @@ container, so clients connect to `your-server:16379` instead of to a name.
 
 ### Open the app's Advanced settings
 
-**Settings -> Advanced -> Published ports**, then **Add port**.
+**Settings -> Advanced -> Published ports**, then **Add port**. Twenty rows is the ceiling, and the button goes dead there.
 
 </Step>
 <Step>
@@ -64,20 +58,20 @@ The ports are written into the app's Compose file, so they bind on the
 </Step>
 </Steps>
 
----
-
 ## The rules
 
-- **It needs the publish-ports permission** (`canExposePorts`), the same
-  one a database's **Host port** needs. Without it the section is
-  read-only and says so. See
+- **It needs the publish-ports permission** (`canExposePorts`), the same one a database's **Host
+  port** needs. Without it the section is read-only and says so - though removing every port needs
+  no grant, so you are never locked out of undoing one. See
   [Host access](/advanced/host-access-and-privileges#publishing-a-port-is-a-separate-grant).
 - **Ports under 1024 are refused.** They belong to the host, and 80 and 443
   belong to Deplo's proxy. Publish 8025 and let your DNS or firewall do the
   rest.
-- **A host port belongs to one thing on the machine.** Deplo refuses a port
-  another app or database on that server already publishes, even one in
-  another team - a server is shared.
+- **A host port belongs to one thing on the machine.** Deplo refuses a port another single-image
+  app or database on that server already publishes, even one in another team, because a server is
+  shared. A **compose** stack's own `ports:` are not in that table and nothing probes the host, so
+  a clash with one of those, or with a process Deplo did not start, surfaces as Docker's own
+  failure at deploy.
 - **Pull request previews never publish.** A preview would be fighting
   production for the same port, so it gets none.
 - **A Compose app publishes its own.** The section is not offered: write
@@ -89,8 +83,6 @@ The ports are written into the app's Compose file, so they bind on the
   firewall in front of it, and use a domain whenever the protocol is HTTP.
 </Callout>
 
----
-
 ## Do you actually need one?
 
 | You wanted                                              | Do this instead                                                          |
@@ -100,7 +92,7 @@ The ports are written into the app's Compose file, so they bind on the
 | An app to reach its database                            | Nothing. The database answers as `db-<name>`.                            |
 | A game server, a mail server, a raw TCP or UDP protocol | A published port. This is what it is for.                                |
 
-## See also
+## Next steps
 
 <Cards>
   <Card

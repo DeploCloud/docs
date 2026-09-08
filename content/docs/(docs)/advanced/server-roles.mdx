@@ -5,15 +5,9 @@ description: What a machine is allowed to be. Everything, Build only, Backups on
 
 import { Server, Hammer, Archive, Library } from "lucide-react";
 
----
-
-## What it is
-
 The role is chosen when the agent is
 installed. It decides what gets set up on the host and where the server
 appears in the interface.
-
----
 
 ## The four roles
 
@@ -38,9 +32,9 @@ pipeline, so it gets Docker and the address pools, but no Traefik, because
 nothing is ever routed to it. It never appears as a deploy target.
 
 Install with `DEPLO_BUILD_ONLY=1` in front of the agent installer, or pick
-**Build only** in **Connect a remote server**.
+the **Build** tile when you add a server. The tile carries a Beta chip; the card badge afterwards reads **Build only**.
 
-Any role except Backups only can also stand in as a
+Any role except Backups only and Migration source can also stand in as a
 [build fallback](/advanced/build-servers#when-the-builder-is-down) - the
 Deplo host does by default.
 
@@ -53,7 +47,7 @@ copy that has to survive losing the machine your apps run on.
 It never encrypts anything itself and only receives the public half of
 each destination's key, so **it produces artifacts it cannot read**.
 
-Install with `DEPLO_STORAGE_ONLY=1`, or pick **Backups only**.
+Install with `DEPLO_STORAGE_ONLY=1`, or pick the **Backups** tile when you add a server. The card badge afterwards reads **Backups only**.
 
 ### Migration source
 
@@ -70,8 +64,6 @@ It is also **the only server Deplo uninstalls itself from**. On the
 servers page it is listed apart, with a single action to take it back out
 again.
 
----
-
 ## Change a role later
 
 There is no in-place role change. Remove the server and install it again
@@ -79,7 +71,8 @@ with the role you want. Removal is
 [trust revocation](/operations/remove-a-server-or-uninstall), so nothing on
 the host is destroyed by that step alone.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **A backups-only host has no Docker.** The agent's systemd unit is
   installed without the docker group, because systemd would refuse to
   start a unit whose group does not exist.
@@ -89,15 +82,12 @@ the host is destroyed by that step alone.
   decommissioning.** Uninstall it when the migration is done.
 - **Roles do not change who may use the server.** That is
   [team access](/operations/servers), a separate setting.
-</Callout>
 
 <Callout type="info">
 Server not enrolling or showing unhealthy? See [Servers and agents troubleshooting](/troubleshooting/servers-and-agents).
 </Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Server className="text-blue-400" />} title="Add a server" description="Install the agent and pick a role" href="/operations/servers/add-a-server" />

@@ -5,18 +5,10 @@ description: Cap what one app or database may take from its server, memory, CPU,
 
 import { Activity, Server, Database } from "lucide-react";
 
----
-
-## What it is
-
 Without them, one runaway container can take a
 host down, and everything else with it.
 
 **Settings -> Resources**, on an app or a database.
-
----
-
-## How it works
 
 Each field becomes a key in the rendered Compose file, applied by Docker
 when the container starts. They are enforced by the kernel, not by Deplo,
@@ -24,8 +16,6 @@ which is why they take effect on the next deploy and not before.
 
 Every dimension is independently optional. Setting a memory limit does not
 oblige you to set anything else.
-
----
 
 ## The two that matter
 
@@ -47,7 +37,7 @@ out and says why.
 />
 
 Under each field a slider runs across the server's total: drag it or type
-the number, both move together. With the **View metrics** permission the
+the number, both move together. With the **View monitoring** permission the
 same bar shows what the app uses right now and its peak over the last 15
 minutes, and the server card suggests a size with 1.5x headroom over that
 peak: **Apply** fills the fields, **Save limits** keeps them. A cap under
@@ -63,8 +53,6 @@ it is terminated, not slowed down. Set it above the app's real peak, not
 at it, and watch [Monitoring](/guides/observability/monitoring) for a while before
 tightening.
 </Callout>
-
----
 
 ## Advanced limits
 
@@ -113,7 +101,8 @@ tightening.
   }}
 />
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Disk quota only works on some hosts.** It needs `overlay2` on XFS with
   project quotas, or devicemapper. Anywhere else, Compose rejects the key
   and the deploy fails. Leave it alone unless you know the storage driver.
@@ -127,11 +116,8 @@ tightening.
   that applies always. Shares only matter when the machine is contended.
 - **A negative OOM priority needs the host-volumes grant.** It asks the
   kernel to kill other containers first, so it is gated like a bind mount.
-</Callout>
 
----
-
-## If it does not work
+## Troubleshooting
 
 - **The container is killed repeatedly** - the memory limit is under its
   real peak. Raise it, or fix the leak.
@@ -140,13 +126,9 @@ tightening.
 - **The limits seem to do nothing** - they were saved but not deployed.
   Redeploy.
 
-<Callout type="info">
 More in [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Activity className="text-blue-400" />} title="Monitoring" description="What the app actually uses" href="/guides/observability/monitoring" />

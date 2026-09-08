@@ -13,10 +13,6 @@ Use it for software that ships as a Compose stack, or for your own
 multi-service setups. For a single container from one image,
 [Deploy a Docker image](/guides/deploy/docker-image) is simpler.
 
----
-
-## How it works
-
 Your YAML is treated as **authored input, not a trusted document**. Deplo
 parses it, checks it, folds in what it must, and ships the result to the
 agent.
@@ -36,9 +32,9 @@ agent.
 
 **What it drops or refuses:**
 
-- **Hand-written `aliases:` are dropped.** Every container already registers
-  its service name as a DNS alias, and Docker round-robins a name two
-  containers both claim.
+- **`aliases:` on a network Deplo owns are dropped.** Every container already registers its
+  service name there, and Docker round-robins a name two containers both claim. Aliases on your
+  own private networks are yours and are kept.
 - **`networks: [deplo]` is rewritten, not refused.** Whatever you wrote lands
   on your environment's network. Copy-pasted compose files and imports from
   other platforms keep working. The same is true of a network you point
@@ -52,11 +48,14 @@ agent.
   `bridge` included, which is the one docker shares between everything that asks
   for it. One naming a network Deplo manages is refused outright, and so is one
   filled in from a variable (`$NET` as much as `${NET}`), since the value only
-  exists at `compose up` and nothing can inspect it before then.
-- **Six names belong to the platform and are refused:** `deplo`, `postgres`,
-  `traefik`, `deplo-traefik`, `deplo-socket-proxy` and `docker-socket-proxy`.
-  The proxy resolves two of those by name from inside your network, so
-  claiming one collects the panel's traffic or the proxy's routing config.
+  exists at `compose up` and nothing can inspect it before then. `network_mode: container:<name>`
+  is refused before either check: it hands your container another container's whole stack.
+- **Six names belong to the platform:** `deplo`, `postgres`, `traefik`, `deplo-traefik`,
+  `deplo-socket-proxy` and `docker-socket-proxy`. The proxy resolves two of those by name from
+  inside your network, so claiming one collects the panel's traffic or the proxy's routing config.
+  The editor warns about them; a service actually joining the shared network under one of these
+  names is refused, and one that would not have joined is simply left off it and keeps a private
+  `default` instead.
 - **A service claims more than its own name.** The refusal also covers
   `hostname:`, which Docker registers in DNS exactly like a service name,
   and it ignores capitalisation, because DNS does: `Postgres` answers a
@@ -71,8 +70,6 @@ agent.
   the lookups between them, so the deploy log names the other stack and you
   rename one. Only the services you route, or attach to the network yourself,
   take a name there.
-
----
 
 ## Create one
 
@@ -122,8 +119,6 @@ an address of its own. Databases are listed but never pre-selected.
 
 Edit the file later in **Settings -> Deployments**.
 
----
-
 ## Which service gets the address
 
 A stack has several containers, but only one of them is the front door. Deplo
@@ -144,8 +139,6 @@ Some stacks want the UI on `/` and its API on `/api` of the **same** hostname,
 because they only take one base URL. Add the second row in **Domains** with the
 same hostname and a **Path** of `/api`.
 </Callout>
-
----
 
 ## What is different about a Compose app
 
@@ -168,15 +161,13 @@ same hostname and a **Path** of `/api`.
   would read both as numbers; a variable is text by the time a container
   reads it.
 
----
-
 ## Extra flags
 
 **Settings -> Deployments -> Advanced settings -> Extra compose flags**
 passes additional flags to `docker compose up`, exactly as typed.
 
 It is additive only: anything that would change the project name, the stack
-file or the env file is refused, because those are how Deplo finds your
+file, the project directory or the env file is refused, because those are how Deplo finds your
 stack again. The page shows the whole command as the server will run it.
 
 Deplo's own part already ends in `--pull always`, which is what makes a
@@ -187,7 +178,8 @@ redeploy pick up a moved tag. A `--pull` of your own replaces it:
   `pull access denied`.
 - **`--wait`** makes the deploy wait for every service's health check.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **`version:` and `ports:` are usually noise here.** Deplo routes through
   Traefik, so publishing a host port is rarely what you want, and it needs
   the port-exposure grant.
@@ -200,15 +192,11 @@ redeploy pick up a moved tag. A `--pull` of your own replaces it:
   full list, which is longer than most people expect.
 - **The agent does not re-validate your YAML.** The checks that matter
   happen on save and on deploy, not on the agent.
-</Callout>
 
----
+## Troubleshooting
 
-## If it does not work
-
-- **The editor refuses a service name** - it is a name the platform or a
-  managed database answers to. Rename the service, or its `hostname:` if that
-  is what the message names.
+- **The editor flags or refuses a service name** - it is a name the platform or a managed
+  database answers to. Rename the service, or its `hostname:` if that is what the message names.
 - **`cannot resolve host`, and the name is another app** - that app is in a
   different environment, and nothing crosses an environment boundary. Move one
   of them so both sit in the same one. The deploy log names it before the
@@ -234,9 +222,7 @@ redeploy pick up a moved tag. A `--pull` of your own replaces it:
 Still stuck? See [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
 </Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Lock className="text-blue-400" />} title="Host access" description="What a Compose file is and is not allowed to reach" href="/advanced/host-access-and-privileges" />

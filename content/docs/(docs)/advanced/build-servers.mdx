@@ -11,16 +11,8 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
----
-
-## What it is
-
 Use it when builds are starving production of CPU, or when several small
 servers would rather share one big builder.
-
----
-
-## How it works
 
 A build server is a server installed in the **Build only** role: it gets
 Docker and the address-pool setup, because it runs the full build pipeline,
@@ -33,8 +25,6 @@ each other. The deploy occupies a slot in the **builder's** queue, since
 that is where the cost is.
 
 Build logs still belong to the app. Read them where you always do.
-
----
 
 ## When the builder is down
 
@@ -61,8 +51,6 @@ from ever building anywhere else, turn off **Build somewhere else if that
 server is down** in that app's build settings: its deploy then fails instead,
 and the running version is left alone.
 
----
-
 ## Set one up
 
 <Steps>
@@ -84,7 +72,7 @@ Open the app, then **Settings -> Deployments -> Advanced settings**.
 
 ### Set where it builds
 
-- **Automatic** lets Deplo choose
+- **Automatic** lets Deplo choose, and it only ever picks a **Build only** host: the least busy, oldest first on a tie. On a fleet with no build-only server it simply builds locally
 - This app's own server
 - A named build server
 
@@ -104,7 +92,8 @@ or on any server you marked as a fallback.
 </Step>
 </Steps>
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Both machines need the same CPU architecture.** An `arm64` builder
   cannot produce an `amd64` image. Mismatched choices are shown but
   disabled.
@@ -116,11 +105,8 @@ or on any server you marked as a fallback.
 - **The build cache lives on the builder.** Moving an app to a different
   builder starts cold.
 - **A build-only server is not a deploy target**, and never will be.
-</Callout>
 
----
-
-## If it does not work
+## Troubleshooting
 
 - **The builder does not appear in the list** - it is not in the Build
   only role, or its architecture does not match the target.
@@ -128,16 +114,12 @@ or on any server you marked as a fallback.
   fallback did its job. The deploy log names the host that took over; check
   the builder's health.
 - **Deploys queue behind each other** - they share the builder's
-  concurrency. Raise it in that server's **Overview** if the machine can
+  concurrency. Raise it on that server's **Access** tab if the machine can
   take it.
 
-<Callout type="info">
 More in [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Tags className="text-blue-400" />} title="Server roles" description="Everything, Build only, Backups only, Migration source" href="/advanced/server-roles" />

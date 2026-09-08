@@ -5,20 +5,12 @@ description: Credentials for scripts, CI and AI agents, with their own capabilit
 
 import { Library, Bot, RefreshCw } from "lucide-react";
 
----
-
-## What it is
-
 For anything that talks to Deplo without a browser, like an
 [MCP agent](/guides/mcp-server).
 
 **Settings -> API tokens**, under your account. A token is **personal**: it
 belongs to the person who created it, and nobody else can see, edit or
 revoke it - not a team admin, not an instance admin.
-
----
-
-## How it works
 
 A token is **a principal with its own capabilities**, not an impersonation
 of the person who made it. You choose what it can do when you mint it, and
@@ -48,8 +40,6 @@ nobody has to hunt for it: the lever is the member, never the token.
 reaching the team - a number, never the credentials.
 
 The secret is shown **once**, at creation. Only its hash is stored.
-
----
 
 ## Create one
 
@@ -83,8 +73,8 @@ Everything stays editable on the next step.
 
 ### Name it and set an expiry
 
-A new token defaults to **90 days**. **Never** is available if you accept
-what that means.
+The picker offers **30 days**, **90 days**, **a year** and **Never**, and a new token defaults to
+90 days. A token can never mint or re-author a successor that outlives it.
 
 </Step>
 <Step>
@@ -121,8 +111,6 @@ You will not see it again.
 </Step>
 </Steps>
 
----
-
 ## Use one
 
 Send it as a bearer token, and name the team you are acting in:
@@ -139,20 +127,18 @@ A bearer request acts in **one** team. Without the header it lands in the
 first team the token reaches. The full surface is in the
 [API reference](/api-reference).
 
----
-
 ## Scope, and the rule that surprises people
 
-**Naming a project or an app drops every team-wide capability in that
-team.**
+**Naming a project, a folder or an app clamps the token to the capabilities that mean something
+at that level**, and drops the rest. Managing the team's members is not one of them, so a token
+scoped to one app cannot do it. Naming a whole **team** does not clamp anything.
 
-That is deliberate. A token scoped to one app should not also be able to
-manage the team's members. A scope that silently kept team-level powers
-would be a scope in name only.
-
+That is deliberate: a scope that silently kept team-level powers would be a scope in name only.
 Need both? Mint two tokens.
 
----
+Two more limits worth knowing. A bearer token can edit or revoke **only itself**, never another
+token. And instance admin is opt-in **per token**: minting one as an instance admin does not make
+it one.
 
 ## Connected clients and OAuth
 
@@ -172,8 +158,6 @@ By default the connection reaches every team where you hold **Connect AI
 agents** and MCP is on. Narrow it on the consent screen if the client
 should only see part of that.
 
----
-
 ## Expiry
 
 `api_tokens.expires_at` is checked **before the team is picked and before
@@ -186,7 +170,8 @@ to tell you why a credential stopped working.
 Tokens minted before expiry existed have none, and stay that way until you
 edit them.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Shown once.** Lost means revoke and mint again.
 - **A token cannot transfer team ownership.** That action needs a human
   with a password and a second factor.
@@ -196,11 +181,8 @@ edit them.
 - **Only its owner can revoke it.** A team takes the access away through
   the member: remove them, or take away their **Use API tokens** or
   **Connect AI agents** capability.
-</Callout>
 
----
-
-## If it does not work
+## Troubleshooting
 
 - **401** - missing, revoked, or expired.
 - **403 on one field** - the token lacks that capability, or the scope
@@ -209,13 +191,9 @@ edit them.
   gone means the token no longer reaches that team), it expired, or the
   team turned on two-factor.
 
-<Callout type="info">
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Library className="text-blue-400" />} title="API reference" description="The full GraphQL surface" href="/api-reference" />
