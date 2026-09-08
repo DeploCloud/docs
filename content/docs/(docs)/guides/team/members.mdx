@@ -5,10 +5,6 @@ description: Add people to a team, give them a role, and answer "who did that" a
 
 import { ShieldCheck, History, KeyRound, Settings } from "lucide-react";
 
----
-
-## How it works
-
 Everything in Deplo belongs to a team, and a person reaches it through a
 **membership**. A membership carries a **role**, which is a named set of
 [capabilities](/reference/capabilities).
@@ -20,8 +16,6 @@ and a self-hosted instance often cannot. Instead there are two paths:
   directly.
 - The person **has no account**: an instance admin mints a **registration
   link** and sends it to them however they like.
-
----
 
 ## Add somebody who already has an account
 
@@ -50,8 +44,6 @@ Search by username, pick them, choose the role, then **Add to team**.
 </Steps>
 
 They see your team in their team switcher immediately.
-
----
 
 ## Invite somebody new
 
@@ -91,11 +83,10 @@ Deplo mints a single-use link. **It works once and expires in 24 hours.**
 They open it, choose a username and a password, and land in **their own
 team**. Add them to yours from **Settings -> Members**.
 
-Pending links are listed on the same page, and can be revoked before use.
-Only a hash of the link is stored, and it is consumed atomically, so it
-cannot be used twice even by two people clicking at the same time.
-
----
+Pending links are listed on the same page, and can be revoked before use. A link is consumed
+atomically, so it cannot be used twice even by two people clicking at the same time. Deplo keeps
+an encrypted copy of the link for its 24 hours so an admin can copy it again from the list; after
+that only its hash remains.
 
 ## Roles and limited access
 
@@ -120,8 +111,6 @@ editing the role no longer rewrites their set. **Assigning them a role
 again**, from the member page or the API, puts them back on it, and the
 next role edit reaches them like everyone else.
 
----
-
 ## Remove somebody
 
 From the member's **Advanced** tab. Their memberships end, their sessions
@@ -140,7 +129,8 @@ clean:
   written to [Activity](/guides/team/activity), and the primary owner can
   share the folder on from there.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **A team always keeps somebody who can administer it.** No role edit and
   no removal may leave zero holders of `manage_members`, `manage_roles` or
   `manage_team`.
@@ -151,9 +141,9 @@ clean:
 - **Two-factor can be required at the team level**, and an unenrolled
   member then resolves nothing there at all. See
   [Account security](/guides/team/account-security).
-</Callout>
 
-<Callout type="error" title="If it does not work">
+## Troubleshooting
+
 - **The user search finds nobody**: they have no account on this instance
   yet. Use a registration link.
 - **A registration link says it is used or expired**: mint a new one.
@@ -161,11 +151,8 @@ clean:
   and they have not enrolled, or their role has almost no capabilities.
 
 See [Sign-in and access](/troubleshooting/sign-in-and-access) for more.
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

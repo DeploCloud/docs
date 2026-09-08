@@ -9,10 +9,6 @@ Deciding what each person can do, using a
 **[role](/guides/roles-and-permissions/roles)** or a
 **[folder share](/guides/roles-and-permissions/folder-shares)**.
 
----
-
-## How it works
-
 A capability is **one action**: `deploy_apps`, `delete_apps`,
 `manage_domains`, `restore_backups`. There are 44 and they are
 deliberately not bundled, because an administrator who can only grant
@@ -49,8 +45,6 @@ one at a single node in the tree. See
 [Folder shares](/guides/roles-and-permissions/folder-shares) for how that
 combines with a team role.
 
----
-
 ## The floor and the ceiling
 
 - **`view`** is the always-on floor. Every member has it.
@@ -62,7 +56,8 @@ combines with a team role.
   container, not just a bind mount. See
   [Host access](/advanced/host-access-and-privileges).
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **The interface only hides buttons.** The real check happens
   server-side before every write, and the API and the MCP server pass
   through the same code. A hidden button is not a security boundary and
@@ -75,9 +70,9 @@ combines with a team role.
 - **API tokens are capped by their creator.** A token can never do more
   than the person who made it can do **right now**, so narrowing
   somebody's role immediately narrows every token they minted.
-</Callout>
 
-<Callout type="error" title="If it does not work">
+## Troubleshooting
+
 - **A capability is greyed out while editing a role**: you do not hold it
   yourself.
 - **Somebody still cannot do the thing**: check for a folder share on
@@ -87,11 +82,8 @@ combines with a team role.
   it. Their member page shows the scope tree.
 
 See [Sign-in and access](/troubleshooting/sign-in-and-access) for more.
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

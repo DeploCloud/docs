@@ -13,8 +13,6 @@ not recommended for production. Try it out and share your feedback on
 
 ---
 
-## What it is
-
 A way to let an AI agent drive your infrastructure: deploy an app, read
 logs, check why a build failed, restart a database. It speaks the Model
 Context Protocol (MCP), the same protocol Claude, ChatGPT and coding agents
@@ -94,8 +92,6 @@ instead, which mints an ordinary token after you approve it.
 </Callout>
 
 ---
-
-## How it works
 
 The endpoint is `/api/mcp` on your own instance. It exposes one tool per
 action, and each tool is a GraphQL document that runs **in-process against
@@ -210,7 +206,8 @@ Deplo adds **no confirmation step of its own**. Destructive tools are
 flagged so the agent's own client can ask its user. If your agent does not
 ask, mint it a token that cannot do the thing you would not want it doing.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Off by default for a new team.** A token alone was never what made this
   safe. Whether an AI may act in this company's infrastructure is a
   decision to make, not one to inherit.
@@ -222,11 +219,10 @@ ask, mint it a token that cannot do the thing you would not want it doing.
 - **Scope it.** A token can be narrowed to one project, one folder or one
   app, which is a much better answer than trusting a prompt.
 - **Everything is in the activity trail**, including who opened the door.
-</Callout>
 
 ---
 
-## If it does not work
+## Troubleshooting
 
 - **The agent connects and sees no tools** - MCP is off for that team.
 - **Every call is refused** - the token lacks the capability, or the team
@@ -241,9 +237,7 @@ ask, mint it a token that cannot do the thing you would not want it doing.
   the tool does not take. The reply names that argument and lists the ones
   the tool does take.
 
-<Callout type="info">
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
-</Callout>
 
 ---
 
@@ -588,7 +582,7 @@ well-behaved client asks you first.
 
 ---
 
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<KeyRound className="text-blue-400" />} title="API tokens and OAuth" description="Credentials, scope and OAuth" href="/advanced/api-tokens-and-oauth" />

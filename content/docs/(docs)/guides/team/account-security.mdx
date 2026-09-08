@@ -13,10 +13,6 @@ team context. Two tabs:
   what the account currently carries and what is worth doing next.
 - **Devices** - where that proof is being held right now.
 
----
-
-## How it works
-
 **Passwords** are hashed with scrypt, and the cost is stored inside each
 hash, so raising it later re-hashes people in place on their next sign-in
 rather than locking anybody out.
@@ -24,14 +20,14 @@ rather than locking anybody out.
 **Every password a person chooses is checked against Have I Been Pwned**,
 using the k-anonymous range API: a prefix of the hash leaves this
 instance, never the password. The check **fails open**, so an instance
-with no outbound access still works. It runs on account creation, password
-changes, admin resets, HTTP basic auth credentials, the Traefik dashboard
-password and a database engine password.
+with no outbound access still works. It runs on account creation, registration-link
+signup, password changes, admin resets, HTTP basic auth credentials and a database engine
+password.
 
-A password Deplo generates for you is exempt, since it is random by
-construction.
+A password Deplo generates for you is exempt, since it is random by construction.
 
----
+The policy itself, checked before the breach list: **8 to 200 characters, with at least one
+digit, one lowercase letter, one uppercase letter and one character that is neither.**
 
 ## Change your password
 
@@ -41,8 +37,6 @@ mix and breach exposure before it is accepted.
 
 Changing it does not sign out your other devices. Do that deliberately
 with **Sign out everywhere else**.
-
----
 
 ## Two-factor authentication
 
@@ -91,8 +85,6 @@ or a recovery code in `xxxxx-xxxxx` form.
 
 **Turn off** removes it, unless a team or a role you hold requires it.
 
----
-
 ## Passkeys
 
 **Beta.** A passkey is a **full sign-in method**, not a second step:
@@ -117,8 +109,6 @@ moves to a different address, every passkey shows **Not usable here** and
 the password still signs you in, so you can register a new one. This is
 how the standard works and cannot be worked around.
 
----
-
 ## Devices
 
 The **Devices** tab puts the browser you are reading this in at the top,
@@ -128,8 +118,6 @@ operating system, so an entry you do not recognise stands out.
 
 **Sign out** ends one. **Sign out everywhere else** ends all but the one
 you are using, which is the right button after losing a laptop.
-
----
 
 ## When your team requires two-factor
 
@@ -141,7 +129,8 @@ The requirement is total while it is unmet: you resolve nothing in that
 team through the interface, through the API, or through any token you
 created.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Recovery codes are shown once.**
 - **A password change does not revoke sessions.** Use **Sign out
   everywhere else**.
@@ -150,9 +139,9 @@ created.
   integration.
 - **Losing both the authenticator and the recovery codes** means an
   instance admin has to reset your account.
-</Callout>
 
-<Callout type="error" title="If it does not work">
+## Troubleshooting
+
 - **The six-digit code is rejected**: the phone's clock has drifted. TOTP
   is time-based.
 - **Passkeys all say Not usable here**: the panel is on a different
@@ -162,11 +151,8 @@ created.
   lock screen.
 
 See [Sign-in and access](/troubleshooting/sign-in-and-access) for more.
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

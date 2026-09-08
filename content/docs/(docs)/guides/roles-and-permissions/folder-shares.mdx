@@ -42,21 +42,28 @@ Choose what they get inside this folder.
 </Step>
 </Steps>
 
-Most specific wins: a grant on a single app beats a grant on its folder,
-which beats the team role. Members reached this way carry a **Limited
-access** badge on the members list, because their role name no longer
-tells the whole story.
+Most specific wins, over four rungs: a grant on a single **app** beats one on its
+**environment**, which beats one on its **folder** chain, which beats one on the **project**,
+which beats the team role. Members reached this way carry a **Limited access** badge on the
+members list, because their role name no longer tells the whole story.
 
-<Callout type="info" title="A folder is private">
-A folder is visible to its **owner**, the people it is **shared** with,
-and team administrators. Move an app into a folder and it leaves
-everyone else's Overview until the folder is shared with them.
+## Who can create and share one
 
-A share ends with the membership: remove the member and it is revoked,
-and the folders they owned pass to the primary owner.
-</Callout>
+Creating a folder needs the `create_folders` capability. **Sharing one needs no capability at
+all**: you share a folder because you own it, or because you are a team or instance
+administrator. What you may hand out is bounded by what you yourself hold inside that folder, so
+a share can never manufacture access its author does not have.
 
-## See also
+## A folder is private
+
+A folder is visible to its **owner**, the people it is **shared** with, and team administrators.
+Move an app into a folder and it leaves everyone else's Overview until the folder is shared with
+them.
+
+A share ends with the membership: remove the member and it is revoked, and the folders they owned
+pass to the primary owner.
+
+## Next steps
 
 <Cards>
   <Card title="Roles and permissions" description="The capability model" href="/guides/roles-and-permissions" />
