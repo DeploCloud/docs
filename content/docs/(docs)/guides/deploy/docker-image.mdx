@@ -1,37 +1,21 @@
 ---
 title: Deploy a Docker image
-description: Run an image that is already built, with no build step and no rollback.
+description: Run an image that is already built, from any registry you can reach.
 ---
 
 import { Container, LayoutTemplate, Layers, HardDrive, Upload } from "lucide-react";
 
----
+Running an image that is already built, from Docker Hub, GitHub Container Registry, or any
+registry you can reach. There is no build step at all: the app stores a reference such as
+`nginx:1.27-alpine` or `ghcr.io/acme/api:v2.3.1`, the control plane renders a Compose file with
+that image plus the routing labels and your variables, and the agent pulls and starts it.
 
-## What it is
+Use it for software you did not write - a database viewer, a metrics dashboard, a game server -
+and for images your own CI already builds and pushes.
 
-Running an image that is already built, from Docker Hub, GitHub Container Registry, or any registry you can reach. There is no build step at all: Deplo pulls the image and runs it.
-
-Use it for:
-
-- Software you did not write (a database viewer, a metrics dashboard, a game server).
-- Images your own CI already builds and pushes.
-
----
-
-## How it works
-
-The app stores an image reference such as `nginx:1.27-alpine` or `ghcr.io/acme/api:v2.3.1`.
-
-On deploy, the control plane renders a Compose file with that image, the Traefik routing labels and your variables, and the agent pulls and starts it.
-
-Because nothing is built, several features simply do not apply:
-
-- No build log worth reading.
-- No build cache.
-- No build server.
-- **No rollback**, because a rollback re-runs an image Deplo built and kept. Moving the tag is your version control here.
-
----
+Because nothing is built, several features do not apply: no build log worth reading, no build
+cache, no build server, and **no rollback**, because a rollback re-runs an image Deplo built and
+kept. Moving the tag is your version control here.
 
 ## Deploy one
 
@@ -40,80 +24,77 @@ Because nothing is built, several features simply do not apply:
 
 ### Start a new app
 
-**Add new**, then **Application**. The wizard's first step is where you pick the source - or
-**Template**, to start from the catalogue instead.
+**Add new**, then **Application**.
 
 </Step>
 <Step>
 
 ### Pick the image
 
-Pick the **Docker Image** tile, then **Next**. Type the image reference: the field
-autocompletes from public registries and from any private registry you have added, and the
-**App name** fills itself in from the image.
-
-</Step>
-<Step>
-
-### Set the container port
-
-Under **Advanced**, in **Build method**. Deplo cannot detect it from an image it has not
-built, so if the software listens on something other than `80`, say so now or fix it later in
-**Domains**.
+Pick the **Docker Image** tile and type the image reference. The name field autocompletes against
+Docker Hub; tags are completed and checked for existence using any registry credentials you have
+added. The **App name** fills itself in from the image.
 
 </Step>
 <Step>
 
 ### Deploy
 
-The server is under **Advanced** too, already picked. Click **Deploy**.
+The wizard shows no build settings for an image app, because there is nothing to build. The server
+is under **Advanced**, already picked. Click **Deploy**.
 
 </Step>
 </Steps>
 
----
+## The port
+
+Deplo routes to port **3000** unless you say otherwise, and an image app has no build settings
+card to change that on. Set the port **on the domain**, in the app's **Domains** tab: the
+**Application port** field on each hostname is what routing reads. That is also how one image can
+serve two hostnames on two different ports.
 
 ## Private registries
 
-Add credentials once in **Settings -> Registries** and every app on the team can pull from that registry, the password is encrypted and never returned. See [Container registries](/guides/server/container-registries) for the full setup.
-
----
+Add credentials once in **Settings -> Registries** and every app on the team can pull from that
+registry. The password is encrypted and never returned. See
+[Container registries](/operations/servers/container-registries) for the full setup.
 
 ## Settings that matter for an image app
 
 | Setting | Where | Note |
 | --- | --- | --- |
 | Image reference | **Settings -> Deployments** | Change it and redeploy to move versions |
-| Container port | **Settings -> Deployments** | Required, since nothing detected it |
+| Port | **Domains**, per hostname | An image app has no build settings card |
 | Environment variables | **Environment** | The normal way to configure this kind of software |
 | Volumes | **Settings -> Storage** | A prebuilt image must name the mount path itself |
 | Resource limits | **Settings -> Resources** | Worth setting for software you did not write |
 
-<Callout type="warn" title="Limits and gotchas">
-- **No rollback.** There is no image Deplo owns to go back to. Pin a specific tag or a digest rather than `latest` if you care about reproducibility.
-- **`latest` does not re-pull by itself.** Redeploying pulls again; nothing watches the registry for you.
-- **The mount path is not derived.** For a built app Deplo can infer that `uploads` means `/app/uploads`. For a prebuilt image it cannot, so you type the full path.
-- **Multi-container software wants Compose, not this.** If the vendor ships a `docker-compose.yml`, use [Compose apps](/advanced/compose-apps) or look for it in [Templates](/guides/deploy/from-template).
-</Callout>
+## Good to know
 
----
+- **No rollback.** There is no image Deplo owns to go back to. Pin a specific tag or a digest
+  rather than `latest` if you care about reproducibility.
+- **`latest` does not re-pull by itself.** Redeploying pulls again; nothing watches the registry
+  for you.
+- **The mount path is not derived.** For a built app Deplo can infer that `uploads` means
+  `/app/uploads`. For a prebuilt image it cannot, so you type the full path.
+- **Multi-container software wants Compose, not this.** If the vendor ships a
+  `docker-compose.yml`, use [Compose apps](/advanced/compose-apps) or look in
+  [Templates](/guides/deploy/from-template).
 
-## If it does not work
+## Troubleshooting
 
-- **`pull access denied`** - the image is private and no registry credential matches its host. Add it in **Settings -> Registries**.
-- **The container starts and exits immediately** - it usually needs a variable or a volume. Read [Logs](/guides/observability/logs); the exit reason is in there.
-- **The URL times out** - wrong port. Check what the image documents and set it in **Settings -> Deployments**.
+| Symptom | What to check |
+| --- | --- |
+| `pull access denied` | The image is private and no registry credential matches its host. Add one in **Settings -> Registries**. |
+| The container starts and exits immediately | It usually needs a variable or a volume. Read [Logs](/guides/observability/logs); the exit reason is in there. |
+| The URL times out | Wrong port. Check what the image documents and set **Application port** on the domain. |
 
-<Callout type="info">
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
-  <Card icon={<Container className="text-blue-400" />} title="Container registries" description="Add a private registry" href="/guides/server/container-registries" />
+  <Card icon={<Container className="text-blue-400" />} title="Container registries" description="Add a private registry" href="/operations/servers/container-registries" />
   <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="The same idea, preconfigured" href="/guides/deploy/from-template" />
   <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="More than one container" href="/advanced/compose-apps" />
   <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="Mount a path in a prebuilt image" href="/guides/data/persistent-storage" />

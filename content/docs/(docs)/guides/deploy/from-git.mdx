@@ -5,35 +5,20 @@ description: Point an app at a repository and let Deplo build, deploy and redepl
 
 import { GitBranch, Hammer, Webhook, GitPullRequest, Upload } from "lucide-react";
 
----
-
-## What it is
-
-Pointing an app at a repository and letting Deplo build it. This is the source most apps use.
-
-- **GitHub** has the deepest integration.
-- **GitLab, Bitbucket, Gitea and Forgejo** work through a token.
-- **Any other Git server** works through a plain URL.
-
----
-
-## How it works
-
-The repository is cloned **by the agent, on the target server**, using a credential the control plane decrypts at that moment. Nothing is cloned onto the control plane.
-
-Deplo then detects the framework, builds an image and brings the stack up.
+Pointing an app at a repository and letting Deplo build it is the source most apps use. The
+repository is cloned **by the agent**, on the server that will build it, using a credential the
+control plane decrypts at that moment. Nothing is ever cloned onto the control plane.
 
 What the provider gives you depends on how it is connected:
 
-|  | GitHub App | GitLab, Bitbucket, Gitea (Beta) | A bare Git URL |
+| | GitHub App | GitLab, Bitbucket, Gitea (beta) | A bare Git URL |
 | --- | --- | --- | --- |
 | Repository picker | yes | yes | no, you paste the URL |
 | Branch list | yes | yes | no, you type it |
-| Deploy on push | yes, automatic webhook | yes, automatic webhook | no, use the deploy hook |
+| Deploy on push | yes, the App's own webhook | yes, a webhook per repository | no, use the deploy hook |
 | Pull request previews | yes | no | no |
+| Wizard prefill | yes | no | no |
 | Credential | short-lived installation token | a personal access token you store once | the URL, or a stored token |
-
----
 
 ## Deploy one
 
@@ -42,25 +27,28 @@ What the provider gives you depends on how it is connected:
 
 ### Start a new app
 
-On the Overview, open **Add new**, then **Application**. The wizard's first step is
-where you pick the source - or **Template**, to start from the catalogue instead.
+On the Overview, open **Add new**, then **Application**. The wizard's first step is where you pick
+the source.
 
 </Step>
 <Step>
 
 ### Pick the source
 
-Pick the **GitHub** or **Git** tile, then **Next**.
+Pick the **GitHub** or **Git** tile.
 
 <Tabs items={['GitHub', 'Git']}>
 <Tab value="GitHub">
 
-If nothing is connected yet, click **Connect GitHub**. Deplo creates the GitHub App through GitHub's manifest flow, so there is no client id or private key to copy. Choose which repositories it can see, then pick the repository and the branch.
+If nothing is connected yet, click **Connect GitHub**. Deplo creates the GitHub App through
+GitHub's manifest flow, so there is no client id or private key to copy. Choose which repositories
+it can see, then pick the repository and the branch.
 
 </Tab>
 <Tab value="Git">
 
-Pick the provider, paste the repository URL and set the production branch. Add the connection first in **Settings -> Git** if the repository is private.
+Pick the provider, paste the repository URL and set the production branch. Add the connection
+first in **Settings -> Git** if the repository is private.
 
 </Tab>
 </Tabs>
@@ -70,98 +58,100 @@ Pick the provider, paste the repository URL and set the production branch. Add t
 
 ### Check what Deplo read
 
-The last card arrives filled in: the **App name** from the repository, the framework it
-recognised, and the **Build command** and **Deploy command** your `package.json` declares.
-**Reset** empties a command, which hands the decision back to the builder.
+**GitHub only.** The last card arrives filled in: the **App name** from the repository, the
+framework it recognised, and a **Build command** read from your `package.json`. The **Deploy
+command** comes from the framework's own convention rather than your `start` script, which in most
+projects is the dev server. **Reset** empties a command, which hands the decision back to the
+builder.
 
-</Step>
-<Step>
-
-### Leave push deploys on
-
-Leave **Automatic deployments** on unless you want to release by hand.
+A repository on the Git tab is not read ahead of time, so its card arrives empty and detection
+happens on the first build instead.
 
 </Step>
 <Step>
 
 ### Deploy
 
-The server, the build method and the watch paths are under **Advanced**, already answered.
-Click **Deploy**.
+Leave **Automatic deployments** on unless you want to release by hand. The server, the build
+method and the watch paths are under **Advanced**, already answered. Click **Deploy**.
 
 </Step>
 </Steps>
 
----
-
 ## Change the source later
 
-**Settings -> Deployments**, the **Deploy Source** card. You can move an app between repositories, branches and even source types. The app keeps its slug, its domains, its variables and its volumes, so switching from a Docker image to a repository does not start over.
+**Settings -> Deployments**, the **Deploy Source** card. You can move an app between repositories,
+branches and even source types. The app keeps its slug, its domains, its variables and its
+volumes, so switching from a Docker image to a repository does not start over.
 
 <TypeTable
   type={{
     "Repository, branch": {
       type: "text",
-      description: "What gets cloned",
+      description: "What gets cloned. On the Deploy Source card",
     },
     "Root directory": {
       type: "path",
-      description: "Subdirectory to build from. A monorepo points each app at its own package",
+      description: "Subdirectory to build from. On the Deploy Source card, under Additional options",
+    },
+    Server: {
+      type: "select",
+      description: "Which server runs it. Same drawer. Shown only when the fleet has more than one",
     },
     "Build method": {
       type: "select",
-      description: "Railpack, Nixpacks, Dockerfile or Static. See Build settings",
+      description: "Railpack, Nixpacks, Dockerfile or Static. On the Build and output card",
     },
     "Deploy trigger": {
       type: "select",
-      description: "On push to branch or On new tag",
+      description: "On push to branch, or On new tag. In the Deploy on push card's Trigger drawer",
     },
-    Submodules: {
+    "Include submodules": {
       type: "boolean",
-      description: "Clone with --recurse-submodules",
+      description: "Clone with --recurse-submodules. Same drawer",
     },
     "Watch paths": {
       type: "text",
-      description: "Only auto-deploy when a push touched these globs",
-    },
-    "Deploy to": {
-      type: "select",
-      description: "Which server runs it",
+      description: "Only auto-deploy when a push touched these globs. Same drawer",
     },
   }}
 />
 
-Saving the source does not deploy. Click **Redeploy** when you are ready.
-
----
+**Save source** does not deploy: click **Redeploy** when you are ready. An upload source is the
+exception, where the same footer reads **Save & Deploy** and does both.
 
 ## Private repositories
 
-Deplo never asks you to paste a key into an app. Credentials live once on the connection, and every app that uses that host reuses them. See [Git providers](/guides/git-providers) for how each provider connects, what it unlocks, and what to do if a credential breaks.
+Deplo never asks you to paste a key into an app. Credentials live once on the connection, and
+every app using that host reuses them. See [Git providers](/guides/git-providers) for how each
+provider connects, what it unlocks, and what to do if a credential breaks.
 
-<Callout type="warn" title="Limits and gotchas">
-- **Only a GitHub app can have pull request previews.** The settings page is visible for other sources but disabled, with the reason on it.
-- **A bare Git URL cannot register a webhook.** Deploy on push is not available, and the [deploy hook](/guides/releases/automatic-deployments) is how you trigger it instead.
-- **Watch paths fail open.** When a webhook delivery carries no file list, which happens with some tag pushes, the deploy runs rather than being skipped.
-- **The branch is the app's, not the repository's.** Two apps can track two branches of the same repository, and that is a normal way to run staging.
-- **Changing the repository does not clear the volumes.** Data written by the old code is still mounted.
-</Callout>
+## Good to know
 
----
+- **Only a GitHub App can have pull request previews.** The settings page is visible for other
+  sources but disabled, with the reason on it.
+- **A bare Git URL cannot register a webhook.** Deploy on push is not available, and the
+  [deploy hook](/guides/releases/automatic-deployments) is how you trigger it instead.
+- **Watch paths fail open.** When a delivery carries no file list, which happens with some tag
+  pushes, the deploy runs rather than being skipped.
+- **The branch is the app's, not the repository's.** Two apps can track two branches of the same
+  repository, and that is a normal way to run staging.
+- **Changing the repository does not clear the volumes.** Data written by the old code is still
+  mounted.
+- **With a build server set, the clone happens there**, not on the machine that runs the app.
 
-## If it does not work
+## Troubleshooting
 
-- **The repository picker is empty** - the GitHub App cannot see it. Use **Manage connected apps** and grant the repository on GitHub.
-- **`Authentication failed` in the clone step** - the stored token expired or was revoked. **Settings -> Git**, then **Test connection**.
-- **Pushes do not deploy** - check the webhook status on **Settings -> Deployments**, and see [Automatic deployments](/guides/releases/automatic-deployments).
+| Symptom | What to check |
+| --- | --- |
+| The repository picker is empty | The GitHub App cannot see it. Use **Manage connected apps** and grant the repository on GitHub. |
+| `Authentication failed` in the clone step | The stored token expired or was revoked. **Settings -> Git**, then **Test connection**. |
+| Pushes do not deploy | For a non-GitHub connection, check the webhook status on **Settings -> Deployments**. |
+| The wizard's last card is empty | That is a Git-tab repository. Detection runs on the first build instead. |
 
-<Callout type="info">
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<GitBranch className="text-blue-400" />} title="Git providers" description="Connecting each provider in detail" href="/guides/git-providers" />
