@@ -5,16 +5,11 @@ description: Every open pull request gets its own running copy of the app at its
 
 import { GitBranch, Variable, Globe } from "lucide-react";
 
-Reviewers click a link instead of checking out a branch.
-
----
-
-## How it works
-
-A preview is a separate stack, `deplo-<slug>__pr-<n>`, with its own
-containers, its own volumes and its own files directory. It inherits the
-app's environment variables with no configuration, because every variable
-is written for both production and preview.
+Reviewers click a link instead of checking out a branch. A preview is a separate stack,
+`deplo-<slug>__pr-<n>`, with its own containers, its own volumes and its own files directory. A
+preview of a branch in your own repository inherits the app's environment variables with no
+configuration, because every variable is written for both production and preview; a preview of a
+**fork** inherits nothing, which is the one rule worth reading before you turn this on.
 
 The hostname is **deterministic**: the same app and the same pull request
 always produce the same URL. That matters because the URL gets posted on
@@ -31,8 +26,6 @@ Two shapes, depending on whether you set a preview domain:
 A preview is deliberately **neither an App nor an Environment**. It has no
 team placement, no domains of its own, and no console, backups or monitoring
 surface.
-
----
 
 ## Turn it on
 
@@ -64,8 +57,6 @@ A **Pull requests** tab appears on the app.
 </Step>
 </Steps>
 
----
-
 ## Settings
 
 <TypeTable
@@ -88,16 +79,16 @@ A **Pull requests** tab appears on the app.
       description: "Days of inactivity before a preview is torn down.",
     },
     "Fork pull requests": {
-      type: "toggle",
+      type: "select",
       description:
-        "Whether a pull request from a fork gets one, and whether it waits for approval.",
+        "Wait for approval, Ignore them, or Build them automatically. A fork inherits none of the app's variables either way.",
     },
     Server: {
       type: "select",
       description:
         "Where previews run. Often a cheaper machine than production. Changing it stops the previews that are up; Redeploy brings each back on the new server, and a nip.io address follows it.",
     },
-    "Build them automatically": {
+    "Rebuild on every commit": {
       type: "toggle",
       description:
         "Rebuild on every new commit, or only on demand. Off, a new commit is still recorded, a fork has to be approved again, and Redeploy builds the branch tip.",
@@ -125,13 +116,10 @@ A **Pull requests** tab appears on the app.
 Everything past the switch is a normal form with a **Save** button, and
 the fields nobody needs to start are under **Advanced**.
 
----
-
 ## Day to day
 
-The **Pull requests** tab lists them: **New preview**, **Redeploy**,
-**Destroy preview**, **Open pull request**. **Deploy pull request** deploys
-one on demand.
+The **Pull requests** tab lists them, with **Redeploy**, **Destroy preview** and **Open pull
+request** on each row. **New preview** deploys one on demand.
 
 A preview from a fork shows **Needs approval** until somebody with
 `manage_previews` reviews it.
@@ -144,18 +132,15 @@ What the list follows on its own:
 - **The comment on the pull request** always says the current state:
   Building, Ready, Stopped, Waiting for approval, Torn down.
 
----
+## The two rules about forks
 
-## The two rules about forks and secrets
-
-- **A fork preview never receives a secret-typed variable.** Not because of
-  a setting, but because the code in that pull request was written by
-  somebody outside your team, and a build step can print anything it
-  likes.
-- **A fork preview waits for a human**, if you leave that on. Approving is
-  saying "I read this diff".
-
----
+- **A fork preview inherits no variables at all.** Not the app's own, not a linked shared
+  variable, not an instance-wide one, whatever the type. It gets its preview overrides and nothing
+  else. The code in that pull request was written by somebody outside your team, and a build step
+  can print anything it likes. An app that needs a database URL to boot needs one set as a
+  [preview override](/guides/config/environment-variables) before a fork preview will come up.
+- **A fork preview waits for a human**, unless you set **Fork pull requests** to build them
+  automatically. Approving is saying "I read this diff".
 
 ## Over the limit
 
@@ -185,7 +170,7 @@ request says **Stopped** so nobody clicks a dead link.
 <Callout type="error" title="If it does not work">
 - **The Pull requests tab never appears**: the app does not deploy from a
   GitHub App, or the switch is off.
-- **"This App cannot see pull requests yet"**: the GitHub App lacks the
+- ****Deplo is missing access on GitHub****: the GitHub App lacks the
   pull request permission. Use **Update on GitHub** on that notice.
 - **The preview URL shows a certificate warning**: it is on `nip.io`,
   which cannot have one. Set a preview domain.
@@ -195,9 +180,7 @@ request says **Stopped** so nobody clicks a dead link.
 See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.
 </Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

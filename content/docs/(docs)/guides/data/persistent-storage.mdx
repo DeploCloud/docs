@@ -5,17 +5,11 @@ description: Mount volumes, files and server folders so data survives a redeploy
 
 import { Database, Archive, Terminal, Lock } from "lucide-react";
 
----
-
-## What it is
-
 Somewhere for your app to write files that survive a deploy. A container's own filesystem is thrown away every time it is recreated, so uploads, caches and databases need a mount.
 
 Everything here is in **Settings -> Storage**, in the **Mounted storage** card.
 
 ---
-
-## How it works
 
 Three kinds, and the interface names them exactly this way.
 
@@ -30,8 +24,6 @@ A **Volume** is namespaced on the host as `deplo-<slug>-<name>`, so it can never
 A **File** is written into the app's files directory before the container starts, and the content is edited right there in the storage editor. That ordering matters: Docker answers a missing bind source by inventing an empty directory, which is how a config file silently becomes a folder in other tools. The same guard covers a `./config.yml` written in a Compose file, see below.
 
 A **Bind** reaches outside Deplo's control, which is why it needs the "Bind server folders" permission and why the row reads **Needs permission** instead of **Advanced** when you do not hold it.
-
----
 
 ## A Compose app's own mounts
 
@@ -64,8 +56,6 @@ data is perfectly safe no longer reads as one that throws everything away.
   YAML, not the Storage tab.
 </Callout>
 
----
-
 ## What deleting the app removes
 
 The three kinds are not treated the same way, and the difference is the whole reason **Bind** needs a permission.
@@ -83,8 +73,6 @@ A 40 GB game-server folder in a **Bind** is still 40 GB the day after you delete
 </Callout>
 
 In a [Compose app](/advanced/compose-apps) the same line is drawn by the name. Deplo only reclaims volumes it owns - the ones named `deplo-<slug>-<name>`. A volume your own YAML marks `external: true`, or pins to a name of your choosing, is somebody else's by definition and survives the delete.
-
----
 
 ## Add storage
 
@@ -153,11 +141,9 @@ Click **Save storage**, then redeploy.
 The mount path can often be left blank. For anything Deplo builds, the working directory is a known fact, so `uploads` is derived to `/app/uploads`. A prebuilt image or a Compose service has no such fact, and there you must name the full path.
 </Callout>
 
----
-
 ## Bind options
 
-A **Bind** row has two extra controls, both worth understanding before you use them:
+A **Bind** row has two extra controls, both worth understanding before you use them. The propagation select is labelled **What if something is mounted inside this folder?**:
 
 <TypeTable
   type={{
@@ -168,6 +154,10 @@ A **Bind** row has two extra controls, both worth understanding before you use t
     "Keep up with the server (rslave)": {
       type: "propagation",
       description: "Mounts that appear on the host later become visible inside the container",
+    },
+    "Keep up, and let the server see this app's own (rshared)": {
+      type: "propagation",
+      description: "Propagation in both directions. A mount the container makes appears on the host too",
     },
     "Let the app read but not change it (ro)": {
       type: "boolean",
@@ -180,7 +170,8 @@ A **Bind** row has two extra controls, both worth understanding before you use t
 The propagation choice is not cosmetic. Without `rslave`, a network share or a FUSE mount attached after the container started simply never appears inside it, with no error anywhere.
 </Callout>
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Storage applies on the next deploy.** Adding a row does not remount a running container.
 - **Data is never deleted by a redeploy, a source change, or removing the row.** Deleting the app erases its **Volume** and **File** storage; a **Bind** is left on the server. See [what deleting the app removes](#what-deleting-the-app-removes).
 - **A Compose service name that does not exist is a hard error**, deliberately, rather than a silent remount somewhere else.
@@ -200,23 +191,16 @@ The propagation choice is not cosmetic. Without `rslave`, a network share or a F
   move goes further and stays where it is.
 - **A Bind and an `external:` volume do not move.** They belong to the
   server, not to the app; the deploy log names each one left behind.
-</Callout>
 
----
-
-## If it does not work
+## Troubleshooting
 
 - **The app writes and the data disappears on deploy** - the path it writes to is not mounted. Check what the framework actually uses.
 - **Permission denied inside the container** - the container's user does not own the directory. For a **Bind**, fix ownership on the server; for a **Volume**, make sure the image creates the directory as its own user.
 - **A Bind row will not save** - you do not hold the permission. Ask an administrator, and see [Host access](/advanced/host-access-and-privileges).
 
-<Callout type="info">
 More in [Servers and agents](/troubleshooting/servers-and-agents).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Database className="text-blue-400" />} title="Databases" description="Storage a managed database already handles for you" href="/guides/data/databases" />

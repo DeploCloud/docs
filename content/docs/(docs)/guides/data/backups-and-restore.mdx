@@ -5,25 +5,17 @@ description: Scheduled, encrypted copies of a database or an app, sent to S3 or 
 
 import { LifeBuoy, Server, Database } from "lucide-react";
 
----
-
-## What it is
-
 Scheduled, encrypted copies of a database or an app, sent to an S3 bucket **or to another server's disk**, with a restore that puts them back.
 
 The second destination kind is the point: disaster recovery can use hardware you already own, instead of requiring a cloud account you were trying to leave.
 
 ---
 
-## How it works
-
 A **destination** is where artifacts go. A **schedule** says what to copy, where, how often and how many to keep. A **run** is one execution, producing one artifact.
 
 The work happens on the agent that stands on the data. For a database it is a dump; for an app it is its data and its configuration. The stream is compressed and **encrypted before it leaves the process**, with `age`, using one key pair per destination. The agent only ever receives the public half, so a server acting as a backup store produces artifacts it cannot itself read.
 
 When the destination lives on a different host than the workload, the bytes relay through the control plane, because agents cannot dial each other. They relay as ciphertext: nothing in the middle ever holds your plaintext.
-
----
 
 ## Add a destination
 
@@ -32,7 +24,7 @@ When the destination lives on a different host than the workload, the bytes rela
 <Tabs items={['A folder on a server', 'An S3-compatible bucket']}>
 <Tab value="A folder on a server">
 
-Pick any server in the fleet, including a [storage-only](/advanced/server-roles) box that runs nothing else. Leave the path empty to use the agent's own managed store.
+Pick any server in the fleet, including a [storage-only](/advanced/server-roles) box that runs nothing else. Leave the path empty to use the agent's own managed store: naming a path instead requires an absolute one and instance admin.
 
 </Tab>
 <Tab value="An S3-compatible bucket">
@@ -65,8 +57,6 @@ Then click **Test connection**. It is a real probe run by an agent: a bucket get
 
 A failed probe is a normal result, not an error dialog. **Connection log** in the destination's menu shows the whole sequence, the agent's own message, and the equivalent commands to reproduce it by hand.
 
----
-
 ## Read the destinations list
 
 Opening **Storage -> Destinations** tests every destination in the team, so what you see is
@@ -84,8 +74,6 @@ The refresh icon next to the figure re-tests that one destination.
 The same toolbar sits on **Destinations** and **Backups**: search, filters, and a switch
 between cards and a table. Cards show the bar and any warnings in full; the table fits more
 rows and puts the warnings on the name as icons you can hover.
-
----
 
 ## Save the recovery key
 
@@ -105,8 +93,6 @@ age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
 <Callout type="info">
 Fetching the key is recorded in the activity trail. It is one of only two places in Deplo where a secret is deliberately shown.
 </Callout>
-
----
 
 ## Schedule a backup
 
@@ -155,13 +141,12 @@ Set **Keep**.
 </Step>
 </Steps>
 
-<Callout type="info">
-**Keep is a count, not a number of days.** "Keep 7" means the seven most recent successful artifacts, whether they were taken over a week or a year. Older ones are removed after each successful run, and the newest successful artifact is never removed.
-</Callout>
+**Keep is a count, not a number of days.** "Keep 7" - the default - means the seven most recent
+successful artifacts, whether they were taken over a week or a year. Older ones are removed after
+each successful run, the newest successful artifact is never removed, and a failed run consumes no
+slot. The ceiling is 365, and a target holds at most 50 recorded runs.
 
 **Back up -> Back up now** runs one immediately without touching the schedule.
-
----
 
 ## Restore
 
@@ -186,13 +171,15 @@ The artifact's checksum is verified before a single byte is fed to anything. An 
 
 **Back up -> Restore from file** takes an artifact you are holding yourself. If it is encrypted, you paste the recovery key.
 
----
-
 ## Download an artifact
 
-**Download** in a restore point's menu. Only from a **server** destination, and it is decrypted on the way out. Bucket artifacts are not downloadable through Deplo: you already have credentials for that bucket.
+**Download** in a restore point's menu. Every successful artifact is downloadable wherever it is
+kept, bucket or server disk, and it is decrypted on the way out. Downloading needs
+`restore_backups`; an **app** archive additionally needs `reveal_secrets`, because it carries that
+app's decrypted environment.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **An app schedule does not include its databases.** Schedule the database separately. This trips people up more than anything else here.
 - **Retention counts successes.** Failed runs do not consume a slot.
 - **A skipped hour on a DST change raises a warning** rather than silently missing a run.
@@ -201,23 +188,16 @@ The artifact's checksum is verified before a single byte is fed to anything. An 
 - **Deleting the app or database itself does clear them,** after 30 days. An artifact whose target is gone is kept that long on purpose, so a delete you regret is still recoverable, then removed from the destination.
 - **A destination on the same server as the workload survives everything except losing that server**, which is the failure people actually have. Put at least one copy elsewhere.
 - **Backups are encrypted, always, both kinds.** There is no plaintext mode.
-</Callout>
 
----
-
-## If it does not work
+## Troubleshooting
 
 - **Test connection fails on a bucket** - most often the key is read-only, or the endpoint and region do not match the bucket. Read the **Connection log**.
 - **Runs fail with no space** - the destination server's disk is full. Its card on **Storage -> Destinations** shows how full, and how much of it is your backups.
 - **Restore refuses** - the checksum did not match, or the artifact is encrypted with a key this destination does not hold. Use **Restore from file** with the recovery key.
 
-<Callout type="info">
 More in [Databases and backups](/troubleshooting/databases-and-backups).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<LifeBuoy className="text-blue-400" />} title="Disaster recovery" description="The whole picture, including the control plane itself" href="/operations/disaster-recovery" />

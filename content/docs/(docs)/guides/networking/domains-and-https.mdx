@@ -5,48 +5,32 @@ description: Hostnames, certificates, path-based routing and redirects for an ap
 
 import { Globe, ShieldCheck, GitPullRequest, Terminal } from "lucide-react";
 
----
+Everything about the addresses an app answers on: your own hostnames, certificates, path-based
+routing, redirects and the entry point traffic arrives on. If you just want one domain with
+HTTPS, [Add a domain](/getting-started/add-a-domain) is the short version, and this page is the
+rest.
 
-## What it is
+A domain is **one row keyed on hostname plus path**, and that row is the only thing the routing
+renderer reads. On every deploy Deplo turns each row into a Traefik router carrying the rule
+(`Host(...)`, optionally with a path prefix), the entry point (`web` for plain HTTP, `websecure`
+for HTTPS), the certificate resolver when one is asked for, the middleware chain including basic
+auth, and the target container and port.
 
-Everything about the addresses an app answers on: your own hostnames, certificates, path-based routing, redirects and the entry point traffic arrives on.
+**A path router is always given priority above a whole-host router**, longest prefix first. That
+is what makes `example.com/api` on one app and `example.com/` on another work at the same time.
 
-If you just want one domain with HTTPS, [Add a domain](/getting-started/add-a-domain) is the short version. This page is the rest.
-
----
-
-## How it works
-
-A domain is **one row keyed on hostname plus path**, and that row is the only thing the routing renderer reads. On every deploy Deplo turns each row into a Traefik router carrying:
-
-- the rule, `Host(...)` and optionally a path prefix
-- the entry point, `web` for plain HTTP or `websecure` for HTTPS
-- the certificate resolver, when a certificate is asked for
-- the middleware chain, including basic auth if the app has it
-- the target: the container and the port
-
-**A path router is always given priority above a whole-host router**, longest prefix first. That is what makes `example.com/api` on one app and `example.com/` on another work at the same time.
-
-Deplo also checks DNS itself, on a schedule and on demand, and only routes a hostname whose check came back usable.
-
----
+Deplo also checks DNS itself, on a schedule and on demand, and only routes a hostname whose check
+came back usable.
 
 ## Add and manage domains
 
-Open the app, then **Domains**.
+Open the app, then **Domains**. **Add Domain** opens the dialog, where **Add domain** confirms and
+**Generate** mints a free `nip.io` hostname. Each existing row carries four inline buttons:
+re-check DNS, make this the canonical host (**Set as primary**), edit, and **Remove domain**.
+Editing opens the same fields as the dialog, saved with **Save changes**.
 
-| Action | Where |
-| --- | --- |
-| Add a hostname | **Add Domain**, then **Add domain** in the dialog |
-| Get a free hostname | **Generate** inside that dialog |
-| Make one the production URL | The row menu, **Set as primary** |
-| Re-check DNS now | The row menu |
-| Change routing or TLS | The row menu, then **Save changes** |
-| Delete | The row menu, **Remove domain** |
-
-Exactly one domain is primary. It is the URL in the app header, in notifications, and anywhere Deplo needs to name the app's address.
-
----
+Exactly one domain is primary. It is the URL in the app header, in notifications, and anywhere
+Deplo needs to name the app's address.
 
 ## DNS states
 
@@ -58,13 +42,16 @@ Exactly one domain is primary. It is the URL in the app header, in notifications
 | `misconfigured` | It resolves, but to a different address. Same hint, with the address it should point at | no |
 | `error` | The lookup itself failed | no |
 
-`cloudflare` means proxied and therefore unverifiable, not confirmed. It is routed anyway, because a correct orange-cloud setup could never be verified from the server side.
-
----
+`cloudflare` means proxied and therefore unverifiable, not confirmed. It is routed anyway, because
+a correct orange-cloud setup could never be verified from the server side. For a CDN Deplo does
+not recognise, the **Behind a proxy** switch under **Advanced settings -> Proxy** says the same
+thing by hand.
 
 ## Certificates
 
-One field, **Certificate**, under **Advanced settings -> HTTPS**. Picking a provider is how a domain opts into HTTPS; there is no separate switch.
+One field, **Certificate**, in the **HTTPS** group. It sits at the top level of the form, above
+the **Advanced settings** accordion. Picking a provider is how a domain opts into HTTPS; there is
+no separate switch.
 
 <TypeTable
   type={{
@@ -87,13 +74,12 @@ One field, **Certificate**, under **Advanced settings -> HTTPS**. Picking a prov
   }}
 />
 
-**Entrypoint** is derived from that choice and is best left on **Automatic**. Set it by hand only when you know you need `web` or `websecure` specifically.
+**Entrypoint**, in the same group, is derived from that choice and is best left on **Automatic**.
+Set it by hand only when you know you need `web` or `websecure` specifically.
 
-<Callout type="warn" title="Cloudflare's Flexible mode is a trap">
-It talks HTTPS to the browser and plain HTTP to your server, so the padlock is real and the connection behind it is not. Use Full or Full (strict) with a certificate on this side.
-</Callout>
-
----
+Cloudflare's **Flexible** mode is a trap: it talks HTTPS to the browser and plain HTTP to your
+server, so the padlock is real and the connection behind it is not. Use Full or Full (strict) with
+a certificate on this side.
 
 ## Path routing
 
@@ -117,54 +103,59 @@ It talks HTTPS to the browser and plain HTTP to your server, so the padlock is r
       type: "select",
       description: "Which Compose service to route to. Only shown for multi-container apps",
     },
-    "Container port": {
+    "Application port": {
       type: "number",
-      description: "Overrides the app's port for this hostname. Single-container apps only",
+      description: "The port this hostname routes to, overriding the app's own",
     },
   }}
 />
 
-A worked example: **two apps, one domain**. `example.com/api` routes to the
-API app with internal path `/api` and strip path on; `example.com/` routes
-to the web app with no internal path.
-
-Traefik matches `/api` first because path routers outrank whole-host ones, and the API container receives `/users` rather than `/api/users` because stripping is on.
-
----
+A worked example, **two apps on one domain**: `example.com/api` routes to the API app with
+internal path `/api` and strip path on; `example.com/` routes to the web app with no internal
+path. Traefik matches `/api` first because path routers outrank whole-host ones, and the API
+container receives `/users` rather than `/api/users` because stripping is on.
 
 ## Redirects
 
-The **Redirect** field pairs one hostname with another so that `www.example.com` answers a permanent redirect to `example.com`, or the other way round. The redirecting half is a real domain row with its own DNS check and its own certificate, which it needs, because a browser must complete TLS before it can be told to go somewhere else.
+The **www redirect** field, under **Advanced settings**, pairs a hostname with its own www or apex
+counterpart, so that `www.example.com` answers a permanent redirect to `example.com`, or the other
+way round. It only ever offers that counterpart - it is not a general hostname pairer - and the
+group is hidden when the hostname has no meaningful one.
 
-The primary flag follows whichever half actually serves.
+The redirecting half is a real domain row with its own DNS check and its own certificate, which it
+needs, because a browser must complete TLS before it can be told to go somewhere else. The primary
+flag follows whichever half actually serves.
 
-<Callout type="warn" title="Limits and gotchas">
-- **A `nip.io` hostname can never hold a certificate.** One registered domain, one issuance budget, shared with the internet.
-- **50 Let's Encrypt domains per team.** Every team shares one ACME account on this instance. Domains with no certificate do not count.
-- **Port 80 must be open even for an HTTPS-only site.** That is where the certificate challenge happens.
-- **A hostname belongs to one team.** Another team cannot add it, and the same applies to a preview base domain, compared across the whole zone.
+## Good to know
+
+- **A `nip.io` hostname can never hold a certificate.** One registered domain, one issuance
+  budget, shared with the internet.
+- **50 Let's Encrypt domains per team.** Every team shares one ACME account on this instance. The
+  count includes open pull request previews holding a Let's Encrypt hostname; domains with no
+  certificate do not count.
+- **Port 80 must be open even for an HTTPS-only site.** That is where the certificate challenge
+  happens.
+- **A hostname belongs to one team.** Another team cannot add it, and the same applies to a preview
+  base domain, compared across the whole zone.
 - **The same hostname on two paths may belong to two apps in your team.** That is deliberate.
-- **Two hostnames with different middleware chains cannot share a router.** They become two routers, which is fine and invisible.
-- **Changing a domain applies on the next deploy or a Reload.** Use **Reload** on the app to re-apply routing without rebuilding.
-</Callout>
+- **Two hostnames with different middleware chains cannot share a router.** They become two
+  routers, which is fine and invisible.
+- **Changing a domain applies on the next deploy or a Reload.** Use **Reload** on the app to
+  re-apply routing without rebuilding.
 
----
+## Troubleshooting
 
-## If it does not work
+| Symptom | What to check |
+| --- | --- |
+| Stuck on `pending` | No A record yet. The row prints the exact record to create. |
+| `misconfigured` | It resolves somewhere else. An old record, or a proxy in front you forgot about. |
+| Certificate warning in the browser | The certificate never issued. Port 80 closed, or DNS pointing elsewhere at issuance time. |
+| 404 from the proxy | Nothing matches the rule: the app is stopped, or the domain belongs to an app on a different server than the one you are hitting. |
+| A redirect loop | Cloudflare Flexible mode plus an HTTPS redirect on this side. Switch Cloudflare to Full. |
 
-- **Stuck on pending** - no A record yet. The row prints the exact record.
-- **misconfigured** - it resolves somewhere else. Old record, or a proxy in front you forgot about.
-- **Certificate warning in the browser** - the certificate never issued. Port 80 closed, or DNS pointing elsewhere at issuance time.
-- **404 from Traefik** - nothing matches the rule: the app is stopped, or the domain belongs to an app on a different server than the one you are hitting.
-- **A redirect loop** - Cloudflare Flexible mode plus an HTTPS redirect on this side. Switch Cloudflare to Full.
-
-<Callout type="info">
 More in [Domains and TLS](/troubleshooting/domains-and-tls).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Globe className="text-blue-400" />} title="Add a domain" description="The short version, for one hostname" href="/getting-started/add-a-domain" />

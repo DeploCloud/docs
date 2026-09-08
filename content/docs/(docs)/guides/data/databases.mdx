@@ -5,23 +5,17 @@ description: A managed Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse in
 
 import { Archive, HardDrive, Terminal, Gauge, Network } from "lucide-react";
 
----
-
-## What it is
-
 A managed database running on one of your servers: Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse. Deplo provisions it, gives you a connection string, and handles backups, logs, metrics and a console.
 
----
-
-## How it works
-
-A database is provisioned exactly like an app, by the agent on the server you pick. It runs as its own Compose stack keyed `db-<name>` and joins the network of the **environment you place it in**, which is what lets the apps there reach it **by name** rather than by IP. The connection string therefore never changes when the container is recreated.
+A database is provisioned exactly like an app, by the agent on the server you pick. It runs as its
+own Compose stack keyed `db-<slug>`, where the slug is minted from the display name at creation and
+frozen there - renaming the database later does not move it. The stack joins the network of the
+**environment you place it in**, which is what lets the apps there reach it **by name** rather than
+by IP, so the connection string never changes when the container is recreated.
 
 Images are the official ones, tagged with the version you pick: `postgres:<v>-alpine`, `mysql:<v>`, `mariadb:<v>`, `mongo:<v>`, `redis:<v>-alpine` and `clickhouse/clickhouse-server:<v>`.
 
 Credentials are encrypted at rest and masked in the interface. Revealing them needs `reveal_secrets`.
-
----
 
 ## Create one
 
@@ -95,8 +89,6 @@ Click **Create database**.
 
 Then open it and copy the connection string into the app that needs it, as an environment variable of type **Secret**.
 
----
-
 ## Connect an app to it
 
 An app reaches a database **in the same environment and on the same server** by the database's stable name, which is the host in the connection string. Nothing else is required: no port publishing, no firewall rule, no IP. (A Docker network lives on one machine, so a database on another server needs a published port and the server's address instead.)
@@ -113,16 +105,11 @@ exceptions are a service you sealed off yourself with `internal: true`, one usin
 `network_mode:`, and one named after Deplo's own infrastructure - see
 [Compose apps](/advanced/compose-apps).
 
-<Callout type="warn">
-The app and the database have to be in the **same environment and on the same
-server**. Nothing crosses an environment boundary, and no network spans two
-machines, so an app in Production does not reach a database placed in Staging -
-nor one on another server - it gets `cannot resolve host`. Deplo says which
-one, and where it lives, in the deploy log before the container tries. See
+The app and the database have to be in the **same environment and on the same server**. Nothing
+crosses an environment boundary, and no network spans two machines, so an app in Production does
+not reach a database placed in Staging, nor one on another server: it gets `cannot resolve host`.
+Deplo says which one, and where it lives, in the deploy log before the container tries. See
 [Network isolation](/advanced/network-isolation).
-</Callout>
-
----
 
 ## The overview
 
@@ -135,7 +122,7 @@ addresses, which are not the same thing:
 
 | Address | What it is | Who uses it |
 | --- | --- | --- |
-| **Internal** | `db-<name>:5432`, the name on its environment's network | Apps in the same environment, on the same server |
+| **Internal** | `db-<slug>` on its environment's network, on the engine's own port: `5432` for Postgres, `3306` for MySQL and MariaDB, `27017` for MongoDB, `6379` for Redis, `8123` for ClickHouse | Apps in the same environment, on the same server |
 | **Public** | `<server>:<host port>`, or **Not published** | Anything that can reach the server |
 
 The **Environment** row is what decides who the internal address answers for. Got
@@ -145,13 +132,11 @@ action returns.
 
 The switch on the **Public** row and the **Host port** field are right there, so exposing a database, or taking it off the internet, never means opening Settings. It needs both `configure_databases` and the `canExposePorts` grant; without either the switch is disabled and says why.
 
-<Callout type="warn" title="A published port is plaintext">
-Publishing binds the engine's port on `0.0.0.0` with no proxy and no certificate. Traffic is not encrypted and the engine password is the only thing in front of it. The card says so while the switch is on.
-</Callout>
+**A published port is plaintext.** Publishing binds the engine's port on `0.0.0.0` with no proxy
+and no certificate: traffic is not encrypted and the engine password is the only thing in front of
+it. The card says so while the switch is on.
 
 The three tiles are **Health** (the engine's own healthcheck, its uptime and its restart count), **Data** (the volume measured on disk, plus live memory use) and **Backups** (the last run and the schedule). Data reads `-` when the server's agent is older than the measurement: a dash, never a wrong number.
-
----
 
 ## The lifecycle verbs, and which one destroys data
 
@@ -162,17 +147,19 @@ The three tiles are **Health** (the engine's own healthcheck, its uptime and its
 | **Rebuild** | Danger Zone. Tears the stack down **with its volume** and provisions a fresh one from the stored credentials | **erased** |
 | **Delete** | Removes the database and reclaims its volume | **erased** |
 
-<Callout type="warn" title="Rebuild and Delete destroy data">
-**Rebuild is a factory reset.** The connection string keeps working because the engine re-initialises from the same stored credentials, which is exactly what makes it dangerous: everything looks fine and the data is gone. Restore a backup afterwards.
-
-**Delete is authoritative.** It refuses unless the host confirms both the container and the volume are gone, so a half-deleted database cannot linger as a row pointing at a live volume. If the host is dead and never coming back, a `force` option appears after the refusal.
+<Callout type="warn" title="Rebuild is a factory reset">
+The connection string keeps working because the engine re-initialises from the same stored
+credentials, which is what makes it dangerous: everything looks fine and the data is gone.
+Rebuild is gated on `delete_databases`, not on `configure_databases`, for that reason.
 </Callout>
 
----
+**Delete is authoritative.** It refuses unless the host confirms both the container and the volume
+are gone, so a half-deleted database cannot linger as a row pointing at a live volume. If the host
+is dead and never coming back, a `force` option appears after the refusal.
 
 ## Settings
 
-**Settings -> Connection** carries the same exposure controls as the overview, plus the two things that do not belong on one: the server move, and password rotation.
+**Settings -> Connection** carries the same exposure controls as the overview, plus the two things that do not belong on one: password rotation, and the server move - the **Server** select appears only when the fleet has more than one machine.
 
 <TypeTable
   type={{
@@ -212,13 +199,10 @@ Password rotation runs inside the engine for Postgres, MySQL, MariaDB and MongoD
   }}
 />
 
-<Callout type="warn" title="Redis and --requirepass">
-The default command carries the password. A custom command that omits it silently drops authentication, and the interface warns you about exactly this.
-</Callout>
+**Redis and `--requirepass`:** the default command carries the password, and a custom command that
+omits it silently drops authentication. The interface warns you about exactly this.
 
 Config files are how you set `postgresql.conf`, `my.cnf`, `redis.conf` or an init script without a shell. **Save and apply** writes them next to the stack and reroutes the container so they take effect.
-
----
 
 ## Move a database to another server
 
@@ -226,35 +210,32 @@ Change **Server** in **Settings -> Connection**. Deplo stops both sides, streams
 
 If the copy fails, the database is blocked from starting until you resolve it. That block is deliberate: an engine started on an emptied volume does not fail, it quietly initialises a brand-new empty database over your data.
 
----
-
 ## The other tabs
 
 **Logs**, **Monitoring** and **Backups** work exactly as they do for an app. **Console** gives you the engine's own shell (`psql`, `mysql`, `redis-cli`) behind a one-time acknowledgement, and **Cron jobs** runs scheduled commands inside the container once you turn the switch on.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **The username and the logical database name are set at creation and never change.** The official images apply them only on first initialisation against an empty volume, so afterwards they are display-only. Renaming the database itself is just a label change.
 - **Neither Redeploy nor Rebuild works while the database is provisioning.**
 - **An app's backup schedule does not cover its database.** Databases are backed up as databases. Schedule both.
 - **`Host port` is a real exposure.** Anything that can reach the server on that port can try to log in.
+- **Starting and stopping is its own capability.** `control_databases` covers the lifecycle verbs,
+  `configure_databases` the settings, `delete_databases` both Rebuild and Delete.
 - **Version upgrades are not migrations.** Changing the version tag restarts the engine on the same volume, and major-version upgrades of Postgres in particular will refuse to start on an older data directory. Dump, rebuild, restore.
-</Callout>
 
----
+## Troubleshooting
 
-## If it does not work
+| Symptom | What to check |
+| --- | --- |
+| The app cannot resolve the database name | They are in different Environments, or on different servers. A network is per host and per Environment. |
+| Authentication fails after a rotate | The app still has the old string. Update the variable and redeploy. |
+| Stuck in provisioning | The agent could not pull the image, or the server is unreachable. Check the server's health. |
+| `Data` reads `-` | That server's agent is older than the measurement. Update it. |
 
-- **The app cannot resolve the database name** - they are on different servers. The shared network is per host.
-- **Authentication fails after a rotate** - the app still has the old string. Update the variable and redeploy.
-- **Stuck in provisioning** - the agent could not pull the image or the server is unreachable. Check the server's health.
-
-<Callout type="info">
 More in [Databases and backups](/troubleshooting/databases-and-backups).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Archive className="text-blue-400" />} title="Backups and restore" description="Schedule the database separately from the app" href="/guides/data/backups-and-restore" />

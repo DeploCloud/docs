@@ -5,19 +5,14 @@ description: One variable, owned by the team, that several apps can link to and 
 
 import { SlidersHorizontal, FolderTree } from "lucide-react";
 
----
+One variable that several apps can use, across one team or across several. Change it once and
+every app that uses it gets the new value on its next deploy: an API key three services all call,
+an S3 bucket name, a `SENTRY_DSN`.
 
-## What it is
+A shared variable has two independent parts, and confusing them is the single most common mistake
+here.
 
-One variable that several apps can use - across one team, or across several. Change it once and every app that uses it gets the new value on its next deploy.
-
-Typical cases: an API key three services all call, an S3 bucket name, a `SENTRY_DSN`.
-
----
-
-## How it works
-
-A shared variable has two independent parts, and confusing them is the single most common mistake here.
+## Who it is offered to
 
 **Availability scopes say who it is offered to.** A scope is a suggestion. A variable can carry several:
 
@@ -43,7 +38,7 @@ Ticking a **second** team changes what the variable does. It is then added to ev
 
 That is the setting for a corporate proxy or an internal registry mirror, and the wrong one for anything a single team should keep to itself. The review step spells out which of the two you are about to create, and the wording changes as you tick.
 
-You can only tick a team you hold **Manage env vars** in, across the whole of that team. A team the variable already reaches stays ticked and locked, so a variable shared instance-wide is still editable by an admin who is not a member of every team.
+You can only tick a team you hold **Manage environment variables** in, across the whole of that team. A team the variable already reaches stays ticked and locked, so a variable shared instance-wide is still editable by an admin who is not a member of every team.
 
 Unticking a team until only one is left turns the automatic add off, and the variable is a suggestion again. A team that is **deleted** does not: the variable keeps injecting into the teams that are left, which is why removing a colleague's team never silently strips a value from yours.
 
@@ -54,8 +49,6 @@ It shows in your **Shared** tab with the owning team's name and no edit buttons:
 On an app's **Environment** tab a variable that arrives this way is listed read-only, so a value in the container is never a value with no explanation. The one thing you can do to it there is **Remove from this app**, which takes back your own link.
 
 If the owner later stops sharing it with your team, your apps' links to it go with it. Nothing is left behind to spring back to life if they ever share it again.
-
----
 
 ## Create one
 
@@ -125,10 +118,8 @@ Same table. This app is already the destination and cannot be unpicked - the var
 </Steps>
 
 <Callout type="info">
-Creating a shared variable needs the **Manage env vars** permission held across the whole team, not only on one app. Without it the button is not there.
+Creating a shared variable needs the **Manage environment variables** permission held across the whole team, not only on one app. Without it the button is not there.
 </Callout>
-
----
 
 ## Use one in an app
 
@@ -156,40 +147,37 @@ Redeploy.
 </Step>
 </Steps>
 
-A linked row in an app shows two different removals, and they mean very different things:
+A linked row in an app offers two actions. **Manage** opens the variable on **Variables ->
+Shared**, where its audience and its value live. **Remove from this app** unlinks it here, and the
+variable and every other app keep it. Deleting the variable outright is done from that Shared tab,
+not from an app.
 
-| Action | Effect |
-| --- | --- |
-| **Remove from this app** | Unlinks it here. The variable and every other app keep it |
-| **Delete for all apps** | Deletes the variable for the whole team |
+On a variable that reaches more than one team there is no link to take back: **Remove from this
+app** drops your explicit one, and the variable keeps arriving from the team that shares it, at
+the lowest priority. The row says so, and stays.
 
-On a variable that reaches more than one team there is no link to take back: **Remove from this app** drops your explicit one, and the variable keeps arriving from the team that shares it, at the lowest priority. The row says so, and stays.
+## Good to know
 
-<Callout type="warn" title="Limits and gotchas">
 - **Scope is not injection.** Worth repeating: the link is the only mechanism, unless the variable covers more than one team.
 - **The app's own variable loses to a linked shared one** of the same name. If an app needs its own value, unlink the shared one rather than fighting it.
 - **A shared variable belongs to the team that created it.** Deleting that team deletes the variable, including for any other team it reached - the delete dialog counts them.
 - **Deleting one affects every app that links it**, on their next deploy. The dialog says how many.
-- **Secrets follow the same fork rule**: a preview of a fork never receives a secret-typed shared value.
+- **A preview built from a fork receives no shared value at all**, plain or secret, along with
+  none of the app's own. It gets its preview overrides and nothing else.
 - **A compose app's own file wins.** Deplo passes a variable into every service of a compose stack, but a key the compose file sets itself keeps the compose value. Those rows are marked **Set in the compose file** on the app's Environment tab: change the value there, or remove the key from the compose.
 - **Deleting the last project, environment or app a variable was offered to** leaves the variable, not the sharing: the row reads **Not shared with anything** until you give it a new audience. Its value is untouched and still editable.
-</Callout>
 
----
+## Troubleshooting
 
-## If it does not work
+| Symptom | What to check |
+| --- | --- |
+| The app does not see the value | It is scoped but not linked. Link it on the app's **Environment** tab. |
+| The value changed and the app still has the old one | It applies on the next deploy. Redeploy. |
+| A different value than expected | The app defines the same name itself, a preview override does, or the app is a compose stack whose file sets that key. |
 
-- **The app does not see the value** - it is scoped but not linked. Link it on the app's **Environment** tab.
-- **The value changed and the app still has the old one** - it applies on the next deploy. Redeploy.
-- **A different value than expected** - the app defines the same name itself, a preview override does, or the app is a compose stack whose file sets that key.
-
-<Callout type="info">
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<SlidersHorizontal className="text-blue-400" />} title="Environment variables" description="The four layers and their order" href="/guides/config/environment-variables" />
