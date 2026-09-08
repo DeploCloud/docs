@@ -9,8 +9,8 @@ Everything that lets a container reach outside its own sandbox and touch
 the server: bind mounts, kernel capabilities, devices, host namespaces,
 foreign networks and foreign volumes.
 
-All of it sits behind one grant: **"Bind server folders"** in the
-permission picker, `canMountHostVolumes` in the API.
+All of it sits behind one grant: **Bind server folders** on the account, `canMountHostVolumes` in
+the API. It is not a team capability and it is not on a role, which is where people look first.
 
 ## Why one grant covers all of it
 
