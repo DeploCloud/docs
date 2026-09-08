@@ -186,10 +186,15 @@ create the same app twice.
 
 With several organizations on the list, the review shows one section per
 organization, each headed by the team it lands in, and **Migrate N teams**
-runs them one after another on its own: a new team is created as its turn
-comes, and Deplo leaves its agents on the source machines until the last one
-is over, so only the first pays for the install. An organization with nothing
-ticked is skipped.
+hands the whole list to the server at once: every organization that lands in a
+**New team** gets it right there, Deplo brings them over one after another, and
+it leaves its agents on the source machines until the last one is over, so only
+the first pays for the install. An organization with nothing ticked is skipped.
+
+**The list is the server's, not the tab's.** Close the page, reload it, come
+back tomorrow: the organization being read says which one it is (**team 2 of
+3**), the ones still waiting are counted, and the next one starts on its own.
+If one does not land, the ones behind it are not started - the report says why.
 
 The report is not on this step: when the last organization lands, the wizard
 walks on to the end and shows it there.
@@ -201,7 +206,16 @@ walks on to the end and shows it there.
 
 For an instance admin: the step offers single-use registration links for the
 members of the source organization, so you can hand them out. Everyone
-arrives as a plain member.
+arrives as a plain member; somebody who already has a Deplo account is added
+to the team instead, with no link to send.
+
+**One person, one link.** Somebody who was on two organizations you brought
+over gets a single link that joins them to both - one address is one account
+here. Their card says which other teams the same link covers.
+
+The links are made by the run itself, so this step is here whenever you come
+back to it: reload the page, open it from another machine, close the tab and
+return an hour later.
 
 </Step>
 <Step>

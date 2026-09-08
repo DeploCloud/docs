@@ -238,10 +238,16 @@ the first is still going is refused by name, so a double click cannot
 create the same app twice.
 
 With several teams on the list, the review shows one section per team, each
-headed by the Deplo team it lands in, and **Migrate N teams** runs them one
-after another on its own: a new team is created as its turn comes, and Deplo
-leaves its agents on the source machines until the last team is over, so only
-the first team pays for the install. A team with nothing ticked is skipped.
+headed by the Deplo team it lands in, and **Migrate N teams** hands the whole
+list to the server at once: every team that lands in a **New team** gets it
+right there, Deplo brings them over one after another, and it leaves its
+agents on the source machines until the last team is over, so only the first
+team pays for the install. A team with nothing ticked is skipped.
+
+**The list is the server's, not the tab's.** Close the page, reload it, come
+back tomorrow: the team being read says which one it is (**team 2 of 3**), the
+ones still waiting are counted, and the next one starts on its own. If a team
+does not land, the ones behind it are not started - the report says why.
 
 The report is not on this step: when the last team lands, the wizard walks on
 to the end and shows it there.
@@ -254,7 +260,16 @@ to the end and shows it there.
 For an instance admin: the step offers single-use registration links for the
 members of the Coolify team, so you can hand them out. Coolify does not
 report anybody's role over its API, so everyone arrives as a plain member
-and you promote whoever should be more.
+and you promote whoever should be more. Somebody who already has a Deplo
+account is added to the team instead, with no link to send.
+
+**One person, one link.** Somebody who was on two Coolify teams you brought
+over gets a single link that joins them to both - one address is one account
+here. Their card says which other teams the same link covers.
+
+The links are made by the run itself, so this step is here whenever you come
+back to it: reload the page, open it from another machine, close the tab and
+return an hour later.
 
 </Step>
 <Step>
