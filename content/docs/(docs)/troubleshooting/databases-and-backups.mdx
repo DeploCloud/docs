@@ -10,7 +10,7 @@ import { Database, DatabaseBackup, ShieldCheck } from "lucide-react";
 
 | Check | Why |
 | --- | --- |
-| Are they on the **same server**? | The shared `deplo` network is per host. An app on server A cannot resolve a database on server B by name |
+| Are they on the **same server**? | A Docker network lives on one machine, so an app on server A cannot resolve a database on server B by name |
 | Is the host in the connection string the database's name? | Not an IP, not `localhost` |
 | Is the database running? | Its status badge |
 | Did the password change? | Rotating it does not update the app's variable. Update it and redeploy |
@@ -116,9 +116,7 @@ run, and the newest successful artifact is never removed.
 </Accordion>
 </Accordions>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

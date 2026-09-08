@@ -55,11 +55,9 @@ The certificate issues on the first request to the new address.
 </Step>
 </Steps>
 
-<Callout type="info">
 The generated `deplo-<hex>.nip.io` address keeps working throughout, so the panel
 stays reachable while DNS moves. See
 [ports, networks, and files](/reference/ports-networks-and-files).
-</Callout>
 
 ## HTTPS is not optional
 
@@ -86,14 +84,12 @@ the warning stays skippable.
 
 ## Good to know
 
-<Callout type="warn">
 - **The install command for a new server carries `-k`** while the panel's certificate is the self-signed one. The agent is unaffected: it pins the certificate's fingerprint at enrollment either way.
 - **Every passkey breaks when the address changes.** They are bound to a hostname by the standard. They show **Not usable here**, the password still signs people in, and everyone re-registers a passkey on the new address. Warn your team before you do this.
 - **Webhooks must be re-pointed.** Deplo re-registers what it can, but a provider that cannot reach the new address stops delivering, and pushes stop deploying.
 - **The install command changes.** Servers already enrolled are unaffected, new ones use the new address.
 - **An IP address is refused as the panel address.** Let's Encrypt does not issue for bare IPs, and Deplo generates a `nip.io` hostname instead.
 - **`DEPLO_PUBLIC_URL` is the other half, and it is not in `.env`.** The installer writes it into `/opt/deplo/docker-compose.yml`, derived from `DEPLO_DOMAIN`. Git webhook URLs are built from that variable while the routers follow the address stored here, so changing the address in the panel leaves webhooks pointing at the old host until you re-run the installer with the new domain.
-</Callout>
 
 ## Troubleshooting
 

@@ -11,8 +11,6 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
----
-
 A way to let an AI agent drive your infrastructure: deploy an app, read
 logs, check why a build failed, restart a database. It speaks the Model
 Context Protocol (MCP), the same protocol Claude, ChatGPT and coding agents
@@ -22,8 +20,6 @@ use to reach tools.
 agents to the team (**Connect AI agents**, `manage_mcp`) and to whoever
 manages the team's settings. What you connect there is **yours**: the token
 it creates is personal, listed only under your **Settings -> API tokens**.
-
----
 
 ## Connect an agent
 
@@ -85,13 +81,9 @@ another** repeats for the next agent.
 </Step>
 </Steps>
 
-<Callout type="info">
 A web agent such as claude.ai or chatgpt.com does not take a pasted token.
 It goes through the [OAuth consent screen](/advanced/api-tokens-and-oauth)
 instead, which mints an ordinary token after you approve it.
-</Callout>
-
----
 
 The endpoint is `/api/mcp` on your own instance. It exposes one tool per
 action, and each tool is a GraphQL document that runs **in-process against
@@ -119,8 +111,6 @@ Folder, Server), how to work in another team, that a refusal is the
 token's capabilities talking, and a link to this manual. You do not have to
 teach your agent the product before it can use it.
 
----
-
 ## Working in several teams
 
 A connection reaches every team its owner may connect agents to. Every
@@ -136,8 +126,6 @@ call still runs in **one** team:
 
 A terminal agent can also pin its default team with the `X-Deplo-Team`
 header when it is connected.
-
----
 
 ## Apps with more than one container
 
@@ -164,15 +152,11 @@ render_compose  appId                                               -> the routi
 Got one wrong? `update_domain` moves a hostname to another container
 without deleting it.
 
-<Callout type="info">
 Six names are Deplo's own - `deplo`, `deplo-traefik`,
 `traefik`, `postgres`, `deplo-socket-proxy` and `docker-socket-proxy` - so a
 domain cannot be pointed at a container called one of them, whatever its
 capitalisation, and the same goes for a container whose `hostname:` is one of
 them. Rename it in the compose file if it needs a hostname of its own.
-</Callout>
-
----
 
 ## See and revoke what is connected
 
@@ -185,8 +169,6 @@ A team sees a number, not the credentials: **agents connected** on the MCP
 page, and per member under **Settings -> Members**. To take an agent away
 from somebody else, take away their **Connect AI agents** capability, or
 remove them from the team.
-
----
 
 ## What an agent can and cannot do
 
@@ -220,8 +202,6 @@ ask, mint it a token that cannot do the thing you would not want it doing.
   app, which is a much better answer than trusting a prompt.
 - **Everything is in the activity trail**, including who opened the door.
 
----
-
 ## Troubleshooting
 
 - **The agent connects and sees no tools** - MCP is off for that team.
@@ -238,8 +218,6 @@ ask, mint it a token that cannot do the thing you would not want it doing.
   the tool does take.
 
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
-
----
 
 ## When no tool fits
 
@@ -259,8 +237,6 @@ Two things they will not do, whatever the token holds: return a **credential**
 
 Because one write tool covers everything from a rename to a deletion, it is
 always flagged destructive, so your agent asks before using it.
-
----
 
 ## Every tool
 
@@ -579,8 +555,6 @@ well-behaved client asks you first.
 
 </Accordion>
 </Accordions>
-
----
 
 ## Next steps
 

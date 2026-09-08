@@ -20,12 +20,10 @@ command failed.
 | `no space left on device` | The server's disk is full | See "No space left on device" below |
 | The log ends with nothing | The builder was killed, usually out of memory | Raise the memory limit, or build on a bigger machine |
 
-<Callout type="info">
 Detection is re-run every deploy and is never stored. A build that used to
 work and now picks the wrong commands usually means something in the
 repository changed what it looks like. Type the commands you want and they
 win permanently.
-</Callout>
 
 </Accordion>
 <Accordion title="The build passes and the site does not answer">
@@ -143,9 +141,7 @@ proving the containers are running clears a stale `error` on its own.
 </Accordion>
 </Accordions>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

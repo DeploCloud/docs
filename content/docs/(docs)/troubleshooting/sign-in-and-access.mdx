@@ -47,8 +47,9 @@ In order of likelihood:
 2. **A folder share is narrowing you.** Inside a folder, a share
    **replaces** your team role, and it can be smaller as well as larger.
    Your member page shows the scope tree.
-3. **It needs a separate grant.** Publishing a port needs one; anything
-   that reaches the host needs **Bind server folders**.
+3. **It needs a separate grant.** Publishing a port needs **Publish ports**; anything that
+   reaches the host needs **Bind server folders**. Neither is a team capability: they sit on the
+   account, under **Settings -> Users -> the user -> Permissions -> Advanced grants**.
 4. **It is an instance-admin surface.** Servers, Users and the Deplo
    settings are not team capabilities.
 5. **The feature is off.** Console needs a one-time acknowledgement, and
@@ -85,10 +86,10 @@ A deleted app behaves the same way from the moment deletion starts.
 </Accordion>
 <Accordion title="You are the owner and locked out">
 
-The instance owner cannot be demoted, suspended or reset by any other
-admin, which is the point of the crown. If that account is genuinely lost,
-the only way back is a command run on the host that runs the control
-plane.
+The instance owner cannot be demoted, suspended or reset by any other admin, which is the point
+of the crown. If that account is genuinely lost, the way back is a command on the host that runs
+the control plane: `bun run recover owner <username>`. The same tool also has `password`, `admin`,
+`unsuspend` and `server-address` subcommands.
 
 </Accordion>
 <Accordion title="Somebody left the company">
@@ -103,9 +104,7 @@ plane.
 </Accordion>
 </Accordions>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

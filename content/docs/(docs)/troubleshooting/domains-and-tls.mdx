@@ -41,8 +41,8 @@ Almost always one of four things.
    certificate: one registered domain, one issuance budget, shared with the
    internet. Use a domain you own.
 4. **The certificate provider is None.** New domains are created with no
-   certificate. Set **Certificate** to **Let's Encrypt** under **Advanced
-   settings -> HTTPS**.
+   certificate. Set **Certificate** to **Let's Encrypt** in the domain's **HTTPS** group, which
+   is above the Advanced settings accordion, not inside it.
 
 Two rarer causes:
 
@@ -118,7 +118,7 @@ If that is silent too, the proxy is down. From the server itself:
 curl http://127.0.0.1:3000/api/health   # the panel, past the proxy
 docker ps
 docker logs deplo-traefik
-docker logs deplo
+docker logs deplo-deplo-1
 ```
 
 With nothing else left, tunnel to the panel and fix it from there:
@@ -130,9 +130,7 @@ ssh -L 3000:localhost:3000 root@<server-ip>   # then open http://localhost:3000
 </Accordion>
 </Accordions>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

@@ -142,17 +142,13 @@ Deplo uses one network per Environment, and Docker's default pools allow about *
 /etc/docker/daemon.json             plus daemon.json.deplo-bak
 ```
 
-<Callout type="info">
-  On the machine that runs the control plane, `/var/lib/deplo-agent/traefik`
-  is a **symlink** to `/opt/deplo/traefik`, so the agent manages the
-  panel's own proxy rather than installing a second one.
-</Callout>
+On the machine that runs the control plane, `/var/lib/deplo-agent/traefik`
+is a **symlink** to `/opt/deplo/traefik`, so the agent manages the
+panel's own proxy rather than installing a second one.
 
-<Callout type="warn">
-  `/var/lib/deplo-agent` holds Traefik's `acme.json`. Deleting it takes
-  your issued certificates with it, and Let's Encrypt rate-limits
-  reissuance.
-</Callout>
+`/var/lib/deplo-agent` holds Traefik's `acme.json`. Deleting it takes
+your issued certificates with it, and Let's Encrypt rate-limits
+reissuance.
 
 ## Container names worth knowing
 

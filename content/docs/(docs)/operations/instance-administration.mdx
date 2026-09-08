@@ -5,10 +5,8 @@ description: Instance-wide surfaces, users across every team, instance settings,
 
 import { Users, Globe, ArrowUpCircle, ShieldCheck } from "lucide-react";
 
-<Callout type="info">
 Only **instance admins** see these pages, and instance admin is a flag on
 an account, not a team capability.
-</Callout>
 
 ## Users
 
@@ -95,12 +93,10 @@ Servers are instance-wide, not team-owned, so the whole of **Settings -> Servers
 
 ## Good to know
 
-<Callout type="warn">
 - **Instance admin is not team capabilities.** An admin still needs a membership and a role to act inside a team.
 - **A registration link is single-use and hashed.** Even two people clicking at once cannot both consume it.
 - **Deleting a user is not the same as removing them from a team.** Read the impact preview.
 - **Raising Max log range does not make hosts keep more.** Docker rotates container logs by size.
-</Callout>
 
 ## Troubleshooting
 

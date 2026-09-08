@@ -9,8 +9,6 @@ Somewhere for your app to write files that survive a deploy. A container's own f
 
 Everything here is in **Settings -> Storage**, in the **Mounted storage** card.
 
----
-
 Three kinds, and the interface names them exactly this way.
 
 | Kind | What it is | Needs permission |
@@ -137,9 +135,7 @@ Click **Save storage**, then redeploy.
 </Step>
 </Steps>
 
-<Callout type="info">
 The mount path can often be left blank. For anything Deplo builds, the working directory is a known fact, so `uploads` is derived to `/app/uploads`. A prebuilt image or a Compose service has no such fact, and there you must name the full path.
-</Callout>
 
 ## Bind options
 
@@ -166,9 +162,7 @@ A **Bind** row has two extra controls, both worth understanding before you use t
   }}
 />
 
-<Callout type="warn">
 The propagation choice is not cosmetic. Without `rslave`, a network share or a FUSE mount attached after the container started simply never appears inside it, with no error anywhere.
-</Callout>
 
 ## Good to know
 

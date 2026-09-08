@@ -9,8 +9,6 @@ Scheduled, encrypted copies of a database or an app, sent to an S3 bucket **or t
 
 The second destination kind is the point: disaster recovery can use hardware you already own, instead of requiring a cloud account you were trying to leave.
 
----
-
 A **destination** is where artifacts go. A **schedule** says what to copy, where, how often and how many to keep. A **run** is one execution, producing one artifact.
 
 The work happens on the agent that stands on the data. For a database it is a dump; for an app it is its data and its configuration. The stream is compressed and **encrypted before it leaves the process**, with `age`, using one key pair per destination. The agent only ever receives the public half, so a server acting as a backup store produces artifacts it cannot itself read.

@@ -84,12 +84,11 @@ History lives in the control plane's memory, so it also starts empty after
 a restart of the panel.
 
 </Accordion>
-<Accordion title="The 32nd app fails to deploy">
+<Accordion title="A deploy fails saying Docker cannot create a network">
 
-Docker's default address pools allow about 31 networks and Deplo uses one
-per app. Both installers write a larger pool into
-`/etc/docker/daemon.json`, but **if containers were running at install time
-the Docker restart was skipped**, so the change never took effect.
+Docker's default address pools allow about 31 networks, and Deplo uses one per **Environment**.
+Both installers write a larger pool into `/etc/docker/daemon.json`, but **if containers were
+running at install time the Docker restart was skipped**, so the change never took effect.
 
 Restart Docker in a maintenance window. The file is already correct.
 
@@ -153,9 +152,7 @@ to answer. See
 </Accordion>
 </Accordions>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card
