@@ -16,7 +16,8 @@ are cached for an hour, and the search box filters what is already loaded.
 A **Template** is a family, identified by its name, slug and logo. Each family holds one or more
 **variants**, and a variant is what actually deploys: a `docker-compose.yml` plus a small manifest
 carrying its own description, screenshots, category and links. A family with one variant shows no
-chooser.
+chooser. A family with several starts with **none chosen**: **Deploy** stays disabled until you
+pick one, because the variants deploy different things.
 
 Deploying resolves the variant into a real Compose stack with your values filled in and creates an
 ordinary app from it. Nothing about the template is stored on the app afterwards - it is yours
@@ -38,15 +39,17 @@ wizard, which leaves the wizard for the catalogue.
 
 ### Find what you want
 
-There is a search box, category chips, and curated collections: **Start here**, **Serving hot
-now**, **Run your own AI** and **Be your own bank**.
+The page opens on three **featured** templates, then a search box, category chips and curated
+collections: **Start here**, **Serving hot now**, **Run your own AI** and **Be your own bank**.
+Every category row has a **See all** link, and **All templates** lists the whole catalogue A to Z.
 
 </Step>
 <Step>
 
 ### Pick a variant
 
-Open it, read the description, and pick a **Variant** if the family has several.
+Open it and read the description. If the family has several variants, pick one from the
+**Choose a variant** dropdown - **Deploy** is disabled until you do.
 
 </Step>
 <Step>
