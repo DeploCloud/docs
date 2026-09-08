@@ -5,8 +5,11 @@ description: "One script, two jobs: pull the agent off a host, or remove Deplo i
 
 <Tabs items={['Uninstall an agent from the host', 'Uninstall Deplo itself']}>
   <Tab value="Uninstall an agent from the host">
-    `--agent-only` leaves the control plane in `/opt/deplo` alone. This is
-    the flag already in the command the dashboard prints for a server.
+    `--agent-only` leaves the control plane's own files in `/opt/deplo` alone. This is the flag
+    already in the command the dashboard prints for a server. On the machine that runs the
+    control plane it still takes that host's Traefik, which is the only thing serving the
+    dashboard, so the panel stops answering until you re-run `install.sh`; the script prints an
+    SSH tunnel to get back in meanwhile.
 
     ```bash
     # See what would happen (dry run, the default)
@@ -54,7 +57,7 @@ description: "One script, two jobs: pull the agent off a host, or remove Deplo i
     "--purge-data": {
       type: "flag",
       description:
-        "Also delete Deplo volumes, images Deplo built, the stacks directory and /opt/deplo itself, .env included. Irreversible.",
+        "Also delete Deplo volumes, images Deplo built, the stacks and dev directories and /opt/deplo itself, .env included. Irreversible.",
     },
     "--purge-backups": {
       type: "flag",
@@ -85,7 +88,7 @@ this same script with `--agent-only` already applied, so a command copied
 into a runbook before `uninstall.sh` existed still means what it meant
 then.
 
-## See also
+## Next steps
 
 <Cards>
   <Card title="Installers reference" description="All three scripts" href="/reference/installers" />

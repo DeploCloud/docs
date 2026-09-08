@@ -7,8 +7,6 @@ import { SlidersHorizontal, Terminal, Server, Network } from "lucide-react";
 
 Everything Deplo listens on, connects over and writes to disk.
 
----
-
 ## Ports
 
 <TypeTable
@@ -63,39 +61,55 @@ Everything Deplo listens on, connects over and writes to disk.
     one holding the port.
 </Callout>
 
----
-
 ## Networks
+
+Three belong to the platform, and no tenant stack ever joins one:
 
 <TypeTable
   type={{
     deplo: {
-      type: "not internal",
-      description:
-        "Every deployed app and database, plus Traefik. This is how containers reach each other by name.",
+      type: "platform",
+      description: "Traefik and the control plane. Not where apps go",
     },
-    "deplo-internal": {
+    "deplo_deplo-internal": {
       type: "internal",
-      description: "The control plane and its Postgres, and nothing else.",
+      description: "The control plane and its Postgres, and nothing else. Its compose key is deplo-internal",
     },
-    "deplo-socket": {
+    "traefik_deplo-socket": {
       type: "internal",
-      description: "Traefik and its read-only Docker socket proxy.",
+      description: "Traefik and its read-only Docker socket proxy. Its compose key is deplo-socket",
     },
   }}
 />
 
-The split is not decoration. Every container on the shared network
-registers its service name as a DNS alias, and Docker round-robins a name
-two containers both claim. A tenant service called `postgres` on the shared
-network would collect the control plane's own database connections,
-password included, which is why Postgres sits on its own internal leg and
-why four service names are refused outright on the shared one.
+The rest are tenant networks, one per Environment, created and named by Deplo:
+
+<TypeTable
+  type={{
+    "deplo-env-<environment id>": {
+      type: "tenant",
+      description: "Every app and managed database placed in that Environment",
+    },
+    "deplo-team-<team id>": {
+      type: "tenant",
+      description: "Apps that are in no Environment: the team's top level, and anything in a folder",
+    },
+    "deplo-preview-<deploy key>": {
+      type: "tenant",
+      description: "One pull request preview, sealed on its own",
+    },
+  }}
+/>
+
+The split is not decoration. Every container on its network registers its service name as a DNS
+alias, and Docker round-robins a name two containers both claim. A tenant service called
+`postgres` reachable from the proxy's leg would collect the control plane's own database
+connections, password included, which is why Postgres sits on its own internal network and why
+six service names are refused on a network Deplo owns.
 
 ### Docker address pools
 
-Deplo uses one network per app, and Docker's default pools allow about
-**31**. Both installers therefore write a `/13` into
+Deplo uses one network per Environment, and Docker's default pools allow about **31** of them. Both installers therefore write a `/13` into
 `default-address-pools` in `/etc/docker/daemon.json`, with `size: 24`.
 
 - An existing pool configuration is **never clobbered**.
@@ -103,8 +117,6 @@ Deplo uses one network per app, and Docker's default pools allow about
 - The new one is validated with `dockerd --validate` before it is used.
 - If containers are already running, the **Docker restart is skipped** and
   the installer tells you to do it in a maintenance window.
-
----
 
 ## Files on the panel's host
 
@@ -116,8 +128,6 @@ Deplo uses one network per app, and Docker's default pools allow about
 /opt/deplo/data/                    build and upload staging
 /opt/deplo/acme/acme.json           issued certificates, chmod 600
 ```
-
----
 
 ## Files on every server
 
@@ -144,23 +154,29 @@ Deplo uses one network per app, and Docker's default pools allow about
   reissuance.
 </Callout>
 
----
-
 ## Container names worth knowing
 
 <TypeTable
   type={{
     "deplo-traefik": {
       type: "proxy",
-      description: "The proxy. Deplo identifies it by this name.",
+      description: "The proxy. Deplo identifies it by this name",
+    },
+    "deplo-deplo-1": {
+      type: "control plane",
+      description: "The panel container on the host that runs it. Compose names it, so there is no container_name",
+    },
+    "deplo-postgres-1": {
+      type: "control plane",
+      description: "The control plane's own Postgres",
+    },
+    "traefik-deplo-socket-proxy-1": {
+      type: "proxy",
+      description: "The read-only Docker socket proxy Traefik reads events through",
     },
     "deplo-<slug>": {
       type: "app stack",
       description: "An app's stack.",
-    },
-    "deplo-<slug>__<env>": {
-      type: "app stack",
-      description: "An app's stack in a non-default environment.",
     },
     "deplo-<slug>__pr-<n>": {
       type: "preview stack",
@@ -177,9 +193,7 @@ Deplo uses one network per app, and Docker's default pools allow about
   }}
 />
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

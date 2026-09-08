@@ -30,7 +30,7 @@ start-to-end read.
 | **Control plane** | The panel: the dashboard, the API, the database and the rendering. It never runs Docker. |
 | **Cron job** | A command run on a schedule inside a container, tracked by the agent. |
 | **Deploy hook** | A per-app URL that triggers a deploy. Needs both the URL and a bearer token. |
-| **Deploy key** | The stack name a deploy targets, for example `deplo-shop__staging`. |
+| **Deploy key** | What a deploy targets, which is the app's slug. The stack Docker sees is `deplo-<key>`, and a pull request preview appends `__pr-<n>`. |
 | **Deployment** | One build and release, with its own logs, status and image. |
 | **Domain** | One routing row, keyed on hostname plus path. |
 | **Environment** | An isolated deploy target inside a Project, with its own apps, branch and variables. |
@@ -39,7 +39,7 @@ start-to-end read.
 | **Git connection** | Stored credentials for one git host, reused by every app deploying from it. |
 | **Instance admin** | A flag on an account that unlocks Servers, Users and the instance settings. Not a team capability. |
 | **Instance owner** | The tier above instance admin, immutable to every hand but its own. |
-| **MCP server** | The endpoint an AI agent connects to, exposing 76 tools that run against the same schema and the same gates a person gets. |
+| **MCP server** | The endpoint an AI agent connects to, exposing its tools, all of which run against the same schema and the same gates a person gets. |
 | **Membership** | A person's link to a team, carrying a role. |
 | **Migration source** | A server that hosts nothing, installed only to import from another platform. The one server Deplo uninstalls itself from. |
 | **Preview** | See **pull request preview**. |
@@ -63,8 +63,6 @@ start-to-end read.
 | **Template** | A catalogue entry Deplo turns into an app. A family of one or more **variants**. |
 | **Volume** | Disk space Deplo creates and keeps for an app. One of three storage kinds, alongside **File** and **Bind**. |
 
----
-
 ## Words Deplo does not use
 
 | Not this | Because |
@@ -76,9 +74,7 @@ start-to-end read.
 | Stopped, as a stored value | The stored value is `idle`. "Stopped" is only the label. |
 | Container, group, workspace, for a Project | A **Project** owns environments; those words do not carry that. |
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

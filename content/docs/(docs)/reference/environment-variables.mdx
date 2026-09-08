@@ -9,12 +9,10 @@ Every variable Deplo itself reads, to configure the **platform**. For the
 variables your apps read at runtime, see
 [Environment variables](/guides/config/environment-variables).
 
----
-
 ## The control plane
 
-Read by the Deplo container. The canonical list is `.env.example` at the
-repo root.
+Read by the Deplo container. `.env.example` at the repo root is a starting point rather than a
+complete list, and it lags the code.
 
 <TypeTable
   type={{
@@ -33,11 +31,11 @@ repo root.
     DEPLO_PUBLIC_URL: {
       type: "url",
       description:
-        "The public URL the dashboard is served from. Sets the cookie secure flag, the auth layer's https mode, and the install command printed for new servers. Effectively required in production.",
+        "The fallback public URL. The panel address stored in Settings -> Deplo wins where one is set; this is what git webhook URLs are built from either way. Sets the cookie secure flag, the auth layer's https mode, and the install command printed for new servers. Effectively required in production.",
     },
     DEPLO_SERVER_IP: {
       type: "IPv4 dotted quad",
-      default: "first non-internal NIC IPv4, then 127.0.0.1",
+      default: "the IPv4 in DEPLO_PUBLIC_URL when it carries one, else the first non-internal NIC IPv4, else 127.0.0.1",
       description:
         "The literal public IPv4 baked into generated nip.io hostnames and their Traefik rules. Must be a dotted quad, never a hostname.",
     },
@@ -59,11 +57,6 @@ repo root.
       description:
         "Where the template catalogue is fetched from. Point it at your own mirror to self-host it.",
     },
-    DEPLO_ACME_EMAIL: {
-      type: "email",
-      description:
-        "The Let's Encrypt email baked into the agent installer this instance generates.",
-    },
     DEPLO_CERT_RESOLVER: {
       type: "string",
       default: "letsencrypt",
@@ -83,14 +76,38 @@ repo root.
     },
     DEPLO_DATA_DIR: {
       type: "path",
-      default: "/data in the container, ./.deplo locally",
+      default: "/data",
       description:
         "Host-visible staging directory for builds and uploads. Not a data store.",
     },
+    DEPLO_SETUP_KEY: {
+      type: "string",
+      description:
+        "The key the /setup link carries. The installer generates one into .env; set it yourself when running from Compose, or the first person to reach /setup claims the instance.",
+    },
+    DEPLO_PANEL_PORT: {
+      type: "number",
+      default: "3000",
+      description:
+        "The port the panel container publishes on 127.0.0.1. A takeover install walks it to the first free of 3000 to 3003.",
+    },
+    DEPLO_TAKEOVER: {
+      type: "dokploy | coolify",
+      description:
+        "Set by the installer when it is replacing another panel on this machine. Seeds the takeover wizard. See Migrations.",
+    },
+    DEPLO_MONITORING_FORCE_POLL: {
+      type: "1",
+      description:
+        "Forces the whole fleet onto polled metrics instead of the telemetry stream. A diagnostic, not a setting to leave on.",
+    },
+    NODE_ENV: {
+      type: "string",
+      description:
+        "Decides whether a missing DEPLO_SECRET is fatal. Production images set it; do not unset it.",
+    },
   }}
 />
-
----
 
 ## The installer
 
@@ -109,7 +126,7 @@ them in front of the install command.
       type: "email",
       default: "admin@<the panel's own host>",
       description:
-        "The Let's Encrypt registration email for that host's Traefik. Note the name: the container's own variable is DEPLO_ACME_EMAIL.",
+        "The Let's Encrypt registration email for that host's Traefik. Deplo reads the address back out of the running Traefik configuration, so there is no matching variable on the control-plane container.",
     },
     DEPLO_DB_PASSWORD: {
       type: "string",
@@ -129,7 +146,10 @@ them in front of the install command.
   }}
 />
 
----
+Four more the installer honours and nothing else reads: `DEPLO_SKIP_NET_CHECKS=1` to skip the
+outbound reachability probes, `DEPLO_IMAGE` to install from a different image, and `DEPLO_TRACE` /
+`DEPLO_LOG_FILE` for a verbose transcript. `DEPLO_DIR` moves the install directory off
+`/opt/deplo`. The agent installer takes `DEPLO_TRACE` and `DEPLO_LOG_FILE` too.
 
 ## The agent installer
 
@@ -167,8 +187,6 @@ for what each role changes on the host.
   }}
 />
 
----
-
 ## Notes worth reading before you change anything
 
 <Callout type="warn" title="DEPLO_SECRET is permanent">
@@ -187,9 +205,7 @@ for what each role changes on the host.
   and the secret. They never reach the runtime image and are not usable
   values.
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card
