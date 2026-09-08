@@ -13,8 +13,6 @@ action is not the person who owns the box. Everything is scoped to a
 If you are the only person here, none of this gets in your way: your
 account lands on the Owner role of your own team and holds everything.
 
----
-
 ## Team
 
 An isolated workspace. It owns apps, domains, environment variables,
@@ -66,8 +64,6 @@ by the primary owner, only to a member of the same team, and only with
 their password re-entered and their second factor. An API token can never
 do it.
 
----
-
 ## Capability
 
 **One capability is one action.** `create_apps`, `deploy_apps`,
@@ -80,6 +76,10 @@ admin might want to separate, it is two capabilities: deleting an app is
 `delete_apps`, not `deploy_apps`. `view` is the always-on floor that
 everybody holds.
 
+One is worth knowing by name: **`reveal_secrets`** gates the only four things Deplo will read back
+to you - a basic-auth password, a backup recovery key, a managed database's connection string, and
+an app's deploy hook URL. An environment variable is never one of them.
+
 Three grants sit slightly apart:
 
 - **`instanceAdmin`** is instance-wide, not a team capability. It unlocks
@@ -91,8 +91,6 @@ Three grants sit slightly apart:
   [Host access](/advanced/host-access-and-privileges).
 
 The full list is in [Capabilities](/reference/capabilities).
-
----
 
 ## Role
 
@@ -109,8 +107,6 @@ you like.
   `manage_roles` or `manage_team`.
 - A member with no role carries a hand-picked **Custom** set.
 
----
-
 ## Access inside one folder
 
 A capability set can also be attached to a **folder or a single app**
@@ -120,8 +116,6 @@ role's set, and it **may exceed it**. Most specific wins.
 This is what makes real delegation possible: someone with a read-only team
 role can be the person who deploys everything in one folder, without
 gaining that power anywhere else.
-
----
 
 ## API tokens
 
@@ -136,8 +130,6 @@ whole teams, whole projects, whole folders or individual apps, and it can
 carry an expiry. It is shown once, at creation, and only its hash is
 stored.
 
----
-
 ## Two-factor is a policy, not a capability
 
 A team, or a role inside it, can **require** two-factor authentication. A
@@ -147,8 +139,6 @@ They see a lock screen with the option to enrol, switch team or sign out.
 
 A passkey counts. Signing in with one satisfies the requirement for that
 session, because it is a full sign-in method rather than a second step.
-
----
 
 ## The two gates
 
@@ -164,8 +154,6 @@ A resource that lives in a folder is checked a second time against that
 folder's grant. An id belonging to another team resolves to nothing
 rather than to an error that would confirm it exists.
 
----
-
 ## Instance admin and instance owner
 
 **Instance admin** is a flat flag that unlocks the system-wide pages:
@@ -178,9 +166,7 @@ and the owner cannot drop their own admin flag. It transfers only by the
 owner, only to an active instance admin, with the password re-entered.
 The only way back from a locked-out owner is a command run on the host.
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

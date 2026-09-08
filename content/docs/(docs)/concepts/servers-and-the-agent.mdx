@@ -12,8 +12,6 @@ thing in the entire system that runs Docker.
 Servers are instance-wide, not team-owned. One server can serve several
 teams, and one team can spread across several servers.
 
----
-
 ## How a server joins
 
 The control plane never connects to your machine. Your machine connects to
@@ -66,16 +64,12 @@ the response instead.
 
 From then on the two talk over gRPC with mutual TLS on port **9443**.
 
----
-
 ## What a server can be for
 
 The role is chosen when you install it, and it changes what gets set up:
 Everything, Build only, Backups only, or the migration-only role created by
 the Dokploy import wizard. See [Server roles](/advanced/server-roles) for
 the full comparison and what each one changes on the host.
-
----
 
 ## Health is not readiness
 
@@ -125,8 +119,6 @@ configuration, and each row is `pass`, `info`, `warn`, `fail` or `skip`.
 **`skip` means it could not be evaluated**, which is deliberately
 different from a pass.
 
----
-
 ## The Deplo host is a server too
 
 The machine running the control plane enrolls itself during installation
@@ -137,20 +129,20 @@ the everyday path is also the well-tested one.
 
 The one thing it cannot do is remove itself from the fleet.
 
----
-
 ## Removing a server is trust revocation
 
-Removing a server **clears the pinned certificate** so Deplo will never
-talk to it again. It does not reach into the host and uninstall anything,
-because by that point it may not be able to.
+Removal is **refused while anything still points at the machine**: an app, a managed database, or
+a backup destination on its disk. Each refusal names what is in the way, so a server never
+disappears out from under a running workload. The Deplo host cannot remove itself at all.
+
+Once nothing points at it, removing a server **clears the pinned certificate** so Deplo will never
+talk to it again. It does not reach into the host and uninstall anything, because by that point it
+may not be able to.
 
 Deplo prints a one-line uninstall command for you to run on the machine if
 you want the agent, its Traefik and its state directory gone. The only
 exception is a migration source, which Deplo does uninstall itself from
 once you are done with it.
-
----
 
 ## Two behaviours worth knowing
 
@@ -164,9 +156,7 @@ ladder from one minute up to a day, eight times. Giving up writes an
 activity entry and raises an alert, so an orphaned container is never
 silently left behind.
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

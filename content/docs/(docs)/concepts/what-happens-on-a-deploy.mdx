@@ -74,24 +74,24 @@ Dockerfile and Static builds skip detection: you named everything already.
 
 | Method | What happens |
 | --- | --- |
-| **Nixpacks** (default) | Generates a build plan from the detected language and framework |
-| **Railpack** | The same idea, a different builder, with its own pinned version |
+| **Railpack** (default) | Generates a build plan from the detected language and framework, with its own pinned version |
+| **Nixpacks** | The same idea, a different builder |
 | **Dockerfile** | Your `Dockerfile`, with your build context and optionally a `--target` stage |
 | **Static** | Builds, then serves the output directory, with an optional single-page fallback |
 
-Every resolved environment variable is available **during** the build,
-not just at run time, so build-time inlined configuration such as
-`NEXT_PUBLIC_*` works. The generated Dockerfile declares them as `ARG` and
-`ENV`.
+Every resolved environment variable is available **during** the build, not just at run time, so
+build-time inlined configuration such as `NEXT_PUBLIC_*` works. The generated Dockerfile declares
+each one as an `ARG`; only `NODE_ENV` is also promoted to an `ENV`, so a value you need at run
+time as well belongs in the app's own variables, which the running container gets anyway.
 
 <Callout type="info">
 The image stays on that host. Deplo pushes to no registry, which is why a
 rollback needs the image still to be there.
 </Callout>
 
-Build output streams to the dashboard as it happens, survives a page
-reload and survives a control plane restart. It is stored with a cap, so
-a runaway build cannot fill the disk.
+Build output streams to the dashboard as it happens, survives a page reload and survives a
+control plane restart. It is stored with a cap - 20,000 lines, each truncated at 4,000
+characters - so a runaway build cannot fill the disk.
 </Step>
 
 <Step>
@@ -103,8 +103,9 @@ the app has linked, then **a preview override** (previews only). A name
 defined on more than one layer takes the value from the highest layer that
 defines it.
 
-Every layer carries a type. A **secret**-typed value is write-only, and a
-preview of a **fork** never receives one, whatever the settings say.
+Every layer carries a type, and a **secret**-typed value is write-only. A preview built from a
+**fork** is stricter than that: it receives the preview-only overrides and **nothing the app
+itself was given**, whatever the variable's type, because the pull request's code is a stranger's.
 </Step>
 
 <Step>
@@ -128,10 +129,11 @@ routing logic never live on the host side.
 <Step>
 ### The agent brings it up
 
-The agent writes the stack and, when there are secrets, a `0600`
-environment file beside it, then runs Compose. Containers join the shared
-`deplo` network, which is how apps and databases reach each other by
-name.
+The agent writes the stack and, when there are secrets, a `0600` environment file beside it, then
+runs Compose. The containers join the app's **Environment network**, `deplo-env-<id>`, or its
+team's `deplo-team-<id>` when the app is in no Environment, or `deplo-preview-<key>` for a
+preview. That is how apps and databases in the same Environment reach each other by name, and why
+two apps in different Environments cannot.
 
 Traefik notices the new labels through its read-only socket proxy and
 starts routing. If the domain asked for a certificate, Traefik requests
@@ -152,8 +154,6 @@ gone.
 </Step>
 </Steps>
 
----
-
 ## What a deploy does not do
 
 - **It does not touch your data.** Volumes are reattached, never
@@ -163,8 +163,6 @@ gone.
 - **It does not roll back on failure.** A failed deploy leaves the
   previous stack running. See [App status is intent, not observation](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
 
----
-
 ## A rollback is much shorter
 
 Steps 3 to 6 are skipped. Deplo re-runs an existing image with the
@@ -172,9 +170,7 @@ Steps 3 to 6 are skipped. Deplo re-runs an existing image with the
 volumes and limits do not. It is recorded as a real deployment of its
 own, with its own logs.
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card
