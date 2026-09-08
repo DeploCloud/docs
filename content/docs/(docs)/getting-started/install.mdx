@@ -6,8 +6,10 @@ icon: Download
 
 import { Rocket, Variable, Network, Terminal, Trash2 } from "lucide-react";
 import { siUbuntu, siDebian, siLinux } from "simple-icons";
-import Image from "next/image";
-import { basePath } from "@/lib/base-path";
+
+Deplo installs from a single shell script on a fresh Linux server. It brings up Docker if it is
+missing, then Traefik, Postgres and the control plane, and enrolls the machine as the first
+server in the fleet.
 
 <Tabs items={['Quick install', 'With your own domain']}>
 <Tab value="Quick install">
@@ -19,9 +21,9 @@ curl -fsSL https://deplo.build/install.sh | bash
 ```
 
 It asks for a domain. Press Enter and it generates one: the dashboard answers on
-`https://deplo-<hex>.nip.io`, which resolves to your server with no DNS to set up.
-The browser warns about the certificate once - genuinely once, the installer mints
-it and keeps it - because no public authority issues for a `nip.io` address.
+`https://deplo-<hex>.nip.io`, which resolves to your server with no DNS to set up. The browser
+warns about the certificate once, because no public authority issues for a `nip.io` address. The
+installer mints that certificate and keeps it, so the warning does not come back.
 
 </Tab>
 <Tab value="With your own domain">
@@ -33,179 +35,160 @@ curl -fsSL https://deplo.build/install.sh | \
   DEPLO_DOMAIN=deplo.example.com ACME_EMAIL=you@example.com bash
 ```
 
-<Callout type="info" title="The generated address stays routed as well">
-  `https://deplo-<hex>.nip.io` keeps answering alongside your domain. It is the way back in when the domain, its DNS or its certificate is what broke.
-</Callout>
+`https://deplo-<hex>.nip.io` keeps answering alongside your domain. It is the way back in when
+the domain, its DNS or its certificate is what broke.
 
 </Tab>
 </Tabs>
 
-<Callout
-  type="neutral"
-  style={{
-    backgroundColor: "#111111",
-    borderColor: "#111111",
-    "--callout-color": "#111111",
-  }}
-  icon={
-    <span className="flex shrink-0 items-start -space-x-2">
-      <Image
-        src={`${basePath}/competitors/coolify-color.svg`}
-        alt=""
-        aria-hidden="true"
-        width={32}
-        height={32}
-        className="size-8 rounded-full bg-white p-1.5 ring-1 ring-black"
-      />
-      <Image
-        src={`${basePath}/competitors/dokploy-color.svg`}
-        alt=""
-        aria-hidden="true"
-        width={32}
-        height={32}
-        className="size-8 rounded-full bg-black p-1.5 ring-1 ring-black"
-      />
-    </span>
-  }
-  title="Already running Dokploy or Coolify?"
->
-  The installer offers to **take that machine over** instead: it brings your
-  projects across, then takes ports `80`, `443` and `3000` from the old panel and
-  inherits its certificates. Answer no and nothing is installed. See [Take over
-  your VPS](/migrations).
+<Callout type="warn" title="Already running another control panel?">
+  Two panels cannot share ports 80 and 443, so on a machine that has one the installer offers to
+  take it over instead: it brings your projects across, then removes the old panel when you say
+  so. Answer no and nothing is installed. See [Migrations](/migrations).
 </Callout>
-
----
 
 ## What you need
 
-<Callout type="info" title="Start from a clean, stock server">
-  A fresh VPS with nothing installed: no Docker, no Nginx, Apache or Caddy already bound to `80`/`443`, no other control panel. The installer is built for that starting point, it's the only way to guarantee the exact experience described on this page. Anything already occupying those ports gets in the way of Traefik and certificate issuance.
-</Callout>
+Start from a clean, stock server: no Docker, no Nginx, Apache or Caddy already bound to `80` or
+`443`, no other control panel. Anything already holding those ports gets in the way of Traefik
+and of certificate issuance.
 
-| What             | Requirement                                                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| A server         | <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siUbuntu.hex}`} aria-hidden="true"><path d={siUbuntu.path} /></svg>Ubuntu 24.04, <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siDebian.hex}`} aria-hidden="true"><path d={siDebian.path} /></svg>Debian, or any other modern <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siLinux.hex}`} aria-hidden="true"><path d={siLinux.path} /></svg>Linux distro, `x86-64` or `arm64`, and root access for the length of one install command. **Fresh, with nothing on it yet:** no Docker, no reverse proxy on `80`/`443`, no other control panel. Docker is installed for you if it is missing, and `systemd` has to be there: it is what runs the agent, so without it the dashboard comes up but the machine cannot run apps. |
-| Size             | **2 cores, 4 GB of RAM, 30 GB of disk** is the minimum, **4 cores and 8 GB** the comfortable size. Both are about your apps, not about Deplo: the platform itself fits in about 1 GB. On 2 GB it installs and runs, and then there is almost nothing left to deploy on it, so we advise against it. The installer warns below the minimum and **refuses below 8 GB free on `/`**, where Docker images alone do not fit. |
-| Ports            | `80` and `443` reachable from the internet, `9443` on every server, this machine included. Port `3000` is bound to `127.0.0.1` and needs nothing opened. |
-| Outbound HTTPS   | To `ghcr.io` for the image, to `get.docker.com` when Docker is missing, and to Let's Encrypt for the certificate. The first two are checked before anything is installed. |
-| A domain         | Optional. Useful, not required: the generated `nip.io` hostname works from the first deploy.                                     |
-| Docker knowledge | None. It is available as an escape hatch, never as a prerequisite.                                                              |
+| What | Requirement |
+| --- | --- |
+| A server | <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siUbuntu.hex}`} aria-hidden="true"><path d={siUbuntu.path} /></svg>Ubuntu 24.04, <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siDebian.hex}`} aria-hidden="true"><path d={siDebian.path} /></svg>Debian, or any other modern <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siLinux.hex}`} aria-hidden="true"><path d={siLinux.path} /></svg>Linux, `x86-64` or `arm64`, with root access for the length of one command. Docker is installed for you if it is missing. `systemd` has to be there: it runs the agent, and without it the dashboard comes up but the machine cannot run apps. |
+| Size | **2 cores, 4 GB of RAM, 30 GB of disk** is the minimum, **4 cores and 8 GB** the comfortable size. Both are about your apps: the platform itself fits in about 1 GB. The installer warns below the minimum and **refuses below 8 GB free on `/`**, where Docker images alone do not fit. |
+| Ports | `80` and `443` reachable from the internet, `9443` on every server including this one. Port `3000` is bound to `127.0.0.1` and needs nothing opened. |
+| Outbound HTTPS | To `ghcr.io` for the image, to `get.docker.com` when Docker is missing, and to Let's Encrypt for the certificate. The first two are checked before anything is installed. |
+| A domain | Optional. The generated `nip.io` hostname works from the first deploy. |
+| Docker knowledge | None. It is an escape hatch, never a prerequisite. |
 
-<Callout type="info" title="Check the machine before you commit to it">
-  `curl -fsSL https://deplo.build/install.sh | bash -s -- --check` runs the preflight and exits, changing **nothing** on the host. It prints every blocking problem and every warning, so a server that cannot finish the install says so in ten seconds instead of halfway through.
-</Callout>
+To check a machine without touching it, run the preflight and exit:
 
----
+```bash
+curl -fsSL https://deplo.build/install.sh | bash -s -- --check
+```
+
+It changes nothing on the host and prints every blocking problem and every warning, so a server
+that cannot finish the install says so in ten seconds instead of halfway through.
 
 ## Create your account
 
 The installer prints a **setup link** at the end, next to the dashboard address:
 
 ```
-Set up   https://deplo.example.com/setup?key=a3f9c1d84b7e2065
+Set up   https://deplo.example.com/setup?key=3f9c1d84b7e206518a2c47e0d93b61af
 ```
 
-That link is the only way to create the first account. Without it the panel shows **This instance isn't set up yet** and nothing can be claimed - a fresh install answers on a public address whose name reaches certificate transparency logs within seconds, so the first account has to belong to whoever ran the installer rather than to whoever arrives first.
+That link is the only way to create the first account. Without it the panel shows **This instance
+isn't set up yet** and nothing can be claimed: a fresh install answers on a public address whose
+name reaches certificate transparency logs within seconds, so the first account has to belong to
+whoever ran the installer rather than to whoever arrives first.
 
-<Callout type="info" title="Lost the link?">
-  Re-run the installer on the server. It prints the same link again - the key is generated once into `/opt/deplo/.env` and never rotates.
-</Callout>
+The key is generated once into `/opt/deplo/.env` and never rotates, so re-running the installer
+prints the same link again. It stops working the moment the account exists, and the address then
+goes to the sign-in page.
 
-The link stops working on its own the moment the account exists. From then on the address goes to the sign-in page, and the key means nothing.
+The setup screen runs once: a **Team name**, a username (3 to 16 lowercase letters, numbers, `-`
+and `_`), a display name, an admin email and a password, checked for length and character mix and
+against the Have I Been Pwned breach list. **Create team** finishes. That account is the
+**instance owner**, the tier above instance admin, and the only one that can hand the instance to
+somebody else later.
 
-Open it. A fresh install starts completely empty, and the link opens the setup screen, **Welcome to Deplo**. It runs once: a workspace name, a username (lowercase letters, numbers, `-` and `_`), a display name, an admin email and a password, checked for length and character mix and against the Have I Been Pwned breach list. Click **Create workspace** to finish. That account is the **instance owner**: the tier above instance admin, and the only one that can hand the instance to somebody else later.
+## What the installer does
 
----
+It is **idempotent**. Secrets are generated once into `/opt/deplo/.env`, so running it again
+updates the containers in place and never rotates anything; if that file already exists the
+script switches itself to update mode. Everything it writes lands in `/opt/deplo` - secrets, the
+compose file, the Traefik stack, build staging, issued certificates. See
+[Ports, networks, files](/reference/ports-networks-and-files) for the full layout.
 
-## How it works
+Four containers come up:
 
-The installer is a shell script served from the repository. It is **idempotent**: secrets are generated once into `/opt/deplo/.env`, so running it again updates the containers in place and never rotates anything. If that file already exists, the script switches itself to update mode.
+- `postgres:16-alpine` on the `deplo-internal` network, **not published to the host**.
+- `ghcr.io/deplocloud/deplo`, publishing port `3000` **on `127.0.0.1` only**. A panel on an open
+  port is a login page on the internet with no TLS in front of it, so the dashboard is never
+  reachable at `<server-ip>:3000`, only through Traefik. If the proxy itself is what broke, the
+  way in is an SSH tunnel: `ssh -L 3000:localhost:3000 root@your-server`.
+- `traefik:v3.7`, holding `80` and `443` and serving the dashboard over HTTPS.
+- `tecnativa/docker-socket-proxy:v0.5.0`, on an internal network of its own, which is how Traefik
+  learns about containers without holding the socket. It answers only for containers, networks,
+  events and version, and refuses every `POST`.
 
-Everything it writes lands in `/opt/deplo` (secrets, the compose file, the
-Traefik stack, build staging, issued certificates), see
-[Ports, networks, files](/reference/ports-networks-and-files) for the full
-layout on this host and on every server it later enrolls.
+Neither Traefik nor the control plane ever gets the Docker socket itself. See
+[How Deplo works](/concepts/how-deplo-works) for why.
 
-Three containers come up:
-
-- `postgres:16-alpine` on an `internal` network, **not published to the host**.
-- `ghcr.io/deplocloud/deplo`, publishing port `3000` **on `127.0.0.1` only**: a panel on
-  an open port is a login page on the internet with no TLS in front of it, so the
-  dashboard is never reachable at `<server-ip>:3000`, only through Traefik. If the
-  proxy itself is what broke, the way in is an SSH tunnel:
-  `ssh -L 3000:localhost:3000 root@your-server`, then open `http://localhost:3000`.
-- `traefik:v3.7`, holding `80` and `443`, and serving the dashboard over HTTPS.
-
-Neither Traefik nor the control plane ever gets the Docker socket. See [How Deplo works](/concepts/how-deplo-works#the-rule) for why.
-
----
-
-## What the installer changes on the host
+On the host itself, four things change:
 
 | Change | Why |
 | --- | --- |
-| Installs Docker if absent | Via `get.docker.com`, then enables the service |
-| Rewrites `default-address-pools` in `/etc/docker/daemon.json` | Docker's defaults allow about 31 networks and Deplo uses one per app, so an untouched host fails on its 32nd deploy. An existing pool config is never clobbered, the old file is kept as `daemon.json.deplo-bak`, and the new one is validated with `dockerd --validate` before it's used |
-| Creates the `deplo` Docker network | Every app joins it, which is how apps reach each other by name |
-| Enrolls this machine as a server | Waits for `/api/health`, then runs the agent installer against `http://127.0.0.1:3000` |
+| Docker is installed if absent | Via `get.docker.com`, then the service is enabled |
+| `default-address-pools` is rewritten in `/etc/docker/daemon.json` | Docker's defaults allow about 31 networks and Deplo uses one per Environment, so an untouched host runs out. An existing pool config is never clobbered, the old file is kept as `daemon.json.deplo-bak`, and the new one is validated with `dockerd --validate` first |
+| The `deplo` Docker network is created | It carries Traefik and the control plane. No app ever joins it: a stack gets its own [Environment network](/advanced/network-isolation) |
+| This machine is enrolled as a server | The installer waits for `/api/health`, then runs the agent installer against the panel on `127.0.0.1` |
 
-<Callout type="warn" title="Address pool changes don't restart Docker on their own">
-  If containers are already running when the address pools change, the installer skips the Docker restart and tells you to do it in a maintenance window. Nothing is broken until then, but the new pool doesn't apply yet.
-</Callout>
-
----
+If containers are already running when the address pools change, the installer skips the Docker
+restart and tells you to do it in a maintenance window. Nothing is broken until then, but the new
+pool does not apply yet.
 
 ## Update it later
 
-Re-run the same command. It pulls the newer image and restarts the stack, and your secrets stay exactly as they were. Pin a version with `DEPLO_VERSION=0.4.1` in front of the command, or leave it to take `latest`.
+Re-run the same command. It pulls the newer image and restarts the stack, and your secrets stay
+exactly as they were. Pin a version with `DEPLO_VERSION=<tag>` in front of the command, or leave
+it to take `latest`.
 
-The dashboard also checks for releases on its own and shows an update banner. See [Upgrade](/operations/upgrade) for the full procedure, including the server agents, which version on their own clock.
-
----
+The dashboard also checks for releases on its own and shows an update banner. See
+[Upgrade](/operations/upgrade) for the full procedure, including the server agents, which version
+on their own clock.
 
 ## Run it with Compose instead
 
-`docker-compose.yml` in the repository runs the control plane and its Postgres behind Traefik. It's a readable, hand-editable starting point, not a copy of what the installer writes: the installer routes the panel through Traefik's **file provider** rather than container labels, precisely so the panel's own route can be changed from the panel later.
+`docker-compose.yml` in the repository runs the control plane and its Postgres. It is a readable,
+hand-editable starting point, not a copy of what the installer writes: it brings up no Traefik of
+its own and joins the external `deplo` network by labels, while the installer routes the panel
+through Traefik's **file provider** so the panel's own route can be changed from the panel later.
 
 ```bash
 docker network create deplo
 export DEPLO_DOMAIN=deplo.example.com   # required: it is the only address it serves
 export DEPLO_SECRET=$(openssl rand -base64 48)
 export DEPLO_DB_PASSWORD=$(openssl rand -base64 24)
-export DEPLO_SETUP_KEY=$(openssl rand -hex 8)   # then open /setup?key=<it>
+export DEPLO_SETUP_KEY=$(openssl rand -hex 16)   # then open /setup?key=<it>
 docker compose up -d
 ```
 
-Going this way, you enroll the host as a server yourself from **Settings -> Servers**, exactly like any other machine.
+Going this way, you enroll the host as a server yourself from **Settings -> Servers**, exactly
+like any other machine. Four things are worth knowing before you do:
 
-<Callout type="warn" title="Limits and gotchas">
-  - **`DEPLO_SETUP_KEY` is yours to set here.** The installer generates one; Compose does not. Leave it unset and the first account is created by whoever reaches `/setup` first.
-  - **`DEPLO_SECRET` is not rotatable.** It derives every encryption key, every session signature and the agent certificate authority. Change it and every stored secret becomes unreadable, every session ends, and every agent certificate is re-minted. Back it up with the rest of `/opt/deplo/.env`.
-  - **The domain must resolve before the certificate can issue.** Let's Encrypt validates over HTTP on port 80. Point the A record first, install second, or re-run the installer once DNS is live. The generated address answers meanwhile.
-  - **Agent enrollment failure is not fatal.** If it fails, the dashboard still comes up and the script says so. Re-running the installer retries it.
-  - **`localhost`, `*.local` and a bare IP address are refused as `DEPLO_DOMAIN`.** The panel needs a hostname a certificate can be issued for. Give none and the installer generates one.
-</Callout>
+- **`DEPLO_SETUP_KEY` is yours to set.** The installer generates one; Compose does not. Leave it
+  unset and the first account is created by whoever reaches `/setup` first.
+- **`DEPLO_SECRET` is not rotatable.** It derives every encryption key, every session signature
+  and the agent certificate authority. Change it and every stored secret becomes unreadable,
+  every session ends, and every agent certificate is re-minted. Back it up with the rest of
+  `/opt/deplo/.env`.
+- **The domain must resolve before the certificate can issue.** Let's Encrypt validates over HTTP
+  on port 80, so point the A record first. The generated address answers meanwhile.
+- **`localhost`, `*.local`, `*.localdomain`, a bare IP and any name without a dot are rejected as
+  `DEPLO_DOMAIN`.** The panel needs a hostname a certificate can be issued for; the installer says
+  so and falls back to the generated `nip.io` address.
 
----
+## Troubleshooting
 
-## If it does not work
+| Symptom | What to check |
+| --- | --- |
+| `docker compose` not found | The script requires Compose v2. Install Docker's own packages rather than a distribution's `docker.io`. |
+| The dashboard does not answer | From the server, `curl http://127.0.0.1:3000/api/health`. If that works, the proxy is the problem. If it does not, check `docker ps` shows the `deplo` container and read `docker logs deplo`; a failure to reach Postgres is the usual cause. |
+| The domain shows a certificate warning | The A record is not resolving to this server yet, or port 80 is closed. |
+| Agent enrollment failed | Not fatal. The dashboard still comes up and the script says so; re-running the installer retries it. |
 
-<Callout type="error" title="Common failures">
-  - **`docker compose` not found.** The script requires Compose v2. Install Docker's own packages rather than a distribution's `docker.io`.
-  - **The dashboard does not answer.** From the server, `curl http://127.0.0.1:3000/api/health`. If that works, the proxy is the problem; if it does not, check `docker ps` shows the `deplo` container and read `docker logs deplo`. A failure to reach Postgres is the usual cause.
-  - **The domain shows a certificate warning.** The A record isn't resolving to this server yet, or port 80 is closed. See [Domains and TLS](/troubleshooting/domains-and-tls).
-  - Anything else: [Servers and agents](/troubleshooting/servers-and-agents).
-</Callout>
+More in [Servers and agents](/troubleshooting/servers-and-agents) and
+[Domains and TLS](/troubleshooting/domains-and-tls).
 
----
-
-## See also
+## Next steps
 
 <Cards>
-  <Card icon={<Rocket className="text-blue-400" />} title="Deploy your first app" description="From a repository to a running site." href="/getting-started/first-app" />
-  <Card icon={<Variable className="text-purple-400" />} title="Platform variables" description="Every variable the installer and the container read." href="/reference/environment-variables" />
-  <Card icon={<Network className="text-green-400" />} title="Ports, networks, files" description="What the installer opens and where it writes." href="/reference/ports-networks-and-files" />
-  <Card icon={<Terminal className="text-amber-400" />} title="Installers reference" description="Every flag of all three scripts." href="/reference/installers" />
-  <Card icon={<Trash2 className="text-red-400" />} title="Remove or uninstall" description="Undoing everything on this page." href="/operations/remove-a-server-or-uninstall" />
+  <Card icon={<Rocket className="text-blue-400" />} title="Deploy your first app" description="From a repository to a running site" href="/getting-started/first-app" />
+  <Card icon={<Variable className="text-purple-400" />} title="Platform variables" description="Every variable the installer and the container read" href="/reference/environment-variables" />
+  <Card icon={<Network className="text-green-400" />} title="Ports, networks, files" description="What the installer opens and where it writes" href="/reference/ports-networks-and-files" />
+  <Card icon={<Terminal className="text-amber-400" />} title="Installers reference" description="Every flag of all three scripts" href="/reference/installers" />
+  <Card icon={<Trash2 className="text-red-400" />} title="Remove or uninstall" description="Undoing everything on this page" href="/operations/remove-a-server-or-uninstall" />
 </Cards>

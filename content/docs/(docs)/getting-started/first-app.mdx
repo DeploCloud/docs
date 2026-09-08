@@ -8,16 +8,12 @@ import { Globe, GitBranch, Container, Layers } from "lucide-react";
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-<Callout type="info" title="Deplo is still in beta">
-  Rough edges are expected. The official 1.0 release is planned for Q4 2026.
-</Callout>
-
----
+Deploying is one wizard of three cards. Only the middle card changes with what you are deploying,
+and a Docker image, an upload or a Compose file finish on it. Creating an app writes one row and
+nothing else: the first deploy is what does the work, and it happens on the server you pick,
+never on the control plane.
 
 ## Deploy it
-
-The wizard is three cards. Only the middle one changes with what you are deploying, and a
-Docker image, an upload or a Compose file finish on it.
 
 {/* TODO: re-capture - these shots predate the three-step wizard. */}
 
@@ -26,22 +22,20 @@ Docker image, an upload or a Compose file finish on it.
 
 ### Open the wizard
 
-On the Overview, open **Add new**, then **Application**. The wizard takes the whole
-window; **Cancel**, bottom left, brings you back.
+On the Overview, open **Add new**, then **Application**. The wizard takes the whole window;
+**Cancel**, bottom left, brings you back.
 
 </Step>
 <Step>
 
 ### Pick where the code comes from
 
-Five tiles: **GitHub**, **Git**, **Docker Image**, **Upload**, **Compose**. Picking one is the
+Five tiles, in this order: **GitHub**, **Git**, **Docker Image**, **Compose**, **Upload**. Picking one is the
 answer, so it carries you straight to the next card. Under them, **Template** leaves for the
 catalogue instead.
 
-<Callout type="info" title="Already have the archive?">
-  Drag it onto the Overview, or onto the wizard itself, and Deplo opens the Upload step with
-  the file in hand and the name filled in.
-</Callout>
+You can also drag an archive onto the Overview, or onto the wizard itself: Deplo opens the Upload
+step with the file in hand and the name filled in.
 
 </Step>
 <Step>
@@ -50,11 +44,11 @@ catalogue instead.
 
 This is the only step that differs between the five.
 
-<Tabs items={['GitHub', 'Git', 'Docker Image', 'Upload', 'Compose']}>
+<Tabs items={['GitHub', 'Git', 'Docker Image', 'Compose', 'Upload']}>
 <Tab value="GitHub">
 
 If no GitHub App is connected yet, click **Connect GitHub** and follow GitHub's screens. Deplo
-creates the App for you through GitHub's manifest flow, so there's nothing to copy and paste.
+creates the App for you through GitHub's manifest flow, so there is nothing to copy and paste.
 Choose the repositories it may see, then pick the repository and branch. See
 [GitHub](/guides/git-providers/github) for the connection in detail.
 
@@ -69,24 +63,24 @@ each need.
 <Tab value="Docker Image">
 
 Type the image reference, like `ghcr.io/acme/api:v2.3.1`. The field autocompletes from public
-registries and from any private registry you've added, and the app is named after the image.
-This card has the **Deploy** button on it. See
-[Deploy a Docker image](/guides/deploy/docker-image).
-
-</Tab>
-<Tab value="Upload">
-
-Drop a compressed archive of your project, or click to browse. Deplo builds it exactly like a
-clone, framework detection included. This card has the **Deploy** button on it. See
-[Upload your code](/guides/deploy/upload-code).
+registries and from any private registry you have added, and the app is named after the image.
+This card carries the **Deploy** button. Nothing is built: the agent pulls the reference you gave
+it. See [Deploy a Docker image](/guides/deploy/docker-image).
 
 </Tab>
 <Tab value="Compose">
 
-Click **Write compose** and paste your `docker-compose.yml` into the editor. It lints as you
-type and tells you what will be rewritten, what needs a permission, and what gets refused. The
-card then shows how many services the stack has, and carries the **Deploy** button. See
+Click **Write compose** and paste your `docker-compose.yml` into the editor. It lints as you type
+and tells you what will be rewritten, what needs a permission, and what gets refused. The card
+then shows how many services the stack has, and carries the **Deploy** button. See
 [Compose apps](/advanced/compose-apps).
+
+</Tab>
+<Tab value="Upload">
+
+Drop a compressed archive of your project, or click to browse. The agent unpacks it and builds it
+exactly like a clone, framework detection included. This card carries the **Deploy** button. See
+[Upload your code](/guides/deploy/upload-code).
 
 </Tab>
 </Tabs>
@@ -126,18 +120,20 @@ card then shows how many services the stack has, and carries the **Deploy** butt
 
 ### Deploy
 
-Click **Deploy**, bottom right. Nothing else is required: the server, the URL and the build
-method all have an answer already.
+Click **Deploy**, bottom right. Nothing else is required: the server, the URL and the build method
+all have an answer already. For a repository or an upload the agent clones or unpacks, detects the
+framework, and builds an image with **Railpack** by default, so there is no Dockerfile to write.
+
+You land on the build, streaming live. It survives a page reload and a control plane restart, so
+closing the tab does not cancel anything.
 
 </Step>
 </Steps>
 
----
+## What is under Advanced
 
-## What's under Advanced
-
-Every card that carries the **Deploy** button has one **Advanced** drawer, closed, with the
-target server named on it so you can see where the app lands without opening it. Inside:
+Every card that carries the **Deploy** button has one **Advanced** drawer, closed, with the target
+server named on it so you can see where the app lands without opening it.
 
 | Setting | What it is |
 | --- | --- |
@@ -145,40 +141,22 @@ target server named on it so you can see where the app lands without opening it.
 | Environment variables | Type them, or tick the team's [shared variables](/guides/config/shared-variables). Both reach the first build. |
 | Build method | Railpack, Nixpacks, a Dockerfile, or a static site, with its version and the container port. |
 | Build path | The sub-folder to build from, for a monorepo. |
-| Build on | Another server to compile on. Automatic uses a [build server](/guides/server/add-a-server#choose-what-its-for) if the fleet has one. |
+| Build on | Another server to compile on. Automatic uses a [build server](/advanced/build-servers) if the fleet has one. |
 | Git | Deploy on push or on tag, watch paths, submodules. |
 | Extra compose flags | Compose stacks only: what to append to `docker compose up`. |
-
-Deploy lands you on the build, streaming live. It survives a page reload and a control plane restart, so closing the tab doesn't cancel anything.
-
----
 
 ## What you get
 
 When the badge turns **Running**, the app header shows the production URL and a **Visit** button.
 
-That first URL is a `nip.io` hostname. `nip.io` is public wildcard DNS where the last label before `.nip.io` is your server's IPv4 in hexadecimal, so `9487cf1e` resolves to `148.135.207.30` with no DNS records of your own.
-
-It's served over **plain HTTP**: a `nip.io` hostname can't hold a certificate. See [Add a domain](/getting-started/add-a-domain#no-domain-yet).
-
----
-
-## How it works
-
-Creating an app writes one row and nothing else. The first deploy is what does the work, and it happens on the server you pick, never on the control plane. What that first deploy does depends on the source:
-
-- **GitHub and Git**: the agent clones the repository, detects the framework, and builds an image, by default with **Railpack**, so there's no Dockerfile to write.
-- **Docker Image**: nothing is built. The agent pulls the image reference you gave it.
-- **Upload**: the agent unpacks your archive and builds it exactly like a clone, framework detection included.
-- **Compose**: your `docker-compose.yml` is parsed, checked, and folded with routing, variables and volumes, then brought up as written.
-
-For every source, the control plane renders the final Compose file plus the Traefik routing labels and ships them to the agent, which brings the stack up. The app answers on a generated hostname immediately.
-
----
+That first URL is a `nip.io` hostname. `nip.io` is public wildcard DNS where the last label before
+`.nip.io` is your server's IPv4 in hexadecimal, so `cb00710a` resolves to `203.0.113.10` with no
+DNS records of your own. It is served over **plain HTTP**, because a `nip.io` hostname cannot hold
+a certificate. See [Add a domain](/getting-started/add-a-domain) for a hostname that can.
 
 ## The tabs you now have
 
-| Tab | What's there |
+| Tab | What is there |
 | --- | --- |
 | Overview | The production deployment, the last four builds, the URL |
 | Deployments | Every build, with **Redeploy**, **Rollback** and **Delete** |
@@ -189,35 +167,38 @@ For every source, the control plane renders the final Compose file plus the Trae
 | Backups | Schedules and restores |
 | Settings | Source, build, storage, resources, access, danger zone |
 
-Console, Cron jobs and Pull requests appear once you turn them on or once they have something to show. See [Console](/guides/observability/console) and [Cron jobs](/guides/observability/cron-jobs).
+Console, Cron jobs and Pull requests appear once you turn them on or once they have something to
+show.
 
-<Callout type="warn" title="Limits and gotchas">
-  - **The name is permanent.** An app's slug is frozen after creation. The display name is editable, the slug behind the URLs and volume names is not.
-  - **The first build is the slow one.** Nothing is cached yet. Later builds reuse the server's BuildKit cache, shared by every app on that host. Doesn't apply to Docker Image, since it never builds.
-  - **A private repository needs the connection, not a key in the URL.** Connect the provider once in **Settings -> Git** and every app reuses it.
-  - **A private registry needs credentials in Settings -> Registries**, not in the image reference.
-  - **`Error` means the last deploy failed, not that the app is down.** See [App status is intent, not observation](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
-</Callout>
+## Good to know
 
----
+- **The name is permanent.** An app's slug is frozen after creation. The display name is editable,
+  the slug behind the URLs and volume names is not.
+- **The first build is the slow one.** Nothing is cached yet. Later builds reuse the server's
+  BuildKit cache, shared by every app on that host. This does not apply to a Docker Image app,
+  which never builds.
+- **A private repository needs the connection, not a key in the URL.** Connect the provider once
+  in **Settings -> Git** and every app reuses it.
+- **A private registry needs credentials in Settings -> Registries**, not in the image reference.
+- **`Error` means the last deploy failed, not that the app is down.** See
+  [App status is intent, not observation](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
 
-## If it does not work
+## Troubleshooting
 
-<Callout type="error" title="Common failures">
-  - **The build fails on a missing command.** Your repository declares no `build` or `start` script, so the builder guessed. Set both in **Settings -> Deployments**. Applies to GitHub, Git and Upload.
-  - **The app starts and the URL times out.** The container is listening on a different port than the one Deplo routes to. Fix the port in **Settings -> Deployments**, or per hostname in **Domains**.
-  - **The repository picker is empty.** The GitHub App has no access to it. Click **Manage connected apps** and grant the repository on GitHub.
-  - **`pull access denied` on a Docker Image app.** The image is private and no registry credential matches its host. Add one in **Settings -> Registries**.
-  - More in [Deploys and builds](/troubleshooting/deploys-and-builds).
-</Callout>
+| Symptom | What to check |
+| --- | --- |
+| The build fails on a missing command | Your repository declares no `build` or `start` script, so the builder guessed. Set both in **Settings -> Deployments**. Applies to GitHub, Git and Upload. |
+| The app starts and the URL times out | The container is listening on a different port than the one Deplo routes to. Fix the port in **Settings -> Deployments**, or per hostname in **Domains**. |
+| The repository picker is empty | The GitHub App has no access to it. Click **Manage connected apps** and grant the repository on GitHub. |
+| `pull access denied` on a Docker Image app | The image is private and no registry credential matches its host. Add one in **Settings -> Registries**. |
 
----
+More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
-## See also
+## Next steps
 
 <Cards>
-  <Card icon={<Globe className="text-blue-400" />} title="Add a domain" description="Your own hostname and a real certificate." href="/getting-started/add-a-domain" />
-  <Card icon={<GitBranch className="text-purple-400" />} title="Deploy sources" description="Git, Docker image, Template or Upload, compared." href="/guides/deploy" />
-  <Card icon={<Container className="text-green-400" />} title="Container registries" description="Add a private registry for Docker Image apps." href="/guides/server/container-registries" />
-  <Card icon={<Layers className="text-amber-400" />} title="Compose apps" description="Routing, TLS and volumes on a docker-compose.yml." href="/advanced/compose-apps" />
+  <Card icon={<Globe className="text-blue-400" />} title="Add a domain" description="Your own hostname and a real certificate" href="/getting-started/add-a-domain" />
+  <Card icon={<GitBranch className="text-purple-400" />} title="Deploy sources" description="Git, Docker image, Template or Upload, compared" href="/guides/deploy" />
+  <Card icon={<Container className="text-green-400" />} title="Container registries" description="Add a private registry for Docker Image apps" href="/guides/server/container-registries" />
+  <Card icon={<Layers className="text-amber-400" />} title="Compose apps" description="Routing, TLS and volumes on a docker-compose.yml" href="/advanced/compose-apps" />
 </Cards>
