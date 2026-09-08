@@ -66,6 +66,11 @@ const config = {
       { source: "/api-reference/dokploy-import", destination: "/api-reference/migration", permanent: false },
       { source: "/api-reference/rest-and-mcp", destination: "/api-reference/mcp", permanent: false },
       { source: "/advanced/mcp-server", destination: "/guides/mcp-server", permanent: false },
+      // 2026-09: the migration pages became their own top-level section.
+      { source: "/guides/what-migrates", destination: "/migrations", permanent: false },
+      { source: "/guides/take-over-your-vps", destination: "/migrations", permanent: false },
+      { source: "/guides/move-from-dokploy", destination: "/migrations/move-from-dokploy", permanent: false },
+      { source: "/guides/move-from-coolify", destination: "/migrations/move-from-coolify", permanent: false },
     ];
   },
 };

@@ -1409,10 +1409,9 @@ The source's API key rides every call in \`MigrationSourceInput\` and is stored 
       },
     ],
     seeAlso: [
-      { title: "Move from Dokploy", description: "The dashboard wizard", href: "/guides/move-from-dokploy" },
-      { title: "Move from Coolify", description: "The dashboard wizard", href: "/guides/move-from-coolify" },
-      { title: "Take over your VPS", description: "The takeover, step by step", href: "/guides/take-over-your-vps" },
-      { title: "What migrates", description: "What comes across and what does not", href: "/guides/what-migrates" },
+      { title: "Move from Dokploy", description: "The dashboard wizard", href: "/migrations/move-from-dokploy" },
+      { title: "Move from Coolify", description: "The dashboard wizard", href: "/migrations/move-from-coolify" },
+      { title: "Migrations", description: "What comes across and what does not", href: "/migrations" },
     ],
   },
 ];

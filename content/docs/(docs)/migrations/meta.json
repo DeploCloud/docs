@@ -1,0 +1,5 @@
+{
+  "title": "Migrations",
+  "icon": "ArrowRightLeft",
+  "pages": ["move-from-dokploy", "move-from-coolify"]
+}

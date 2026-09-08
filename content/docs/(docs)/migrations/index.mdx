@@ -1,0 +1,171 @@
+---
+title: Migrations
+description: Move an existing Dokploy or Coolify installation onto Deplo, with the data copied across.
+---
+
+import { Layers, Globe, Database, ServerCog } from "lucide-react";
+
+<Callout type="info" title="Beta">
+  This feature is currently beta/experimental and subject to change. It is not
+  recommended for production. Try it out and share your feedback on [our
+  GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+Deplo reads an existing Dokploy or Coolify installation over that panel's own HTTP API and
+recreates it here: projects, apps, databases, domains, variables and volumes, with the data
+copied across. It never asks for SSH into the panel, and it never deletes anything on the
+source. Two routes reach the same wizard.
+
+## Two routes
+
+| | Take over this server | From another server |
+| --- | --- | --- |
+| Where Deplo runs | The machine the old panel already runs on | A machine of your own |
+| How you start it | The installer finds the panel and asks | **Settings -> System -> Migrations** |
+| Who can run it | Whoever installs Deplo | An instance admin |
+| Where apps land | This machine | A server you pick, per app |
+| Ports 80 and 443 | Deplo takes them at the end | Untouched |
+| The old panel afterwards | Removed from the machine | Still running, still yours |
+
+Everything after **Connect** is the same wizard and the same import engine. The takeover only
+adds a step at the front, where you choose whether to bring anything across at all, and a step
+at the end, where Deplo takes the ports.
+
+On both routes the volume bytes are read by an agent on the source machine and relayed through
+the control plane, because agents cannot dial each other. That is true even when the source and
+the destination are the same box.
+
+## The wizard
+
+Seven steps, and a step opens only when the one before it has finished.
+
+| Step | What it asks for |
+| --- | --- |
+| **Choose** | Takeover only. Bring your data over, or start clean. |
+| **Connect** | The panel's address and a token, one per source team. |
+| **Install** | One shell command to run on each source machine. |
+| **Review** | What comes over, where each item lands, then **Start migration**. |
+| **People** | Instance admins only. Single-use registration links for the panel's members. |
+| **Take over** | Takeover only. The confirmation that moves ports 80 and 443. |
+| **Done** | The report. |
+
+Once **Start migration** is pressed the review goes inert and it is the only step you can reach
+until the run ends. A takeover that chose **Start clean** skips the middle entirely: only
+**Take over** and **Done**.
+
+## What comes across
+
+These shapes land on both panels and by either route.
+
+| Shape | Notes |
+| --- | --- |
+| An app from a Docker image | Image, tag, command, environment, ports. |
+| An app from a compose file | Rendered as written, with its named volumes. |
+| An app built from a git repository | Repository, branch, build settings. |
+| Managed databases | Postgres, MySQL, MariaDB, MongoDB, Redis and ClickHouse, with their data. |
+| Named volumes | Including deep trees, empty directories and zero-byte files. |
+| Bind mounts of a host directory | Copied to the destination and re-pointed. |
+| Bind mounts of a single file | Carried with its contents, not just re-mounted. |
+| Config files | The bytes travel, not only the mount path. |
+| A volume shared between services of one stack | Copied once, mounted where it was. |
+| Environment variables | Per app and shared, with their values. |
+| Domains and routes | Including a path prefix and a per-domain port. |
+| Basic auth | Users and passwords, re-hashed on arrival. |
+| Cron jobs | Schedule and command. |
+| Backup destinations and schedules | The store's credentials, tested on arrival. |
+| Preview-only variables | As the app's own preview variables here. |
+
+Inside a volume, this is preserved and checked on every release: file contents byte for byte,
+permissions and ownership, empty directories and zero-byte files, unicode and long paths, hard
+links that stay hard links, and symbolic links pointing inside their own volume.
+
+## What needs a look
+
+Not failures. These are the shapes where a machine cannot decide for you, so Deplo brings across
+what it can and names the rest in the report.
+
+| Shape | What happens |
+| --- | --- |
+| A stack that reaches the host | `privileged`, `network_mode: host`, `cap_add`, device passthrough. Deplo refuses to render it rather than stripping the line, and says which key stopped it. |
+| An image from a private registry | The image reference comes across, the credentials do not. The report names the registry so you can add it. |
+| A compose file kept in a git repository | Dokploy will not resolve it over its API. The app is created and the report tells you to paste the file in. |
+| Device nodes, sockets and named pipes in a volume | Not copied: they are runtime objects, not data. Each one is listed with its path. |
+| Symbolic links pointing outside their volume | Not copied, for the same reason a bind mount of `/` is not. Listed with its path. |
+| State that lives outside the app | A cron entry on the host, a systemd unit, a file no mount points at. Deplo only knows what the app mounts. |
+| Data written outside a declared mount | It is inside the container and it is gone on the next restart, on the old panel as much as here. |
+| A very large volume onto a tight disk | Deplo checks the destination's free space first and warns before it starts. |
+
+## What does not come across
+
+- Private registry credentials. No panel hands the password over.
+- Git deploy keys and connected-source credentials. Attach a git connection here instead.
+- Device nodes, sockets and named pipes inside a volume.
+- Symbolic links that leave their own volume.
+- Host files such as `/etc/localtime` and `/etc/resolv.conf`. They belong to the machine.
+- Networks you created by hand on the source machine.
+- Engines with no twin here: `libsql` on Dokploy, `keydb` and `dragonfly` on Coolify.
+
+## Stopping, data, and going back
+
+Read this before you start. It is the part that cannot be undone by pressing a button.
+
+- **Every service you tick is stopped on the old panel when its data copy starts.** A volume read
+  while its container is writing to it arrives corrupted, so the copy stops the service first.
+- **On a run that finishes, it stays stopped.** Deplo starts a service again only when you stop
+  the run during the data step, or cancel a takeover. Neither happens on its own.
+- **The source is only ever read.** Nothing on the old panel is deleted, except by the takeover's
+  own final confirmation.
+- **The destination is emptied before it is written.** Each volume and each bind is wiped and
+  rewritten, so a second run does not merge two copies.
+- **There is no byte-level rollback.** Once the data step has begun, a stop keeps everything
+  already created here. A service whose data did not arrive is marked and refuses to deploy, so
+  it cannot start on empty storage: copy the data again, or press **Deploy anyway** to accept it.
+- **Nothing is deployed for you.** You open each app, check it, and press **Deploy**.
+
+## How this is measured
+
+Every release, migrations run against a live Dokploy and a live Coolify installation with real
+apps and real data. Each app is checked five ways: a record is created through the app's own
+interface before anything moves, the same requests are compared on both sides, the same
+count-and-checksum query is run per engine, every volume and bind is compared file list by file
+list including permissions and owner, and the record from step one is looked for afterwards. The
+same suite runs behind a closed firewall, behind a CDN with an invalid origin certificate, across
+a panel spread over several machines with one going unreachable mid-run, onto a nearly full disk,
+and against a crowded instance with several teams, a private registry and clashing service names.
+
+Measured on 4 September 2026, each panel spread over two machines, the remote route landing on a
+third.
+
+| Source | Route | Apps that landed untouched | What did not |
+| --- | --- | --- | --- |
+| Dokploy | Both | **66 of 67** | One app on a private git repository: the deploy key never leaves the old panel, and the report names it. |
+| Coolify | Both | **60 of 62** | The same private repository, plus one app the token could not stop. |
+
+## Next steps
+
+<Cards>
+  <Card
+    icon={<Layers className="text-blue-400" />}
+    title="Move from Dokploy"
+    description="Both routes, against a Dokploy panel"
+    href="/migrations/move-from-dokploy"
+  />
+  <Card
+    icon={<Globe className="text-blue-400" />}
+    title="Move from Coolify"
+    description="Both routes, against a Coolify panel"
+    href="/migrations/move-from-coolify"
+  />
+  <Card
+    icon={<ServerCog className="text-blue-400" />}
+    title="Server roles"
+    description="What a migration source is, and is not"
+    href="/advanced/server-roles"
+  />
+  <Card
+    icon={<Database className="text-blue-400" />}
+    title="Backups and restore"
+    description="What to take before you move anything"
+    href="/guides/data/backups-and-restore"
+  />
+</Cards>
