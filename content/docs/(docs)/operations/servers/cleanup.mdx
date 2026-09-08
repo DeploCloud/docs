@@ -7,19 +7,14 @@ import { RotateCcw, ServerCog } from "lucide-react";
 
 Reclaiming disk. This is the setting people wish they had found earlier.
 
-<Callout type="info" title="Beta">
-This feature is currently beta/experimental and subject to change. It is
-not recommended for production. Try it out and share your feedback on
-[our GitHub](https://github.com/DeploCloud/deplo/issues).
-</Callout>
+**Settings -> Servers -> the server -> Cleanup.** One schedule for the whole instance, and
+individual hosts opt **out** of it with the **Scheduled cleanup** switch in that card's header, so
+a server you add tomorrow can never silently go unswept. The checkbox below it turns the whole
+thing off instance-wide.
 
----
-
-## How it works
-
-**Settings -> Servers -> the server -> Cleanup.** One schedule for the
-whole instance, and individual hosts opt **out** of it, so a server you
-add tomorrow can never silently go unswept.
+It ships **on**, with all seven scopes enabled, a nightly `0 4 * * *` schedule, a 24-hour minimum
+age and one image kept per app. A new scope added by a later release enables itself on a policy
+you have already saved.
 
 ## What gets cleaned
 
@@ -78,12 +73,12 @@ deploy, so a day of builds cannot fill the disk before the schedule fires.
     "Minimum age (hours)": {
       type: "number",
       description:
-        "Gates the build cache, dangling images, orphaned volumes and pulled images. App images are count-based.",
+        "Caches only: the build cache, dangling images and leaked build volumes. Everything else is count-based or reference-based.",
     },
     "Images kept per app": {
       type: "number",
       description:
-        "Interacts directly with rollbacks: a pruned image cannot be rolled back to.",
+        "The fallback for an app that cannot roll back. Where rollbacks are possible the app's own Keep wins, so a pruned image is never one a rollback needed.",
     },
     "Reclaim disk now": {
       type: "action",
@@ -96,15 +91,13 @@ deploy, so a day of builds cannot fill the disk before the schedule fires.
   }}
 />
 
-<Callout type="info">
-What it deliberately never does: `system prune`, container prune, volume
-prune, network prune. A **named** volume, a container, and anything a
-container still uses are never touched: on a Deplo host a *stopped* app is
-a live app. Only an anonymous volume nothing can mount again by name is a
-candidate.
-</Callout>
+What it deliberately never does: `system prune`, container prune, volume prune, network prune. A
+**named** volume, a container, and anything a container still uses are never touched, because on a
+Deplo host a *stopped* app is a live app. Only an anonymous volume nothing can mount again by name
+is a candidate.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Cleanup and rollbacks fight over the same images.** If rollbacks stop
   working, **Images kept per app** is too low for the app's **Keep**.
 - **This is not what frees the disk after you delete something.** Cleanup
@@ -116,21 +109,22 @@ candidate.
 - **A pulled image comes back with the next deploy.** Removing one costs a
   pull, never data. Untick **Unused pulled images** on a server without
   registry access.
-- **Backup files are not on this list either.** Deleting a backup schedule
-  leaves the copies it already made in the
-  [destination](/guides/data/backups-and-restore).
-</Callout>
+- **Backup files are not on this list either.** Deleting a backup schedule leaves the copies it
+  already made in the [destination](/guides/data/backups-and-restore).
+- **A migration source is never swept**, scheduled or on demand. That machine is somebody else's
+  platform until you are done with it.
 
-<Callout type="error" title="If it does not work">
-- **Cleanup frees nothing**: the minimum age is protecting everything, or
-  the only large thing on disk is images your apps still use.
+## Troubleshooting
 
-See [Servers and agents](/troubleshooting/servers-and-agents) for more.
-</Callout>
+| Symptom | What to check |
+| --- | --- |
+| Cleanup frees nothing | The minimum age is protecting the caches, or the only large thing on disk is images your apps still use. |
+| **Reclaim disk now** ran on a host you opted out | It does: the manual run ignores the opt-out list. The schedule honours it. |
+| Rollbacks stopped working after a sweep | **Images kept per app** is too low for an app that cannot roll back. For apps that can, their own **Keep** governs. |
 
----
+More in [Servers and agents](/troubleshooting/servers-and-agents).
 
-## See also
+## Next steps
 
 <Cards>
   <Card
@@ -143,6 +137,6 @@ See [Servers and agents](/troubleshooting/servers-and-agents) for more.
     icon={<ServerCog className="text-blue-400" />}
     title="Server"
     description="Everything else about one machine"
-    href="/guides/server"
+    href="/operations/servers"
   />
 </Cards>

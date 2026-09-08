@@ -1,0 +1,34 @@
+---
+title: Servers
+description: Enrolling machines, who may use them, disk cleanup, restarts and registries.
+---
+
+**Settings -> Servers**, then open a server. The list and everything on a server's own page is
+instance-admin only; container registries are the exception, being team-scoped.
+
+Each page here talks to that server's agent. Nothing reaches into the host any other way, and the
+control plane never opens a shell.
+
+A server's own page has four tabs. **Overview** carries the CPU, memory, disk and Docker tiles,
+plus an Agent card with its version, an **Update to** button naming the newer one when a newer one
+exists, and **Check readiness**. **Access** decides which teams may use the machine and holds the **Build
+concurrency** card, whose single **Concurrent deployments** field defaults to `1` so deploys to
+one host serialize. **Cleanup** and **Advanced** are the two below.
+
+Raising concurrency past what the machine can take makes every deploy slower, not faster. One is a
+sane default for a small VPS.
+
+**Add a server** - enrollment, the bootstrap command and the roles.
+[Learn more ->](/operations/servers/add-a-server)
+
+**Server access** - which teams may use a machine.
+[Learn more ->](/operations/servers/access)
+
+**Server cleanup** - reclaiming disk, and what is never touched.
+[Learn more ->](/operations/servers/cleanup)
+
+**Maintenance and advanced** - restarts, the host clock, the address, removal.
+[Learn more ->](/operations/servers/maintenance-and-advanced)
+
+**Container registries** - credentials for pulling private images. Team-scoped, gated by
+`manage_registries`. [Learn more ->](/operations/servers/container-registries)

@@ -5,17 +5,9 @@ description: Where the dashboard answers, the certificate it uses, and what chan
 
 import { Settings, Globe, KeyRound, ShieldAlert } from "lucide-react";
 
----
-
-## What it is
-
 Moving it is a real operation with real consequences, which is why it has its own page.
 
 **Settings -> Deplo**, instance admins only.
-
----
-
-## How it works
 
 The panel is routed by the host's Traefik like anything else, but through a **file provider** entry rather than container labels. That's deliberate: a panel published by labels could never change its own route, because changing it would need the panel.
 
@@ -36,8 +28,6 @@ The address is also used for more than serving pages:
 - It is where **git provider webhooks** deliver.
 - It is the **origin passkeys are bound to**.
 - It sets the cookie `secure` flag.
-
----
 
 ## Change the address
 
@@ -71,8 +61,6 @@ stays reachable while DNS moves. See
 [ports, networks, and files](/reference/ports-networks-and-files).
 </Callout>
 
----
-
 ## HTTPS is not optional
 
 There is no switch to serve the panel on plain http from the General tab, and no
@@ -92,15 +80,11 @@ get one the browser trusts. Deplo does not send HSTS on that address, precisely 
 the warning stays skippable.
 </Callout>
 
----
-
 ## The certificate account email
 
 **Certificate account email**, on the same page, is the address Let's Encrypt has on file for this instance's ACME account. It is where expiry warnings go.
 
----
-
-## Limits and gotchas
+## Good to know
 
 <Callout type="warn">
 - **The install command for a new server carries `-k`** while the panel's certificate is the self-signed one. The agent is unaffected: it pins the certificate's fingerprint at enrollment either way.
@@ -108,22 +92,18 @@ the warning stays skippable.
 - **Webhooks must be re-pointed.** Deplo re-registers what it can, but a provider that cannot reach the new address stops delivering, and pushes stop deploying.
 - **The install command changes.** Servers already enrolled are unaffected, new ones use the new address.
 - **An IP address is refused as the panel address.** Let's Encrypt does not issue for bare IPs, and Deplo generates a `nip.io` hostname instead.
-- **`DEPLO_PUBLIC_URL` in `/opt/deplo/.env` is the other half.** If you edit the environment by hand, keep them consistent.
+- **`DEPLO_PUBLIC_URL` is the other half, and it is not in `.env`.** The installer writes it into `/opt/deplo/docker-compose.yml`, derived from `DEPLO_DOMAIN`. Git webhook URLs are built from that variable while the routers follow the address stored here, so changing the address in the panel leaves webhooks pointing at the old host until you re-run the installer with the new domain.
 </Callout>
 
----
+## Troubleshooting
 
-## If it does not work
+## Troubleshooting
 
-<Callout type="error" title="If it does not work">
 A certificate warning on the new address, a panel unreachable after the
 change, or "No server accepted the change": see
 [Domains and TLS troubleshooting](/troubleshooting/domains-and-tls).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Settings className="text-blue-400" />} title="Instance administration" description="Instance-wide settings and users" href="/operations/instance-administration" />

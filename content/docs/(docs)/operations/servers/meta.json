@@ -1,0 +1,4 @@
+{
+  "title": "Servers",
+  "pages": ["add-a-server", "access", "cleanup", "maintenance-and-advanced", "container-registries"]
+}

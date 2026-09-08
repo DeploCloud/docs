@@ -5,27 +5,15 @@ description: Taking a machine out of the fleet, removing the agent, and removing
 
 import { Terminal, Server, Layers, ShieldAlert } from "lucide-react";
 
----
-
-## What it is
-
 Three different acts, on purpose.
-
----
-
-## How it works
 
 **Removing a server in Deplo is trust revocation.** The pinned certificate is cleared, and the control plane will never talk to that machine again. It does **not** reach in and uninstall anything, because at the moment you most need to remove a server, it is usually not answering.
 
 **Uninstalling is a command you run on the host.** Deplo prints it for you.
 
-<Callout type="info">
 The one exception is a [migration source](/advanced/server-roles), which
 Deplo does uninstall itself from, because that role exists precisely to be
 temporary.
-</Callout>
-
----
 
 ## Remove a server from Deplo
 
@@ -51,22 +39,20 @@ It's printed for you, if you want the host cleaned.
 </Step>
 </Steps>
 
-<Callout type="warn">
 The machine running the control plane cannot remove itself.
-</Callout>
 
 Any pending teardowns for that server are dropped with it, so Deplo stops retrying instructions nobody can carry out.
 
----
-
 ## Uninstall the agent from a host
 
-One script does both jobs: `uninstall.sh`. `--agent-only` is what keeps it to the agent, and it is already in the command the dashboard prints for you. That printed command downloads the script first and runs it second (`curl -fsSL .../uninstall.sh -o /tmp/deplo-uninstall.sh && sudo bash /tmp/deplo-uninstall.sh --yes --agent-only`); the piped forms below do the same job when you type it yourself.
+One script does both jobs: `uninstall.sh`. `--agent-only` is what keeps it to the agent, and it is
+already in the command the dashboard prints for you. On the machine running the control plane it
+is not quite a no-op for the panel: that host's Traefik goes with the agent, which is the only
+thing serving the dashboard, so the panel stops answering until you re-run `install.sh`. The
+script prints an SSH tunnel to get back in meanwhile. That printed command downloads the script first and runs it second (`curl -fsSL '.../uninstall.sh' --output '/tmp/deplo-uninstall.sh' && sudo bash /tmp/deplo-uninstall.sh --yes --agent-only`); the piped forms below do the same job when you type it yourself.
 
-<Callout type="info">
 The script is a **dry run by default**. Running it with no flags prints
 exactly what it would do and changes nothing.
-</Callout>
 
 ```bash
 # See what would happen
@@ -82,12 +68,14 @@ curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --agen
 It never touches Docker Engine itself, and never touches a container Deplo did not label. It is safe on a machine that was never a Deplo host, and safe to run twice. Full flag reference, including exactly what `--purge-data` adds: [uninstall.sh](/reference/installers/uninstall).
 
 <Callout type="warn" title="/var/lib/deplo-agent holds your issued certificates">
-Removing it takes Traefik's `acme.json`, and your certificates, with it.
-Let's Encrypt rate-limits reissuance, so if you plan to reinstall on the
-same host and the same domains, copy that file first.
+Removing it takes Traefik's `acme.json`, and your certificates, with it. Let's Encrypt
+rate-limits reissuance, so copy that file first if you plan to reinstall on the same host with
+the same domains.
 </Callout>
 
----
+On the machine running the control plane that directory's `traefik` entry is a **symlink into
+`/opt/deplo`**, so removing it takes the link rather than the certificates behind it. There the
+certificates live with the rest of `/opt/deplo`.
 
 ## Uninstall Deplo itself
 
@@ -116,13 +104,9 @@ Full warning: [uninstall.sh](/reference/installers/uninstall).
 
 `--purge-backups` is separate for the same reason: everything else on the machine can be rebuilt from a backup, and those **are** the backups.
 
-<Callout type="info">
 Moving the instance rather than ending it? Take
 [disaster recovery](/operations/disaster-recovery) first and uninstall
 second.
-</Callout>
-
----
 
 ## Decommission a machine properly
 
@@ -157,41 +141,31 @@ At your provider.
 </Step>
 </Steps>
 
-<Callout type="info">
 For the machine running the panel, steps 4 and 5 are one command: uninstall
 without `--agent-only`.
-</Callout>
 
----
+## Good to know
 
-## Limits and gotchas
-
-<Callout type="warn">
 - **Removing a server does not stop its containers.** They keep running, unmanaged, until somebody stops them. That is why the uninstall step exists.
 - **Apps still assigned to a removed server cannot deploy.** Move them first.
 - **Reinstalling an agent re-bootstraps from scratch.** The installer deletes the existing certificate files, so it genuinely re-enrolls against the new pin rather than half-trusting the old one.
 - **A migration source is removed with `Remove from Deplo`**, and Deplo uninstalls its own agent from that machine as part of it.
 - **The panel cannot uninstall itself.** Nothing in the dashboard removes the control plane, it is the thing doing the removing. That is what the host-side script is for.
 - **Docker Engine and `/etc/docker/daemon.json` stay.** The installer widened Docker's address pools and kept your original as `daemon.json.deplo-bak`. Putting it back needs a Docker restart, which stops every container on the machine, so the uninstaller only tells you it is there.
-</Callout>
 
----
+## Troubleshooting
 
-## If it does not work
+## Troubleshooting
 
-<Callout type="error" title="If it does not work">
 The uninstall script does nothing (it is a dry run, add `--yes`),
 containers survive an uninstall, or a removed server reappears: see
 [Servers and agents troubleshooting](/troubleshooting/servers-and-agents).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Terminal className="text-blue-400" />} title="Installers reference" description="Every flag of all three scripts" href="/reference/installers" />
-  <Card icon={<Server className="text-blue-400" />} title="Server settings" description="Health, readiness, and the servers page" href="/guides/server" />
+  <Card icon={<Server className="text-blue-400" />} title="Server settings" description="Health, readiness, and the servers page" href="/operations/servers" />
   <Card icon={<Layers className="text-blue-400" />} title="Server roles" description="Build servers, migration sources, backups-only" href="/advanced/server-roles" />
   <Card icon={<ShieldAlert className="text-blue-400" />} title="Disaster recovery" description="What to keep before anything breaks" href="/operations/disaster-recovery" />
 </Cards>

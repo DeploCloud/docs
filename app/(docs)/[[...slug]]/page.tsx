@@ -15,8 +15,7 @@ import { BetaChip } from "@/components/beta-chip";
 const BETA_PAGES = new Set([
   "/guides/mcp-server",
   "/advanced/build-servers",
-  "/guides/server/cleanup",
-  "/guides/server/container-registries",
+  "/operations/servers/container-registries",
   "/migrations",
   "/migrations/move-from-dokploy",
   "/migrations/move-from-coolify",

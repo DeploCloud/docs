@@ -43,9 +43,9 @@ const config = {
       { source: "/guides/cron-jobs", destination: "/guides/observability/cron-jobs", permanent: false },
       { source: "/guides/teams-and-members", destination: "/guides/team/members", permanent: false },
       { source: "/guides/account-security", destination: "/guides/team/account-security", permanent: false },
-      { source: "/guides/add-a-server", destination: "/guides/server/add-a-server", permanent: false },
-      { source: "/guides/server-settings", destination: "/guides/server", permanent: false },
-      { source: "/guides/container-registries", destination: "/guides/server/container-registries", permanent: false },
+      { source: "/guides/add-a-server", destination: "/operations/servers/add-a-server", permanent: false },
+      { source: "/guides/server-settings", destination: "/operations/servers", permanent: false },
+      { source: "/guides/container-registries", destination: "/operations/servers/container-registries", permanent: false },
       { source: "/api-reference/queries-and-mutations", destination: "/api-reference/apps", permanent: false },
       // 2026-09: api-reference regenerated from the schema, one page per domain.
       { source: "/api-reference/authorization", destination: "/api-reference/authentication", permanent: false },
@@ -71,6 +71,14 @@ const config = {
       { source: "/guides/take-over-your-vps", destination: "/migrations", permanent: false },
       { source: "/guides/move-from-dokploy", destination: "/migrations/move-from-dokploy", permanent: false },
       { source: "/guides/move-from-coolify", destination: "/migrations/move-from-coolify", permanent: false },
+      // 2026-09: the server pages moved under Operations.
+      { source: "/guides/server/certificates", destination: "/advanced/custom-certificates", permanent: false },
+      { source: "/guides/server/add-a-server", destination: "/operations/servers/add-a-server", permanent: false },
+      { source: "/guides/server/access", destination: "/operations/servers/access", permanent: false },
+      { source: "/guides/server/cleanup", destination: "/operations/servers/cleanup", permanent: false },
+      { source: "/guides/server/maintenance-and-advanced", destination: "/operations/servers/maintenance-and-advanced", permanent: false },
+      { source: "/guides/server/container-registries", destination: "/operations/servers/container-registries", permanent: false },
+      { source: "/guides/server", destination: "/operations/servers", permanent: false },
     ];
   },
 };

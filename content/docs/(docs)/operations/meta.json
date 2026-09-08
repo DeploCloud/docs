@@ -7,6 +7,7 @@
     "disaster-recovery",
     "instance-administration",
     "panel-address-and-certificates",
-    "remove-a-server-or-uninstall"
+    "remove-a-server-or-uninstall",
+    "servers"
   ]
 }

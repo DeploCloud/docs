@@ -1,15 +1,11 @@
 ---
 title: Maintenance and advanced
-description: Restarts, timezone, the server's address, the Traefik dashboard, and removing a server.
+description: Restarts, the host clock, the server's address, and removing a server.
 ---
 
 import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
 
----
-
-## How it works
-
-**Settings -> Servers -> the server -> Maintenance** and **Advanced**.
+**Settings -> Servers -> the server**, on the **Maintenance** and **Advanced** tabs.
 
 ## Maintenance
 
@@ -20,24 +16,15 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
       description:
         "Restarts the proxy on this host. Every site there is unreachable for the few seconds it takes to come back, and the containers keep running.",
     },
-    Restart: {
-      type: "action",
-      description:
-        "Restarts the workloads, one at a time, so each is briefly unreachable. Anything already stopped stays stopped, and anything mid-deploy is left to finish.",
-    },
     "Restart all": {
       type: "action",
-      description: "Both.",
+      description:
+        "Restarts the workloads, apps and databases, one at a time, so each is briefly unreachable. Anything already stopped stays stopped, and anything mid-deploy is left to finish.",
     },
     "Restart Deplo": {
       type: "action",
       description:
         "Only on the host running the control plane. It restarts the panel itself, which goes away for a few seconds while your apps and databases keep serving traffic.",
-    },
-    Timezone: {
-      type: "select",
-      description:
-        "The host's timezone, with Save timezone. Cron jobs use their own zone, so this is for the host's own clock.",
     },
   }}
 />
@@ -46,41 +33,39 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
 
 <TypeTable
   type={{
+    "What this server is for": {
+      type: "read-only",
+      description: "The role the machine was enrolled with. Beta, and it cannot be changed in place",
+    },
     "Host details": {
       type: "read-only",
-      description: "What the agent reports about the machine.",
+      description: "What the agent reports about the machine, including where Docker keeps its data",
     },
-    "Change address": {
-      type: "text",
-      description: "The address the control plane dials. Use it when the IP changes.",
-    },
-    "Agent port": {
-      type: "number",
-      default: "9443",
-      description: "Default 9443.",
+    "Server time": {
+      type: "select",
+      description:
+        "The host's timezone, with Save timezone. Cron jobs carry their own zone, so this is for the host's own clock",
     },
     "Install command": {
       type: "text",
       description:
-        "The command to re-run on the host, for reinstalling or repairing the agent.",
+        "The command to re-run on the host, for reinstalling or repairing the agent. This is also where a fresh bootstrap token is issued",
     },
-    "Domain, Password, Generate": {
+    "Agent port": {
+      type: "number",
+      default: "9443",
+      description: "The port the control plane dials",
+    },
+    "Change address": {
       type: "text",
-      description:
-        "Publish that host's Traefik dashboard on a domain behind basic auth. Turning it on recreates the Traefik container, because it is static configuration.",
-    },
-    "Docker data": {
-      type: "read-only",
-      description: "Where Docker keeps its data on this host.",
+      description: "In the Danger zone. The address the control plane dials, for when the IP changes. Beta",
     },
     "Remove server": {
       type: "danger",
-      description: "Danger zone. See below.",
+      description: "In the Danger zone. See below",
     },
   }}
 />
-
----
 
 ## Removing a server
 
@@ -95,35 +80,32 @@ the agent, its Traefik and its state directory gone. See
 
 The machine running the control plane cannot remove itself.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Health is a cache, not a gate.** Past a staleness window the page
   shows **Unknown** rather than a stale green. Deploys gate on a live
   handshake.
 - **Restarting Traefik drops connections** for a moment on every app on
   that host.
-- **Changing the address does not move anything.** It only changes how
-  Deplo dials.
-</Callout>
+- **Changing the address does not move anything.** It only changes how Deplo dials.
 
-<Callout type="error" title="If it does not work">
-- **The card says warning**: the agent is up, Docker is not answering
-  there. Check the Docker service on the host.
-- **A restart action fails**: the agent is unreachable. Health and
-  readiness will say so.
+## Troubleshooting
 
-See [Servers and agents](/troubleshooting/servers-and-agents) for more.
-</Callout>
+| Symptom | What to check |
+| --- | --- |
+| The card says **warning** | The agent is up, Docker is not answering there. Check the Docker service on the host. |
+| A restart action fails | The agent is unreachable. Health and readiness will say so. |
 
----
+More in [Servers and agents](/troubleshooting/servers-and-agents).
 
-## See also
+## Next steps
 
 <Cards>
   <Card
     icon={<RotateCcw className="text-blue-400" />}
     title="Server cleanup"
     description="Reclaiming disk"
-    href="/guides/server/cleanup"
+    href="/operations/servers/cleanup"
   />
   <Card
     icon={<ArrowLeftRight className="text-blue-400" />}

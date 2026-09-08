@@ -5,10 +5,6 @@ description: Bring another machine into the fleet with one command pasted on tha
 
 import { ServerCog, Layers, Network, HardDrive } from "lucide-react";
 
----
-
-## How it works
-
 The control plane prints a command containing a **one-time bootstrap
 token**. On the server, that command:
 
@@ -30,8 +26,6 @@ The control plane signs the certificate and pins its fingerprint. The
 server flips to online, and from then on everything is mutual TLS on port
 9443.
 
----
-
 ## What the machine needs
 
 | What | Requirement |
@@ -45,8 +39,6 @@ Nothing here checks memory or CPU: the agent is a small Go binary, and
 what needs them is whatever you deploy on this machine. Size it like the
 first one, **2 cores and 4 GB** at the least, unless it is a storage-only
 server, which does nothing but hold backups.
-
----
 
 ## Add one
 
@@ -62,16 +54,16 @@ Open **Settings -> Servers**.
 </Step>
 <Step>
 
-### Connect a remote server
+### Open the dialog
 
-Click **Connect a remote server**.
+Click **Add**. The dialog is titled **Add a server**.
 
 </Step>
 <Step>
 
-### Set the address
+### Name it and set the address
 
-Fill in **Host or IP**: the address **this control plane** will dial. It
+Give it a **Name**, then fill in **Host or IP**: the address **this control plane** will dial. It
 must be reachable from here on the agent port.
 
 </Step>
@@ -82,15 +74,24 @@ must be reachable from here on the agent port.
 Choose **What this server is for**:
 
 - **Everything** for a normal deploy target
-- **Build only** to compile for other hosts. Beta
-- **Backups only** for a storage box that runs nothing. Beta
+- **Build**, which builds for other servers. Beta
+- **Backups**, for a storage box that holds backup files and runs nothing
+
+Once enrolled, the server card shows these as the badges **Build only** and **Backups only**.
+
+</Step>
+<Step>
+
+### Choose which teams may use it
+
+**Team access** defaults to **All teams**. Picking **Specific teams** and ticking none is refused.
 
 </Step>
 <Step>
 
 ### Add it
 
-Click **Add**. Deplo prints the command.
+Click **Add server**. Deplo prints the command.
 
 </Step>
 <Step>
@@ -100,7 +101,7 @@ Click **Add**. Deplo prints the command.
 Paste it on the server, as root:
 
 ```bash
-curl -fsSL https://deplo.example.com/install-agent.sh -o /tmp/deplo-agent-install.sh && sudo bash /tmp/deplo-agent-install.sh <TOKEN> <URL> [FINGERPRINT]
+curl -fsSL 'https://deplo.example.com/install-agent.sh' --output '/tmp/deplo-agent-install.sh' && sudo bash /tmp/deplo-agent-install.sh '<TOKEN>' '<URL>' '<FINGERPRINT>'
 ```
 
 It downloads the script first and runs it second, so an address that does not
@@ -112,7 +113,7 @@ Watch the card. It goes from **provisioning** to **online** on its own.
 </Steps>
 
 The token is single-use and expires in about an hour. If enrollment
-fails, the server's menu can issue a fresh one.
+fails, open the server, then **Advanced -> Install command**, for a fresh one.
 
 <Callout type="info" title="Deplo pins its own certificate in that command">
 Over https, the command carries the fingerprint of the certificate your
@@ -122,8 +123,6 @@ reason instead of printing a command that could never work. Make the
 panel's address reachable from the panel itself, then add the server
 again.
 </Callout>
-
----
 
 ## Open the right ports
 
@@ -139,8 +138,6 @@ of them is holding 9443, so read what it prints. A rule written by hand
 in `nftables` or `iptables` is not detected.
 </Callout>
 
----
-
 ## Check it before you trust it
 
 The server's menu has **Check readiness**. It dials once and reports rows
@@ -150,14 +147,13 @@ configuration, each `pass`, `info`, `warn`, `fail` or `skip`.
 `skip` means it could not be evaluated, which is deliberately different
 from `pass`. Nothing gates on this report: it is for you.
 
----
-
 ## Let teams use it
 
 New servers are usable by every team by default. Narrowing that is a
-separate setting. See [Access](/guides/server/access).
+separate setting. See [Access](/operations/servers/access).
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Only `linux/amd64` and `linux/arm64`.** Nothing else is published.
 - **An app and its database must be on the same server to reach each
   other by name.** The shared `deplo` network is per host.
@@ -168,9 +164,9 @@ separate setting. See [Access](/guides/server/access).
 - **If containers are already running when the address pools change**,
   the installer skips the Docker restart and tells you to do it in a
   maintenance window.
-</Callout>
 
-<Callout type="error" title="If it does not work">
+## Troubleshooting
+
 - **Stuck on provisioning**: the agent never called home. On the server,
   check `systemctl status deplo-agent` and `journalctl -u deplo-agent -f`.
 - **Offline, or online with every deploy failing**: inbound `9443` is
@@ -179,24 +175,21 @@ separate setting. See [Access](/guides/server/access).
 - **`Refusing to run an unverified binary`**: the download did not match
   its checksum. Retry; if it persists, something is intercepting the
   download.
-- **The token is expired**: issue a new one from the server's menu.
+- **The token is expired**: issue a new one from the server's **Advanced** tab, under **Install command**.
 - **`Deplo could not read the certificate its own address serves`**: the
   panel cannot dial its own public address, so it has no fingerprint to
   pin. Check DNS and egress from the panel's machine to that address.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card
     icon={<ServerCog className="text-blue-400" />}
     title="Server"
     description="Access, cleanup, certificates, maintenance"
-    href="/guides/server"
+    href="/operations/servers"
   />
   <Card
     icon={<Layers className="text-blue-400" />}

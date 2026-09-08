@@ -15,10 +15,6 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
----
-
-## How it works
-
 One entry per registry, stored per team and encrypted. Every deploy of
 an app in that team carries the credentials to its server, which
 authenticates with them on every pull it makes:
@@ -35,8 +31,6 @@ there is no reveal path.
 
 The credential itself is not something Deplo issues, it is created on
 the registry provider's own site first, then pasted in here.
-
----
 
 ## Add one
 
@@ -171,7 +165,8 @@ Use it by referencing the image in an app whose source is
 [a Docker image](/guides/deploy/docker-image), or as the base image of
 a Dockerfile build.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **The server's agent has to be recent enough** to authenticate a pull.
   An outdated one is flagged on the **Servers** page, where you update it.
 - **Registries are per team.** Another team needs its own entry.
@@ -182,9 +177,9 @@ a Dockerfile build.
 - **Deplo pushes nothing.** Images it builds stay on the server that
   built them, which is why [rollbacks](/guides/releases/rollbacks) depend
   on local retention rather than a registry.
-</Callout>
 
-<Callout type="error" title="If it does not work">
+## Troubleshooting
+
 - **`pull access denied`**: no credential matches that image's host, or
   the token cannot see that repository.
 - **It works for one image and not another**: same host, different
@@ -197,11 +192,8 @@ a Dockerfile build.
   cannot reach it, so type the image reference in full.
 
 See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card

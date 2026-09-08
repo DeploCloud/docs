@@ -8,37 +8,29 @@ import { ServerCog, Layers, KeyRound } from "lucide-react";
 Deciding which teams may deploy to a server. New servers are open to
 every team by default, so a team that adds an app can pick any of them.
 
----
-
-## How it works
-
 **Settings -> Servers -> the server -> Access.** Team access is either
 every team, or a chosen list. Pick the teams, then **Save access**.
 
-<Callout type="warn" title="Limits and gotchas">
+## Good to know
+
 - **Narrowing access does not move anything already deployed there.**
   Apps already on that server keep running; only new placements are
   affected.
 - **A team can only pick a server it has access to** when adding an app.
-</Callout>
 
----
-
-## If it does not work
+## Troubleshooting
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for
 anything not covered here.
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card
     icon={<ServerCog className="text-blue-400" />}
     title="Add a server"
     description="Enrollment and the bootstrap command"
-    href="/guides/server/add-a-server"
+    href="/operations/servers/add-a-server"
   />
   <Card
     icon={<Layers className="text-blue-400" />}

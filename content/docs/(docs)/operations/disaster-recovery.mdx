@@ -5,8 +5,6 @@ description: What to keep so losing a machine is a bad afternoon, not the end, a
 
 import { Database, Layers, ArrowUpCircle, FileCode } from "lucide-react";
 
----
-
 ## What actually matters
 
 Three things, in order of how badly you want them.
@@ -22,7 +20,7 @@ unreadable: environment variables, database passwords, S3 keys, registry and
 git credentials. Deplo will start, and it will not be able to open anything.
 </Callout>
 
-Copy that file into a password manager today. It's four lines.
+Copy that file into a password manager today. It is five lines on a fresh install, seven once the setup key and the host bootstrap token are appended.
 
 ### 2. The Postgres database
 
@@ -45,16 +43,12 @@ Download each one from the destination's menu and keep them with the secret. Wit
 age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
 ```
 
----
-
 ## Your apps' data
 
 That's what [backups](/guides/data/backups-and-restore) are for. Two rules worth stating plainly:
 
 - **A backup on the same server as the workload survives everything except losing that server**, which is the failure people actually have. Send at least one copy to a bucket or to a [backups-only server](/advanced/server-roles).
 - **An app's schedule does not include its databases.** Schedule both.
-
----
 
 ## Losing the panel's machine
 
@@ -104,8 +98,6 @@ Secret first, then the database. A restore under the wrong secret produces a
 working panel full of unreadable secrets.
 </Callout>
 
----
-
 ## Losing an app server
 
 <Steps>
@@ -133,8 +125,6 @@ block is protecting you: an engine started on an emptied volume does not
 fail, it initializes a brand-new empty database over your data.
 </Callout>
 
----
-
 ## A ten-minute drill worth doing
 
 Once, before you need it:
@@ -160,9 +150,7 @@ From wherever you filed it.
 
 An untested backup is a hope, not a plan.
 
----
-
-## Limits and gotchas
+## Good to know
 
 <Callout type="warn">
 - **`DEPLO_SECRET` cannot be rotated.** There is no key versioning. Treat it as permanent.
@@ -170,19 +158,15 @@ An untested backup is a hope, not a plan.
 - **Backup artifacts survive their target's deletion** for 30 days, so a deleted-by-mistake app is usually still recoverable. Deleting the schedule alone keeps them indefinitely instead - see [backups](/guides/data/backups-and-restore).
 </Callout>
 
----
+## Troubleshooting
 
-## If it does not work
+## Troubleshooting
 
-<Callout type="error" title="If it does not work">
 A restore fails, a backup won't decrypt, or a database won't start after a
 move: see
 [Databases and backups troubleshooting](/troubleshooting/databases-and-backups).
-</Callout>
 
----
-
-## See also
+## Next steps
 
 <Cards>
   <Card icon={<Database className="text-blue-400" />} title="Backups and restore" description="Schedules, destinations, and recovery keys" href="/guides/data/backups-and-restore" />

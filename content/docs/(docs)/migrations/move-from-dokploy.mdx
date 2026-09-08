@@ -252,7 +252,7 @@ could not. Past runs stay under **History** with their reports.
 - **Deploy keys and connected-source credentials.** A public repository clones here with nothing;
   attach a [git connection](/guides/git-providers) for a private one.
 - **Private registry passwords.** Dokploy never exposes them. Add the registry under
-  [Registries](/guides/server/container-registries) before the deploy fails on it.
+  [Registries](/operations/servers/container-registries) before the deploy fails on it.
 - **A compose file kept in a git repository.** Dokploy will not resolve it over the API, so the app
   is created and the report tells you to paste the file in.
 - **A Traefik middleware written into an app's own file.** Dokploy's forms never produce one. The
