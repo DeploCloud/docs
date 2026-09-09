@@ -5,7 +5,6 @@ icon: Download
 ---
 
 import { Rocket, Variable, Network, Terminal, Trash2 } from "lucide-react";
-import { siUbuntu, siDebian, siLinux } from "simple-icons";
 
 Deplo installs from a single shell script on a fresh Linux server. It brings up Docker if it is
 missing, then Traefik, Postgres and the control plane, and enrolls the machine as the first
@@ -55,7 +54,7 @@ and of certificate issuance.
 
 | What | Requirement |
 | --- | --- |
-| A server | <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siUbuntu.hex}`} aria-hidden="true"><path d={siUbuntu.path} /></svg>Ubuntu 24.04 LTS or newer, <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siDebian.hex}`} aria-hidden="true"><path d={siDebian.path} /></svg>Debian 12 or 13, or one of the other <svg role="img" viewBox="0 0 24 24" width="14" height="14" className="inline-block align-text-bottom mr-1" fill={`#${siLinux.hex}`} aria-hidden="true"><path d={siLinux.path} /></svg>[supported distributions](/reference/supported-operating-systems), `x86-64` or `arm64`, with root access for the length of one command. Docker is installed for you if it is missing. `systemd` has to be there: it runs the agent, and without it the dashboard comes up but the machine cannot run apps. |
+| A server | <Os name="ubuntu">Ubuntu 24.04 LTS or newer</Os>, <Os name="debian">Debian 12 or 13</Os>, or one of the other <Os name="linux">[supported distributions](/reference/supported-operating-systems)</Os>, `x86-64` or `arm64`, with root access for the length of one command. Docker is installed for you if it is missing. `systemd` has to be there: it runs the agent, and without it the dashboard comes up but the machine cannot run apps. |
 | Size | **2 cores, 4 GB of RAM, 30 GB of disk** is the minimum, **4 cores and 8 GB** the comfortable size. Both are about your apps: the platform itself fits in about 1 GB. The installer warns below the minimum and **refuses below 8 GB free on `/`**, where Docker images alone do not fit. |
 | Ports | `80` and `443` reachable from the internet, `9443` on every server including this one. Port `3000` is bound to `127.0.0.1` and needs nothing opened. |
 | Outbound HTTPS | To `ghcr.io` for the image, to `get.docker.com` when Docker is missing, and to Let's Encrypt for the certificate. The first two are checked before anything is installed. |
@@ -66,11 +65,11 @@ and of certificate issuance.
 
 | OS | Status |
 | --- | --- |
-| Ubuntu 26.04 LTS, 24.04 LTS | **Tested** |
-| Debian 13, Debian 12 | **Tested** |
-| Fedora, Rocky, CentOS Stream, RHEL | Compatible, not tested here |
-| AlmaLinux, openSUSE Leap, Arch | Works once you install Docker yourself |
-| Alpine, SUSE Linux Enterprise, 32-bit | Not supported |
+| <Os name="ubuntu">Ubuntu 26.04 LTS, 24.04 LTS</Os> | **Tested** |
+| <Os name="debian">Debian 13, Debian 12</Os> | **Tested** |
+| <Os name="fedora">Fedora</Os>, <Os name="rocky">Rocky</Os>, <Os name="centos">CentOS Stream</Os>, <Os name="rhel">RHEL</Os> | Compatible, not tested here |
+| <Os name="almalinux">AlmaLinux</Os>, <Os name="opensuse">openSUSE Leap</Os>, <Os name="arch">Arch</Os> | Works once you install Docker yourself |
+| <Os name="alpine">Alpine</Os>, <Os name="suse">SUSE Linux Enterprise</Os>, 32-bit | Not supported |
 
 Version by version, with the reason behind each verdict, in
 [Operating systems](/reference/supported-operating-systems).
