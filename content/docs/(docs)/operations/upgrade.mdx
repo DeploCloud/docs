@@ -10,7 +10,7 @@ Moving Deplo to a newer version. Two things version independently:
 - The **control plane** (this panel)
 - The **server agents**, one binary per host
 
-- The control plane is a container image, `ghcr.io/deplocloud/deplo`. Upgrading it means pulling a newer tag and restarting the stack.
+- The control plane updates itself from the panel: the machine it runs on pulls the new image and restarts it. No shell, no SSH.
 - Database migrations apply themselves at boot. There's no separate migration step.
 - Agents update one server at a time, from the servers page.
 - The control plane and the agents tolerate a version gap: new capabilities are announced in the handshake, so an older agent simply doesn't offer a newer feature rather than failing.
@@ -28,38 +28,59 @@ Moving Deplo to a newer version. Two things version independently:
 
 A newer release also raises a banner across the dashboard and a dot on the **Deplo** entry in the sidebar. Dismissing the banner silences it for that version; the dot stays until you upgrade.
 
-Nothing updates itself. The list says what a release contains; the two sections below are how it
-gets applied.
+The list says what a release contains; the two sections below are how it gets applied.
 
 ## Upgrade the control plane
 
-Re-run the installer on the machine that runs it:
+<Steps>
+<Step>
+### Open Settings -> Deplo -> Updates
+</Step>
 
-```bash
-curl -fsSL https://deplo.build/install.sh | bash
-```
+<Step>
+### Click the **Update** button
+It names the version it will install. Confirm, and the machine Deplo runs on pulls the
+new image and restarts the panel.
+</Step>
 
-It detects the existing `/opt/deplo/.env`, switches to update mode, pulls the image, and restarts.
-**Secrets are never rotated.**
+<Step>
+### Wait about a minute
+The page reloads itself when Deplo answers again on the new version.
+</Step>
+</Steps>
 
-Two things it does that are worth knowing before a big jump: it takes a `pg_dump` into
-`/opt/deplo/backups` first, keeping the newest three, and if the new image fails to come up it
-puts the previous tag back on its own.
+Three things happen around it that are worth knowing:
 
-To pin a version rather than take `latest`:
-
-```bash
-curl -fsSL https://deplo.build/install.sh | \
-  DEPLO_VERSION=0.1.0 bash
-```
-
-The panel checks for releases on its own. Nothing updates itself.
+- A `pg_dump` of the panel's database lands in `/opt/deplo/backups` first, and the newest three are kept.
+- **Secrets are never rotated**, and no setting is reset.
+- If the new version does not come up, the previous one is put back automatically. The panel says
+  so instead of leaving you on a spinner.
 
 <Callout type="info" title="Your apps keep running throughout">
 They are containers on hosts, not part of the control plane. A panel that's
 down means you can't deploy or read logs for a minute, it does not mean your
 sites are down.
 </Callout>
+
+### When Deplo cannot do it from the panel
+
+The button asks the **server agent** on the machine to run the installer, so it needs that agent to
+be recent enough. When it is not, or when Deplo is not running as a container the agent can see,
+the panel says why and shows the command to run on the machine instead:
+
+```bash
+curl -fsSL https://deplo.build/install.sh | bash
+```
+
+It is the same script the button runs. It detects the existing `/opt/deplo/.env`, switches to update
+mode, pulls the image and restarts, with the same dump and the same rollback.
+
+To pin a version rather than take the newest:
+
+```bash
+curl -fsSL https://deplo.build/install.sh | \
+  DEPLO_VERSION=0.1.0 bash
+```
 
 ## Update the agents
 
@@ -92,7 +113,7 @@ Do not update an agent while a deploy is in flight on that host.
 
 - **Agents cannot be downgraded.** Test on a canary.
 - **Some features need a newer agent.** When one is missing, Deplo says so rather than silently doing something else.
-- **Re-running the installer is safe and idempotent.** It's the intended update path, not a workaround.
+- **Re-running the installer is safe and idempotent.** It is what the button does, so running it by hand is never a workaround.
 - **Read the release notes for a minor bump.** During `0.x`, minor means something you notice: a feature, changed behavior, a database migration, or a newer agent required.
 - **Back up before a big jump.** Migrations apply at boot and are not reversed by rolling the image back.
 

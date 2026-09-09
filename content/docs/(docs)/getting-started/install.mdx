@@ -144,13 +144,16 @@ pool does not apply yet.
 
 ## Update it later
 
-Re-run the same command. It pulls the newer image and restarts the stack, and your secrets stay
-exactly as they were. Pin a version with `DEPLO_VERSION=<tag>` in front of the command, or leave
-it to take `latest`.
+From the dashboard: **Settings -> Deplo -> Updates**, and the button there installs the new
+version. The panel checks for releases on its own and raises a banner when one is out.
 
-The dashboard also checks for releases on its own and shows an update banner. See
-[Upgrade](/operations/upgrade) for the full procedure, including the server agents, which version
-on their own clock.
+Re-running the same command does the same thing, for a machine whose agent is too old to be
+asked. It pulls the newer image and restarts the stack, and your secrets stay exactly as they
+were. Pin a version with `DEPLO_VERSION=<tag>` in front of the command, or leave it to take
+`latest`.
+
+See [Upgrade](/operations/upgrade) for the full procedure, including the server agents, which
+version on their own clock.
 
 ## Run it with Compose instead
 
