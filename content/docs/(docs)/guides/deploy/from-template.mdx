@@ -3,6 +3,9 @@ title: Deploy from a template
 description: One-click deploys of software somebody else already configured.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Layers, Database, SlidersHorizontal } from "lucide-react";
 
 A one-click deploy of software somebody else already configured: WordPress, Ghost, n8n, Plausible,
@@ -43,6 +46,14 @@ The page opens on a row of **featured** templates, then a search box, category c
 collections: **Serving hot now**, **Run your own AI** and **Be your own bank**.
 Every category row has a **See all** link, and **All templates** lists the whole catalogue A to Z.
 
+<Image
+  src={`${basePath}/screenshots/from-template/01-catalogue.png`}
+  alt="The template catalogue with its categories"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
@@ -50,6 +61,14 @@ Every category row has a **See all** link, and **All templates** lists the whole
 
 Open it and read the description. If the family has several variants, pick one from the
 **Choose a variant** dropdown - **Deploy** is disabled until you do.
+
+<Image
+  src={`${basePath}/screenshots/from-template/02-template-detail.png`}
+  alt="One template page: variants"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>

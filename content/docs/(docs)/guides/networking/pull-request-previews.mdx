@@ -3,6 +3,9 @@ title: Pull request previews
 description: Every open pull request gets its own running copy of the app at its own URL, torn down when the pull request closes.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { GitBranch, Variable, Globe } from "lucide-react";
 
 Reviewers click a link instead of checking out a branch. A preview is a separate stack,
@@ -120,6 +123,14 @@ the fields nobody needs to start are under **Advanced**.
 
 The **Pull requests** tab lists them, with **Redeploy**, **Destroy preview** and **Open pull
 request** on each row. **New preview** deploys one on demand.
+
+<Image
+  src={`${basePath}/screenshots/pull-request-previews/01-preview-deployments.png`}
+  alt="Preview deployments in the history, each on its own pull request URL"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 A preview from a fork shows **Needs approval** until somebody with
 `manage_previews` reviews it.

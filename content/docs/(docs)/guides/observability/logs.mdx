@@ -3,6 +3,9 @@ title: Logs
 description: Live container output and build output, streamed from the agent, no SSH required.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Activity, Terminal, Bell } from "lucide-react";
 
 What your containers are printing, live, plus the output of every build. No `docker logs`, no SSH.
@@ -13,6 +16,22 @@ way round - they are persisted, so they survive a page reload and a control plan
 cap of 20,000 lines, each truncated at 4,000 characters, so a runaway build cannot fill the disk.
 
 ## Where to look
+
+<Image
+  src={`${basePath}/screenshots/logs/01-picker.png`}
+  alt="The team-wide Logs page asking which app or database to watch"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
+<Image
+  src={`${basePath}/screenshots/logs/03-build-logs.png`}
+  alt="Build output of one deployment, phase by phase"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 | Surface | What is there |
 | --- | --- |
@@ -25,6 +44,14 @@ cap of 20,000 lines, each truncated at 4,000 characters, so a runaway build cann
 
 The stream's state is a read-only chip: `connecting`, `streaming`, `reattaching`, `ended` or
 `failed`. There is no live switch; the pause button freezes **auto-scroll**, not the stream.
+
+<Image
+  src={`${basePath}/screenshots/logs/02-app-logs.png`}
+  alt="Live container output with the level, range and auto-scroll toolbar"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 | Control | What it does |
 | --- | --- |

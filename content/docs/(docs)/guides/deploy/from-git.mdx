@@ -3,6 +3,9 @@ title: Deploy from Git
 description: Point an app at a repository and let Deplo build, deploy and redeploy it on push.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { GitBranch, Hammer, Webhook, GitPullRequest, Upload } from "lucide-react";
 
 Pointing an app at a repository and letting Deplo build it is the source most apps use. The
@@ -36,6 +39,14 @@ the source.
 ### Pick the source
 
 Pick the **GitHub** or **Git** tile.
+
+<Image
+  src={`${basePath}/screenshots/from-git/01-git-source.png`}
+  alt="The Git source step"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 <Tabs items={['GitHub', 'Git']}>
 <Tab value="GitHub">
@@ -79,6 +90,14 @@ method and the watch paths are under **Advanced**, already answered. Click **Dep
 </Steps>
 
 ## Change the source later
+
+<Image
+  src={`${basePath}/screenshots/from-git/02-change-source-later.png`}
+  alt="Settings -> Deployment: repository, branch and root directory of a running app"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Settings -> Deployments**, the **Deploy Source** card. You can move an app between repositories,
 branches and even source types. The app keeps its slug, its domains, its variables and its

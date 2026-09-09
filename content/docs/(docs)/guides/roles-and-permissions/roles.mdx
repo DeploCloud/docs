@@ -3,12 +3,23 @@ title: Build a role
 description: Name a set of capabilities, tick the ones it needs, and every member holding it updates together.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 <Steps>
 <Step>
 
 ### Open roles settings
 
 Open **Settings -> Roles**.
+
+<Image
+  src={`${basePath}/screenshots/roles/01-roles-list.png`}
+  alt="Every role of the team with its permission count and how many members hold it"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>
@@ -33,6 +44,14 @@ Give it a **Name** and a **Description**.
 Tick capabilities. There is a search box and browse categories, because forty-four checkboxes
 need both, and each category header carries a **Select all** / **Unselect all** toggle that acts
 on whatever the search has left visible. `view` is always ticked and cannot be turned off.
+
+<Image
+  src={`${basePath}/screenshots/roles/02-role-detail.png`}
+  alt="One role open: name, two-factor requirement and the capabilities it grants"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>

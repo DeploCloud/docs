@@ -3,6 +3,9 @@ title: Domains and HTTPS
 description: Hostnames, certificates, path-based routing and redirects for an app.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Globe, ShieldCheck, GitPullRequest, Terminal } from "lucide-react";
 
 Everything about the addresses an app answers on: your own hostnames, certificates, path-based
@@ -29,6 +32,14 @@ Open the app, then **Domains**. **Add Domain** opens the dialog, where **Add dom
 re-check DNS, make this the canonical host (**Set as primary**), edit, and **Remove domain**.
 Editing opens the same fields as the dialog, saved with **Save changes**.
 
+<Image
+  src={`${basePath}/screenshots/domains-and-https/01-domains-list.png`}
+  alt="One app's Domains tab with its hostname, DNS state and certificate"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 Exactly one domain is primary. It is the URL in the app header, in notifications, and anywhere
 Deplo needs to name the app's address.
 
@@ -52,6 +63,14 @@ thing by hand.
 One field, **Certificate**, in the **HTTPS** group. It sits at the top level of the form, above
 the **Advanced settings** accordion. Picking a provider is how a domain opts into HTTPS; there is
 no separate switch.
+
+<Image
+  src={`${basePath}/screenshots/domains-and-https/02-add-domain.png`}
+  alt="The Add a domain dialog: container, port, certificate issuer and entrypoint"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 <TypeTable
   type={{
@@ -82,6 +101,14 @@ server, so the padlock is real and the connection behind it is not. Use Full or 
 a certificate on this side.
 
 ## Path routing
+
+<Image
+  src={`${basePath}/screenshots/domains-and-https/03-advanced-settings.png`}
+  alt="Advanced settings of the same dialog, where path routing and redirects live"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Advanced settings -> Request routing**.
 

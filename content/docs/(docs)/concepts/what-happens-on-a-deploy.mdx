@@ -3,6 +3,9 @@ title: The deploy trace
 description: The full trace of one deploy, from trigger to a container serving traffic.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Hammer, Zap, RotateCcw, Variable, LifeBuoy } from "lucide-react";
 
 The full trace of one deploy, from the thing that triggered it to a
@@ -146,6 +149,14 @@ it on the first HTTPS request.
 The deployment row gets its final status, its image reference, its
 duration and its logs. The app's status moves to `active`, or to `error`
 if the build or the bring-up failed.
+
+<Image
+  src={`${basePath}/screenshots/what-happens-on-a-deploy/01-deploy-trace.png`}
+  alt="One deployment end to end: phases, timings and the log lines the trace describes"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 Older images beyond the app's **rollbacks kept** setting (default `3`)
 become eligible for removal by the server's disk cleanup. That number is

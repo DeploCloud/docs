@@ -3,6 +3,9 @@ title: Deploy a Docker image
 description: Run an image that is already built, from any registry you can reach.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Container, LayoutTemplate, Layers, HardDrive, Upload } from "lucide-react";
 
 Running an image that is already built, from Docker Hub, GitHub Container Registry, or any
@@ -35,6 +38,14 @@ Pick the **Docker Image** tile and type the image reference. The name field auto
 Docker Hub; tags are completed and checked for existence using any registry credentials you have
 added. The **App name** fills itself in from the image.
 
+<Image
+  src={`${basePath}/screenshots/docker-image/01-wizard-image.png`}
+  alt="The Docker Image source step of the wizard"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
@@ -58,6 +69,14 @@ serve two hostnames on two different ports.
 Add credentials once in **Settings -> Registries** and every app on the team can pull from that
 registry. The password is encrypted and never returned. See
 [Container registries](/operations/servers/container-registries) for the full setup.
+
+<Image
+  src={`${basePath}/screenshots/docker-image/02-registries.png`}
+  alt="Settings -> Registries, where the credentials for a private image live"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 ## Settings that matter for an image app
 

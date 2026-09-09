@@ -3,10 +3,21 @@ title: API tokens and OAuth
 description: Credentials for scripts, CI and AI agents, with their own capabilities, scope and expiry.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Library, Bot, RefreshCw } from "lucide-react";
 
 For anything that talks to Deplo without a browser, like an
 [MCP agent](/guides/mcp-server).
+
+<Image
+  src={`${basePath}/screenshots/api-tokens-and-oauth/01-tokens-list.png`}
+  alt="Settings -> API tokens: every token with its permissions, scope, last use and expiry"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Settings -> API tokens**, under your account. A token is **personal**: it
 belongs to the person who created it, and nobody else can see, edit or
@@ -55,6 +66,14 @@ teams where they hold **Use API tokens**.
 <Step>
 
 ### Pick a starting point
+
+<Image
+  src={`${basePath}/screenshots/api-tokens-and-oauth/02-new-token.png`}
+  alt="The templates a new token can start from"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Start from a template** or **Start from scratch**. Templates, least
 powerful first:

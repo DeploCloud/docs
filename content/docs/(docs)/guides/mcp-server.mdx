@@ -3,6 +3,9 @@ title: MCP server
 description: Let an AI agent drive Deplo through the same authorization gates a person goes through.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { KeyRound, Users, Library } from "lucide-react";
 
 <Callout type="info" title="Beta">
@@ -38,6 +41,14 @@ it creates is personal, listed only under your **Settings -> API tokens**.
 Claude, ChatGPT, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf,
 Gemini CLI, Codex CLI, or **Something else**.
 
+<Image
+  src={`${basePath}/screenshots/mcp-server/01-agent-picker.png`}
+  alt="Settings -> MCP Server, step 1: pick the agent you are connecting"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
@@ -56,6 +67,14 @@ Click **Create token**. Start from a **Template** or pick capabilities
 yourself, and set an expiry. By default the agent reaches **every team you
 can connect agents to**; narrow it under **Access** if it should only
 see one.
+
+<Image
+  src={`${basePath}/screenshots/mcp-server/02-permissions.png`}
+  alt="Step 2: the token Deplo mints for the agent, its permissions, scope and expiry"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>

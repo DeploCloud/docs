@@ -15,7 +15,6 @@ never on the control plane.
 
 ## Deploy it
 
-{/* TODO: re-capture - these shots predate the three-step wizard. */}
 
 <Steps>
 <Step>
@@ -34,6 +33,14 @@ Five tiles, in this order: **GitHub**, **Git**, **Docker Image**, **Compose**, *
 answer, so it carries you straight to the next card. Under them, **Template** leaves for the
 catalogue instead.
 
+<Image
+  src={`${basePath}/screenshots/first-app/01-sources.png`}
+  alt="The New app wizard, first step: the five sources plus Template"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 You can also drag an archive onto the Overview, or onto the wizard itself: Deplo opens the Upload
 step with the file in hand and the name filled in.
 
@@ -43,6 +50,22 @@ step with the file in hand and the name filled in.
 ### Fill in that source
 
 This is the only step that differs between the five.
+
+<Image
+  src={`${basePath}/screenshots/first-app/02-github-source.png`}
+  alt="GitHub source step, the Connect GitHub call to action shown when no App is connected yet"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
+<Image
+  src={`${basePath}/screenshots/first-app/03-repository-url.png`}
+  alt="The 'Use a repository URL' path"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 <Tabs items={['GitHub', 'Git', 'Docker Image', 'Compose', 'Upload']}>
 <Tab value="GitHub">
@@ -85,14 +108,6 @@ exactly like a clone, framework detection included. This card carries the **Depl
 </Tab>
 </Tabs>
 
-<Image
-  src={`${basePath}/screenshots/first-app/02-details.png`}
-  alt="The second card, with the repository picked and the branch chosen"
-  width={1606}
-  height={1088}
-  className="w-full rounded-lg"
-/>
-
 </Step>
 <Step>
 
@@ -106,14 +121,6 @@ exactly like a clone, framework detection included. This card carries the **Depl
   lockfile's package manager. **Reset** empties a field, which hands the decision back to the
   builder.
 - **Automatic deployments**, on, so every push to that branch deploys.
-
-<Image
-  src={`${basePath}/screenshots/first-app/03-configure.png`}
-  alt="The third card, with the framework, the build and deploy commands and the Advanced drawer"
-  width={1606}
-  height={1088}
-  className="w-full rounded-lg"
-/>
 
 </Step>
 <Step>
@@ -148,6 +155,14 @@ server named on it so you can see where the app lands without opening it.
 ## What you get
 
 When the badge turns **Running**, the app header shows the production URL and a **Visit** button.
+
+<Image
+  src={`${basePath}/screenshots/first-app/04-app-overview.png`}
+  alt="What you get once it is running: production deployment, domain, status and build time"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 That first URL is a `nip.io` hostname. `nip.io` is public wildcard DNS where the last label before
 `.nip.io` is your server's IPv4 in hexadecimal, so `cb00710a` resolves to `203.0.113.10` with no

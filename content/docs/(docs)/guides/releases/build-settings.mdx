@@ -3,6 +3,9 @@ title: Build settings
 description: How your source becomes a container image, which builder runs and which port it listens on.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Workflow, Webhook, Globe, Gauge } from "lucide-react";
 
 How your source becomes a container image: which builder runs, what commands it runs, and which
@@ -12,6 +15,14 @@ source has nothing to build, so none of this page applies to them.
 ## The four build methods
 
 Pick one under **Build method**, on the **Build & output** card in **Settings -> Deployments**.
+
+<Image
+  src={`${basePath}/screenshots/build-settings/01-build-methods.png`}
+  alt="The four build methods on Settings -> Deployment"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 | Method | Use it when | Fields it adds |
 | --- | --- | --- |
@@ -44,6 +55,14 @@ detection. The greyed text in an empty field is the builder's generic default (`
 field means "let the builder decide", not "it will run this".
 
 ## The fields
+
+<Image
+  src={`${basePath}/screenshots/build-settings/02-build-fields.png`}
+  alt="Publish directory, install and build commands, container port"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 <TypeTable
   type={{
@@ -100,6 +119,14 @@ A single hostname can override the port for itself, which is how one app serves 
 domain and a dashboard on another. That override lives in **Domains**, not here.
 
 ## Build cache
+
+<Image
+  src={`${basePath}/screenshots/build-settings/03-build-cache.png`}
+  alt="Build cache and where the build runs, on Settings -> Advanced"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Settings -> Advanced**, on the **Build & triggers** card. **Build cache** is on by default. The
 cache lives on the **server**, one BuildKit cache shared by every app on that host, which is why a

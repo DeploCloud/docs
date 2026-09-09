@@ -3,10 +3,21 @@ title: Console
 description: Look inside a running container, over the agent, with no SSH.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { HardDrive, Timer, ScrollText } from "lucide-react";
 
 An escape hatch for when you need to look inside a running container. It goes through the agent on
 the server, it is not on the first-run path, and it is not required to use Deplo.
+
+<Image
+  src={`${basePath}/screenshots/console/03-terminal.png`}
+  alt="The terminal itself, running inside the container over the agent"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 There are two tabs, and the difference matters:
 
@@ -27,6 +38,14 @@ The console is hidden until you acknowledge it once.
 
 Open the app, then **Settings -> Advanced**, and click **Open console**.
 
+<Image
+  src={`${basePath}/screenshots/console/01-turn-it-on.png`}
+  alt="Settings -> Advanced, where the console is switched on per app"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
@@ -35,6 +54,14 @@ Open the app, then **Settings -> Advanced**, and click **Open console**.
 A modal holds the terminal until you answer it. Read it and click **I understand**. From then on
 the sidebar shows a **Console** entry whenever a container is running. The acknowledgement is
 stored in this browser, so a different browser or a private window asks again.
+
+<Image
+  src={`${basePath}/screenshots/console/02-confirm.png`}
+  alt="The confirmation Deplo asks for before attaching a shell to the container"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 </Steps>

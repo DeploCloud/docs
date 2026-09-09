@@ -3,6 +3,9 @@ title: Members
 description: Add people to a team, give them a role, and answer "who did that" afterwards.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { ShieldCheck, History, KeyRound, Settings } from "lucide-react";
 
 Everything in Deplo belongs to a team, and a person reaches it through a
@@ -26,6 +29,14 @@ and a self-hosted instance often cannot. Instead there are two paths:
 
 Open **Settings -> Members**.
 
+<Image
+  src={`${basePath}/screenshots/team-members/01-members-list.png`}
+  alt="Settings -> Members: the member list with roles and permission counts"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
@@ -39,6 +50,14 @@ Click **Add member**.
 ### Search, pick, assign
 
 Search by username, pick them, choose the role, then **Add to team**.
+
+<Image
+  src={`${basePath}/screenshots/team-members/02-add-member.png`}
+  alt="The Add a member dialog, picking a registered user by username"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 </Steps>
@@ -91,6 +110,14 @@ that only its hash remains.
 ## Roles and limited access
 
 Each member row shows their role. Two badges are worth recognising:
+
+<Image
+  src={`${basePath}/screenshots/team-members/03-table-view.png`}
+  alt="The same members as a table, role per person at a glance"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 - **Primary owner** is the founder's crown. Nobody can remove, demote or
   edit them, including instance admins. It transfers only from

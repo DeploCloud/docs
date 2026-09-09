@@ -3,6 +3,9 @@ title: Backups and restore
 description: Scheduled, encrypted copies of a database or an app, sent to S3 or to another server's disk.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { LifeBuoy, Server, Database } from "lucide-react";
 
 Scheduled, encrypted copies of a database or an app, sent to an S3 bucket **or to another server's disk**, with a restore that puts them back.
@@ -61,6 +64,14 @@ Opening **Storage -> Destinations** tests every destination in the team, so what
 measured now, not last week. The round is rate-limited, and a destination that cannot be
 reached keeps its previous figures and turns its badge red - it never goes blank.
 
+<Image
+  src={`${basePath}/screenshots/backups-and-restore/01-destinations.png`}
+  alt="Storage -> Destinations: an S3 destination with its bucket, endpoint and the recovery key notice"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 Each destination reports how much it holds:
 
 - **A folder on a server** gets a bar: how much your backups take, how much everything else
@@ -94,10 +105,26 @@ Fetching the key is recorded in the activity trail. It is one of only two places
 
 ## Schedule a backup
 
+<Image
+  src={`${basePath}/screenshots/backups-and-restore/02-schedules.png`}
+  alt="Storage -> Backups: every schedule, its target, retention and last run"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 <Steps>
 <Step>
 
 ### Start a new backup
+
+<Image
+  src={`${basePath}/screenshots/backups-and-restore/04-database-backups.png`}
+  alt="A database with no backup yet, the empty state 'Schedule a backup' starts from"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Storage -> Backups -> New Backup**, or **Back up -> New schedule** on the **Backups** tab of an app or a database.
 
@@ -149,6 +176,14 @@ slot. The ceiling is 365, and a target holds at most 50 recorded runs.
 ## Restore
 
 Every finished run is a restore point. On the target's **Backups** tab they are listed under **Restore points**, and each row's menu holds **Restore**, **Download** and **Delete**.
+
+<Image
+  src={`${basePath}/screenshots/backups-and-restore/03-app-backups.png`}
+  alt="One app's Backups tab: schedules and restore points"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **In place and destructive.** It asks you to type the target's name.
 

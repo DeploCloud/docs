@@ -3,6 +3,9 @@ title: Git connections
 description: Connect a GitLab, Bitbucket, or Gitea (Forgejo included) host as a stored git connection, cloud or self-hosted.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 A git connection is one stored credential per host, reused by every app that
 deploys from it. GitLab, Bitbucket and Gitea connect this way, self-hosted or
 not, and are marked **Beta**. GitHub is different, see
@@ -15,6 +18,14 @@ not, and are marked **Beta**. GitHub is different, see
 
 ### Add a connection
 
+<Image
+  src={`${basePath}/screenshots/git-connections/01-git-page.png`}
+  alt="Settings -> Git with no host connected"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 **Settings -> Git**, then add a connection.
 
 </Step>
@@ -24,6 +35,14 @@ not, and are marked **Beta**. GitHub is different, see
 
 Pick the provider as the **Type**, then set the **Address**, **Username** and
 token. The exact values differ per provider:
+
+<Image
+  src={`${basePath}/screenshots/git-connections/02-provider-menu.png`}
+  alt="The provider menu: GitHub, GitLab, Bitbucket, Gitea and any plain git host"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 <Tabs items={['GitLab', 'Bitbucket', 'Gitea']}>
 <Tab value="GitLab">

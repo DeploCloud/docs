@@ -3,6 +3,9 @@ title: Upload your code
 description: Deploy an archive of your project instead of connecting a repository.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Hammer, GitBranch, RotateCcw } from "lucide-react";
 
 Deploying an archive of your project instead of connecting a repository. Deplo builds it exactly
@@ -32,6 +35,14 @@ The archive is stored in the control plane's data directory, under
 Drop it on the card, or click to browse. Accepted formats are `.tar.gz`, `.tgz`, `.tar` and
 `.zip`. Include your project's root, so `package.json` or the equivalent sits at the top level, or
 under the root directory you set.
+
+<Image
+  src={`${basePath}/screenshots/upload-code/01-wizard-upload.png`}
+  alt="The Upload source step, where a zip or tarball is dropped"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 You can skip the first step entirely: drop the archive anywhere on the Overview and the wizard
 opens here with the file already in hand.

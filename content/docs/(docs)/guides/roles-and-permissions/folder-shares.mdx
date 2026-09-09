@@ -3,6 +3,9 @@ title: Folder shares
 description: "Give somebody one corner of the fleet: a grant that replaces the team role inside a single folder."
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 A role applies across the whole team. A **folder share** applies inside
 one folder, and it **replaces** the team role's set there, and **may
 exceed it**.
@@ -18,12 +21,28 @@ without gaining any of that anywhere else.
 
 On the Overview, open the folder's menu and choose **Share**.
 
+<Image
+  src={`${basePath}/screenshots/folder-shares/01-folder-menu.png`}
+  alt="The folder menu on the overview, where the folder share lives"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
 ### Pick the member
 
 Pick the member.
+
+<Image
+  src={`${basePath}/screenshots/folder-shares/02-share-dialog.png`}
+  alt="The folder share dialog: who gets the grant and what it replaces inside that folder"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>

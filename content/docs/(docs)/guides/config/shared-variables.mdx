@@ -3,6 +3,9 @@ title: Shared variables
 description: One variable, owned by the team, that several apps can link to and use.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { SlidersHorizontal, FolderTree } from "lucide-react";
 
 One variable that several apps can use, across one team or across several. Change it once and
@@ -56,12 +59,28 @@ You can start from two places: the **Variables** page, or the app you want the v
 
 ### From the Variables page
 
+<Image
+  src={`${basePath}/screenshots/shared-variables/01-variables-page.png`}
+  alt="Every variable in the team on one page, shared ones included"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 <Steps>
 <Step>
 
 ### Open the Shared tab
 
 Open **Variables** in the sidebar, then the **Shared** tab, then **New shared variable**.
+
+<Image
+  src={`${basePath}/screenshots/shared-variables/02-shared-only.png`}
+  alt="The same page filtered to shared variables"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>
@@ -136,6 +155,14 @@ Open the app, then **Environment**.
 ### Link it
 
 Click **Add**, then the **Shared** tab: every shared variable offered to this app is listed there. Add the one you want.
+
+<Image
+  src={`${basePath}/screenshots/shared-variables/03-used-in-an-app.png`}
+  alt="An app's Environment tab, where a linked shared variable shows its source"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>

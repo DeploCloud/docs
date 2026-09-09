@@ -3,6 +3,9 @@ title: App hierarchy
 description: Four words that sound interchangeable and are not.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Users, ShieldCheck, Variable, Network } from "lucide-react";
 
 An **App** is the thing that runs. A **Folder** groups apps. A **Project** is a folder that also
@@ -56,6 +59,14 @@ A **Project is an advanced folder whose contents are scoped per environment.** T
 difference. It has an owner, a colour and an order like a folder, and on top of that it owns
 Environments, each holding its own apps and its own shared variables.
 
+<Image
+  src={`${basePath}/screenshots/apps-projects-and-environments/02-project.png`}
+  alt="One project filtered on the overview, its environments and apps"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 Two rules catch people out:
 
 - **A Project never nests** inside another Project, and **Folders never live inside a Project**.
@@ -81,6 +92,14 @@ An Environment is also one of the three availability scopes of a
 *suggested* to the apps living there, and each app still links it on purpose.
 
 ## Which one do I want
+
+<Image
+  src={`${basePath}/screenshots/apps-projects-and-environments/01-overview.png`}
+  alt="The overview with apps, folders and projects side by side"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 | Situation | Use |
 | --- | --- |

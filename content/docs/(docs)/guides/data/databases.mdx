@@ -3,9 +3,20 @@ title: Databases
 description: A managed Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse instance on one of your servers.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Archive, HardDrive, Terminal, Gauge, Network } from "lucide-react";
 
 A managed database running on one of your servers: Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse. Deplo provisions it, gives you a connection string, and handles backups, logs, metrics and a console.
+
+<Image
+  src={`${basePath}/screenshots/databases/01-storage-list.png`}
+  alt="Storage -> Databases: every managed database with its engine and connection string"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 A database is provisioned exactly like an app, by the agent on the server you pick. It runs as its
 own Compose stack keyed `db-<slug>`, where the slug is minted from the display name at creation and
@@ -32,6 +43,14 @@ Open **Storage**, then the **Databases** tab.
 ### New database
 
 Click **New Database**.
+
+<Image
+  src={`${basePath}/screenshots/databases/02-create-dialog.png`}
+  alt="The Create database dialog: engine, version, credentials and environment"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>
@@ -115,6 +134,14 @@ Deplo says which one, and where it lives, in the deploy log before the container
 
 Opening a database lands on its overview: two cards and a row of three tiles.
 
+<Image
+  src={`${basePath}/screenshots/databases/03-database-overview.png`}
+  alt="A database's overview: connection, networking, health, data and backups"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 **Connection** holds the connection string (click to reveal, needs `reveal_secrets`) and the facts fixed at creation: engine and version, username, logical database, server.
 
 **Networking** holds the **Environment** the database lives in, and the two
@@ -158,6 +185,14 @@ are gone, so a half-deleted database cannot linger as a row pointing at a live v
 is dead and never coming back, a `force` option appears after the refusal.
 
 ## Settings
+
+<Image
+  src={`${basePath}/screenshots/databases/04-database-settings.png`}
+  alt="Database settings, where the dashboard label changes without touching the connection string"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Settings -> Connection** carries the same exposure controls as the overview, plus the two things that do not belong on one: password rotation, and the server move - the **Server** select appears only when the fleet has more than one machine.
 

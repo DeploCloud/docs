@@ -3,6 +3,9 @@ title: Published ports
 description: Reach an app on a port of the server, for anything that is not a website.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Globe, Server } from "lucide-react";
 
 Deplo routes apps through its proxy: you add a domain, and the app answers
@@ -20,6 +23,14 @@ container, so clients connect to `your-server:16379` instead of to a name.
 <Step>
 
 ### Open the app's Advanced settings
+
+<Image
+  src={`${basePath}/screenshots/published-ports/01-published-ports.png`}
+  alt="The Published ports section on Settings -> Advanced"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Settings -> Advanced -> Published ports**, then **Add port**. Twenty rows is the ceiling, and the button goes dead there.
 

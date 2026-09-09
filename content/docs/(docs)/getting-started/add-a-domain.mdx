@@ -4,6 +4,9 @@ description: Put a hostname you own in front of an app, and serve it over HTTPS.
 icon: Globe
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Globe, ShieldCheck, GitPullRequestArrow } from "lucide-react";
 
 Every app gets a generated `nip.io` address from its first deploy. To serve it on a hostname you
@@ -46,6 +49,14 @@ A      app    203.0.113.10   auto
 
 Click **Add Domain** and type the hostname, for example `app.example.com`.
 
+<Image
+  src={`${basePath}/screenshots/add-a-domain/01-domains-tab.png`}
+  alt="The Domains tab of an app"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
@@ -54,6 +65,14 @@ Click **Add Domain** and type the hostname, for example `app.example.com`.
 Open **Advanced settings**, then the **HTTPS** group, and set **Certificate** to **Let's
 Encrypt**. Behind Cloudflare's orange cloud, Deplo detects the proxy and selects **Cloudflare**
 for you.
+
+<Image
+  src={`${basePath}/screenshots/add-a-domain/02-add-domain-dialog.png`}
+  alt="The Add a domain dialog with the DNS check"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>

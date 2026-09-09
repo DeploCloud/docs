@@ -3,6 +3,9 @@ title: Cron jobs
 description: Run a command on a schedule (cronjobs) inside one of your containers, tracked by the agent so a panel restart never kills it.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Terminal, Bell, BookOpen } from "lucide-react";
 
 For example: a nightly cleanup, a report at 6am, a queue worker tick, or
@@ -44,6 +47,14 @@ Open the app, then **Settings -> Advanced**.
 
 Turn on **Cron jobs**.
 
+<Image
+  src={`${basePath}/screenshots/cron-jobs/01-turn-it-on.png`}
+  alt="The Cron jobs switch on Settings -> Advanced"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
 </Step>
 <Step>
 
@@ -58,6 +69,14 @@ For a database it is the same, in **Settings -> Advanced** of that
 database.
 
 ## Create a job
+
+<Image
+  src={`${basePath}/screenshots/cron-jobs/03-new-job.png`}
+  alt="The New cron job dialog: schedule, timezone, next run and command"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 <TypeTable
   type={{
@@ -119,6 +138,14 @@ database.
 ## Reading the run history
 
 Six statuses, and the distinctions matter:
+
+<Image
+  src={`${basePath}/screenshots/cron-jobs/02-job-list.png`}
+  alt="The cron jobs of an app with their schedule and last result"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 <TypeTable
   type={{

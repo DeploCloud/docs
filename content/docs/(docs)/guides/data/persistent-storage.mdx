@@ -3,6 +3,9 @@ title: Persistent storage
 description: Mount volumes, files and server folders so data survives a redeploy.
 ---
 
+import Image from "next/image";
+import { basePath } from "@/lib/base-path";
+
 import { Database, Archive, Terminal, Lock } from "lucide-react";
 
 Somewhere for your app to write files that survive a deploy. A container's own filesystem is thrown away every time it is recreated, so uploads, caches and databases need a mount.
@@ -28,6 +31,14 @@ A **Bind** reaches outside Deplo's control, which is why it needs the "Bind serv
 A [Compose app](/advanced/compose-apps) can declare storage in its own
 `docker-compose.yml`, and it can take Storage rows too: a row names the
 service it mounts into, and the two are merged at deploy time.
+
+<Image
+  src={`${basePath}/screenshots/persistent-storage/01-app-storage.png`}
+  alt="Settings -> Storage of a Compose app: the mounts its own compose file declares"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 **Settings -> Storage** lists what the compose file mounts read-only, under
 **From docker-compose.yml**, one line each: the volume name, the `./` path or
@@ -80,6 +91,14 @@ In a [Compose app](/advanced/compose-apps) the same line is drawn by the name. D
 ### Open Storage
 
 Open the app, then **Settings -> Storage**.
+
+<Image
+  src={`${basePath}/screenshots/persistent-storage/02-add-storage.png`}
+  alt="Settings -> Storage of a built app with nothing mounted yet, where a volume, a file or a server folder is added"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
 
 </Step>
 <Step>
