@@ -9,8 +9,8 @@ curl -fsSL https://deplo.build/install.sh | bash
 
 Configured by environment variables in front of the command. See
 [Environment variables](/reference/environment-variables) for the table. With
-none of them, and a terminal, it asks for a domain once: press Enter and it
-generates `deplo-<hex>.nip.io`. With no terminal it generates one without asking.
+none of them it asks nothing and generates `deplo-<hex>.nip.io` for the
+dashboard. `--domain` is how you put it on a hostname of your own.
 
 <Callout type="info" title="Requires">
   Root, Bash 4, `curl`, `openssl`, and Docker Compose v2 when Docker is
@@ -43,7 +43,7 @@ generates `deplo-<hex>.nip.io`. With no terminal it generates one without asking
     "--yes": {
       type: "flag",
       description:
-        "Never ask anything, take every default. It deliberately does not answer the take-over question.",
+        "Take every default. It deliberately does not answer the take-over question, which is the only one the installer asks.",
     },
     "--force": {
       type: "flag",
