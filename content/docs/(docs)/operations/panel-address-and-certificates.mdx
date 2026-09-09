@@ -20,7 +20,8 @@ Two routers point at it, always:
 - **Your domain**, when you gave one, with a Let's Encrypt certificate.
 - **A generated `deplo-<hex>.nip.io` host**, which resolves to this server with no
   DNS to set up. It is the address that still answers when your domain, its DNS or
-  its certificate is what broke, and it cannot be turned off.
+  its certificate is what broke. On by default, and turning it off is an advanced
+  choice with a real cost - see below.
 
 The address is also used for more than serving pages:
 
@@ -67,6 +68,36 @@ way to reach it on `<server-ip>:3000`. The one exception lives under
 exists for one case: a panel on an internal network that no certificate authority
 can reach. Turning it on sends every password and every session cookie across the
 network in clear, and passkeys stop working entirely, so the confirm says so.
+
+## Turn the backup address off
+
+**Settings -> Deplo -> Advanced**, **Backup address**. It exists for the instances
+where a second, permanent address in front of the panel is not acceptable - a
+public `nip.io` hostname resolving to the box, whoever asks.
+
+The confirm says what it costs, and it is worth reading twice: with it off, your
+domain is the only route to the panel. If that domain, its DNS or its certificate
+breaks, **there is no address left to log in on** - the way back is a command on
+the server itself.
+
+Run it on the host that runs the control plane:
+
+```bash
+# Put the panel back on the generated address (and turn the backup address on)
+bun run recover panel-address -
+
+# Or move it straight onto a domain that works
+bun run recover panel-address deplo.example.com
+```
+
+Either one rewrites the panel's own route on the proxy and stores the new address.
+Restart Deplo afterwards so install commands and invite links carry it too.
+
+<Callout type="info" title="It cannot be turned off while it IS the address">
+On an instance with no domain of its own, the generated host is what the panel
+answers on - turning it off there would leave no route at all, so Deplo refuses
+until you set a domain.
+</Callout>
 
 <Callout type="warn" title="The generated address serves a certificate the browser does not know">
 No public authority issues for a `nip.io` hostname, so the installer mints a
