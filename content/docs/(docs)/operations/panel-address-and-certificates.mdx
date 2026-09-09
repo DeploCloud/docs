@@ -84,14 +84,15 @@ Run it on the host that runs the control plane:
 
 ```bash
 # Put the panel back on the generated address (and turn the backup address on)
-bun run recover panel-address -
+deplo recover panel-address -
 
 # Or move it straight onto a domain that works
-bun run recover panel-address deplo.example.com
+deplo recover panel-address deplo.example.com
 ```
 
 Either one rewrites the panel's own route on the proxy and stores the new address.
-Restart Deplo afterwards so install commands and invite links carry it too.
+Restart Deplo afterwards so install commands and invite links carry it too, with
+`deplo restart`. See [Break-glass recovery](/operations/break-glass-recovery).
 
 <Callout type="info" title="It cannot be turned off while it IS the address">
 On an instance with no domain of its own, the generated host is what the panel

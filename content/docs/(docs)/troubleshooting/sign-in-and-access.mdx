@@ -88,8 +88,9 @@ A deleted app behaves the same way from the moment deletion starts.
 
 The instance owner cannot be demoted, suspended or reset by any other admin, which is the point
 of the crown. If that account is genuinely lost, the way back is a command on the host that runs
-the control plane: `bun run recover owner <username>`. The same tool also has `password`, `admin`,
-`unsuspend`, `server-address` and `panel-address` subcommands.
+the control plane: `deplo recover owner <username>`. The same tool also has `password`, `admin`,
+`unsuspend`, `server-address` and `panel-address` subcommands - see
+[Break-glass recovery](/operations/break-glass-recovery).
 
 </Accordion>
 <Accordion title="Somebody left the company">

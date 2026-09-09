@@ -5,6 +5,7 @@
     "upgrade",
     "verify-a-release",
     "disaster-recovery",
+    "break-glass-recovery",
     "instance-administration",
     "panel-address-and-certificates",
     "remove-a-server-or-uninstall",
