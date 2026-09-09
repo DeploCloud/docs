@@ -27,6 +27,9 @@ deplo
 | `deplo restart` | Restart the control plane |
 | `deplo update` | Re-run the installer to the latest version |
 
+Each `deplo recover` command starts a short-lived container, so it takes a couple of seconds
+before it answers. That is also why it still works when the control plane itself will not start.
+
 <Callout type="info">
   Updating is normally a button - **Settings -> Deplo -> Updates**. `deplo update` is the fallback
   for when the dashboard is what is broken. See [Upgrade](/operations/upgrade).
