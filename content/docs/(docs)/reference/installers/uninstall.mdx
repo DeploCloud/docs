@@ -43,6 +43,16 @@ description: "One script, two jobs: pull the agent off a host, or remove Deplo i
   </Tab>
 </Tabs>
 
+<Callout title="When the instance itself is unreachable">
+  Every command here pulls the script from your own instance. If the panel is
+  down, or its DNS is already gone, replace `<deplo>` with `deplo.build`:
+  `curl -fsSL https://deplo.build/uninstall.sh | sudo bash -s -- --agent-only`.
+  That host always serves the **newest** script, not the one that shipped with
+  your installed version. Usually an advantage, sometimes not: a host running an
+  older Deplo gets a script written after it, so read the dry run before you add
+  `--yes`.
+</Callout>
+
 <TypeTable
   type={{
     "--yes": {

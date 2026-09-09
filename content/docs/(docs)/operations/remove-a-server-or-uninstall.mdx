@@ -65,7 +65,7 @@ curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --agen
 curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --agent-only --purge-data
 ```
 
-It never touches Docker Engine itself, and never touches a container Deplo did not label. It is safe on a machine that was never a Deplo host, and safe to run twice. Full flag reference, including exactly what `--purge-data` adds: [uninstall.sh](/reference/installers/uninstall).
+It never touches Docker Engine itself, and never touches a container Deplo did not label. It is safe on a machine that was never a Deplo host, and safe to run twice. Full flag reference, including exactly what `--purge-data` adds: [uninstall.sh](/reference/installers/uninstall). If the panel is already unreachable, `https://deplo.build/uninstall.sh` serves the same script, always at its newest version, so a dead instance never blocks the cleanup.
 
 <Callout type="warn" title="/var/lib/deplo-agent holds your issued certificates">
 Removing it takes Traefik's `acme.json`, and your certificates, with it. Let's Encrypt
