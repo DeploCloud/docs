@@ -1,0 +1,135 @@
+---
+title: Operating systems
+description: Which Linux distributions Deplo is tested on, which ones work, and which ones the installer refuses.
+icon: HardDrive
+---
+
+Deplo installs from one shell script, and the same script runs on the machine that hosts the
+dashboard and on every server you add to the fleet. The requirements below are the same for both.
+
+## What the installer requires
+
+| Requirement | Why |
+| --- | --- |
+| Linux on `x86-64` or `arm64` | The agent binary and the control-plane image are published for these two only. |
+| `systemd` | The agent runs as a systemd unit. Without it the machine cannot run apps. |
+| Root, for the length of one command | It writes a system service and installs packages. |
+| `curl` and `sha256sum` | To download the agent and verify its checksum before running it. |
+| Docker with Compose v2 | Installed for you when your distribution is one Docker publishes packages for. |
+
+## Tested
+
+Deplo is installed and exercised on these. They are the safe pick.
+
+| OS | Status | Notes |
+| --- | --- | --- |
+| Ubuntu 26.04 LTS | **Tested** | Supported by Canonical until 2031. |
+| Ubuntu 24.04 LTS | **Tested** | Supported until 2029. |
+| Debian 13 (trixie) | **Tested** | Current stable. |
+| Debian 12 (bookworm) | **Tested** | Oldstable, LTS until June 2028. |
+
+## Compatible
+
+The installer sets Docker up on its own here, and nothing in Deplo is distribution-specific. We
+have not run the platform on them, so they are not the pick for your first install.
+
+| OS | Status | Notes |
+| --- | --- | --- |
+| Ubuntu 22.04 LTS | Compatible | Older Docker, everything else identical. |
+| Fedora 43 and 44 | Compatible | A Fedora release goes end of life in about 13 months, so plan the upgrade. |
+| Rocky Linux 9 and 10 | Compatible | `firewalld` holds `9443` shut; the installer prints the command to open it. |
+| CentOS Stream 9 and 10 | Compatible | Same firewall note. |
+| RHEL 9 and 10 | Compatible | Same firewall note. |
+| Raspberry Pi OS 64-bit | Compatible | The 32-bit image will not work, see below. |
+
+<Callout type="info" title="Version 8 of the RHEL family">
+  Rocky, AlmaLinux, CentOS and RHEL 8 still install, but they boot on cgroup v1 and Deplo reads
+  container metrics from cgroup v2. Everything deploys, the Monitoring charts stay empty.
+</Callout>
+
+## Works, once you install Docker
+
+These run Deplo fine. What they do not do is get Docker from the installer: it asks Docker's own
+install script, which does not publish packages for them. Install Docker first, then run the Deplo
+command as normal - it detects Docker and skips that step.
+
+<Tabs items={['AlmaLinux', 'openSUSE Leap', 'Arch Linux']}>
+<Tab value="AlmaLinux">
+
+AlmaLinux 9 and 10 take the CentOS packages, since they are built against the same release.
+
+```bash
+dnf -y install dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+dnf -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+systemctl enable --now docker
+```
+
+</Tab>
+<Tab value="openSUSE Leap">
+
+Leap 15 ships Docker and Compose v2 in its own repositories.
+
+```bash
+zypper --non-interactive install docker docker-compose
+systemctl enable --now docker
+```
+
+</Tab>
+<Tab value="Arch Linux">
+
+```bash
+pacman -Sy --noconfirm docker docker-compose
+systemctl enable --now docker
+```
+
+</Tab>
+</Tabs>
+
+Any other distribution with `systemd` works on the same terms. Deplo needs `docker compose
+version` to answer with a 2.x or newer, which is the Compose plugin rather than the old
+standalone `docker-compose` binary.
+
+## Not supported
+
+| OS | Status | Why |
+| --- | --- | --- |
+| Alpine Linux | **Not supported** | No `systemd`. The agent is a systemd unit, so the preflight refuses before anything is installed. |
+| SUSE Linux Enterprise | **Not supported** | Docker publishes `docker-ce` for SLES on IBM Z only. There is no `x86-64` or `arm64` package to install. |
+| 32-bit Linux (`armhf`, `i386`) | **Not supported** | The agent binary is published for `amd64` and `arm64` only. This is the 32-bit Raspberry Pi OS image. |
+| Windows, macOS | **Not supported** | Deplo runs Linux containers on a Linux host. |
+
+<Callout type="warn" title="arm64 is published, not tested">
+  Deplo publishes an `arm64` agent and an `arm64` image, and the installer accepts the
+  architecture. Nothing in the platform is `x86-64`-specific, but we have not run a fleet on ARM,
+  so treat it as compatible rather than proven.
+</Callout>
+
+## Check a machine before you commit to it
+
+The preflight changes nothing on the host and prints every blocking problem and every warning:
+
+<Tabs items={['The dashboard host', 'A server you are adding']}>
+<Tab value="The dashboard host">
+
+```bash
+curl -fsSL https://deplo.build/install.sh | bash -s -- --check
+```
+
+</Tab>
+<Tab value="A server you are adding">
+
+Take the command the dashboard gives you under **Servers - Add server** and append `--check`:
+
+```bash
+curl -fsSL https://<deplo>/install-agent.sh | sudo bash -s -- <TOKEN> <URL> --check
+```
+
+</Tab>
+</Tabs>
+
+<Cards>
+  <Card title="Installation" href="/getting-started/install" description="Install the control plane on the first machine." />
+  <Card title="Add a server" href="/operations/servers/add-a-server" description="Bring another machine into the fleet." />
+  <Card title="Ports, networks and files" href="/reference/ports-networks-and-files" description="What Deplo opens and where it writes." />
+</Cards>
