@@ -97,8 +97,8 @@ name reaches certificate transparency logs within seconds, so the first account 
 whoever ran the installer rather than to whoever arrives first.
 
 The key is generated once into `/opt/deplo/.env` and never rotates, so re-running the installer
-prints the same link again. It stops working the moment the account exists, and the address then
-goes to the sign-in page.
+prints the same link again - until an account exists, after which the link stops working, the
+installer stops printing it, and the address goes to the sign-in page.
 
 The setup screen runs once: a **Team name**, a username (3 to 16 lowercase letters, numbers, `-`
 and `_`), a display name, an admin email and a password, checked for length and character mix and

@@ -30,8 +30,10 @@ image reference.
 <Step>
 ### Install the GitHub CLI
 
-[`gh`](https://cli.github.com/) is the only tool needed. It does not have to run on the Deplo
-server - verifying reads the registry, so any machine works.
+[`gh`](https://cli.github.com/) is the only tool needed, **version 2.49 or newer** - that is when
+`gh attestation` arrived, and an older one answers `unknown command "attestation"`. Distributions
+ship older builds (Ubuntu 24.04 has 2.45), so install it from GitHub's own repository. It does not
+have to run on the Deplo server - verifying reads the registry, so any machine works.
 </Step>
 
 <Step>
