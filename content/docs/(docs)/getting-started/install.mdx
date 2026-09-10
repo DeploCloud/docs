@@ -1,14 +1,12 @@
 ---
 title: Installation
-description: One command installs Docker, Traefik, Postgres, the control plane and the agent on a fresh Linux server.
+description: How to install, configure and update.
 icon: Download
 ---
 
 import { Rocket, Variable, Network, Terminal, Trash2 } from "lucide-react";
 
-Deplo installs from a single shell script on a fresh Linux server. It brings up Docker if it is
-missing, then Traefik, Postgres and the control plane, and enrolls the machine as the first
-server in the fleet.
+Deplo installs from a single shell script on a fresh Linux server.
 
 <Tabs items={['Quick install', 'With your own domain']}>
 <Tab value="Quick install">
@@ -19,10 +17,7 @@ As root, on the server:
 curl -fsSL https://deplo.build/install.sh | bash
 ```
 
-It asks nothing. The dashboard answers on `https://deplo-<hex>.nip.io`, which resolves to your
-server with no DNS to set up. The browser warns about the certificate once, because no public
-authority issues for a `nip.io` address. The installer mints that certificate and keeps it, so the
-warning does not come back.
+The dashboard will be automatically deployed on `https://deplo-<hex>.nip.io` (check the output of the installer for the correct url)
 
 </Tab>
 <Tab value="With your own domain">
@@ -34,8 +29,7 @@ curl -fsSL https://deplo.build/install.sh | \
   DEPLO_DOMAIN=deplo.example.com ACME_EMAIL=you@example.com bash
 ```
 
-`https://deplo-<hex>.nip.io` keeps answering alongside your domain. It is the way back in when
-the domain, its DNS or its certificate is what broke.
+`https://deplo-<hex>.nip.io` (check the output of the installer for the correct url) is also installed as a secondary url, but it can be disabled from the panel's settings menu
 
 </Tab>
 </Tabs>
@@ -48,31 +42,16 @@ the domain, its DNS or its certificate is what broke.
 
 ## What you need
 
-Start from a clean, stock server: no Docker, no Nginx, Apache or Caddy already bound to `80` or
-`443`, no other control panel. Anything already holding those ports gets in the way of Traefik
-and of certificate issuance.
+We encourage you to start from a clean environment to prevent configurations that can interfere with Deplo
 
 | What | Requirement |
 | --- | --- |
-| A server | <Os name="ubuntu">Ubuntu 24.04 LTS or newer</Os>, <Os name="debian">Debian 12 or 13</Os>, or one of the other <Os name="linux">[supported distributions](/reference/supported-operating-systems)</Os>, `x86-64` or `arm64`, with root access for the length of one command. Docker is installed for you if it is missing. `systemd` has to be there: it runs the agent, and without it the dashboard comes up but the machine cannot run apps. |
+| A server | <Os name="ubuntu">Ubuntu 24.04 LTS or newer</Os>, <Os name="debian">Debian 12 or 13</Os>, or one of the other <Os name="linux">[supported distributions](/reference/supported-operating-systems)</Os>, `x86-64` or `arm64`, compatible with Docker. `systemd` is needed for the [agent](/concepts/servers-and-the-agent). |
 | Size | **2 cores, 4 GB of RAM, 30 GB of disk** is the minimum, **4 cores and 8 GB** the comfortable size. Both are about your apps: the platform itself fits in about 1 GB. The installer warns below the minimum and **refuses below 8 GB free on `/`**, where Docker images alone do not fit. |
-| Ports | `80` and `443` reachable from the internet, `9443` on every server including this one. Port `3000` is bound to `127.0.0.1` and needs nothing opened. |
+| Ports | `80` and `443` reachable from the internet, `9443` for every [agent](/concepts/servers-and-the-agent) host. |
 | Outbound HTTPS | To `ghcr.io` for the image, to `get.docker.com` when Docker is missing, and to Let's Encrypt for the certificate. The first two are checked before anything is installed. |
-| A domain | Optional. The generated `nip.io` hostname works from the first deploy. |
-| Docker knowledge | None. It is an escape hatch, never a prerequisite. |
-
-### Which Linux
-
-| OS | Status |
-| --- | --- |
-| <Os name="ubuntu">Ubuntu 26.04 LTS, 24.04 LTS</Os> | **Tested** |
-| <Os name="debian">Debian 13, Debian 12</Os> | **Tested** |
-| <Os name="fedora">Fedora</Os>, <Os name="rocky">Rocky</Os>, <Os name="centos">CentOS Stream</Os>, <Os name="rhel">RHEL</Os> | Compatible, not tested here |
-| <Os name="almalinux">AlmaLinux</Os>, <Os name="opensuse">openSUSE Leap</Os>, <Os name="arch">Arch</Os> | Works once you install Docker yourself |
-| <Os name="alpine">Alpine</Os>, <Os name="suse">SUSE Linux Enterprise</Os>, 32-bit | Not supported |
-
-Version by version, with the reason behind each verdict, in
-[Operating systems](/reference/supported-operating-systems).
+| A domain | Optional: The generated `nip.io` hostname works from the first deploy. |
+| Docker knowledge | Optional: Only when you are ready for the best Deplo experience. |
 
 To check a machine without touching it, run the preflight and exit:
 
@@ -83,51 +62,17 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- --check
 It changes nothing on the host and prints every blocking problem and every warning, so a server
 that cannot finish the install says so in ten seconds instead of halfway through.
 
-## Create your account
+## Create your first account
 
 The installer prints a **setup link** at the end, next to the dashboard address:
 
 ```
-Set up   https://deplo.example.com/setup?key=3f9c1d84b7e206518a2c47e0d93b61af
+Set up   https://deplo.example.com/setup?key=xxx
 ```
 
-That link is the only way to create the first account. Without it the panel shows **This instance
-isn't set up yet** and nothing can be claimed: a fresh install answers on a public address whose
-name reaches certificate transparency logs within seconds, so the first account has to belong to
-whoever ran the installer rather than to whoever arrives first.
-
-The key is generated once into `/opt/deplo/.env` and never rotates, so re-running the installer
-prints the same link again - until an account exists, after which the link stops working, the
-installer stops printing it, and the address goes to the sign-in page.
-
-The setup screen runs once: a **Team name**, a username (3 to 16 lowercase letters, numbers, `-`
-and `_`), a display name, an admin email and a password, checked for length and character mix and
-against the Have I Been Pwned breach list. **Create team** finishes. That account is the
-**instance owner**, the tier above instance admin, and the only one that can hand the instance to
-somebody else later.
+The setup will create the first account with the [Owner role](/guides/roles-and-permissions).
 
 ## What the installer does
-
-It is **idempotent**. Secrets are generated once into `/opt/deplo/.env`, so running it again
-updates the containers in place and never rotates anything; if that file already exists the
-script switches itself to update mode. Everything it writes lands in `/opt/deplo` - secrets, the
-compose file, the Traefik stack, build staging, issued certificates. See
-[Ports, networks, files](/reference/ports-networks-and-files) for the full layout.
-
-Four containers come up:
-
-- `postgres:16-alpine` on the `deplo-internal` network, **not published to the host**.
-- `ghcr.io/deplocloud/deplo`, publishing port `3000` **on `127.0.0.1` only**. A panel on an open
-  port is a login page on the internet with no TLS in front of it, so the dashboard is never
-  reachable at `<server-ip>:3000`, only through Traefik. If the proxy itself is what broke, the
-  way in is an SSH tunnel: `ssh -L 3000:localhost:3000 root@your-server`.
-- `traefik:v3.7`, holding `80` and `443` and serving the dashboard over HTTPS.
-- `tecnativa/docker-socket-proxy:v0.5.0`, on an internal network of its own, which is how Traefik
-  learns about containers without holding the socket. It answers only for containers, networks,
-  events and version, and refuses every `POST`.
-
-Neither Traefik nor the control plane ever gets the Docker socket itself. See
-[How Deplo works](/concepts/how-deplo-works) for why.
 
 On the host itself, four things change:
 
@@ -138,36 +83,40 @@ On the host itself, four things change:
 | The `deplo` Docker network is created | It carries Traefik and the control plane. No app ever joins it: a stack gets its own [Environment network](/advanced/network-isolation) |
 | This machine is enrolled as a server | The installer waits for `/api/health`, then runs the agent installer against the panel on `127.0.0.1` |
 
-If containers are already running when the address pools change, the installer skips the Docker
-restart and tells you to do it in a maintenance window. Nothing is broken until then, but the new
-pool does not apply yet.
+Then, four [Docker's containers](https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/) come up:
 
-## Update it later
+| Image | Purpose | Exposed ports |
+| --- | --- | --- |
+| `postgres:16-alpine` | The internal database of the control-plane | Nothing |
+| `ghcr.io/deplocloud/deplo:latest` | The control-plane itself | 3000 only localhost |
+| `traefik:v3.7` | To serve the web apps to a domain | 80, 443 |
+| `tecnativa/docker-socket-proxy:v0.5.0` | A secure way for Traefik to know which web apps to serve | Nothing |
+
+Running it again when already installed it will just update deplo and its services.
+
+Neither Traefik nor the control plane ever gets the Docker socket itself. See
+[How Deplo works](/concepts/how-deplo-works).
+
+## How to update
 
 From the dashboard: **Settings -> Deplo -> Updates**, and the button there installs the new
-version. The panel checks for releases on its own and raises a banner when one is out.
+version. The panel always notify you for new versions available.
 
-Re-running the same command does the same thing, for a machine whose agent is too old to be
-asked. It pulls the newer image and restarts the stack, and your secrets stay exactly as they
-were. Pin a version with `DEPLO_VERSION=<tag>` in front of the command, or leave it to take
-`latest`.
-
-See [Upgrade](/operations/upgrade) for the full procedure, including the server agents, which
-version on their own clock.
+See [Upgrade](/operations/upgrade) for the full procedure, including the server agents, and how to pin a specific version
 
 ## Run it with Compose instead
 
 `docker-compose.yml` in the repository runs the control plane and its Postgres. It is a readable,
 hand-editable starting point, not a copy of what the installer writes: it brings up no Traefik of
 its own and joins the external `deplo` network by labels, while the installer routes the panel
-through Traefik's **file provider** so the panel's own route can be changed from the panel later.
+through Traefik's **file provider** so the panel's own route can be changed from the panel later. Example usage:
 
 ```bash
 docker network create deplo
 export DEPLO_DOMAIN=deplo.example.com   # required: it is the only address it serves
 export DEPLO_SECRET=$(openssl rand -base64 48)
 export DEPLO_DB_PASSWORD=$(openssl rand -base64 24)
-export DEPLO_SETUP_KEY=$(openssl rand -hex 16)   # then open /setup?key=<it>
+export DEPLO_SETUP_KEY=$(openssl rand -hex 16)   # then open /setup?key=<xxx>
 docker compose up -d
 ```
 
