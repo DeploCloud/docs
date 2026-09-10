@@ -100,6 +100,13 @@ The key is generated once into `/opt/deplo/.env` and never rotates, so re-runnin
 prints the same link again - until an account exists, after which the link stops working, the
 installer stops printing it, and the address goes to the sign-in page.
 
+<Callout type="warn" title="Handing the address to somebody else">
+  `--public-setup` installs without a key, so the setup link is just
+  `https://<your-host>/setup` and **anyone who opens it first becomes the instance
+  owner**. It exists for a hosting provider that deploys Deplo from a template and
+  gives the customer the generated address; on your own server, keep the key.
+</Callout>
+
 The setup screen runs once: a **Team name**, a username (3 to 16 lowercase letters, numbers, `-`
 and `_`), a display name, an admin email and a password, checked for length and character mix and
 against the Have I Been Pwned breach list. **Create team** finishes. That account is the
@@ -175,7 +182,8 @@ Going this way, you enroll the host as a server yourself from **Settings -> Serv
 like any other machine. Four things are worth knowing before you do:
 
 - **`DEPLO_SETUP_KEY` is yours to set.** The installer generates one; Compose does not. Leave it
-  unset and the first account is created by whoever reaches `/setup` first.
+  unset or empty and the first account is created by whoever reaches `/setup` first - which is
+  what `install.sh --public-setup` does.
 - **`DEPLO_SECRET` is not rotatable.** It derives every encryption key, every session signature
   and the agent certificate authority. Change it and every stored secret becomes unreadable,
   every session ends, and every agent certificate is re-minted. Back it up with the rest of
