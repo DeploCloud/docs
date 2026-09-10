@@ -2,6 +2,7 @@ import "./global.css";
 import type { Metadata } from "next";
 import { Funnel_Display, Funnel_Sans } from "next/font/google";
 import { ScrollToTop } from "@/components/scroll-to-top";
+import { ClipboardFallback } from "@/components/clipboard-fallback";
 import { DocsRootProvider } from "@/components/docs-root-provider";
 import Script from "next/script";
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-screen flex-col font-sans">
         <DocsRootProvider>
           <ScrollToTop />
+          <ClipboardFallback />
           {children}
         </DocsRootProvider>
       </body>
