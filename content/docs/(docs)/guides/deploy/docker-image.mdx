@@ -59,10 +59,14 @@ is under **Advanced**, already picked. Click **Deploy**.
 
 ## The port
 
-Deplo routes to port **3000** unless you say otherwise, and an image app has no build settings
-card to change that on. Set the port **on the domain**, in the app's **Domains** tab: the
-**Application port** field on each hostname is what routing reads. That is also how one image can
-serve two hostnames on two different ports.
+**Deplo reads the port out of the image.** Most images declare one with `EXPOSE`, and that is the
+port routing uses: `nginx` and `traefik/whoami` come up on 80, `redis` on 6379, without being told.
+An image that declares several, or none, falls back to **3000**.
+
+Whatever it found is in the wizard, under **Advanced -> Port**, editable before the first deploy.
+Afterwards the port lives **on the domain**, in the app's **Domains** tab: the **Application port**
+field on each hostname is what routing reads, it applies within seconds without a redeploy, and it
+is how one image serves two hostnames on two different ports.
 
 ## Private registries
 
@@ -106,7 +110,7 @@ registry. The password is encrypted and never returned. See
 | --- | --- |
 | `pull access denied` | The image is private and no registry credential matches its host. Add one in **Settings -> Registries**. |
 | The container starts and exits immediately | It usually needs a variable or a volume. Read [Logs](/guides/observability/logs); the exit reason is in there. |
-| The URL times out | Wrong port. Check what the image documents and set **Application port** on the domain. |
+| The URL answers 502 | Wrong port. Deplo could not read one from the image, so it guessed 3000 - set **Application port** on the domain. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

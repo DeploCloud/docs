@@ -86,9 +86,10 @@ each need.
 <Tab value="Docker Image">
 
 Type the image reference, like `ghcr.io/acme/api:v2.3.1`. The field autocompletes from public
-registries and from any private registry you have added, and the app is named after the image.
-This card carries the **Deploy** button. Nothing is built: the agent pulls the reference you gave
-it. See [Deploy a Docker image](/guides/deploy/docker-image).
+registries and from any private registry you have added, the app is named after the image, and the
+port comes from what the image itself declares. This card carries the **Deploy** button. Nothing is
+built: the agent pulls the reference you gave it. See
+[Deploy a Docker image](/guides/deploy/docker-image).
 
 </Tab>
 <Tab value="Compose">
@@ -147,6 +148,7 @@ server named on it so you can see where the app lands without opening it.
 | Deploy to | Which server runs it. A single-machine install has one, already picked. |
 | Environment variables | Type them, or tick the team's [shared variables](/guides/config/shared-variables). Both reach the first build. |
 | Build method | Railpack, Nixpacks, a Dockerfile, or a static site, with its version and the container port. |
+| Port | Docker images only: the port routing uses, read out of the image itself and editable here. |
 | Build path | The sub-folder to build from, for a monorepo. |
 | Build on | Another server to compile on. Automatic uses a [build server](/advanced/build-servers) if the fleet has one. |
 | Git | Deploy on push or on tag, watch paths, submodules. |
