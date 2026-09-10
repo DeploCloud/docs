@@ -154,7 +154,7 @@ which is about a workload rather than a machine.
 | --- | --- |
 | A server shows dashes, or its fleet row reads **No data** | The stream is not connected. Check that server's health. |
 | A container's status is blank | That host's agent is too old to report one. An empty **Status** never means healthy. |
-| A running container shows no healthcheck verdict | Its image defines no healthcheck, so the status falls back to `running`. Nothing is wrong. |
+| A running container shows no healthcheck verdict | Neither its image nor the app defines one, so the status falls back to `running`. Nothing is wrong - [add a health check](/guides/observability/health-checks) if you want a verdict. |
 | An app shows nothing | It is stopped, or its containers are on a server whose agent is not reporting. |
 | Charts are empty right after a restart | The window is in memory and starts again from scratch. |
 | A number does not match a shell | Check the unit first. Everything here is binary (GiB), and an app's CPU **chart** is a percentage of one core, not of the machine - its arc is the one drawn against the machine. |

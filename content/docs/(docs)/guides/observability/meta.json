@@ -1,4 +1,11 @@
 {
   "title": "Observability",
-  "pages": ["logs", "monitoring", "notifications-and-alerts", "console", "cron-jobs"]
+  "pages": [
+    "logs",
+    "monitoring",
+    "health-checks",
+    "notifications-and-alerts",
+    "console",
+    "cron-jobs"
+  ]
 }

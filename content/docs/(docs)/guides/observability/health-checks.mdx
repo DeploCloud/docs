@@ -1,0 +1,120 @@
+---
+title: Health checks
+description: Ask an app whether it is really working, not just running, and show the answer on its status.
+---
+
+import { Gauge, Bell, Terminal } from "lucide-react";
+
+A container that is up is not the same as an app that works. A health check is the difference:
+Deplo asks the app a question on a schedule, and the answer lands on the app's status and in its
+container breakdown.
+
+There are two kinds, and they are not asked the same way.
+
+| Kind | What it asks | Who asks it |
+| --- | --- | --- |
+| **HTTP** | A path on the app, over the server's own network | Deplo, through the agent |
+| **Command** | A shell line inside the container, read as an exit code | Docker, as a Compose `healthcheck:` |
+
+**The HTTP check works on any image.** It is asked from outside the container, so it needs nothing
+installed in there - a Railpack build, a distroless image or `traefik/whoami` all answer it. A
+status under 400 is healthy.
+
+<Callout type="info">
+  An HTTP check never touches routing. The app keeps serving while it reads unhealthy, which is
+  what lets you see a broken app rather than lose it.
+</Callout>
+
+## Turn one on
+
+<Steps>
+<Step>
+
+### Open the app's Advanced settings
+
+Open the app, then **Settings -> Advanced**, and find **Health check**.
+
+</Step>
+<Step>
+
+### Pick the kind
+
+**HTTP request** asks for a path. **Command** runs a shell line inside the container and reads its
+exit code - `pg_isready -U app`, `test -f /tmp/ready`, anything that exits 0 when things are fine.
+
+</Step>
+<Step>
+
+### Fill it in
+
+For an HTTP check: the **Path** (`/healthz`, or `/`), and a **Port** if the app answers the check
+somewhere other than the port its domains route to.
+
+</Step>
+<Step>
+
+### Set the timings
+
+Four numbers, all optional:
+
+| Field | What it means | Default |
+| --- | --- | --- |
+| **Interval** | How often the app is asked | 30s |
+| **Timeout** | How long one answer may take. Has to be shorter than the interval | 5s |
+| **Retries** | Consecutive failures before it counts as unhealthy | 3 |
+| **Start period** | Grace after the container starts, where a failure reads as `starting` | 10s |
+
+</Step>
+</Steps>
+
+A command check applies on the next deploy, because it is part of the stack Deplo writes. An HTTP
+check applies immediately.
+
+## Reading the verdict
+
+The verdict shows in two places: the app's status badge, and the container breakdown on
+**Monitoring**.
+
+- **Healthy** - the last answer was good, or the failures so far are still under **Retries**.
+- **Unhealthy** - **Retries** consecutive failures. The app is running and not working.
+- **Starting** - inside the start period, so a failure is the app booting.
+
+One good answer forgets the streak.
+
+<Callout type="warn">
+  **Error is not unhealthy.** Error means the last deploy failed. An app can be Error and perfectly
+  healthy, because the previous version is still serving.
+</Callout>
+
+## Good to know
+
+- **The verdicts live in the control plane's memory**, like the monitoring history. Restarting
+  Deplo clears them and the next read asks again.
+- **A stopped app has no verdict.** There is nothing to ask.
+- **`app_crash_loop` is a different alert.** It fires on a container restarting over and over, not
+  on a failed check. See [Notifications and alerts](/guides/observability/notifications-and-alerts).
+- **A database's health check is the engine's own**, written by Deplo when it provisions the
+  database, and not editable here.
+
+## Next steps
+
+<Cards>
+  <Card
+    icon={<Gauge className="text-blue-400" />}
+    title="Monitoring"
+    description="Where the container breakdown lives"
+    href="/guides/observability/monitoring"
+  />
+  <Card
+    icon={<Bell className="text-blue-400" />}
+    title="Notifications and alerts"
+    description="Get told when an app starts misbehaving"
+    href="/guides/observability/notifications-and-alerts"
+  />
+  <Card
+    icon={<Terminal className="text-blue-400" />}
+    title="Console"
+    description="Look inside the container yourself"
+    href="/guides/observability/console"
+  />
+</Cards>
