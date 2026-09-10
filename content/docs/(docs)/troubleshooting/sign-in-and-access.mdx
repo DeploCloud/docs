@@ -11,6 +11,7 @@ import { ShieldCheck, Users, Lock, Fingerprint } from "lucide-react";
 | Symptom | Cause |
 | --- | --- |
 | The password is rejected | Wrong password, or the account is suspended. An instance admin can reset it |
+| Nothing is accepted at all | The first field takes an email **or** a username - check the one you are typing exists |
 | The six-digit code is rejected | The phone's clock has drifted. TOTP is time-based |
 | Neither the code nor a recovery code works | Recovery codes are single-use. An instance admin has to reset two-factor on the account |
 | Every passkey says **Not usable here** | The panel is on a different hostname than when they were registered. See "Passkeys stopped working" below |
