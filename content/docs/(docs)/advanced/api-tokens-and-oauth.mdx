@@ -93,7 +93,9 @@ Everything stays editable on the next step.
 ### Name it and set an expiry
 
 The picker offers **30 days**, **90 days**, **a year** and **Never**, and a new token defaults to
-90 days. A token can never mint or re-author a successor that outlives it.
+90 days. So does a token minted over the API without an expiry - asking for one that never expires
+takes saying so. A token can never mint or re-author a successor that outlives it: one that expires
+hands its own date down to anything it creates.
 
 </Step>
 <Step>
