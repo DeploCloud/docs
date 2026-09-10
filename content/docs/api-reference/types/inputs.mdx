@@ -139,6 +139,7 @@ Partial build configuration; only the provided fields are changed.
 | `extraDomains` | [`[ExtraDomainInput!]`](/api-reference/types/inputs#extradomaininput) |  |
 | `folderId` | `String` |  |
 | `logo` | `String` |  |
+| `logoFromTemplate` | `Boolean` | The logo above is a template's own. Deplo reads it once for the plate that keeps a monochrome mark visible on both themes. |
 | `mounts` | [`[MountInput!]`](/api-reference/types/inputs#mountinput) |  |
 | `name` | `String!` |  |
 | `projectId` | `String` |  |
@@ -348,7 +349,7 @@ An extra (non-primary) routed host: the compose service + port it targets, its h
 
 ### HealthCheckInput
 
-A health check to save. Send null instead to turn it off. An http check needs curl or wget in the image; one that has neither cannot answer, and the container would sit unhealthy.
+A health check to save. Send null instead to turn it off. An http check is asked BY DEPLO through the agent, so it works on any image and never changes routing; a command check runs inside the container as a compose `healthcheck:`.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -371,6 +372,18 @@ Where one service lands. `serviceId` is the `sourceId` a scan reports. Omit `bui
 | `exposedPort` | `Int` | A database's host port. Omit the field to keep the port it had over there (what the import has always done); send null to publish nothing; send a number to publish there instead - which is how a review resolves a port something else already holds on the target server. Ignored for anything that is not a database. |
 | `serverId` | `String!` |  |
 | `serviceId` | `String!` |  |
+
+### MigrationQueuedTeamInput
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `apiKey` | `String!` | That team's own token - a key reads exactly one team. |
+| `newTeamImage` | `String` |  |
+| `newTeamName` | `String` |  |
+| `orgName` | `String` |  |
+| `servers` | [`[MigrationServerChoiceInput!]`](/api-reference/types/inputs#migrationserverchoiceinput) |  |
+| `targets` | [`[MigrationRunTargetInput!]!`](/api-reference/types/inputs#migrationruntargetinput) |  |
+| `teamId` | `String` | The Deplo team it lands in. Omit to have one created for it now, named by `newTeamName`. |
 
 ### MigrationRunTargetInput
 
@@ -577,7 +590,7 @@ Save the instance-wide cleanup policy. The scopes are a whole-set replace, so a 
 | `keepImagesPerApp` | `Int!` |  |
 | `minAgeHours` | `Int!` |  |
 | `schedule` | `String!` |  |
-| `scopes` | [`[DockerCleanupScope!]!`](/api-reference/types/enums#dockercleanupscope) | One of `build_cache`, `dangling_images`, `leftover_app_files`, `leftover_networks`, `orphan_buildkit_cache`, `unused_app_images`. |
+| `scopes` | [`[DockerCleanupScope!]!`](/api-reference/types/enums#dockercleanupscope) | One of `build_cache`, `dangling_images`, `leftover_app_files`, `leftover_networks`, `orphan_volumes`, `unused_app_images`, `unused_pulled_images`. |
 
 ### UpdateGitConnectionInput
 
@@ -682,4 +695,4 @@ A persistent volume mounted into an app.
 | `propagation` | [`MountPropagation`](/api-reference/types/enums#mountpropagation) | One of `rshared`, `rslave`. |
 | `readOnly` | `Boolean` |  |
 | `service` | `String` |  |
-| `type` | `String` |  |
+| `type` | [`VolumeKind`](/api-reference/types/enums#volumekind) | One of `app`, `host`, `named`, `service`. |

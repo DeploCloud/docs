@@ -117,6 +117,22 @@ mutation {
 }
 ```
 
+### `dismissPendingChanges`
+
+Needs `manage_env`. Returns `Boolean`.
+
+Clear this app's "changes not deployed yet" notice without deploying - the change was undone, or it was never one a deploy has to carry. The next config change stamps it again.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `appId` | `String!` |  |
+
+```graphql
+mutation {
+  dismissPendingChanges(appId: "prj_9f1c2ab7d3e4f5a6")
+}
+```
+
 ## Rolling back
 
 ### `rollbackDeployment`

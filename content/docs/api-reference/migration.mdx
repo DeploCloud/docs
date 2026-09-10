@@ -86,8 +86,16 @@ Start a migration and hand it to the control plane. Returns the run id as soon a
 | `input.apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
-| `keepSources` | `Boolean` | Another team of the SAME panel is still to come, so this run must leave Deplo's agents on the source machines - the next team reads the same disks, and an uninstall scheduled here would race the install that follows it. The last run of a series leaves this false, and it is that one that clears them. It also holds the takeover: the ports cannot be taken while a run says more teams are owed. |
+| `keepSources` | `Boolean` | Another team of the SAME panel is still to come, so this run must leave Deplo's agents on the source machines - the next team reads the same disks, and an uninstall scheduled here would race the install that follows it. The last run of a series leaves this false, and it is that one that clears them. It also holds the takeover: the ports cannot be taken while a run says more teams are owed. Ignored when `queued` is given: the queue itself says which run is the last. |
 | `orgName` | `String` |  |
+| `queued` | [`[MigrationQueuedTeamInput!]`](/api-reference/types/inputs#migrationqueuedteaminput) | The other teams of this panel, in the order they should be brought over. Each is written down with its own token, its own targets and the team it lands in, and the control plane starts each one as the turn before it ends - so the browser tab is not what walks the list any more. Every token is proved before anything is created, and a team that is to be made here is made now. |
+| `queued.apiKey` | `String!` | That team's own token - a key reads exactly one team. |
+| `queued.newTeamImage` | `String` |  |
+| `queued.newTeamName` | `String` |  |
+| `queued.orgName` | `String` |  |
+| `queued.servers` | [`[MigrationServerChoiceInput!]`](/api-reference/types/inputs#migrationserverchoiceinput) |  |
+| `queued.targets` | [`[MigrationRunTargetInput!]!`](/api-reference/types/inputs#migrationruntargetinput) |  |
+| `queued.teamId` | `String` | The Deplo team it lands in. Omit to have one created for it now, named by `newTeamName`. |
 | `servers` | [`[MigrationServerChoiceInput!]`](/api-reference/types/inputs#migrationserverchoiceinput) |  |
 | `servers.from` | `String!` |  |
 | `servers.to` | `String!` |  |
@@ -311,6 +319,28 @@ One import with its full report.
 ```graphql
 query {
   migrationRun(id: "brun_9f1c2ab7d3e4f5a6") {
+    id
+    status
+    phase
+    created
+    failed
+  }
+}
+```
+
+### `migrationSession`
+
+Instance admin only. Returns [`[MigrationRun!]`](/api-reference/types/objects#migrationrun).
+
+Every team of ONE walk of the wizard, oldest first, with the people each run brought over. A panel with three teams is three runs, started one after another by the control plane - this is what makes them one migration on screen again after the tab that began them is gone. A team still waiting its turn is in here with status `queued`.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `runId` | `String!` | Any run of the session. |
+
+```graphql
+query {
+  migrationSession(runId: "brun_9f1c2ab7d3e4f5a6") {
     id
     status
     phase
@@ -597,5 +627,5 @@ mutation {
 <Cards>
   <Card title="Move from Dokploy" description="The dashboard wizard" href="/migrations/move-from-dokploy" />
   <Card title="Move from Coolify" description="The dashboard wizard" href="/migrations/move-from-coolify" />
-    <Card title="Migrations" description="What comes across and what does not" href="/migrations" />
+  <Card title="Migrations" description="What comes across and what does not" href="/migrations" />
 </Cards>

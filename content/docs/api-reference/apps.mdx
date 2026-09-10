@@ -150,6 +150,7 @@ Create an app from a repository, an uploaded archive, a Docker image or a compos
 | `input.extraDomains` | [`[ExtraDomainInput!]`](/api-reference/types/inputs#extradomaininput) |  |
 | `input.folderId` | `String` |  |
 | `input.logo` | `String` |  |
+| `input.logoFromTemplate` | `Boolean` | The logo above is a template's own. Deplo reads it once for the plate that keeps a monochrome mark visible on both themes. |
 | `input.mounts` | [`[MountInput!]`](/api-reference/types/inputs#mountinput) |  |
 | `input.name` | `String!` |  |
 | `input.projectId` | `String` |  |
@@ -277,7 +278,7 @@ query {
 
 Needs `create_apps`. Returns [`RecognizedFramework`](/api-reference/types/objects#recognizedframework).
 
-Read a GitHub repository before an app exists for it - the framework and the commands the new-app wizard prefills while you pick a repo. Null when there is nothing to read at all: a build method other than Nixpacks / Railpack (the only ones this applies to), a repository Deplo can't read, or one with neither a framework nor a script. Reads only; the app's first deploy re-derives and stores the framework.
+Read a GitHub repository before an app exists for it - the framework and the build command the new-app wizard prefills while you pick a repo. Null when there is nothing to read at all: a build method other than Nixpacks / Railpack (the only ones this applies to), a repository Deplo can't read, or one with neither a framework nor a script. Reads only; the app's first deploy re-derives and stores the framework.
 
 | Argument | Type | Description |
 | --- | --- | --- |

@@ -257,6 +257,9 @@
   "cap": "create_projects",
   "orInstanceAdmin": false
  },
+ "Query.migrationSession": {
+  "kind": "instanceAdmin"
+ },
  "Query.monitoringSettings": {
   "kind": "loggedIn"
  },
@@ -348,7 +351,7 @@
   "kind": "loggedIn"
  },
  "Query.updateInfo": {
-  "kind": "loggedIn"
+  "kind": "instanceAdmin"
  },
  "Query.userDetail": {
   "kind": "instanceAdmin"
@@ -671,6 +674,11 @@
   "cap": "create_projects",
   "orInstanceAdmin": false
  },
+ "Mutation.dismissPendingChanges": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
  "Mutation.execConsole": {
   "kind": "capability",
   "cap": "open_app_console",
@@ -878,6 +886,9 @@
   "kind": "capability",
   "cap": "organize_projects",
   "orInstanceAdmin": false
+ },
+ "Mutation.renameServer": {
+  "kind": "instanceAdmin"
  },
  "Mutation.renderComposeStack": {
   "kind": "loggedIn"
@@ -1144,6 +1155,9 @@
  "Mutation.setMigrationMachineAddress": {
   "kind": "instanceAdmin"
  },
+ "Mutation.setPanelFallback": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.setPanelHttps": {
   "kind": "instanceAdmin"
  },
@@ -1340,6 +1354,9 @@
   "cap": "configure_databases",
   "orInstanceAdmin": false
  },
+ "Mutation.updateDeplo": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.updateDockerCleanupPolicy": {
   "kind": "instanceAdmin"
  },
@@ -1409,6 +1426,9 @@
  },
  "Mutation.verifyTwoFactorLogin": {
   "kind": "none"
+ },
+ "Mutation.welcomeSeen": {
+  "kind": "loggedIn"
  },
  "Mutation.writeAppFile": {
   "kind": "capability",

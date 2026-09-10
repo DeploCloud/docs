@@ -39,7 +39,7 @@ Save the instance-wide cleanup policy. The cron is rejected (not repaired) when 
 | `input.keepImagesPerApp` | `Int!` |  |
 | `input.minAgeHours` | `Int!` |  |
 | `input.schedule` | `String!` |  |
-| `input.scopes` | [`[DockerCleanupScope!]!`](/api-reference/types/enums#dockercleanupscope) | One of `build_cache`, `dangling_images`, `leftover_app_files`, `leftover_networks`, `orphan_buildkit_cache`, `unused_app_images`. |
+| `input.scopes` | [`[DockerCleanupScope!]!`](/api-reference/types/enums#dockercleanupscope) | One of `build_cache`, `dangling_images`, `leftover_app_files`, `leftover_networks`, `orphan_volumes`, `unused_app_images`, `unused_pulled_images`. |
 
 ```graphql
 mutation {
@@ -80,7 +80,7 @@ mutation {
 
 Instance admin only. Returns [`DockerCleanupRun`](/api-reference/types/objects#dockercleanuprun).
 
-START a sweep of this server now, with the policy's scopes - whether or not the schedule is enabled, and ignoring the exclusion list (which only governs the scheduled sweep). Returns IMMEDIATELY with the `running` run: the host keeps working in the background, so the caller never waits on a `docker rmi` sweep and closing the page cannot cancel it. Follow it on the `dockerCleanupRuns` subscription (or re-read the query); whatever the host fails at (unreachable, unprovisioned, an agent too old) lands on that run as `failed` with the reason. Only pre-flight problems error here: unknown server, nothing selected to reclaim, or a sweep already running on this host. Allow-listed: it never prunes containers, volumes or networks, so a stopped app, its data and its network survive.
+START a sweep of this server now, with the policy's scopes - whether or not the schedule is enabled, and ignoring the exclusion list (which only governs the scheduled sweep). Returns IMMEDIATELY with the `running` run: the host keeps working in the background, so the caller never waits on a `docker rmi` sweep and closing the page cannot cancel it. Follow it on the `dockerCleanupRuns` subscription (or re-read the query); whatever the host fails at (unreachable, unprovisioned, an agent too old) lands on that run as `failed` with the reason. Only pre-flight problems error here: unknown server, nothing selected to reclaim, or a sweep already running on this host. Allow-listed: it never removes a container, a named volume, or anything a container still uses, so a stopped app and its data survive.
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -139,5 +139,5 @@ query {
 ## See also
 
 <Cards>
-  <Card title="Cleanup" description="The dashboard guide" href="/operations/servers/cleanup" />
+  <Card title="Cleanup" description="The dashboard guide" href="/guides/server/cleanup" />
 </Cards>

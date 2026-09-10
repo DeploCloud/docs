@@ -78,7 +78,7 @@ A deployable application owned by a team.
 | `autoDeploy` | `Boolean` |  |
 | `buildFallback` | `Boolean` | Build somewhere else when this app's build server cannot be reached, saying so in the deploy log: the servers marked as a build fallback (the Deplo host by default), then the app's own server. True by default. False fails the deploy instead, for whoever chose a small deploy server on purpose. |
 | `buildServerId` | `ID` | The server that BUILDS this app's image, when that is not `serverId`. Null is Automatic: a build-only server if the fleet has one this team can reach and its architecture matches, otherwise build where the app runs. Setting it to `serverId` means 'always build on this app's own server'. Ignored by a compose stack and a docker-image source, neither of which Deplo builds. |
-| `compose` | `String` |  |
+| `compose` | `String` | The authored compose file. Its inline values are masked unless you can configure the app. |
 | `composeUpArgs` | `String` | Extra flags this app appends to the `docker compose up` that brings it up, or null for the untouched command. Additive only - the flags that choose the project, stack file or env-file are refused. |
 | `createdAt` | `String` |  |
 | `dataCopyError` | `String` | Why this app's data did not arrive, when a migration tried to copy it and could not. Empty for every app that was never migrated and every copy that worked. While it is set, deploying and starting this app are refused - its volumes are empty or half written - and `deployWithoutMigratedData` is how someone accepts that and unblocks it. |
@@ -93,6 +93,7 @@ A deployable application owned by a team.
 | `id` | `ID` |  |
 | `latestDeployment` | [`Deployment`](/api-reference/types/objects#deployment) |  |
 | `logo` | `String` |  |
+| `logoTone` | `String` | The plate this app's icon needs to stay visible: "dark" for a mark drawn only in black, "light" for one drawn only in white. Set only when the logo came from a template - an uploaded or detected one is drawn exactly as it is. |
 | `name` | `String` |  |
 | `ports` | [`[PublishedPort!]`](/api-reference/types/objects#publishedport) | Host ports this app publishes. Empty for a compose stack, which publishes its own in its compose file. |
 | `productionUrl` | `String` |  |
@@ -586,7 +587,7 @@ A provisioned database container owned by a team. The connection string is maske
 | --- | --- | --- |
 | `connectionStringMasked` | `String` |  |
 | `createdAt` | `String` |  |
-| `customCommand` | `String` | Expert override: replaces the container command verbatim (redis's default command carries --requirepass - omit it and auth is off). |
+| `customCommand` | `String` | Expert override: replaces the container command verbatim (redis's default command carries --requirepass - omit it and auth is off). Null unless you can configure databases: a command can carry a password. |
 | `customImage` | `String` | Expert override: the full image ref replacing the derived engine image; the version field is inert while set. |
 | `dataCopyError` | `String` | Why this database's data did not arrive, when a migration tried to copy it and could not. Empty in the common case. While it is set, restarting and redeploying are refused: an engine started on the emptied volume initialises a NEW database over the old one's place. `startWithoutMigratedData` accepts that; `rebuildDatabase` also clears it, since a factory reset makes the empty volume the intended state. |
 | `dbName` | `String` |  |
@@ -596,7 +597,7 @@ A provisioned database container owned by a team. The connection string is maske
 | `host` | `String` |  |
 | `id` | `ID` |  |
 | `logo` | `String` | Uploaded display logo as an image data-URI, or null to fall back to the engine's own brand mark (which is what the UI draws by default). |
-| `mounts` | [`[DatabaseMount!]`](/api-reference/types/objects#databasemount) | Expert override: the engine's own config files, written next to the stack and bind-mounted into the container. Empty for almost every database. Saving them applies immediately - the container is recreated. |
+| `mounts` | [`[DatabaseMount!]`](/api-reference/types/objects#databasemount) | Expert override: the engine's own config files, written next to the stack and bind-mounted into the container. Empty for almost every database, and for anyone who can't configure databases - a config file can carry a password. Saving them applies immediately. |
 | `name` | `String` | Display name, editable with renameDatabase. Not the container's identity - `host` is, and it is fixed at creation. |
 | `port` | `Int` |  |
 | `resources` | [`ResourceLimits`](/api-reference/types/objects#resourcelimits) | Per-database resource caps applied at provision/redeploy time, or null when no limits are set. |
@@ -690,6 +691,15 @@ One published release of Deplo, as the changelog renders it.
 | `publishedAt` | `String` |  |
 | `tag` | `String` |  |
 | `url` | `String` |  |
+
+### DeploUpdateStarted
+
+An update the host has STARTED. Deplo restarts as it lands, so there is no completion to report here.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `logPath` | `String` |  |
+| `version` | `String` |  |
 
 ### Deployment
 
@@ -1107,7 +1117,8 @@ Settings that belong to this Deplo instance rather than to a team or a host: the
 | `deploHostName` | `String` |  |
 | `gravatarEnabled` | `Boolean` | Whether a person with no uploaded picture falls back to their Gravatar. The panel never dials gravatar.com itself - it only computes the address, and each viewer's browser fetches it. |
 | `logMaxDays` | `Int` | How far back the log viewer's time range may reach, in days. Instance-wide because the logs live on the host, which several teams share. It bounds what may be ASKED for and nothing else: docker rotates its json-file logs by size, so no setting here makes the host actually hold that much. |
-| `panelFallbackUrl` | `String` | The generated address the panel also answers on, over https (https://deplo-&lt;hexip>.nip.io). Always on and not a setting: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach. |
+| `panelFallbackDisabled` | `Boolean` | Whether that backup address is turned off. It then routes nowhere, and a panel whose domain stops answering is reached again only with `deplo recover panel-address` on the server itself. The address above is what turning it back on would restore. |
+| `panelFallbackUrl` | `String` | The generated address the panel also answers on, over https (https://deplo-&lt;hexip>.nip.io). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach. |
 | `panelUrl` | `String` | The address Deplo uses for itself right now. Every install command, deploy hook URL and invite link is built from it. |
 | `panelUrlSource` | `String` | `stored` (set here), `environment` (DEPLO_PUBLIC_URL, set at install time) or `request` (derived from the browser's own host, which is a guess). |
 | `storedPanelUrl` | `String` |  |
@@ -1220,11 +1231,14 @@ One person from the source team or organization: either added to the team (they 
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `avatarUrl` | `String` | Their picture, when they already have an account here. |
 | `email` | `String` |  |
+| `hasAccount` | `Boolean` | Whether that address already has an account here. |
 | `link` | `String` | The single-use registration link to send them, or null when they were added directly. |
 | `message` | `String` |  |
 | `name` | `String` |  |
 | `outcome` | [`MigrationOutcome`](/api-reference/types/enums#migrationoutcome) |  |
+| `sourceRole` | `String` | What they were on the panel, when it says. |
 
 ### MigrationPlan
 
@@ -1233,7 +1247,6 @@ What an import would do, read from the source instance without writing anything.
 | Field | Type | Description |
 | --- | --- | --- |
 | `members` | [`[MigrationPlanMember!]`](/api-reference/types/objects#migrationplanmember) |  |
-| `orgAvatarUrl` | `String` | That team's own picture on the panel, so the wizard draws it rather than a generic mark. Null when the panel keeps none - a Coolify team has no picture at all. |
 | `orgName` | `String` | The team or organization this token reads. A token belongs to one, so importing a second one means a second token. |
 | `otherTeams` | `[String!]` | The panel's other teams, by name - the ones this token does not cover and that need one of their own. Null when the panel cannot say, which on Coolify it never can. |
 | `platform` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Which product answered at that address. |
@@ -1279,6 +1292,7 @@ One machine behind the source instance. The FIRST entry is always the host the s
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `cloudflare` | `Boolean` | That address resolves into Cloudflare's proxy ranges, so it answers as the proxy: no agent can ever be dialled on it, and the machine's own IP has to be given instead. |
 | `deploServerId` | `String` | The Deplo server at that same address, or null when Deplo has no agent there. Data cannot be copied off a machine Deplo cannot reach: a volume is read by the agent ON its host, and agents cannot dial each other. |
 | `deploServerName` | `String` |  |
 | `deploServerOnline` | `Boolean` | Whether that server's agent answers. A row a failed attempt left behind sits at the same address and is matched all the same, so this - not the id - is what says the machine is ready to be read. |
@@ -1359,15 +1373,21 @@ One import, kept after the tab that started it is gone. The API key is never sto
 | `items` | [`[MigrationRunItem!]`](/api-reference/types/objects#migrationrunitem) | The report. Only loaded by the single-run query. |
 | `lastPath` | `String` | The last thing this run touched, as `Project / Environment / service`. Filled in only by the live `activeMigration` feed - the history list leaves it null, because a finished run says where it got to with its whole report. It is the only record of a run's POSITION that survives the tab: the loop lives in the browser, and so does the plan that knew how many projects there were. |
 | `manual` | `Int` |  |
+| `members` | [`[MigrationInvite!]`](/api-reference/types/objects#migrationinvite) | The people the panel listed on this team, as the run recorded them - who was added, and who was handed a link. Only the session query loads them. |
 | `orgName` | `String` |  |
 | `phase` | `String` | `config` \| `data` \| `done`. Which half the run is in - the two count different things, so their step numbers are not one scale. |
 | `platform` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Which product this run read. Decided once, when it connected. |
+| `sessionId` | `String` | The runs of ONE walk of the wizard share this: several teams of the same panel are several runs, brought over one after another by the control plane. Null on runs made before the queue left the browser. |
 | `skipped` | `Int` |  |
 | `sourceUrl` | `String` |  |
 | `startedAt` | `String` |  |
 | `status` | `String` | running \| done \| failed. A run left open by a closed tab is failed as `Interrupted` by the next one. |
 | `stepLabel` | `String` |  |
 | `stopRequested` | `Boolean` | Somebody asked it to stop. The runner notices between steps - never mid-call, because a call already sent finishes on the far side whatever this row says. |
+| `teamAvatarUrl` | `String` |  |
+| `teamId` | `String` | The Deplo team this run landed in. |
+| `teamName` | `String` |  |
+| `teamSlug` | `String` |  |
 | `totalSteps` | `Int` |  |
 
 ### MigrationRunItem
@@ -1391,7 +1411,6 @@ Which team of the panel one token reads. A token belongs to exactly one team on 
 | --- | --- | --- |
 | `otherTeams` | `[String!]` | The panel's other teams, by name, so the ones no token covers yet can be named. Null means the panel cannot say - always the case on Coolify, whose team listing is filtered down to the token's own team. |
 | `platform` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) |  |
-| `teamAvatarUrl` | `String` | That team's own picture on the panel, so the wizard draws it rather than a generic mark. Null when the panel keeps none - a Coolify team has no picture at all. |
 | `teamId` | `String` | The team's own id over there, which is how two tokens of ONE team are told apart from two tokens of two teams. Null when the panel would not say. |
 | `teamName` | `String` |  |
 
@@ -1505,7 +1524,7 @@ A host port an app publishes, for what the proxy cannot route - a game server, a
 
 ### RecognizedFramework
 
-What Deplo read in a repository before an app exists for it: the JavaScript framework backing it, and the build/start commands the repository declares for ITSELF in its package.json. A command is never invented from the framework - null means the repo said nothing and the builder decides.
+What Deplo read in a repository before an app exists for it: the JavaScript framework backing it, and the build command the repository declares for ITSELF in its package.json. Never invented from the framework - null means the repo said nothing and the builder decides.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -1513,7 +1532,8 @@ What Deplo read in a repository before an app exists for it: the JavaScript fram
 | `defaultPort` | `Int` | The port this framework's production server binds when nothing tells it otherwise - what a new app's container port defaults to. |
 | `id` | `String` | Stable framework id, e.g. "nextjs" - also the key for its brand mark. Null for a repo with no framework Deplo knows. |
 | `name` | `String` | Display name, e.g. "Next.js". |
-| `startCommand` | `String` | The repository's own start script (falling back to `serve`), spelled the same way. |
+| `startCommand` | `String` | The FRAMEWORK's own production start, for one no builder derives a start for (SvelteKit on adapter-node, AdonisJS). Never the repo's `start` script, which is as often its dev server. |
+| `staticOutput` | `String` | The directory to SERVE, for a framework whose production artifact is a directory no builder serves (Gatsby, Eleventy, Docusaurus, and an Angular workspace, whose path carries its project's name). |
 
 ### RecoveryKey
 

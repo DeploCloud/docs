@@ -1033,7 +1033,7 @@ A rollback re-runs the image an earlier build already produced, no rebuild. Only
 `,
     sections: [
       { title: "Reading", ops: [q("deployments"), q("deployment")] },
-      { title: "Deploying and cancelling", ops: [m("redeploy"), m("cancelDeployment"), m("cancelAllDeployments")] },
+      { title: "Deploying and cancelling", ops: [m("redeploy"), m("cancelDeployment"), m("cancelAllDeployments"), m("dismissPendingChanges")] },
       { title: "Rolling back", ops: [m("rollbackDeployment")] },
       { title: "Pruning history", ops: [m("deleteDeployments"), m("deleteAllDeployments")] },
       {
@@ -1272,7 +1272,7 @@ A server's \`role\` is \`everything\`, \`build\`, \`storage\` or \`import\`. The
       },
       {
         title: "Settings",
-        ops: [m("setServerRole"), m("setServerTeams"), m("setServerBuildFallback"), m("setServerDeployConcurrency"), m("setServerTimezone"), m("updateServerAddress")],
+        ops: [m("renameServer"), m("setServerRole"), m("setServerTeams"), m("setServerBuildFallback"), m("setServerDeployConcurrency"), m("setServerTimezone"), m("updateServerAddress")],
       },
       {
         title: "Health and readiness",
@@ -1357,9 +1357,9 @@ The panel publishes itself through its host's proxy, so the address it answers o
 </Callout>
 `,
     sections: [
-      { title: "Settings", ops: [q("instanceSettings"), m("setGravatarEnabled"), m("setLogMaxDays")] },
-      { title: "Panel address and HTTPS", ops: [q("panelAddressImpact"), m("setPanelUrl"), m("panelDns"), m("panelHttps"), m("setPanelHttps")] },
-      { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates")] },
+      { title: "Settings", ops: [q("instanceSettings"), m("setGravatarEnabled"), m("setLogMaxDays"), m("welcomeSeen")] },
+      { title: "Panel address and HTTPS", ops: [q("panelAddressImpact"), m("setPanelUrl"), m("panelDns"), m("panelHttps"), m("setPanelHttps"), m("setPanelFallback")] },
+      { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates"), m("updateDeplo")] },
       {
         title: "Ownership",
         intro: `The instance owner is the tier above instance admin: the one account that can hand the instance over.`,
@@ -1392,7 +1392,7 @@ The source's API key rides every call in \`MigrationSourceInput\` and is stored 
         intro: `\`startMigration\` hands the whole run to the control plane. The older per-project calls (\`beginMigration\`, \`importMigrationProject\`, \`finishMigration\`) drive the same import one step at a time.`,
         ops: [m("startMigration"), m("beginMigration"), m("importMigrationProject"), m("importMigrationMembers"), m("finishMigration"), m("stopMigration"), m("abandonMigration"), m("revertMigration"), m("dismissMigrationReport")],
       },
-      { title: "History", ops: [q("migrationRuns"), q("migrationRun"), s("activeMigration")] },
+      { title: "History", ops: [q("migrationRuns"), q("migrationRun"), q("migrationSession"), s("activeMigration")] },
       {
         title: "Moving data",
         ops: [m("planMigrationDataMove"), m("moveMigrationServiceData"), q("dataRecopySource"), m("deployWithoutMigratedData"), m("startWithoutMigratedData")],

@@ -166,6 +166,10 @@ type App {
   The server that BUILDS this app's image, when that is not `serverId`. Null is Automatic: a build-only server if the fleet has one this team can reach and its architecture matches, otherwise build where the app runs. Setting it to `serverId` means 'always build on this app's own server'. Ignored by a compose stack and a docker-image source, neither of which Deplo builds.
   """
   buildServerId: ID
+
+  """
+  The authored compose file. Its inline values are masked unless you can configure the app.
+  """
   compose: String
 
   """
@@ -209,6 +213,11 @@ type App {
   id: ID
   latestDeployment: Deployment
   logo: String
+
+  """
+  The plate this app's icon needs to stay visible: "dark" for a mark drawn only in black, "light" for one drawn only in white. Set only when the logo came from a template - an uploaded or detected one is drawn exactly as it is.
+  """
+  logoTone: String
   name: String
 
   """
@@ -986,6 +995,11 @@ input CreateAppInput {
   extraDomains: [ExtraDomainInput!]
   folderId: String
   logo: String
+
+  """
+  The logo above is a template's own. Deplo reads it once for the plate that keeps a monochrome mark visible on both themes.
+  """
+  logoFromTemplate: Boolean
   mounts: [MountInput!]
   name: String!
   projectId: String
@@ -1252,7 +1266,7 @@ type Database {
   createdAt: String
 
   """
-  Expert override: replaces the container command verbatim (redis's default command carries --requirepass - omit it and auth is off).
+  Expert override: replaces the container command verbatim (redis's default command carries --requirepass - omit it and auth is off). Null unless you can configure databases: a command can carry a password.
   """
   customCommand: String
 
@@ -1282,7 +1296,7 @@ type Database {
   logo: String
 
   """
-  Expert override: the engine's own config files, written next to the stack and bind-mounted into the container. Empty for almost every database. Saving them applies immediately - the container is recreated.
+  Expert override: the engine's own config files, written next to the stack and bind-mounted into the container. Empty for almost every database, and for anyone who can't configure databases - a config file can carry a password. Saving them applies immediately.
   """
   mounts: [DatabaseMount!]
 
@@ -1422,6 +1436,14 @@ type DeploRelease {
   publishedAt: String
   tag: String
   url: String
+}
+
+"""
+An update the host has STARTED. Deplo restarts as it lands, so there is no completion to report here.
+"""
+type DeploUpdateStarted {
+  logPath: String
+  version: String
 }
 
 enum DeploySource {
@@ -1616,15 +1638,16 @@ enum DockerCleanupRunStatus {
 }
 
 """
-A class of Docker object a cleanup may reclaim. build_cache = the daemon's BuildKit cache. dangling_images = untagged layers (never `-a`). orphan_buildkit_cache = dangling volumes proven to be abandoned buildkitd stores. unused_app_images = old app images no container references, bounded per app by that app's `rollbackKeep` (falling back to keepImagesPerApp where a rollback is impossible). Deplo pushes to no registry, so a removed image comes back only by a rebuild - the newest image per app always survives. leftover_app_files = the config files of Apps and databases that were DELETED, judged against the stacks this instance still knows about; the only scope that removes something no rebuild recreates, so it is skipped outright on an agent too old to have the list. leftover_networks = the Docker networks of Environments and previews that are gone, judged against the same kind of list; it reclaims address space rather than disk. All are on by default.
+A class of Docker object a cleanup may reclaim. build_cache = the daemon's BuildKit cache, plus the build directories a crashed build left behind. dangling_images = untagged layers (never `-a`). orphan_volumes = ANONYMOUS volumes no container references (the data dirs of removed containers, abandoned buildkit stores); a named volume is never touched. unused_app_images = old app images no container references, bounded per app by that app's `rollbackKeep` (falling back to keepImagesPerApp where a rollback is impossible); an app that was DELETED keeps none. Deplo pushes to no registry, so a removed image comes back only by a rebuild. unused_pulled_images = tagged images Deplo did not build that no container uses, aged on when they were last pulled here; a deploy that needs one pulls it again, and build tooling is spared. leftover_app_files = the config files of Apps and databases that were DELETED, judged against the stacks this instance still knows about; skipped outright on an agent too old to have the list. leftover_networks = the Docker networks of Environments, previews and stacks that are gone, judged against the same kind of list; it reclaims address space rather than disk. All are on by default.
 """
 enum DockerCleanupScope {
   build_cache
   dangling_images
   leftover_app_files
   leftover_networks
-  orphan_buildkit_cache
+  orphan_volumes
   unused_app_images
+  unused_pulled_images
 }
 
 enum DockerCleanupTrigger {
@@ -2101,7 +2124,7 @@ type HealthCheck {
 }
 
 """
-A health check to save. Send null instead to turn it off. An http check needs curl or wget in the image; one that has neither cannot answer, and the container would sit unhealthy.
+A health check to save. Send null instead to turn it off. An http check is asked BY DEPLO through the agent, so it works on any image and never changes routing; a command check runs inside the container as a compose `healthcheck:`.
 """
 input HealthCheckInput {
   command: String
@@ -2157,7 +2180,12 @@ type InstanceSettings {
   logMaxDays: Int
 
   """
-  The generated address the panel also answers on, over https (https://deplo-<hexip>.nip.io). Always on and not a setting: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach.
+  Whether that backup address is turned off. It then routes nowhere, and a panel whose domain stops answering is reached again only with `deplo recover panel-address` on the server itself. The address above is what turning it back on would restore.
+  """
+  panelFallbackDisabled: Boolean
+
+  """
+  The generated address the panel also answers on, over https (https://deplo-<hexip>.nip.io). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach.
   """
   panelFallbackUrl: String
 
@@ -2317,7 +2345,12 @@ type MigrationDataVolume {
 One person from the source team or organization: either added to the team (they already had a Deplo account) or handed a single-use registration link.
 """
 type MigrationInvite {
+  """Their picture, when they already have an account here."""
+  avatarUrl: String
   email: String
+
+  """Whether that address already has an account here."""
+  hasAccount: Boolean
 
   """
   The single-use registration link to send them, or null when they were added directly.
@@ -2326,6 +2359,9 @@ type MigrationInvite {
   message: String
   name: String
   outcome: MigrationOutcome
+
+  """What they were on the panel, when it says."""
+  sourceRole: String
 }
 
 """
@@ -2358,11 +2394,6 @@ What an import would do, read from the source instance without writing anything.
 """
 type MigrationPlan {
   members: [MigrationPlanMember!]
-
-  """
-  That team's own picture on the panel, so the wizard draws it rather than a generic mark. Null when the panel keeps none - a Coolify team has no picture at all.
-  """
-  orgAvatarUrl: String
 
   """
   The team or organization this token reads. A token belongs to one, so importing a second one means a second token.
@@ -2419,6 +2450,11 @@ type MigrationPlanProject {
 One machine behind the source instance. The FIRST entry is always the host the source instance itself runs on, whose `sourceId` is the empty string - the same key the server mapping and the data cutover use for it.
 """
 type MigrationPlanServer {
+  """
+  That address resolves into Cloudflare's proxy ranges, so it answers as the proxy: no agent can ever be dialled on it, and the machine's own IP has to be given instead.
+  """
+  cloudflare: Boolean
+
   """
   The Deplo server at that same address, or null when Deplo has no agent there. Data cannot be copied off a machine Deplo cannot reach: a volume is read by the agent ON its host, and agents cannot dial each other.
   """
@@ -2510,6 +2546,21 @@ type MigrationProjectResult {
   skipped: Int
 }
 
+input MigrationQueuedTeamInput {
+  """That team's own token - a key reads exactly one team."""
+  apiKey: String!
+  newTeamImage: String
+  newTeamName: String
+  orgName: String
+  servers: [MigrationServerChoiceInput!]
+  targets: [MigrationRunTargetInput!]!
+
+  """
+  The Deplo team it lands in. Omit to have one created for it now, named by `newTeamName`.
+  """
+  teamId: String
+}
+
 """
 The panel service a blocked app or database was imported from. Its key is NOT here: a run wipes the token the moment it ends, so copying the data again asks for it once more.
 """
@@ -2563,6 +2614,11 @@ type MigrationRun {
   """
   lastPath: String
   manual: Int
+
+  """
+  The people the panel listed on this team, as the run recorded them - who was added, and who was handed a link. Only the session query loads them.
+  """
+  members: [MigrationInvite!]
   orgName: String
 
   """
@@ -2572,6 +2628,11 @@ type MigrationRun {
 
   """Which product this run read. Decided once, when it connected."""
   platform: MigrationPlatform
+
+  """
+  The runs of ONE walk of the wizard share this: several teams of the same panel are several runs, brought over one after another by the control plane. Null on runs made before the queue left the browser.
+  """
+  sessionId: String
   skipped: Int
   sourceUrl: String
   startedAt: String
@@ -2586,6 +2647,12 @@ type MigrationRun {
   Somebody asked it to stop. The runner notices between steps - never mid-call, because a call already sent finishes on the far side whatever this row says.
   """
   stopRequested: Boolean
+  teamAvatarUrl: String
+
+  """The Deplo team this run landed in."""
+  teamId: String
+  teamName: String
+  teamSlug: String
   totalSteps: Int
 }
 
@@ -2632,7 +2699,7 @@ input MigrationServerChoiceInput {
 
 input MigrationSourceInput {
   """
-  The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `deploy` ticked first, then `read` and `read:sensitive` - without deploy the data step cannot stop a service, without read:sensitive the values and database passwords arrive empty. Use an owner's or admin's either way: a plain member's is refused. Never stored.
+  The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored.
   """
   apiKey: String!
 
@@ -2656,11 +2723,6 @@ type MigrationSourceTeam {
   """
   otherTeams: [String!]
   platform: MigrationPlatform
-
-  """
-  That team's own picture on the panel, so the wizard draws it rather than a generic mark. Null when the panel keeps none - a Coolify team has no picture at all.
-  """
-  teamAvatarUrl: String
 
   """
   The team's own id over there, which is how two tokens of ONE team are told apart from two tokens of two teams. Null when the panel would not say.
@@ -3016,6 +3078,11 @@ type Mutation {
   dismissMigrationReport(runId: String!): Boolean
 
   """
+  Clear this app's "changes not deployed yet" notice without deploying - the change was undone, or it was never one a deploy has to carry. The next config change stamps it again.
+  """
+  dismissPendingChanges(appId: String!): Boolean
+
+  """
   Run a command in the app's live container (docker exec). Gated on the deploy capability - this is arbitrary code execution.
   """
   execConsole(input: ExecConsoleInput!): ExecResult
@@ -3252,6 +3319,11 @@ type Mutation {
   """Rename a Project container."""
   renameProject(id: ID!, name: String!): Boolean
 
+  """
+  Change a server's display name. Cosmetic: nothing dials, routes or deploys by name.
+  """
+  renameServer(id: String!, name: String!): Server
+
   """Render the docker-compose stack an app would deploy."""
   renderComposeStack(appId: String!): String
 
@@ -3420,7 +3492,7 @@ type Mutation {
   runDatabaseBackup(databaseId: String!, destinationId: String!): Boolean
 
   """
-  START a sweep of this server now, with the policy's scopes - whether or not the schedule is enabled, and ignoring the exclusion list (which only governs the scheduled sweep). Returns IMMEDIATELY with the `running` run: the host keeps working in the background, so the caller never waits on a `docker rmi` sweep and closing the page cannot cancel it. Follow it on the `dockerCleanupRuns` subscription (or re-read the query); whatever the host fails at (unreachable, unprovisioned, an agent too old) lands on that run as `failed` with the reason. Only pre-flight problems error here: unknown server, nothing selected to reclaim, or a sweep already running on this host. Allow-listed: it never prunes containers, volumes or networks, so a stopped app, its data and its network survive.
+  START a sweep of this server now, with the policy's scopes - whether or not the schedule is enabled, and ignoring the exclusion list (which only governs the scheduled sweep). Returns IMMEDIATELY with the `running` run: the host keeps working in the background, so the caller never waits on a `docker rmi` sweep and closing the page cannot cancel it. Follow it on the `dockerCleanupRuns` subscription (or re-read the query); whatever the host fails at (unreachable, unprovisioned, an agent too old) lands on that run as `failed` with the reason. Only pre-flight problems error here: unknown server, nothing selected to reclaim, or a sweep already running on this host. Allow-listed: it never removes a container, a named volume, or anything a container still uses, so a stopped app and its data survive.
   """
   runDockerCleanupNow(serverId: String!): DockerCleanupRun
 
@@ -3576,6 +3648,11 @@ type Mutation {
   ): String
 
   """
+  Turn the generated `deplo-<hexip>.nip.io` backup route on or off. Off drops the second router from the panel's own Traefik file and remembers the choice, so moving the address or the scheme afterwards does not put it back - which is the whole reason this is stored rather than read off the host. The panel then answers on its domain and nowhere else: if that domain, its DNS or its certificate breaks, the way back in is `deplo recover panel-address` on the server. Refused while the generated address IS the panel's own address, which would leave no route at all.
+  """
+  setPanelFallback(enabled: Boolean!): InstanceSettings
+
+  """
   Serve the panel over https, or over plain http. Turning it off is for a panel whose address cannot get a certificate - it does not resolve publicly yet, :80 is closed, the box is internal - where https means a browser warning on a page nobody has logged into yet. Three things move together: the route goes to the :80 entrypoint (with that entrypoint's redirect pinned below it), the stored panel address takes the new scheme, and the session cookie drops its `__Secure-` prefix, without which the panel would load over http and be impossible to log into. The host's proxy is recreated to pick it up, so sites on that server - this panel included - are unreachable for the few seconds it takes to come back. On a Deplo installed before it published its own route, the first change ADOPTS that route: Deplo writes one beside the container labels the installer left and outranks them, after proving from inside the network that it knows where the panel listens.
   """
   setPanelHttps(enabled: Boolean!): PanelHttps
@@ -3661,10 +3738,15 @@ type Mutation {
     input: MigrationSourceInput!
 
     """
-    Another team of the SAME panel is still to come, so this run must leave Deplo's agents on the source machines - the next team reads the same disks, and an uninstall scheduled here would race the install that follows it. The last run of a series leaves this false, and it is that one that clears them. It also holds the takeover: the ports cannot be taken while a run says more teams are owed.
+    Another team of the SAME panel is still to come, so this run must leave Deplo's agents on the source machines - the next team reads the same disks, and an uninstall scheduled here would race the install that follows it. The last run of a series leaves this false, and it is that one that clears them. It also holds the takeover: the ports cannot be taken while a run says more teams are owed. Ignored when `queued` is given: the queue itself says which run is the last.
     """
     keepSources: Boolean
     orgName: String
+
+    """
+    The other teams of this panel, in the order they should be brought over. Each is written down with its own token, its own targets and the team it lands in, and the control plane starts each one as the turn before it ends - so the browser tab is not what walks the list any more. Every token is proved before anything is created, and a team that is to be made here is made now.
+    """
+    queued: [MigrationQueuedTeamInput!]
     servers: [MigrationServerChoiceInput!]
     targets: [MigrationRunTargetInput!]!
   ): String
@@ -3723,9 +3805,9 @@ type Mutation {
   transferAppToTeam(appId: String!, teamId: String!): Boolean
 
   """
-  Hand instance ownership to another instance admin. Owner-only; requires the caller's password. Returns true.
+  Hand instance ownership to another instance admin. Owner-only; requires the caller's password, plus a two-factor code when their account has 2FA on. Returns true.
   """
-  transferInstanceOwner(password: String!, userId: String!): Boolean
+  transferInstanceOwner(code: String, password: String!, userId: String!): Boolean
 
   """
   Hand the active team to another member, who is put on the Owner role with the whole team in reach as part of the same write. Primary-owner only; requires the caller's password, plus a two-factor code when their account has 2FA on. Returns true.
@@ -3783,6 +3865,11 @@ type Mutation {
   Save the database's per-container resource limits. Applied on the next redeploy or settings-driven reroute.
   """
   updateDatabaseResources(id: String!, limits: ResourceLimitsInput!): Database
+
+  """
+  Update this instance to the newest release: the agent on the machine Deplo runs on re-runs the installer.
+  """
+  updateDeplo: DeploUpdateStarted
 
   """
   Save the instance-wide cleanup policy. The cron is rejected (not repaired) when it does not parse - an unparseable schedule is a cleanup that silently never runs while the UI says it is enabled. The numeric bounds are clamped instead: there is no dangerous value of 'keep N images', only an unhelpful one.
@@ -3871,6 +3958,11 @@ type Mutation {
   Finish a login that returned `requiresTwoFactor`, with a TOTP code or a recovery code.
   """
   verifyTwoFactorLogin(code: String!, recoveryCode: Boolean): AuthPayload
+
+  """
+  Mark the first-run welcome as shown, so it opens exactly once in an instance's life. Stamped on the singleton settings row rather than in the browser, because the wizard's `?welcome=1` is lost on a reload and a second browser would otherwise replay the celebration. Only the instance owner writes it; anybody else is a no-op, and so is a second call.
+  """
+  welcomeSeen: Boolean
 
   """Write the file a File storage entry points at. Answers its path."""
   writeAppFile(appId: String!, content: String!, path: String!): String
@@ -4208,7 +4300,7 @@ type Query {
   destinationTestReport(id: String!): S3TestReport
 
   """
-  Read a GitHub repository before an app exists for it - the framework and the commands the new-app wizard prefills while you pick a repo. Null when there is nothing to read at all: a build method other than Nixpacks / Railpack (the only ones this applies to), a repository Deplo can't read, or one with neither a framework nor a script. Reads only; the app's first deploy re-derives and stores the framework.
+  Read a GitHub repository before an app exists for it - the framework and the build command the new-app wizard prefills while you pick a repo. Null when there is nothing to read at all: a build method other than Nixpacks / Railpack (the only ones this applies to), a repository Deplo can't read, or one with neither a framework nor a script. Reads only; the app's first deploy re-derives and stores the framework.
   """
   detectRepoFramework(
     """Branch to read; empty ⇒ the repository's default branch."""
@@ -4357,6 +4449,14 @@ type Query {
   """
   migrationRuns: [MigrationRun!]
 
+  """
+  Every team of ONE walk of the wizard, oldest first, with the people each run brought over. A panel with three teams is three runs, started one after another by the control plane - this is what makes them one migration on screen again after the tab that began them is gone. A team still waiting its turn is in here with status `queued`.
+  """
+  migrationSession(
+    """Any run of the session."""
+    runId: String!
+  ): [MigrationRun!]
+
   """The instance-wide monitoring settings."""
   monitoringSettings: MonitoringSettings
 
@@ -4492,7 +4592,7 @@ type Query {
 }
 
 """
-What Deplo read in a repository before an app exists for it: the JavaScript framework backing it, and the build/start commands the repository declares for ITSELF in its package.json. A command is never invented from the framework - null means the repo said nothing and the builder decides.
+What Deplo read in a repository before an app exists for it: the JavaScript framework backing it, and the build command the repository declares for ITSELF in its package.json. Never invented from the framework - null means the repo said nothing and the builder decides.
 """
 type RecognizedFramework {
   """
@@ -4514,9 +4614,14 @@ type RecognizedFramework {
   name: String
 
   """
-  The repository's own start script (falling back to `serve`), spelled the same way.
+  The FRAMEWORK's own production start, for one no builder derives a start for (SvelteKit on adapter-node, AdonisJS). Never the repo's `start` script, which is as often its dev server.
   """
   startCommand: String
+
+  """
+  The directory to SERVE, for a framework whose production artifact is a directory no builder serves (Gatsby, Eleventy, Docusaurus, and an Angular workspace, whose path carries its project's name).
+  """
+  staticOutput: String
 }
 
 """
@@ -5870,5 +5975,15 @@ input VolumeInput {
   propagation: MountPropagation
   readOnly: Boolean
   service: String
-  type: String
+  type: VolumeKind
+}
+
+"""
+What the mount is: "named" is a Volume Deplo creates and keeps, "app" a File in the app's own files directory, "host" a Bind to a folder that already exists on the server. "service" is the volume editor's older spelling of "app" and still accepted.
+"""
+enum VolumeKind {
+  app
+  host
+  named
+  service
 }

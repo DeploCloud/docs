@@ -75,6 +75,18 @@ mutation {
 }
 ```
 
+### `welcomeSeen`
+
+Any signed-in principal. Returns `Boolean`.
+
+Mark the first-run welcome as shown, so it opens exactly once in an instance's life. Stamped on the singleton settings row rather than in the browser, because the wizard's `?welcome=1` is lost on a reload and a second browser would otherwise replay the celebration. Only the instance owner writes it; anybody else is a no-op, and so is a second call.
+
+```graphql
+mutation {
+  welcomeSeen
+}
+```
+
 ## Panel address and HTTPS
 
 ### `panelAddressImpact`
@@ -169,11 +181,33 @@ mutation {
 }
 ```
 
+### `setPanelFallback`
+
+Instance admin only. Returns [`InstanceSettings`](/api-reference/types/objects#instancesettings).
+
+Turn the generated `deplo-<hexip>.nip.io` backup route on or off. Off drops the second router from the panel's own Traefik file and remembers the choice, so moving the address or the scheme afterwards does not put it back - which is the whole reason this is stored rather than read off the host. The panel then answers on its domain and nowhere else: if that domain, its DNS or its certificate breaks, the way back in is `deplo recover panel-address` on the server. Refused while the generated address IS the panel's own address, which would leave no route at all.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `enabled` | `Boolean!` |  |
+
+```graphql
+mutation {
+  setPanelFallback(enabled: true) {
+    panelUrl
+    panelUrlSource
+    gravatarEnabled
+    logMaxDays
+    version
+  }
+}
+```
+
 ## Updates
 
 ### `updateInfo`
 
-Any signed-in principal. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
+Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
 
 Check the upstream repository for a newer Deplo release; cached for an hour.
 
@@ -221,6 +255,21 @@ mutation {
 }
 ```
 
+### `updateDeplo`
+
+Instance admin only. Returns [`DeploUpdateStarted`](/api-reference/types/objects#deploupdatestarted).
+
+Update this instance to the newest release: the agent on the machine Deplo runs on re-runs the installer.
+
+```graphql
+mutation {
+  updateDeplo {
+    logPath
+    version
+  }
+}
+```
+
 ## Ownership
 
 The instance owner is the tier above instance admin: the one account that can hand the instance over.
@@ -241,10 +290,11 @@ query {
 
 Instance admin only. Returns `Boolean`.
 
-Hand instance ownership to another instance admin. Owner-only; requires the caller's password. Returns true.
+Hand instance ownership to another instance admin. Owner-only; requires the caller's password, plus a two-factor code when their account has 2FA on. Returns true.
 
 | Argument | Type | Description |
 | --- | --- | --- |
+| `code` | `String` |  |
 | `password` | `String!` |  |
 | `userId` | `String!` |  |
 

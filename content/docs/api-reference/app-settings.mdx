@@ -355,7 +355,7 @@ Replace an app's volumes (named, app-files, and host bind mounts). Compose-stack
 | `volumes.propagation` | [`MountPropagation`](/api-reference/types/enums#mountpropagation) | One of `rshared`, `rslave`. |
 | `volumes.readOnly` | `Boolean` |  |
 | `volumes.service` | `String` |  |
-| `volumes.type` | `String` |  |
+| `volumes.type` | [`VolumeKind`](/api-reference/types/enums#volumekind) | One of `app`, `host`, `named`, `service`. |
 
 ```graphql
 mutation {

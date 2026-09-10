@@ -183,6 +183,30 @@ query {
 
 ## Settings
 
+### `renameServer`
+
+Instance admin only. Returns [`Server`](/api-reference/types/objects#server).
+
+Change a server's display name. Cosmetic: nothing dials, routes or deploys by name.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `name` | `String!` |  |
+
+```graphql
+mutation {
+  renameServer(id: "srv_9f1c2ab7d3e4f5a6", name: "shop") {
+    id
+    name
+    host
+    role
+    status
+    agentVersion
+  }
+}
+```
+
 ### `setServerRole`
 
 Instance admin only. Returns [`Server`](/api-reference/types/objects#server).
@@ -613,8 +637,8 @@ mutation {
 ## See also
 
 <Cards>
-  <Card title="Add a server" description="The dashboard flow" href="/operations/servers/add-a-server" />
+  <Card title="Add a server" description="The dashboard flow" href="/guides/server/add-a-server" />
   <Card title="Server roles" description="everything, build, storage" href="/advanced/server-roles" />
-  <Card title="Maintenance and advanced" description="The dashboard view" href="/operations/servers/maintenance-and-advanced" />
+  <Card title="Maintenance and advanced" description="The dashboard view" href="/guides/server/maintenance-and-advanced" />
   <Card title="Custom certificates" description="Installing one from the dashboard" href="/advanced/custom-certificates" />
 </Cards>
