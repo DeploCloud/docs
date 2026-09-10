@@ -40,6 +40,11 @@ dashboard. `--domain` is how you put it on a hostname of your own.
       default: "latest",
       description: "Install this Deplo version instead of the newest one.",
     },
+    "--public-setup": {
+      type: "flag",
+      description:
+        "Drops the setup key: the setup link is the bare dashboard address and anyone who opens it creates the first account. For a hosting provider that ships Deplo as a template and hands out the address without reading this transcript. It sticks across re-runs.",
+    },
     "--yes": {
       type: "flag",
       description:

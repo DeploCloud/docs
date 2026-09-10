@@ -72,6 +72,12 @@ Set up   https://deplo.example.com/setup?key=xxx
 
 The setup will create the first account with the [Owner role](/guides/roles-and-permissions).
 
+<Callout type="warn" title="Handing the address to somebody else">
+  `--public-setup` can be used to install without a key, directly from
+  `https://<your-host>/setup`, this is only intended to be used in rare
+  situations and we discourage its use
+</Callout>
+
 ## What the installer does
 
 On the host itself, four things change:
@@ -124,7 +130,8 @@ Going this way, you enroll the host as a server yourself from **Settings -> Serv
 like any other machine. Four things are worth knowing before you do:
 
 - **`DEPLO_SETUP_KEY` is yours to set.** The installer generates one; Compose does not. Leave it
-  unset and the first account is created by whoever reaches `/setup` first.
+  unset or empty and the first account is created by whoever reaches `/setup` first - which is
+  what `install.sh --public-setup` does.
 - **`DEPLO_SECRET` is not rotatable.** It derives every encryption key, every session signature
   and the agent certificate authority. Change it and every stored secret becomes unreadable,
   every session ends, and every agent certificate is re-minted. Back it up with the rest of

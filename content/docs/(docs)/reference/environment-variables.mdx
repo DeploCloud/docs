@@ -83,7 +83,7 @@ complete list, and it lags the code.
     DEPLO_SETUP_KEY: {
       type: "string",
       description:
-        "The key the /setup link carries. The installer generates one into .env; set it yourself when running from Compose, or the first person to reach /setup claims the instance.",
+        "The key the /setup link carries. The installer generates one into .env; set it yourself when running from Compose. Unset or empty, the first person to reach /setup claims the instance - install.sh --public-setup writes it empty on purpose.",
     },
     DEPLO_PANEL_PORT: {
       type: "number",
