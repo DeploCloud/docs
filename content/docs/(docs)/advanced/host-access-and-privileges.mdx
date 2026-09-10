@@ -83,6 +83,11 @@ work; inline what they were bringing in.
 permission on. If you are told an app reaches the server and you cannot see
 where, that sentence is where to look.
 
+**You are told before you deploy, not after.** A Compose stack or a template that reaches the
+server carries a notice on the card that holds **Deploy** - so a one-click template that wants the
+Docker socket says so while you can still change your mind. The compose editor marks the exact
+line as you type.
+
 **What is never gated: hardening.** `cap_drop` and `read_only` are on no list at all, and
 `security_opt: no-new-privileges` is allowed by name. That is deliberate: a permission prompt in
 front of the safer choice is one people learn to route around, and then they route around the one
