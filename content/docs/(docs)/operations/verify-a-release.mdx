@@ -1,23 +1,16 @@
 ---
 title: Verify a release
-description: Check that a Deplo image was really built by Deplo's release workflow before you run it.
+description: Verify a Deplo image before running it.
 ---
 
 import { Download, ShieldAlert, Server, Terminal } from "lucide-react";
 
-Every Deplo image published to `ghcr.io/deplocloud/deplo` is signed. The signature proves that
-**this exact image was built by Deplo's release workflow, from Deplo's repository** - not
-repackaged by someone else and pushed under a similar name.
+Every Deplo image published to `ghcr.io/deplocloud/deplo` is signed. Verification
+checks that the exact image came from Deplo's release workflow. It is optional,
+but useful before running an image in production.
 
-Verifying is optional. It takes one command, and it is the difference between trusting a tag and
-checking it.
-
-The release workflow signs the image with [Sigstore](https://www.sigstore.dev/) at build time,
-using a short-lived certificate tied to the workflow's own identity. There is **no long-lived
-signing key** to trust, leak, or rotate.
-
-The signature is stored on the registry next to the image, so verifying it needs nothing but the
-image reference.
+The signature uses [Sigstore](https://www.sigstore.dev/) and a short-lived
+certificate, not a long-lived signing key.
 
 <Callout type="info">
   Releases built from 31 August 2026 onward carry an attestation. Older tags predate it and will
@@ -30,10 +23,8 @@ image reference.
 <Step>
 ### Install the GitHub CLI
 
-[`gh`](https://cli.github.com/) is the only tool needed, **version 2.49 or newer** - that is when
-`gh attestation` arrived, and an older one answers `unknown command "attestation"`. Distributions
-ship older builds (Ubuntu 24.04 has 2.45), so install it from GitHub's own repository. It does not
-have to run on the Deplo server - verifying reads the registry, so any machine works.
+Use the [GitHub CLI](https://cli.github.com/), **version 2.49 or newer**. It can
+run on any machine; it only needs access to the registry.
 </Step>
 
 <Step>
@@ -49,14 +40,14 @@ gh attestation verify oci://ghcr.io/deplocloud/deplo:0.1.0 --repo DeploCloud/dep
 <Step>
 ### Read the result
 
-A good result names the digest it checked and the workflow that built it:
+A good result names the checked digest and build workflow:
 
 ```
 Loaded digest sha256:<digest> for oci://ghcr.io/deplocloud/deplo:0.1.0
 Verification succeeded!
 ```
 
-Anything else is a failure, whatever the exit text says.
+Any other result is a failure.
 </Step>
 </Steps>
 

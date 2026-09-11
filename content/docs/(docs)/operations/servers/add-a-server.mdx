@@ -5,26 +5,9 @@ description: Bring another machine into the fleet with one command pasted on tha
 
 import { ServerCog, Layers, Network, HardDrive } from "lucide-react";
 
-The control plane prints a command containing a **one-time bootstrap
-token**. On the server, that command:
-
-1. Installs Docker if it is missing, and sets Docker's address pools so
-   the host does not run out of networks at about 31 apps.
-2. Downloads the agent binary for that architecture and **verifies its
-   SHA-256**. A mismatch refuses to run rather than warning.
-3. Installs it as a systemd unit listening on `9443`, with its
-   credentials in a `0600` environment file rather than on the command
-   line, where any user could read them from `/proc`.
-4. Installs Traefik on that host, unless one is already running or ports
-   80 and 443 are taken.
-5. Starts the agent, which generates its own key, sends a certificate
-   signing request and **calls home** with the token.
-6. Checks whether `ufw` or `firewalld` is holding port 9443 and prints
-   the command to open it. It never edits the firewall itself.
-
-The control plane signs the certificate and pins its fingerprint. The
-server flips to online, and from then on everything is mutual TLS on port
-9443.
+The control plane prints a command containing a **one-time bootstrap token**.
+Run it as root on the new server. It installs and enrolls the agent; Deplo
+never connects to the host over SSH.
 
 ## What the machine needs
 
@@ -152,7 +135,7 @@ from `pass`. Nothing gates on this report: it is for you.
 New servers are usable by every team by default. Narrowing that is a
 separate setting. See [Access](/operations/servers/access).
 
-## Good to know
+## Before you add more servers
 
 - **Only `linux/amd64` and `linux/arm64`.** Nothing else is published.
 - **An app and its database must be on the same server to reach each

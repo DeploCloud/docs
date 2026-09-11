@@ -96,7 +96,7 @@ What it deliberately never does: `system prune`, container prune, volume prune, 
 Deplo host a *stopped* app is a live app. Only an anonymous volume nothing can mount again by name
 is a candidate.
 
-## Good to know
+## What cleanup does not touch
 
 - **Cleanup and rollbacks fight over the same images.** If rollbacks stop
   working, **Images kept per app** is too low for the app's **Keep**.

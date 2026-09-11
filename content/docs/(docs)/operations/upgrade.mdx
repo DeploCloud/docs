@@ -1,34 +1,29 @@
 ---
 title: Upgrade
-description: Update the control plane and server agents, and know what changes on each side.
+description: Update the control plane and server agents safely, with rollback guidance.
 ---
 
 import { Download, Server, ShieldAlert, ShieldCheck, Settings } from "lucide-react";
 
-Moving Deplo to a newer version. Two things version independently:
+Deplo updates two components independently:
 
 - The **control plane** (this panel)
 - The **server agents**, one binary per host
 
-- The control plane updates itself from the panel: the machine it runs on pulls the new image and restarts it. No shell, no SSH.
-- Database migrations apply themselves at boot. There's no separate migration step.
-- Agents update one server at a time, from the servers page.
-- The control plane and the agents tolerate a version gap: new capabilities are announced in the handshake, so an older agent simply doesn't offer a newer feature rather than failing.
+- The control plane updates from **Settings -> Deplo -> Updates**.
+- Server agents update one host at a time from **Settings -> Servers**.
+- Database migrations run automatically at startup.
 
 **Agent updates only ever move forward.** There is no downgrade path.
 
 ## Release history
 
-**Settings -> Deplo -> Updates** is the panel's own changelog, so "what changed" has an answer without leaving Deplo.
+**Settings -> Deplo -> Updates** shows the installed version, available
+releases, release notes, and agent versions across the fleet.
 
-- The version this instance runs, and whether a newer one is published.
-- **Check now** re-asks the repository instead of waiting out the hourly cache.
-- Every published release with its notes, newest first - the notes as written, without the generated list of merged pull requests. The one you are running is marked **Installed**.
-- How much of the fleet is on the agent release Deplo expects, with a link to the servers page.
-
-A newer release also shows a green chip with the version in the top bar and a dot on the **Deplo** entry in the sidebar. Both stay until you upgrade.
-
-The list says what a release contains; the two sections below are how it gets applied.
+- **Check now** refreshes the release list.
+- The installed release is marked **Installed**.
+- The page shows which agents are behind.
 
 ## Upgrade the control plane
 
@@ -62,18 +57,15 @@ down means you can't deploy or read logs for a minute, it does not mean your
 sites are down.
 </Callout>
 
-### When Deplo cannot do it from the panel
+## If the panel cannot update itself
 
-The button asks the **server agent** on the machine to run the installer, so it needs that agent to
-be recent enough. When it is not, or when Deplo is not running as a container the agent can see,
-the panel says why and shows the command to run on the machine instead:
+Run the installer on the control-plane host instead:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash
 ```
 
-It is the same script the button runs. It detects the existing `/opt/deplo/.env`, switches to update
-mode, pulls the image and restarts, with the same dump and the same rollback.
+The existing `/opt/deplo/.env` switches the installer to update mode.
 
 To pin a version rather than take the newest:
 
@@ -100,16 +92,15 @@ Open the server and click the **Update to** button on its **Overview** tab, whic
 </Step>
 </Steps>
 
-Sensible order, especially on a fleet:
+For a fleet, use this order:
 
-1. One canary server that runs something you can afford to break.
-2. Watch it: readiness, a deploy, logs streaming.
-3. The rest.
-4. The machine running Deplo itself, last. If an agent update goes wrong there, you want the panel already proven on the new version.
+1. One canary server.
+2. Check readiness, deploy, and read its logs.
+3. Update the remaining servers, then the control-plane host last.
 
 Do not update an agent while a deploy is in flight on that host.
 
-## Good to know
+## Before you upgrade again
 
 - **Agents cannot be downgraded.** Test on a canary.
 - **Some features need a newer agent.** When one is missing, Deplo says so rather than silently doing something else.

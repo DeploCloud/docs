@@ -1,6 +1,6 @@
 ---
 title: Instance administration
-description: Instance-wide surfaces, users across every team, instance settings, and who owns the whole thing.
+description: Manage instance-wide users, settings, ownership, and servers.
 ---
 
 import { Users, Globe, ArrowUpCircle, ShieldCheck } from "lucide-react";
@@ -73,7 +73,7 @@ The tier above instance admin, held by the account created at first-run setup.
 
 - **No other admin can demote, suspend, or reset the owner.**
 - The owner cannot drop their own admin flag either.
-- It exists because instance admin is a flat boolean that any admin can write on any other admin. Without a crown, one promoted admin could take the whole instance, first account included.
+- Instance admin is separate from team capabilities and applies across the instance.
 
 **Transfer ownership** is on the same page: only by the owner, only to an active instance admin, and only with the password re-entered.
 
@@ -91,14 +91,12 @@ An instance-wide value is a **shared variable owned by the instance**, offered t
 
 Servers are instance-wide, not team-owned, so the whole of **Settings -> Servers** is an instance-admin surface, including which teams may deploy to which machine. See [Server settings](/operations/servers).
 
-## Good to know
+## Important details
 
 - **Instance admin is not team capabilities.** An admin still needs a membership and a role to act inside a team.
 - **A registration link is single-use and hashed.** Even two people clicking at once cannot both consume it.
 - **Deleting a user is not the same as removing them from a team.** Read the impact preview.
 - **Raising Max log range does not make hosts keep more.** Docker rotates container logs by size.
-
-## Troubleshooting
 
 ## Troubleshooting
 

@@ -1,6 +1,6 @@
 ---
 title: Servers
-description: Enrolling machines, who may use them, disk cleanup, restarts and registries.
+description: Add and manage servers, access, cleanup, maintenance, and registries.
 ---
 
 **Settings -> Servers**, then open a server. The list and everything on a server's own page is
@@ -18,17 +18,12 @@ one host serialize. **Cleanup** and **Advanced** are the two below.
 Raising concurrency past what the machine can take makes every deploy slower, not faster. One is a
 sane default for a small VPS.
 
-**Add a server** - enrollment, the bootstrap command and the roles.
-[Learn more ->](/operations/servers/add-a-server)
+## Server operations
 
-**Server access** - which teams may use a machine.
-[Learn more ->](/operations/servers/access)
-
-**Server cleanup** - reclaiming disk, and what is never touched.
-[Learn more ->](/operations/servers/cleanup)
-
-**Maintenance and advanced** - restarts, the host clock, the address, removal.
-[Learn more ->](/operations/servers/maintenance-and-advanced)
-
-**Container registries** - credentials for pulling private images. Team-scoped, gated by
-`manage_registries`. [Learn more ->](/operations/servers/container-registries)
+<Cards>
+  <Card title="Add a server" description="Enrollment, roles, and the bootstrap command" href="/operations/servers/add-a-server" />
+  <Card title="Server access" description="Choose which teams may use a server" href="/operations/servers/access" />
+  <Card title="Server cleanup" description="Reclaim disk and protect what must stay" href="/operations/servers/cleanup" />
+  <Card title="Maintenance and advanced" description="Restarts, address, time, and removal" href="/operations/servers/maintenance-and-advanced" />
+  <Card title="Container registries" description="Pull private images with team credentials" href="/operations/servers/container-registries" />
+</Cards>

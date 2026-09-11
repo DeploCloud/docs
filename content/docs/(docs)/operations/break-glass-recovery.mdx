@@ -1,16 +1,17 @@
 ---
 title: Break-glass recovery
-description: The deplo command on the host - the way back in when nobody can sign in, or the panel's address stopped answering.
+description: Recover an account or panel address from the control-plane host.
 ---
 
 import { ShieldCheck, Globe, Server, Users } from "lucide-react";
 
-Everything in Deplo is capability-gated, and the instance owner cannot be demoted, suspended or
-reset by anyone else. That is the point of the crown, and it means a lost owner account cannot be
-recovered from inside the dashboard.
+Use this only when the dashboard cannot restore access. Run the command as
+root on the host that runs the control plane.
 
-The way back is a command on the host that runs the control plane. It answers to root on that
-machine and to nobody else.
+<Callout type="warn" title="Emergency access">
+These commands bypass capability checks and do not appear in **Activity**.
+Root on the control-plane host is the only credential they require.
+</Callout>
 
 ## The `deplo` command
 
@@ -26,9 +27,6 @@ deplo
 | `deplo logs [lines]` | Follow the control plane's logs |
 | `deplo restart` | Restart the control plane |
 | `deplo update` | Re-run the installer to the latest version |
-
-Each `deplo recover` command starts a short-lived container, so it takes a couple of seconds
-before it answers. That is also why it still works when the control plane itself will not start.
 
 <Callout type="info">
   Updating is normally a button - **Settings -> Deplo -> Updates**. `deplo update` is the fallback
@@ -51,8 +49,7 @@ deplo recover
 deplo recover list
 ```
 
-Every account with its username, email, and whether it is admin, owner or suspended. If the
-instance has no owner at all, this says so.
+Lists every account with its username, email, and admin, owner, or suspended state.
 
 </Step>
 
@@ -65,9 +62,8 @@ deplo recover password ada
 deplo recover password ada -
 ```
 
-The first prompts for the new password with the terminal echo off. The second generates a strong
-one and prints it. **Every session for that account is signed out**, so whoever locked it out does
-not keep a cookie.
+The first prompts for the new password. The second generates one and prints it.
+**Every session for that account is signed out.**
 
 </Step>
 
@@ -81,8 +77,8 @@ deplo recover admin ada
 deplo recover unsuspend ada
 ```
 
-`owner` hands over the crown, and with it instance admin and an un-suspended state. The previous
-owner keeps their admin flag - demote them from **Settings -> Users** if that is not what you want.
+`owner` transfers ownership and restores admin and active status. The previous
+owner keeps their admin flag until you remove it in **Settings -> Users**.
 
 </Step>
 
@@ -90,37 +86,30 @@ owner keeps their admin flag - demote them from **Settings -> Users** if that is
 
 ## When the address is what broke
 
-If the panel's domain, its DNS or its certificate stops working, the dashboard is unreachable and
-cannot be used to fix its own address.
+If the panel's domain, DNS, or certificate is broken, restore its address from
+the control-plane host:
 
 ```bash
 deplo recover panel-address deplo.example.com
 deplo recover panel-address -
 ```
 
-`-` puts the panel back on its generated `deplo-<hex>.nip.io` backup address, and turns that backup
-address back on if it had been switched off. The proxy is reconfigured on the spot. Restart the
-control plane afterwards so install commands and links carry the new address:
+`-` restores the generated `deplo-<hex>.nip.io` address. Restart the control
+plane afterwards so install commands and links use the restored address:
 
 ```bash
 deplo restart
 ```
 
-There is a matching command for a server Deplo can no longer reach, when the address was simply
-mistyped:
+To correct a server address that was mistyped:
 
 ```bash
 deplo recover server-address eu-main-1 10.0.0.7
 deplo recover server-address eu-main-1 10.0.0.7 9443
 ```
 
-It writes the address with none of the usual checks and no reachability probe, which is exactly
-what makes it useful when the panel refuses the correction.
-
-<Callout type="warn" title="No gates, no trail">
-  These commands write to the database directly. They skip every capability check and they do not
-  appear in **Activity**. Root on the host is the only credential they ask for.
-</Callout>
+This skips the normal reachability check, so it also works when the panel
+cannot currently reach the server.
 
 ## From a source checkout
 
