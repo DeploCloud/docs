@@ -5,19 +5,16 @@ description: Why Deplo never exposes a Docker socket, and how one grant gates ev
 
 import { Layers, HardDrive, Users, Library } from "lucide-react";
 
-Everything that lets a container reach outside its own sandbox and touch
-the server: bind mounts, kernel capabilities, devices, host namespaces,
-foreign networks and foreign volumes.
+This covers anything that lets a container reach outside its sandbox:
+bind mounts, devices, host namespaces, foreign networks, and host volumes.
 
-All of it sits behind one grant: **Bind server folders** on the account, `canMountHostVolumes` in
-the API. It is not a team capability and it is not on a role, which is where people look first.
+All of it uses one account-level grant: **Bind server folders**
+(`canMountHostVolumes` in the API). It is not a team capability or role.
 
-## Why one grant covers all of it
+## What the grant protects
 
-A Compose file is user-written YAML that reaches the agent almost
-verbatim. Gating only the obvious bind mount would leave a plain member one
-key away from root on the machine, because these are all the same
-capability wearing different clothes:
+A Compose file reaches the agent almost verbatim, so these options can all
+cross the same host boundary:
 
 - `privileged: true` alone is enough to mount the host's disk and chroot
   into it.
@@ -32,7 +29,7 @@ capability wearing different clothes:
 - `driver_opts: {type: none, device: /, o: bind}` is a bind mount of the
   host, declared one level up from where a service-level check would look.
 
-## What is gated
+## Compose options that need access
 
 **Service keys**, twenty-four of them:
 
@@ -79,24 +76,19 @@ loads host SSH keys or agents, or that runs privileged.
 from a file nobody showed Deplo, and those keys can be any of the above. No permission makes them
 work; inline what they were bringing in.
 
-**What a refusal tells you.** A refusal names what tripped it - the key, or the mount - and who can turn the
-permission on. If you are told an app reaches the server and you cannot see
-where, that sentence is where to look.
+**What a refusal tells you.** The message names the key or mount that crossed
+the boundary and who can grant access.
 
-**You are told before you deploy, not after.** A Compose stack or a template that reaches the
-server carries a notice on the card that holds **Deploy** - so a one-click template that wants the
-Docker socket says so while you can still change your mind. The compose editor marks the exact
-line as you type.
+**You are warned before deploying.** The deploy card and Compose editor mark
+the exact option that needs the grant.
 
-**What is never gated: hardening.** `cap_drop` and `read_only` are on no list at all, and
-`security_opt: no-new-privileges` is allowed by name. That is deliberate: a permission prompt in
-front of the safer choice is one people learn to route around, and then they route around the one
-that mattered.
+**Hardening is not gated.** `cap_drop`, `read_only`, and
+`security_opt: no-new-privileges` are allowed.
 
 The value is read, though. `no-new-privileges:true` is the hardening; `no-new-privileges:false`
 turns it off, and that is gated like anything else.
 
-## Publishing a port is a separate grant
+## Published ports use a separate grant
 
 `canExposePorts` covers publishing a container port on the host: an app's
 [**Published ports**](/advanced/published-ports), a `ports:` entry in a Compose file, and a
@@ -107,19 +99,17 @@ It is separate because it is a different risk. A published port is
 reachable from the network, but it does not give the container the
 machine.
 
-## How to grant it
+## Grant access
 
-Neither grant is a team capability, so neither is on a role or on the Members page. They are
-properties of the **account**, instance-wide: **Settings -> Users -> the user -> Permissions ->
-Advanced grants**, holding **Publish ports** and **Bind server folders**.
+Neither grant is a team capability. Find them at **Settings -> Users -> the
+user -> Permissions -> Advanced grants**.
 
 An instance admin holds both implicitly, which is why both switches show as on and disabled while
 that toggle is set.
 
-Grant them to somebody who administers the servers. Not to everybody who
-deploys apps, and never as a shortcut to make one Compose file save.
+Grant them to server administrators, not to every member who deploys apps.
 
-## What to do when you hit the wall
+## Alternatives when access is denied
 
 Nine times out of ten there is a supported answer that does not need the
 grant:
@@ -153,20 +143,21 @@ Containers that are already running keep running. Revoking a grant is not a
 kill switch - it stops the next deploy, it does not stop what is up. Stop the
 app if that is what you need.
 
-## Good to know
+## Important limits
 
-  - **A key that is present but empty declares nothing.** `cap_add: []` and
-  `privileged: false` do not trip the gate. - **Deplo's own render-time entries
-  never trip it.** The check reads what you authored, not the finished file. -
-  **An import can hit this too.** Items needing a grant you do not hold land in
-  the migration report rather than being created. - **This is a real trust
-  boundary, not a formality.** Somebody with this grant can read every other
-  team's data on that machine.
+- **An empty key declares nothing.** `cap_add: []` and `privileged: false`
+  do not trip the gate.
+- **Deplo's generated entries do not trip it.** The check reads what you
+  authored, not the rendered file.
+- **Imports can hit this gate too.** Items needing a grant land in the
+  migration report instead of being created.
+- **Treat this as host-level access.** Someone with this grant can read other
+  teams' data on that machine.
 
 Save or deploy refused for a permission you don't hold? See [Sign-in and
 access troubleshooting](/troubleshooting/sign-in-and-access).
 
-## Next steps
+## See also
 
 <Cards>
   <Card

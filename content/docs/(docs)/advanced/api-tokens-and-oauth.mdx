@@ -8,8 +8,8 @@ import { basePath } from "@/lib/base-path";
 
 import { Library, Bot, RefreshCw } from "lucide-react";
 
-For anything that talks to Deplo without a browser, like an
-[MCP agent](/guides/mcp-server).
+Use tokens for scripts, CI, API clients, and
+[MCP agents](/guides/mcp-server) that access Deplo without a browser.
 
 <Image
   src={`${basePath}/screenshots/api-tokens-and-oauth/01-tokens-list.png`}
@@ -23,9 +23,8 @@ For anything that talks to Deplo without a browser, like an
 belongs to the person who created it, and nobody else can see, edit or
 revoke it - not a team admin, not an instance admin.
 
-A token is **a principal with its own capabilities**, not an impersonation
-of the person who made it. You choose what it can do when you mint it, and
-you can change that afterwards without reissuing it.
+A token has its own capabilities, rather than impersonating its creator.
+You can change its capabilities later without reissuing it.
 
 Its **effective** power is the live intersection of two things:
 
@@ -41,18 +40,15 @@ capabilities:
 | **Use API tokens** (`manage_tokens`) | The member's tokens can act in this team at all |
 | **Connect AI agents** (`manage_mcp`) | The member's tokens can drive this team over MCP |
 
-Both are read live on every request. Taking a capability away from
-somebody immediately blunts every token they own, in that team. Removing
-them from the team cuts those tokens off completely. There is no
-forgotten credential quietly holding powers its owner lost a year ago, and
-nobody has to hunt for it: the lever is the member, never the token.
+Both are checked live on every request. Removing a member from a team or
+taking away either capability immediately cuts off the relevant tokens.
 
 **Settings -> Members** shows how many tokens and agents each member has
 reaching the team - a number, never the credentials.
 
 The secret is shown **once**, at creation. Only its hash is stored.
 
-## Create one
+## Create an API token
 
 <Steps>
 <Step>
@@ -132,7 +128,7 @@ You will not see it again.
 </Step>
 </Steps>
 
-## Use one
+## Use the token
 
 Send it as a bearer token, and name the team you are acting in:
 
@@ -148,7 +144,7 @@ A bearer request acts in **one** team. Without the header it lands in the
 first team the token reaches. The full surface is in the
 [API reference](/api-reference).
 
-## Scope, and the rule that surprises people
+## Scope and effective access
 
 **Naming a project, a folder or an app clamps the token to the capabilities that mean something
 at that level**, and drops the rest. Managing the team's members is not one of them, so a token
@@ -181,9 +177,7 @@ should only see part of that.
 
 ## Expiry
 
-`api_tokens.expires_at` is checked **before the team is picked and before
-the membership is read**, so one comparison covers GraphQL, MCP and the
-deploy hook at once.
+Expiry is checked before access, across GraphQL, MCP and deploy hooks.
 
 Nothing sweeps an expired token away, on purpose: the list has to be able
 to tell you why a credential stopped working.
@@ -191,7 +185,7 @@ to tell you why a credential stopped working.
 Tokens minted before expiry existed have none, and stay that way until you
 edit them.
 
-## Good to know
+## Important limits
 
 - **Shown once.** Lost means revoke and mint again.
 - **A token cannot transfer team ownership.** That action needs a human
@@ -214,7 +208,7 @@ edit them.
 
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
 
-## Next steps
+## See also
 
 <Cards>
   <Card icon={<Library className="text-blue-400" />} title="API reference" description="The full GraphQL surface" href="/api-reference" />

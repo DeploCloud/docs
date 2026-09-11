@@ -8,13 +8,11 @@ import { basePath } from "@/lib/base-path";
 
 import { Lock, Layers, HardDrive, Globe } from "lucide-react";
 
-Paste a `docker-compose.yml` and let Deplo run it: several containers, a
-network between them, whatever the vendor's README told you to run. Deplo
-adds routing, TLS, variables, volumes and backups on top.
+Paste a `docker-compose.yml` to run several containers as one app. Deplo adds
+routing, TLS, variables, volumes and backups on top.
 
-Use it for software that ships as a Compose stack, or for your own
-multi-service setups. For a single container from one image,
-[Deploy a Docker image](/guides/deploy/docker-image) is simpler.
+Use it for software that ships as a Compose stack or for your own
+multi-service setup. For a single image, [Deploy a Docker image](/guides/deploy/docker-image) is simpler.
 
 Your YAML is treated as **authored input, not a trusted document**. Deplo
 parses it, checks it, folds in what it must, and ships the result to the
@@ -74,7 +72,7 @@ agent.
   rename one. Only the services you route, or attach to the network yourself,
   take a name there.
 
-## Create one
+## Create a Compose app
 
 <Steps>
 <Step>
@@ -151,7 +149,7 @@ because they only take one base URL. Add the second row in **Domains** with the
 same hostname and a **Path** of `/api`.
 </Callout>
 
-## What is different about a Compose app
+## How Compose apps differ
 
 | Field | What changes |
 | --- | --- |
@@ -205,7 +203,7 @@ redeploy pick up a moved tag. A `--pull` of your own replaces it:
   `pull access denied`.
 - **`--wait`** makes the deploy wait for every service's health check.
 
-## Good to know
+## Important behavior
 
 - **`version:` and `ports:` are usually noise here.** Deplo routes through
   Traefik, so publishing a host port is rarely what you want, and it needs
@@ -249,7 +247,7 @@ redeploy pick up a moved tag. A `--pull` of your own replaces it:
 Still stuck? See [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
 </Callout>
 
-## Next steps
+## See also
 
 <Cards>
   <Card icon={<Lock className="text-blue-400" />} title="Host access" description="What a Compose file is and is not allowed to reach" href="/advanced/host-access-and-privileges" />

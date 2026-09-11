@@ -8,16 +8,15 @@ import { basePath } from "@/lib/base-path";
 
 import { Globe, Server } from "lucide-react";
 
-Deplo routes apps through its proxy: you add a domain, and the app answers
-on it over HTTPS. That covers websites and APIs, and it does not cover a
-Minecraft server, an SMTP relay, a cache or a TCP game protocol.
+Deplo routes websites and APIs through its proxy and HTTPS. Use a published
+port for protocols that are not HTTP, such as game servers, SMTP, or raw TCP.
 
 A **published port** binds a port of the server straight to a port of your
 container, so clients connect to `your-server:16379` instead of to a name.
 
 **Settings -> Advanced -> Published ports**, on an app.
 
-## How to publish one
+## Publish a port
 
 <Steps>
 <Step>
@@ -69,12 +68,12 @@ The ports are written into the app's Compose file, so they bind on the
 </Step>
 </Steps>
 
-## The rules
+## Rules
 
 - **It needs the publish-ports permission** (`canExposePorts`), the same one a database's **Host
   port** needs. Without it the section is read-only and says so - though removing every port needs
   no grant, so you are never locked out of undoing one. See
-  [Host access](/advanced/host-access-and-privileges#publishing-a-port-is-a-separate-grant).
+  [Host access](/advanced/host-access-and-privileges#published-ports-use-a-separate-grant).
 - **Ports under 1024 are refused.** They belong to the host, and 80 and 443
   belong to Deplo's proxy. Publish 8025 and let your DNS or firewall do the
   rest.
@@ -94,7 +93,7 @@ The ports are written into the app's Compose file, so they bind on the
   firewall in front of it, and use a domain whenever the protocol is HTTP.
 </Callout>
 
-## Do you actually need one?
+## When not to use one
 
 | You wanted                                              | Do this instead                                                          |
 | ------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -103,7 +102,7 @@ The ports are written into the app's Compose file, so they bind on the
 | An app to reach its database                            | Nothing. The database answers as `db-<name>`.                            |
 | A game server, a mail server, a raw TCP or UDP protocol | A published port. This is what it is for.                                |
 
-## Next steps
+## See also
 
 <Cards>
   <Card

@@ -11,18 +11,14 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-Use it when builds are starving production of CPU, or when several small
-servers would rather share one big builder.
+Use it when builds are competing with production for CPU, or when several
+small servers can share one larger builder.
 
-A build server is a server installed in the **Build only** role: it gets
-Docker and the address-pool setup, because it runs the full build pipeline,
-but **no Traefik**, and it drops out of every deploy-target picker. Nothing
-is ever routed to it.
+A build server uses the **Build only** role. It gets Docker and address pools,
+but no Traefik and never appears as a deploy target.
 
-At deploy time the builder produces the image, and the image is relayed to
-the target host **through the control plane**, because agents cannot dial
-each other. The deploy occupies a slot in the **builder's** queue, since
-that is where the cost is.
+The builder sends the image to the target host through the control plane.
+The deploy uses a slot in the builder's queue.
 
 Build logs still belong to the app. Read them where you always do.
 
@@ -51,7 +47,7 @@ from ever building anywhere else, turn off **Build somewhere else if that
 server is down** in that app's build settings: its deploy then fails instead,
 and the running version is left alone.
 
-## Set one up
+## Configure a build server
 
 <Steps>
 <Step>
@@ -92,7 +88,7 @@ or on any server you marked as a fallback.
 </Step>
 </Steps>
 
-## Good to know
+## Important limits
 
 - **Both machines need the same CPU architecture.** An `arm64` builder
   cannot produce an `amd64` image. Mismatched choices are shown but
@@ -119,7 +115,7 @@ or on any server you marked as a fallback.
 
 More in [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
 
-## Next steps
+## See also
 
 <Cards>
   <Card icon={<Tags className="text-blue-400" />} title="Server roles" description="Everything, Build only, Backups only, Migration source" href="/advanced/server-roles" />

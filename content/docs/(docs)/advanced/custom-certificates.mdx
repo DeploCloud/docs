@@ -5,8 +5,8 @@ description: Install a TLS certificate you already hold, instead of letting Let'
 
 import { Globe, Server, LifeBuoy } from "lucide-react";
 
-For wildcards, a company certificate authority, or a
-hostname no HTTP challenge can reach.
+Use this for wildcards, a private certificate authority, or a hostname that
+cannot complete an HTTP challenge.
 
 **Settings -> Servers -> a server -> Certificates.** Instance admins only.
 
@@ -26,7 +26,7 @@ set to **None (no certificate)** never does: it is on plain HTTP by definition.
 Installing a certificate that fully supersedes one already on the host replaces it; one that
 merely overlaps is kept alongside.
 
-## Install one
+## Install a certificate
 
 <Steps>
 <Step>
@@ -61,7 +61,7 @@ Redeploy the app, or use **Reload** to re-apply routing.
 
 **Refresh** re-reads the store from the host. **Remove** deletes it there.
 
-## Good to know
+## Important limits
 
 - **Nothing renews it.** This is the big one. The page warns during the
   last three weeks, and after that visitors get an expiry error. Put the
@@ -86,7 +86,7 @@ Redeploy the app, or use **Reload** to re-apply routing.
 
 More in [Domains and TLS troubleshooting](/troubleshooting/domains-and-tls).
 
-## Next steps
+## See also
 
 <Cards>
   <Card icon={<Globe className="text-blue-400" />} title="Domains and HTTPS" description="Routing and Let's Encrypt certificates" href="/guides/networking/domains-and-https" />

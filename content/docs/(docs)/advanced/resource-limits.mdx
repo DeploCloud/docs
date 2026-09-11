@@ -8,8 +8,8 @@ import { basePath } from "@/lib/base-path";
 
 import { Activity, Server, Database } from "lucide-react";
 
-Without them, one runaway container can take a
-host down, and everything else with it.
+Resource limits stop one runaway container from taking down the host and
+everything else on it.
 
 **Settings -> Resources**, on an app or a database.
 
@@ -20,7 +20,7 @@ which is why they take effect on the next deploy and not before.
 Every dimension is independently optional. Setting a memory limit does not
 oblige you to set anything else.
 
-## The two that matter
+## Memory and CPU
 
 <Image
   src={`${basePath}/screenshots/resource-limits/01-size-tiles.png`}
@@ -47,12 +47,10 @@ out and says why.
   }}
 />
 
-Under each field a slider runs across the server's total: drag it or type
-the number, both move together. With the **View monitoring** permission the
-same bar shows what the app uses right now and its peak over the last 15
-minutes, and the server card suggests a size with 1.5x headroom over that
-peak: **Apply** fills the fields, **Save limits** keeps them. A cap under
-the recent peak is flagged before you save.
+The slider and numeric field stay in sync. With **View monitoring**, the bar
+also shows current and 15-minute peak usage. The suggested size leaves 1.5x
+headroom; **Apply** fills it and **Save limits** stores it. A cap below the
+recent peak is flagged before you save.
 
 Limits apply on the next deploy, so the confirmation offers **Deploy now**
 (**Redeploy now** on a database). **Clear all** removes every limit,
@@ -120,7 +118,7 @@ tightening.
   }}
 />
 
-## Good to know
+## Important limits
 
 - **Disk quota only works on some hosts.** It needs `overlay2` on XFS with
   project quotas, or devicemapper. Anywhere else, Compose rejects the key
@@ -147,7 +145,7 @@ tightening.
 
 More in [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
 
-## Next steps
+## See also
 
 <Cards>
   <Card icon={<Activity className="text-blue-400" />} title="Monitoring" description="What the app actually uses" href="/guides/observability/monitoring" />
