@@ -1,6 +1,6 @@
 ---
 title: Add a domain
-description: Put a hostname you own in front of an app, and serve it over HTTPS.
+description: Give an hostname to your app, and serve it over HTTPS.
 icon: Globe
 ---
 
@@ -9,10 +9,8 @@ import { basePath } from "@/lib/base-path";
 
 import { Globe, ShieldCheck, GitPullRequestArrow } from "lucide-react";
 
-Every app gets a generated `nip.io` address from its first deploy. To serve it on a hostname you
-own, point that hostname at the server and add it to the app. A new domain is created without a
-certificate, on plain HTTP; you opt into HTTPS by picking a provider, and nothing is registered
-with Let's Encrypt until you do.
+Every app gets a generated `nip.io` address from its first deploy, this guide
+covers how to change it
 
 ## Point the domain at the server
 
@@ -29,13 +27,7 @@ app's generated `nip.io` URL.
 
 ### Create an A record
 
-At your DNS provider, create an **A record** for the hostname, pointing at that IP. For
-`app.example.com` on `203.0.113.10`:
-
-```
-Type   Name   Value          TTL
-A      app    203.0.113.10   auto
-```
+At your DNS provider, create an **A record** for the hostname
 
 </Step>
 </Steps>
@@ -79,17 +71,14 @@ for you.
 
 ### Confirm, and wait for DNS
 
-Click **Add domain**. The row reads **Waiting for DNS** until the record resolves to this server,
-then becomes routable on its own. Traefik requests the certificate the first time somebody loads
-the site over HTTPS, which takes a few seconds and renews itself from then on.
+Click **Add domain**. The DNS will be automatically checked
 
 </Step>
 <Step>
 
 ### Set it as primary
 
-Open the row's menu and choose **Set as primary**. The primary hostname is the one shown in the
-app header and used as the production URL.
+When available, you can click the star on the domain's row to mark it as primary
 
 </Step>
 </Steps>
@@ -99,16 +88,14 @@ you only intend to serve on 443.
 
 ## No domain yet?
 
-The **Add Domain** dialog has a **Generate** button that mints another free `nip.io` hostname on
-the spot: a second entry point, a staging name, or just a shorter URL than the generated one. It
-cannot hold a certificate, so it stays on plain HTTP.
+The **Add Domain** dialog has a **Generate** button that automatically creates a new nip.io hostname
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
 | Stuck on **Waiting for DNS** | The record has not propagated, or it points at a different machine. Check with `dig +short app.example.com`. |
-| The browser shows a certificate warning | The certificate has not issued. Almost always port 80 is closed, or the domain resolves elsewhere. |
+| The browser shows a certificate warning | The certificate has not issued, the port 80 is closed, or the domain resolves elsewhere. If the hostname is new it needs to propagate or your browser is using the old certificate from cache |
 | 404 from the proxy | The domain resolves and the certificate is fine, but no router matches. Usually the app is stopped, or the domain sits on an app running on a different server. |
 
 More in [Domains and TLS](/troubleshooting/domains-and-tls).
