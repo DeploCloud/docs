@@ -1,6 +1,6 @@
 ---
 title: Deploys and builds
-description: The build fails, the site does not answer, a push does not deploy, and other build and deploy symptoms.
+description: Fix failed builds, unreachable apps, missing deploys, and full servers.
 ---
 
 import { Wrench, GitBranch, Rocket, Server } from "lucide-react";
@@ -8,39 +8,53 @@ import { Wrench, GitBranch, Rocket, Server } from "lucide-react";
 <Accordions>
 <Accordion title="The build fails">
 
-**Read the build log first.** It is the deployment's page, and it says what
-command failed.
+**Read the build log first.** Use the last error line to choose the fix.
 
 | In the log | Cause | Fix |
 | --- | --- | --- |
-| `command not found` | Framework detection guessed wrong, or the command belongs to a dependency that is not installed | Set **Build command** in **Settings -> Deployments** |
+| `command not found` | Detection chose the wrong command, or a dependency is missing | Set **Build command** in **Settings -> Deployments**, or add the dependency |
 | `Cannot find module` | The build ran in the wrong directory | Set **Root Directory** |
 | `pull access denied` | A private image with no matching credential | Add the registry in **Settings -> Registries** |
-| `Authentication failed` while cloning | The git token expired or was revoked | **Settings -> Git**, then **Test connection** |
+| `Authentication failed` while cloning | The Git credential expired or was revoked | **Settings -> Git**, then **Test connection** |
 | `no space left on device` | The server's disk is full | See "No space left on device" below |
-| The log ends with nothing | The builder was killed, usually out of memory | Raise the memory limit, or build on a bigger machine |
+| The log ends with nothing | The builder was killed, usually for lack of memory | Raise the memory limit, or use a bigger build server |
 
-Detection is re-run every deploy and is never stored. A build that used to
-work and now picks the wrong commands usually means something in the
-repository changed what it looks like. Type the commands you want and they
-win permanently.
+Detection runs on every deploy. If it changed after a repository change, set
+the commands explicitly; explicit settings win.
 
 </Accordion>
-<Accordion title="The build passes and the site does not answer">
+<Accordion title="The build passes but the app is unreachable">
 
-In order of how often it is the answer:
+Check these in order:
 
-1. **Wrong container port.** Deplo routes to one port. Check what your process
-   actually listens on and set **Container port**.
-2. **Bound to `127.0.0.1`.** A process listening on localhost inside a
-   container is unreachable from outside it. Bind `0.0.0.0`.
-3. **The container exited.** Read the app's **Logs**. A missing environment
-   variable is the usual reason.
-4. **The domain is not routed.** Check the domain's DNS state in **Domains**.
-   See [Domains and TLS](/troubleshooting/domains-and-tls).
+1. **Container port:** it must match the port your process listens on.
+2. **Bind address:** listen on `0.0.0.0`, not `127.0.0.1`.
+3. **Container status:** read the app's **Logs** if it exited.
+4. **Domain state:** only a routable domain can reach the app. See
+   [Domains and TLS](/troubleshooting/domains-and-tls).
+
+Use the generated `https://deplo-<hex>.nip.io` address to separate an app
+problem from a DNS or certificate problem.
 
 </Accordion>
-<Accordion title="A push does not deploy">
+<Accordion title="The app restarts, is unhealthy, or has no container">
+
+Open the app's **Logs** tab and look at the runtime notice:
+
+- **Restarting:** the process starts and exits repeatedly. Check its command,
+  required variables, and the last log lines.
+- **Unhealthy:** the container is running but its healthcheck fails. Check the
+  path, port, command, and whether `curl` or `wget` exists in the image.
+- **Degraded:** a Compose service is missing or stopped. Check the service
+  named in the notice and its logs.
+- **Not running:** the app is deployed but no container is running. The logs
+  usually show why it exited.
+
+After changing variables, the healthcheck, or storage, **Redeploy**. Use
+**Rebuild container** only when the rendered stack must be recreated.
+
+</Accordion>
+<Accordion title="A push does not start a deploy">
 
 | Check | Where |
 | --- | --- |
@@ -50,58 +64,25 @@ In order of how often it is the answer:
 | Do **Watch paths** exclude what you pushed? | Same page. Empty means deploy on anything |
 | Is it a bare Git URL? | Then there is no webhook at all. Use the [deploy hook](/guides/releases/automatic-deployments) |
 
-If the panel's address changed recently, providers are still delivering to
-the old one. Re-check **Settings -> Git**.
+If the panel address changed, update the webhook or use a new deploy hook.
 
 </Accordion>
-<Accordion title="The deploy is stuck queued">
+<Accordion title="A deploy is stuck in the queue">
 
-Deploys to one server serialize, `1` at a time by default. The build log
-shows the queue position.
+Deploys to one server run one at a time by default. Check the build log and
+the target server:
 
-- Another deploy is running on that server. Wait, or raise **Concurrent
-  deployments** in that server's **Overview**.
-- The app builds on a [build server](/advanced/build-servers) and the
-  **builder's** queue is full.
-- The server is unreachable. Check its health.
+- Another deploy is running. Wait, or raise **Concurrent deployments** in the
+  server's **Overview**.
+- A [build server](/advanced/build-servers) is full. Check that server too.
+- The target server is unreachable. Refresh its health.
 
 </Accordion>
 <Accordion title="No space left on device">
 
-The single most common operational failure.
-
-<Steps>
-<Step>
-
-### Open Cleanup
-
-**Settings -> Servers -> the server -> Cleanup**.
-
-</Step>
-<Step>
-
-### Reclaim disk now
-
-Click **Reclaim disk now**.
-
-</Step>
-<Step>
-
-### Check what is holding disk
-
-If it frees little, look at what is holding disk. Old app images and the
-build cache are the usual pair.
-
-</Step>
-<Step>
-
-### Set a schedule
-
-Set a **Schedule** so it does not happen again, and check **Images kept per
-app**.
-
-</Step>
-</Steps>
+Open **Settings -> Servers -> the server -> Cleanup**, then click **Reclaim
+disk now**. If little space is freed, check old app images and the build cache.
+Set a **Schedule** and review **Images kept per app**.
 
 <Callout type="info" title="No automatic pruning">
 Deplo deliberately never runs `system prune`, container prune or volume
@@ -110,33 +91,30 @@ volume may hold somebody's data.
 </Callout>
 
 <Callout type="warn" title="Watch the interaction with rollbacks">
-If **Images kept per app** is lower than an app's **Keep**, rollback targets
-get pruned and the rollback fails.
+Keep **Images kept per app** at least as high as the app's **Keep**, or rollback
+targets can be pruned.
 </Callout>
 
 </Accordion>
 <Accordion title="A rollback fails or is not offered">
 
-- **Not offered**: the source is a Docker image or a Compose stack, so there
-  is no image Deplo built. Or **Keep** is `0`.
-- **Fails on a missing image**: it was pruned. Raise **Keep**, and raise
-  **Images kept per app** on that server.
+- **Not offered:** the source is a Docker image or Compose stack, or **Keep**
+  is `0`. Deplo did not build an image to roll back to.
+- **Missing image:** it was pruned. Raise **Keep** and **Images kept per app**.
 
 </Accordion>
-<Accordion title="The deploy succeeded but nothing changed">
+<Accordion title="The deploy succeeded but the app did not change">
 
-- **A variable you set is not applied**: variables apply on the next deploy,
-  and saving is not deploying.
-- **Storage you added is not mounted**: same.
-- **The rendered stack is identical**, so Compose changed nothing. Use
-  **Rebuild container** in the app's **Settings -> Advanced** to force a recreate.
+- Variables and storage changes apply on the next deploy; saving alone does
+  not deploy.
+- If the rendered Compose stack is unchanged, use **Rebuild container** in
+  **Settings -> Advanced**.
 
 </Accordion>
-<Accordion title="Stale in-flight deploys">
+<Accordion title="A deploy shows an old error after restart">
 
-If the control plane restarts mid-build, deploys that were in flight are
-marked `error` at boot rather than left spinning. A later telemetry frame
-proving the containers are running clears a stale `error` on its own.
+After a control-plane restart, an in-flight deploy can show `error` even when
+the containers are running. A later telemetry update clears that stale state.
 
 </Accordion>
 </Accordions>

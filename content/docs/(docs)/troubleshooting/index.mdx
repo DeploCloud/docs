@@ -1,95 +1,60 @@
 ---
 title: Troubleshooting
-description: Start here when something looks broken, a quick triage checklist and a symptom index.
+description: Find the symptom, check the right log, and fix the common causes.
 ---
 
-Organised by **symptom**, because a symptom rarely belongs to one feature.
-
-## Start here, whatever the symptom
-
-Four questions answer most of it before you read anything else.
-
-<Steps>
-<Step>
-
-### Is the server online?
-
-**Settings -> Servers**. A card reading **warning** means the agent is up but
-Docker is not answering there, and nothing can deploy. **Unknown** means the
-reading is stale.
-
-</Step>
-<Step>
-
-### What do the logs say?
-
-The app's **Logs** tab, or the deployment's build log. The answer is usually a
-sentence in there.
-
-</Step>
-<Step>
-
-### Did it ever work?
-
-If it did, something changed: a push, a variable, a token expiring, a
-certificate, a disk filling up.
-
-</Step>
-<Step>
-
-### Can you reach the panel on its generated address?
-
-`https://deplo-<hex>.nip.io` answers whatever your own domain is doing. See
-[ports, networks, and files](/reference/ports-networks-and-files).
-
-</Step>
-</Steps>
+Start with the symptom you can see. Keep the exact error message and the time it
+happened - they are usually enough to find the cause.
 
 ## Find your symptom
 
 | What you see | Page |
 | --- | --- |
-| The build fails | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| The build passes and the site does not answer | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| A push does not deploy | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| The deploy is stuck queued | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| No space left on device | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| A domain is stuck on **Waiting for DNS** | [Domains and TLS](/troubleshooting/domains-and-tls) |
-| Certificate warning in the browser | [Domains and TLS](/troubleshooting/domains-and-tls) |
-| 404 from the proxy | [Domains and TLS](/troubleshooting/domains-and-tls) |
-| A redirect loop | [Domains and TLS](/troubleshooting/domains-and-tls) |
-| A server is stuck **provisioning** | [Servers and agents](/troubleshooting/servers-and-agents) |
-| A server is online but every deploy fails | [Servers and agents](/troubleshooting/servers-and-agents) |
-| Metrics show dashes | [Servers and agents](/troubleshooting/servers-and-agents) |
-| A database will not start | [Databases and backups](/troubleshooting/databases-and-backups) |
-| An app cannot reach its database | [Databases and backups](/troubleshooting/databases-and-backups) |
-| A backup or a restore fails | [Databases and backups](/troubleshooting/databases-and-backups) |
-| A backup artifact will not decrypt | [Databases and backups](/troubleshooting/databases-and-backups) |
-| You cannot sign in | [Sign-in and access](/troubleshooting/sign-in-and-access) |
-| A team shows a lock screen | [Sign-in and access](/troubleshooting/sign-in-and-access) |
-| Passkeys say **Not usable here** | [Sign-in and access](/troubleshooting/sign-in-and-access) |
-| An API token returns 401 or 403 | [Sign-in and access](/troubleshooting/sign-in-and-access) |
-| A button is missing or greyed out | [Sign-in and access](/troubleshooting/sign-in-and-access) |
+| A build fails or a deploy is queued | [Deploys and builds](/troubleshooting/deploys-and-builds) |
+| The build passes, but the app does not answer | [Deploys and builds](/troubleshooting/deploys-and-builds) |
+| A push does not create a deploy | [Deploys and builds](/troubleshooting/deploys-and-builds) |
+| A rollback is missing or fails | [Deploys and builds](/troubleshooting/deploys-and-builds) |
+| The server is full | [Deploys and builds](/troubleshooting/deploys-and-builds) |
+| DNS, HTTPS, a 404, or a redirect is wrong | [Domains and TLS](/troubleshooting/domains-and-tls) |
+| The panel or an app domain is unreachable | [Domains and TLS](/troubleshooting/domains-and-tls) |
+| The server is provisioning, offline, or unhealthy | [Servers and agents](/troubleshooting/servers-and-agents) |
+| Every deploy fails on one server | [Servers and agents](/troubleshooting/servers-and-agents) |
+| Metrics are empty | [Servers and agents](/troubleshooting/servers-and-agents) |
+| A container keeps restarting, is unhealthy, or is missing | [Deploys and builds](/troubleshooting/deploys-and-builds) |
+| A database will not start or an app cannot connect to it | [Databases and backups](/troubleshooting/databases-and-backups) |
+| A backup or restore fails | [Databases and backups](/troubleshooting/databases-and-backups) |
+| You cannot sign in, or a passkey is unusable | [Sign-in and access](/troubleshooting/sign-in-and-access) |
+| A token returns 401 or 403, or a button is missing | [Sign-in and access](/troubleshooting/sign-in-and-access) |
 
-## Things that look like bugs and are not
+## Check these first
+
+1. **Open the relevant log.** Use the deployment's build log, the app's
+   **Logs** tab, or a destination's **Connection log**.
+2. **Check the server.** In **Settings -> Servers**, refresh the server and
+   run **Check readiness** if the problem involves a deploy or container.
+3. **Separate the app from its domain.** Try the generated
+   `https://deplo-<hex>.nip.io` address. If it works, investigate DNS or the
+   certificate. If it does not, investigate the app or server.
+
+If it worked before, compare the last successful deploy with the failing one.
+The change is usually a variable, dependency, Git credential, certificate, or
+full disk.
+
+## Statuses people often misread
 
 | What you see | What it means |
 | --- | --- |
-| An app says **Error** but the site works | `error` means the **last deploy attempt** failed. The previous stack is still serving |
-| A preview is grey, not red | It was evicted because the app is at its preview limit. **Redeploy** brings the same URL back |
-| A cron run says **skipped** | It never started: the container was stopped, or the previous run was still going. Not a failure |
-| A cron run says **lost** | The agent could not report the outcome. The command may well have completed |
-| A readiness row says **skip** | It could not be evaluated. Deliberately not a pass |
-| A server says **Unknown** | The health reading is stale. Click **Refresh** |
-| A domain says **Cloudflare DNS** | Proxied, so the origin cannot be verified from here. It is routed anyway |
-| A destination test **failed** | A normal result, not an error. Read the **Connection log** |
+| App **Error**, site still works | The last deploy failed; the previous stack is still serving |
+| Preview is grey | It was evicted at the preview limit; redeploy it |
+| Cron **skipped** | It did not start because the app was stopped or another run was active |
+| Cron **lost** | The agent could not report the result; the command may have completed |
+| Server **Unknown** | The health reading is stale; refresh the server |
+| Readiness **skip** | Deplo could not evaluate that check; it is not a pass |
 
-## Where to get the details
+## If you still need help
 
-Almost every symptom has a matching **If it does not work** section on the
-feature's own guide. Start from [the docs index](/) if you know which feature
-you are in.
+Record the app, server, deploy timestamp, exact error, and the last successful
+deploy. Use the feature guide's **Troubleshooting** section for context.
 
-If you think you found a real bug, the repository's issue tracker is the
-place. If you think you found a security hole, do not open an issue: read the
-project's security policy instead.
+Report bugs in the issue tracker; report security issues using the project's
+security policy.

@@ -1,14 +1,14 @@
 ---
 title: Servers and agents
-description: A server stuck provisioning, deploys failing on a healthy server, and other server and agent symptoms.
+description: Fix provisioning, health, agent, Docker, and server connectivity problems.
 ---
 
 import { ServerPlus, Settings2, Network, FolderTree } from "lucide-react";
 
 <Accordions>
-<Accordion title="A server is stuck on provisioning">
+<Accordion title="A server is stuck provisioning">
 
-`provisioning` means **no agent has ever called home**. On the machine:
+`provisioning` means the agent has never called home. On the machine, run:
 
 ```bash
 systemctl status deplo-agent
@@ -17,40 +17,31 @@ journalctl -u deplo-agent -f
 
 | What you see | Cause |
 | --- | --- |
-| The unit does not exist | The install command never ran, or it failed early |
+| The unit does not exist | The install command never ran, or failed early |
 | `Refusing to run an unverified binary` | The download did not match its checksum. Retry; if it persists, something is intercepting it |
-| The unit runs but nothing happens | It cannot reach the control plane's URL. Check outbound network and that the URL is right |
+| The unit runs but nothing happens | It cannot reach the control plane URL; check outbound access and the URL |
 | `bootstrap token` errors | The token was used already, or it expired. Issue a new one from the server's menu |
 | `status=216/GROUP` | The unit wants the docker group and Docker is not installed. That is expected on a backups-only host, and its unit is installed without it |
 
 </Accordion>
-<Accordion title="Online, but every deploy fails">
+<Accordion title="The server is online but every deploy fails">
 
-**This is the classic one.** Enrolment turns the card green from the
-agent's outbound call home; deploys need inbound `9443`. See
+Enrollment uses an outbound connection; deploys also need inbound `9443`. See
 [ports, networks, and files](/reference/ports-networks-and-files).
 
-Opening the servers page re-dials every agent, so a blocked port usually
-shows there as `offline` with *the agent did not answer within the
-health-check deadline*. A card painted from an older reading still says
-online.
+Refresh **Settings -> Servers** to run a new health check. A stored green
+reading can be stale. The same check applies to the host running Deplo.
 
-This catches the Deplo host itself too: the panel runs in a container and
-dials its own machine by address, so a firewall on that machine blocks it
-exactly like a remote one.
-
-If `ufw` or `firewalld` is holding the port, the install command printed
-the fix on its last lines. Otherwise, from the machine running the
-control plane:
+From the control-plane machine:
 
 ```bash
 nc -vz <server-ip> 9443
 ```
 
-Open the port to the control plane's address and try again.
+Open `9443` to the control plane's address and refresh the server.
 
 </Accordion>
-<Accordion title="warning, error, offline: what each means">
+<Accordion title="A server says warning, error, offline, or Unknown">
 
 | Value | Means | Where to look |
 | --- | --- | --- |
@@ -60,93 +51,69 @@ Open the port to the control plane's address and try again.
 | `Unknown` | The stored reading is stale | Click **Refresh** |
 
 <Callout type="info">
-Health never gates a deploy. A deploy takes a live handshake at that
-moment, which is why a green card and a failing deploy are not a
-contradiction.
+Health is a stored reading. A deploy performs a live handshake, so a green
+card and a failing deploy can still happen together.
 </Callout>
 
 </Accordion>
 <Accordion title="Check readiness instead of guessing">
 
-The server's menu has **Check readiness**. It dials once and reports agent,
-docker, routing (including a real bind test on 80 and 443), capacity, build
-methods and Deplo configuration.
+Use **Check readiness** in the server's menu for one live check of the agent,
+Docker, routing, capacity, build methods, and Deplo configuration.
 
-`fail` means a deploy to this server cannot succeed. `warn` means it
-succeeds but the result is not fully usable. `skip` means it could not be
-evaluated, which is deliberately not a pass.
+`fail` blocks a deploy. `warn` means it can deploy but is not fully usable.
+`skip` means the check could not be evaluated, not that it passed.
 
 </Accordion>
 <Accordion title="Metrics show dashes">
 
-The telemetry stream is not connected. Check the server's health first.
-History lives in the control plane's memory, so it also starts empty after
-a restart of the panel.
+The telemetry stream is not connected. Refresh the server health first.
+History is held in memory and starts empty after a panel restart.
 
 </Accordion>
-<Accordion title="A deploy fails saying Docker cannot create a network">
+<Accordion title="A deploy says Docker cannot create a network">
 
-Docker's default address pools allow about 31 networks, and Deplo uses one per **Environment**.
-Both installers write a larger pool into `/etc/docker/daemon.json`, but **if containers were
-running at install time the Docker restart was skipped**, so the change never took effect.
-
-Restart Docker in a maintenance window. The file is already correct.
-
-</Accordion>
-<Accordion title="Deploys fail with No chain DOCKER-FORWARD">
-
-Docker's iptables chains were removed underneath it, usually by a firewall
-starting after Docker. Restarting Docker recreates them.
+Deplo uses one Docker network per **Environment**. If the installer could not
+restart Docker because containers were running, the configured address pool is
+not active yet. Restart Docker in a maintenance window; the file is already
+correct.
 
 </Accordion>
-<Accordion title="A container was removed but Deplo still shows it">
+<Accordion title="A deploy fails with No chain DOCKER-FORWARD">
 
-Deplo keeps a teardown it could not confirm and retries it on a backoff
-ladder from one minute to a day, eight times. Giving up writes an activity
-entry and raises an alert, so an orphan is never silently left behind.
+Docker's forwarding chains were removed underneath it. Restart Docker to
+recreate them.
 
+</Accordion>
+<Accordion title="A removed container still appears">
+
+Deplo retries an unconfirmed teardown and raises an alert if it gives up.
 Removing the server drops its pending teardowns.
 
 </Accordion>
-<Accordion title="The install command 503s, or says the release could not be resolved">
+<Accordion title="The install command returns 503 or cannot resolve a release">
 
-`/install-agent.sh` refuses to serve an installer it cannot checksum, so it
-answers `503` when it cannot reach `github.com` at all. Deplo asks the GitHub
-API for the newest agent release and falls back to the version it ships
-pinned, whose files are plain downloads - so a rate-limited API is no longer
-enough to stop an install.
-
-A `503` therefore means outbound access to `github.com` from the machine
-running the panel. Check it, then run the command again.
+The panel cannot reach `github.com` to resolve or checksum the agent release.
+Restore outbound access from the panel's machine, then run the command again.
 
 </Accordion>
-<Accordion title="This host's own install command says 127.0.0.1">
+<Accordion title="The install command contains 127.0.0.1">
 
-That is deliberate. The panel is published on loopback and Traefik serves it,
-so `127.0.0.1` is the address that always answers **on this machine** - during
-a takeover it is the only one, because the proxy is bound to loopback until it
-takes 80 and 443. It is the same address the installer bootstraps agent 0 over.
-
-Paste it on this machine and nowhere else. Every other server gets the panel's
-public address, as before.
+That address is for the machine running the panel. Paste it there only;
+another server needs the panel's public address.
 
 </Accordion>
-<Accordion title="Reinstalling an agent">
+<Accordion title="An agent needs to be reinstalled">
 
-Re-run the install command from the server's **Advanced** tab. The
-installer **deletes the existing certificate files** so the host genuinely
-re-enrolls against the new pin, rather than half-trusting the old one.
-
-That is also why the command has to be a **fresh** one: the installer clears
-the old materials either way, so an expired or already-used token leaves the
-agent restarting with `unknown-token` instead of the certificate it had.
-Reissue from the server's menu and paste that.
+Run a fresh install command from the server's **Advanced** tab. It clears the
+old certificates, so an expired or already-used token leaves the agent with
+`unknown-token`. Issue a new token from the server's menu first.
 
 </Accordion>
-<Accordion title="The server is gone for good">
+<Accordion title="A server is permanently gone">
 
-Remove it in Deplo. That is trust revocation and does not need the machine
-to answer. See
+Remove it in Deplo. This revokes trust and does not require the machine to
+answer. See
 [Remove or uninstall](/operations/remove-a-server-or-uninstall).
 
 </Accordion>

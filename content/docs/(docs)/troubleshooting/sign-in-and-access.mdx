@@ -1,6 +1,6 @@
 ---
 title: Sign-in and access
-description: Cannot sign in, passkeys stopped working, tokens returning 401 or 403, and other access symptoms.
+description: Fix sign-in, passkey, token, team access, and permission problems.
 ---
 
 import { ShieldCheck, Users, Lock, Fingerprint } from "lucide-react";
@@ -10,60 +10,52 @@ import { ShieldCheck, Users, Lock, Fingerprint } from "lucide-react";
 
 | Symptom | Cause |
 | --- | --- |
-| The password is rejected | Wrong password, or the account is suspended. An instance admin can reset it |
-| Nothing is accepted at all | The first field takes an email **or** a username - check the one you are typing exists |
-| The six-digit code is rejected | The phone's clock has drifted. TOTP is time-based |
-| Neither the code nor a recovery code works | Recovery codes are single-use. An instance admin has to reset two-factor on the account |
-| Every passkey says **Not usable here** | The panel is on a different hostname than when they were registered. See "Passkeys stopped working" below |
-| The page will not load at all | Try the generated `https://deplo-<hex>.nip.io` address. If the backup address was turned off, see [the panel's own address](/operations/panel-address-and-certificates#turn-the-backup-address-off) |
+| Password rejected | Check the password and whether the account is suspended |
+| No identifier accepted | The field accepts an email or username; check which one exists |
+| Six-digit code rejected | Correct the phone's clock; TOTP is time-based |
+| Code and recovery code rejected | Recovery codes are single-use; an instance admin must reset two-factor |
+| Passkey says **Not usable here** | The panel hostname changed; see "Passkeys stopped working" |
+| Page will not load | Try `https://deplo-<hex>.nip.io`; if disabled, see [the panel's own address](/operations/panel-address-and-certificates#turn-the-backup-address-off) |
 
 </Accordion>
 <Accordion title="Passkeys stopped working">
 
-A passkey is bound by the standard to the hostname it was registered on.
-Moving the panel to a different address invalidates all of them at once.
+Passkeys are bound to the hostname where they were registered. Moving the
+panel invalidates them on the new address.
 
 <Callout type="info" title="The escape hatch">
-The password still signs people in: sign in, then register a new passkey on
-the new address. Everybody on the instance has to do this once. There is no
-way around it.
+Sign in with the password and register a new passkey on the new address.
+Everybody on the instance must do this once.
 </Callout>
 
 </Accordion>
-<Accordion title="A team shows a lock screen">
+<Accordion title="A team is locked until you enroll two-factor">
 
 That team requires two-factor authentication and your account has not
-enrolled. While that is unmet you resolve **nothing** in that team: not in
-the dashboard, not over the API, and neither do any tokens you created.
+enrolled. Until you enroll, you cannot access that team in the dashboard or
+API.
 
 The screen offers to turn it on, switch to another team, or sign out.
 
 </Accordion>
 <Accordion title="A button is missing or greyed out">
 
-In order of likelihood:
+Check these in order:
 
-1. **Your role does not include that capability.** The interface hides or
-   disables what you cannot do.
-2. **A folder share is narrowing you.** Inside a folder, a share
-   **replaces** your team role, and it can be smaller as well as larger.
-   Your member page shows the scope tree.
-3. **It needs a separate grant.** Publishing a port needs **Publish ports**; anything that
-   reaches the host needs **Bind server folders**. Neither is a team capability: they sit on the
-   account, under **Settings -> Users -> the user -> Permissions -> Advanced grants**.
-4. **It is an instance-admin surface.** Servers, Users and the Deplo
-   settings are not team capabilities.
-5. **The feature is off.** Console needs a one-time acknowledgement, and
-   cron jobs and previews need their switch.
+1. **Capability:** your role may not include it.
+2. **Folder share:** a folder share replaces your team role inside that folder.
+3. **Advanced grant:** publishing a port needs **Publish ports**; anything that
+   reaches the host needs **Bind server folders**. Find them under **Settings -> Users -> the
+   user -> Permissions -> Advanced grants**.
+4. **Instance admin:** Servers, Users, and Deplo settings are not team capabilities.
+5. **Feature switch:** Console needs acknowledgement; cron jobs and previews
+   need their switch enabled.
 
 </Accordion>
 <Accordion title="An API token returns 401">
 
-Missing, revoked, or **expired**. Expiry is checked before anything else,
-so one comparison covers GraphQL, MCP and the deploy hook.
-
-Nothing sweeps an expired token away, on purpose: the list has to be able
-to tell you why a credential stopped.
+The token is missing, revoked, or **expired**. Create or rotate it in
+**Settings -> Tokens**.
 
 </Accordion>
 <Accordion title="An API token returns 403">
@@ -76,32 +68,27 @@ to tell you why a credential stopped.
 | The team requires two-factor and its creator has not enrolled | The token resolves nothing |
 
 </Accordion>
-<Accordion title="An id returns 404 and you are sure it exists">
+<Accordion title="An API resource returns 404">
 
-It belongs to another team, or it is outside the token's scope. Deplo
-resolves a cross-team id to nothing rather than to an error that would
-confirm it exists.
+It belongs to another team, or it is outside the token's scope. Deplo resolves
+out-of-scope resources to nothing rather than revealing that they exist.
 
 A deleted app behaves the same way from the moment deletion starts.
 
 </Accordion>
 <Accordion title="You are the owner and locked out">
 
-The instance owner cannot be demoted, suspended or reset by any other admin, which is the point
-of the crown. If that account is genuinely lost, the way back is a command on the host that runs
-the control plane: `deplo recover owner <username>`. The same tool also has `password`, `admin`,
-`unsuspend`, `server-address` and `panel-address` subcommands - see
+The instance owner cannot be reset by another admin. If that account is lost,
+run `deplo recover owner <username>` on the control-plane host. See
 [Break-glass recovery](/operations/break-glass-recovery).
 
 </Accordion>
 <Accordion title="Somebody left the company">
 
-1. **Settings -> Members**, open them, **Advanced**, remove them.
-2. Every token they created immediately loses whatever it inherited from
-   them.
-3. If they were the primary owner, ownership must be transferred **first**,
-   by them. Plan this before the last day.
-4. Check **Activity** for what they did recently.
+1. In **Settings -> Members**, open them, choose **Advanced**, and remove them.
+2. Their tokens immediately lose access from their membership.
+3. Transfer primary ownership first if they are the owner.
+4. Check **Activity** for recent actions.
 
 </Accordion>
 </Accordions>
