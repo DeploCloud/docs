@@ -5,14 +5,12 @@ description: Every variable Deplo itself reads, to configure the platform.
 
 import { Rocket, Terminal, FolderTree } from "lucide-react";
 
-Every variable Deplo itself reads, to configure the **platform**. For the
-variables your apps read at runtime, see
+These configure the **platform**. For variables your apps read at runtime, see
 [Environment variables](/guides/config/environment-variables).
 
-## The control plane
+## Control-plane variables
 
-Read by the Deplo container. `.env.example` at the repo root is a starting point rather than a
-complete list, and it lags the code.
+These configure the dashboard, API, database and control-plane defaults.
 
 <TypeTable
   type={{
@@ -94,7 +92,7 @@ complete list, and it lags the code.
     DEPLO_TAKEOVER: {
       type: "dokploy | coolify",
       description:
-        "Set by the installer when it is replacing another panel on this machine. Seeds the takeover wizard. See Migrations.",
+        "Set by the installer when it is replacing an existing panel on this machine. Seeds the takeover wizard. See Migrations.",
     },
     DEPLO_MONITORING_FORCE_POLL: {
       type: "1",
@@ -109,10 +107,10 @@ complete list, and it lags the code.
   }}
 />
 
-## The installer
+## Variables read by `install.sh`
 
 Written into `/opt/deplo/.env` and read by `docker compose --env-file`. Set
-them in front of the install command.
+them before the install command.
 
 <TypeTable
   type={{
@@ -146,12 +144,11 @@ them in front of the install command.
   }}
 />
 
-Four more the installer honours and nothing else reads: `DEPLO_SKIP_NET_CHECKS=1` to skip the
-outbound reachability probes, `DEPLO_IMAGE` to install from a different image, and `DEPLO_TRACE` /
-`DEPLO_LOG_FILE` for a verbose transcript. `DEPLO_DIR` moves the install directory off
-`/opt/deplo`. The agent installer takes `DEPLO_TRACE` and `DEPLO_LOG_FILE` too.
+The installer also honours `DEPLO_SKIP_NET_CHECKS=1`, `DEPLO_IMAGE`,
+`DEPLO_TRACE`, `DEPLO_LOG_FILE`, and `DEPLO_DIR`. The agent installer accepts
+`DEPLO_TRACE` and `DEPLO_LOG_FILE` too.
 
-## The agent installer
+## Variables read by `install-agent.sh`
 
 Set in front of `install-agent.sh`. See [Server roles](/advanced/server-roles)
 for what each role changes on the host.
@@ -187,7 +184,7 @@ for what each role changes on the host.
   }}
 />
 
-## Notes worth reading before you change anything
+## Before you change one
 
 <Callout type="warn" title="DEPLO_SECRET is permanent">
   Back up `/opt/deplo/.env`. See [Disaster recovery](/operations/disaster-recovery).
@@ -205,7 +202,7 @@ for what each role changes on the host.
   and the secret. They never reach the runtime image and are not usable
   values.
 
-## Next steps
+## See also
 
 <Cards>
   <Card

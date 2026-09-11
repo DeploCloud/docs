@@ -4,22 +4,21 @@ description: Which Linux distributions Deplo is tested on, which ones work, and 
 icon: HardDrive
 ---
 
-Deplo installs from one shell script, and the same script runs on the machine that hosts the
-dashboard and on every server you add to the fleet. The requirements below are the same for both.
+The same installer runs on the dashboard host and every server you add.
 
-## What the installer requires
+## Requirements
 
 | Requirement | Why |
 | --- | --- |
 | Linux on `x86-64` or `arm64` | The agent binary and the control-plane image are published for these two only. |
-| `systemd` | The agent runs as a systemd unit. Without it the machine cannot run apps. |
+| `systemd` | Required for the agent. Without it, the control plane can start but the machine cannot run deployed apps. |
 | Root, for the length of one command | It writes a system service and installs packages. |
 | `curl` and `sha256sum` | To download the agent and verify its checksum before running it. |
 | Docker with Compose v2 | Installed for you when your distribution is one Docker publishes packages for. |
 
-## Tested
+## Tested distributions
 
-Deplo is installed and exercised on these. They are the safe pick.
+These are the safest choices for a first install.
 
 | OS | Status | Notes |
 | --- | --- | --- |
@@ -28,10 +27,9 @@ Deplo is installed and exercised on these. They are the safe pick.
 | <Os name="debian">Debian 13 (trixie)</Os> | **Tested** | Current stable. |
 | <Os name="debian">Debian 12 (bookworm)</Os> | **Tested** | Oldstable, LTS until June 2028. |
 
-## Compatible
+## Compatible, not tested
 
-The installer sets Docker up on its own here, and nothing in Deplo is distribution-specific. We
-have not run the platform on them, so they are not the pick for your first install.
+The installer can set Docker up on these, but they are not tested choices.
 
 | OS | Status | Notes |
 | --- | --- | --- |
@@ -47,10 +45,10 @@ have not run the platform on them, so they are not the pick for your first insta
   container metrics from cgroup v2. Everything deploys, the Monitoring charts stay empty.
 </Callout>
 
-## Works, once you install Docker
+## Bring your own Docker
 
-These run Deplo fine. What they do not do is get Docker from the installer: it asks Docker's own
-install script, which does not publish packages for them.
+These work when Docker and Compose v2 are already installed. The installer
+does not install Docker for them.
 
 | OS | Status | Notes |
 | --- | --- | --- |
@@ -59,7 +57,8 @@ install script, which does not publish packages for them.
 | <Os name="arch">Arch Linux</Os> | Bring your own Docker | Docker and Compose v2 are in `extra`. |
 | <Os name="linux">Any other distribution with systemd</Os> | Bring your own Docker | `docker compose version` has to answer 2.x or newer. |
 
-Install Docker first, then run the Deplo command as normal - it detects Docker and skips that step.
+Install Docker first, then run the Deplo command normally. It detects Docker
+and skips that step.
 
 <Tabs items={['AlmaLinux', 'openSUSE Leap', 'Arch Linux']}>
 <Tab value="AlmaLinux">
@@ -108,9 +107,9 @@ version 2 or newer, not the old standalone `docker-compose` binary.
   so treat it as compatible rather than proven.
 </Callout>
 
-## Check a machine before you commit to it
+## Check before installing
 
-The preflight changes nothing on the host and prints every blocking problem and every warning:
+The preflight changes nothing and prints blocking problems and warnings:
 
 <Tabs items={['The dashboard host', 'A server you are adding']}>
 <Tab value="The dashboard host">
@@ -130,6 +129,8 @@ curl -fsSL https://<deplo>/install-agent.sh | sudo bash -s -- <TOKEN> <URL> --ch
 
 </Tab>
 </Tabs>
+
+## See also
 
 <Cards>
   <Card title="Installation" href="/getting-started/install" description="Install the control plane on the first machine." />

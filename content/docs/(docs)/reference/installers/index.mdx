@@ -5,16 +5,22 @@ description: The three shell scripts, what each one does, and every flag.
 
 import { Rocket, Server, ShieldCheck, Trash2 } from "lucide-react";
 
-Deplo has no standalone CLI binary. These three shell scripts,
+Choose the script that matches the host and action. Deplo has three shell
+scripts:
 [`install.sh`](/reference/installers/install),
 [`install-agent.sh`](/reference/installers/install-agent) and
-[`uninstall.sh`](/reference/installers/uninstall), are the closest thing
-to one.
+[`uninstall.sh`](/reference/installers/uninstall).
 
-## Verifying before you pipe to a shell
+| Script | Use it for |
+| --- | --- |
+| [`install.sh`](/reference/installers/install) | Install or update the control plane and its local server |
+| [`install-agent.sh`](/reference/installers/install-agent) | Add another server, build server, storage server, or migration source |
+| [`uninstall.sh`](/reference/installers/uninstall) | Remove an agent or the whole Deplo installation |
 
-Every one of these is a `curl | bash`. If that makes you uneasy, and it
-reasonably might, download and read first:
+## Inspect before running
+
+Each command downloads a script and pipes it to Bash. Download it first if
+you want to inspect the script or save it for review:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh -o install.sh
@@ -22,11 +28,10 @@ less install.sh
 sudo bash install.sh
 ```
 
-The agent installer is worth reading for a different reason: it is where
-the checksum verification lives, and seeing it refuse an unverified binary
-is more convincing than being told it does.
+`install-agent.sh` also verifies the downloaded binary checksum before it
+runs it.
 
-## Next steps
+## See also
 
 <Cards>
   <Card

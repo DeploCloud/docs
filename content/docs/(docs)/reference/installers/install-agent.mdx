@@ -65,51 +65,20 @@ The three role flags below pick what the server is for, see
   }}
 />
 
-<Steps>
-<Step>
-### Preflight
-Refuses to run if the placeholders were not substituted. Checks the architecture, root, `curl` and
-`sha256sum`, and **refuses below 5 GB free on `/`**, which `--force` overrides. It also dials the
-control plane and distinguishes "nothing answered" from "answered but is not a panel" from
-"self-signed, and here is the fingerprint" - which is the first thing a stuck enrolment needs.
+## What the installer does
 
-It also looks for a `ufw` or `firewalld` rule holding the agent port here, at the start, and
-prints the command to open it when one is missing. **It never edits the firewall itself**, and it
-detects nothing else: a hand-written `nftables` or `iptables` rule goes unnoticed.
-</Step>
-<Step>
-### Install Docker and git
-Installs Docker if absent, applies the address pools, and installs `git` unless the role is
-backups-only or a migration source.
-</Step>
-<Step>
-### Pick the binary
-Picks the binary by architecture, `linux/amd64` or `linux/arm64` only.
-</Step>
-<Step>
-### Verify the checksum
-**Verifies the SHA-256 and refuses to run an unverified binary.**
-</Step>
-<Step>
-### Install the agent
-Installs to `/usr/local/bin/deplo-agent` and creates `/var/lib/deplo-agent`
-at `0700`, **deleting any existing certificate files** so a reinstall
-genuinely re-enrolls.
-</Step>
-<Step>
-### Install Traefik
-Creates the `deplo` network and installs Traefik, unless one is already running, 80 and 443 are
-taken, or the role is build-only, backups-only or a migration source.
-</Step>
-<Step>
-### Write bootstrap.env
-Writes `bootstrap.env` at `0600`, never on the command line.
-</Step>
-<Step>
-### Start the service
-Writes the systemd unit at `0600` and starts it.
-</Step>
-</Steps>
+- Runs a preflight for the architecture, required tools, disk space and
+  control-plane URL. `--force` overrides only the 5 GB disk check.
+- Installs Docker, address pools, `git`, and Traefik when the selected role
+  needs them.
+- Downloads the `amd64` or `arm64` agent and verifies its SHA-256 checksum.
+- Installs the agent and systemd unit, then starts the service.
+- Enrolls over mTLS. It stores bootstrap credentials in
+  `/var/lib/deplo-agent/bootstrap.env` with mode `0600` and clears old
+  certificates on reinstall.
+
+The installer never changes the firewall. If `ufw` or `firewalld` blocks
+`9443`, it prints the command needed to open it.
 
 Flags: `--check` runs the preflight and exits, `--force` overrides the disk floor, and `--plain`,
 `--no-color`, `--quiet` and `--help` do what they say.
@@ -120,7 +89,7 @@ machine to set this up.**
 
 Logs: `journalctl -u deplo-agent -f`.
 
-## Next steps
+## See also
 
 <Cards>
   <Card title="Installers reference" description="All three scripts" href="/reference/installers" />

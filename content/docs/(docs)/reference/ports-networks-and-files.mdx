@@ -5,7 +5,12 @@ description: Everything Deplo listens on, connects over and writes to disk.
 
 import { SlidersHorizontal, Terminal, Server, Network } from "lucide-react";
 
-Everything Deplo listens on, connects over and writes to disk.
+Use this page to check firewall rules, Docker networks, and host paths.
+
+<Callout type="info" title="At a glance">
+  Open **80 and 443** to the internet. Allow **9443** from the control plane
+  to every server. Never publish **3000**, **5432** or **2375**.
+</Callout>
 
 ## Ports
 
@@ -44,7 +49,7 @@ Everything Deplo listens on, connects over and writes to disk.
   }}
 />
 
-<Callout type="warn" title="Two things people get wrong here">
+<Callout type="warn" title="Common mistakes">
   - **Port 3000 is not open, on purpose.** A dashboard on an open port is
     a login page on the internet with no TLS in front of it. It binds
     `127.0.0.1`, so the way back in when the proxy is what broke is
@@ -63,7 +68,7 @@ Everything Deplo listens on, connects over and writes to disk.
 
 ## Networks
 
-Three belong to the platform, and no tenant stack ever joins one:
+These belong to the platform. Tenant stacks never join them:
 
 <TypeTable
   type={{
@@ -82,7 +87,7 @@ Three belong to the platform, and no tenant stack ever joins one:
   }}
 />
 
-The rest are tenant networks, one per Environment, created and named by Deplo:
+Tenant networks are created per Environment:
 
 <TypeTable
   type={{
@@ -101,22 +106,19 @@ The rest are tenant networks, one per Environment, created and named by Deplo:
   }}
 />
 
-The split is not decoration. Every container on its network registers its service name as a DNS
-alias, and Docker round-robins a name two containers both claim. A tenant service called
-`postgres` reachable from the proxy's leg would collect the control plane's own database
-connections, password included, which is why Postgres sits on its own internal network and why
-six service names are refused on a network Deplo owns.
+The separation prevents tenant containers from reaching platform services.
+Deplo also reserves platform service names on managed networks to avoid
+Docker DNS collisions.
 
-### Docker address pools
+### Address pools
 
-Deplo uses one network per Environment, and Docker's default pools allow about **31** of them. Both installers therefore write a `/13` into
-`default-address-pools` in `/etc/docker/daemon.json`, with `size: 24`.
+Deplo uses one network per Environment. Both installers configure a `/13`
+pool with `size: 24` in `/etc/docker/daemon.json`.
 
 - An existing pool configuration is **never clobbered**.
 - The previous file is kept as `daemon.json.deplo-bak`.
 - The new one is validated with `dockerd --validate` before it is used.
-- If containers are already running, the **Docker restart is skipped** and
-  the installer tells you to do it in a maintenance window.
+- If containers are already running, Docker is not restarted automatically.
 
 ## Files on the panel's host
 
@@ -142,15 +144,14 @@ Deplo uses one network per Environment, and Docker's default pools allow about *
 /etc/docker/daemon.json             plus daemon.json.deplo-bak
 ```
 
-On the machine that runs the control plane, `/var/lib/deplo-agent/traefik`
-is a **symlink** to `/opt/deplo/traefik`, so the agent manages the
-panel's own proxy rather than installing a second one.
+On the control-plane host, `/var/lib/deplo-agent/traefik` is a **symlink** to
+`/opt/deplo/traefik`, so the agent manages the panel's proxy.
 
 `/var/lib/deplo-agent` holds Traefik's `acme.json`. Deleting it takes
 your issued certificates with it, and Let's Encrypt rate-limits
 reissuance.
 
-## Container names worth knowing
+## Common container names
 
 <TypeTable
   type={{
@@ -189,7 +190,7 @@ reissuance.
   }}
 />
 
-## Next steps
+## See also
 
 <Cards>
   <Card

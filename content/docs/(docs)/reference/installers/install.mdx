@@ -70,9 +70,8 @@ dashboard. `--domain` is how you put it on a hostname of your own.
   }}
 />
 
-<Steps>
-<Step>
-### Preflight checks
+## Preflight checks
+
 Everything knowable before the host is touched, so a server that cannot
 finish says so in ten seconds. **These stop the run**, unless you pass
 `--force`:
@@ -97,46 +96,16 @@ finish says so in ten seconds. **These stop the run**, unless you pass
   Deplo server.
 - The domain does not resolve here yet, or Let's Encrypt is unreachable,
   so the certificate cannot issue yet.
-</Step>
-<Step>
-### Install Docker
-Installs Docker if absent, and enables the service.
-</Step>
-<Step>
-### Write the address pools
-Writes Docker's `default-address-pools`, never clobbering an existing one,
-backing up the old file and validating the new one.
-</Step>
-<Step>
-### Create the layout
-Creates `/opt/deplo/{traefik,data,acme}`, the `deplo` network, and
-`acme.json` at `0600`.
-</Step>
-<Step>
-### Generate secrets
-Generates secrets into `/opt/deplo/.env` at `0600`, **once**.
-</Step>
-<Step>
-### Start Traefik
-Writes and starts the Traefik stack, with a read-only socket proxy sidecar.
-</Step>
-<Step>
-### Symlink the proxy
-Symlinks `/var/lib/deplo-agent/traefik` to it, so the local agent manages
-the panel's own proxy.
-</Step>
-<Step>
-### Start Deplo
-Writes and starts the Deplo stack: Postgres on an internal network, and the
-control plane publishing `3000` on `127.0.0.1` only. Traefik serves it over
-HTTPS, on your domain and on the generated `nip.io` host.
-</Step>
-<Step>
-### Enroll this machine
-Waits up to two minutes for `/api/health` on `http://127.0.0.1:3000`, then
-enrolls this machine as a server.
-</Step>
-</Steps>
+
+## What the installer does
+
+- Installs Docker when needed and configures address pools without
+  overwriting an existing pool.
+- Creates `/opt/deplo`, the `deplo` network, and the proxy configuration.
+- Generates `/opt/deplo/.env` once, with mode `0600`.
+- Starts Postgres, the control plane, and Traefik. The panel stays on
+  `127.0.0.1:3000`; Traefik serves it over HTTPS.
+- Enrolls the local machine as a server after the panel health check passes.
 
 <Callout type="info" title="Re-running it is the update path">
   It detects `/opt/deplo/.env`, switches to update mode, and never rotates
@@ -144,7 +113,7 @@ enrolls this machine as a server.
   panel stays up and a re-run retries it.
 </Callout>
 
-## Next steps
+## See also
 
 <Cards>
   <Card title="Installers reference" description="All three scripts" href="/reference/installers" />

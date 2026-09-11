@@ -3,13 +3,16 @@ title: uninstall.sh
 description: "One script, two jobs: pull the agent off a host, or remove Deplo itself. Dry run by default."
 ---
 
+<Callout type="warn" title="Dry run first">
+Every command is a dry run unless you add `--yes`. **`--purge-data` is
+irreversible**: it deletes Deplo's volumes, secrets and data on that host.
+</Callout>
+
 <Tabs items={['Uninstall an agent from the host', 'Uninstall Deplo itself']}>
   <Tab value="Uninstall an agent from the host">
-    `--agent-only` leaves the control plane's own files in `/opt/deplo` alone. This is the flag
-    already in the command the dashboard prints for a server. On the machine that runs the
-    control plane it still takes that host's Traefik, which is the only thing serving the
-    dashboard, so the panel stops answering until you re-run `install.sh`; the script prints an
-    SSH tunnel to get back in meanwhile.
+    Use `--agent-only` for a server that should leave the control plane in
+    `/opt/deplo` untouched. On the control-plane host it also removes
+    Traefik, so the panel stops answering until you re-run `install.sh`.
 
     ```bash
     # See what would happen (dry run, the default)
@@ -23,9 +26,9 @@ description: "One script, two jobs: pull the agent off a host, or remove Deplo i
     ```
   </Tab>
   <Tab value="Uninstall Deplo itself">
-    Without `--agent-only`, it removes the control plane in `/opt/deplo`
-    (the panel, its Postgres, its Traefik) as well: the agent, Deplo's
-    named containers, and every container labelled as Deplo-managed.
+    Without `--agent-only`, it removes the control plane in `/opt/deplo`,
+    its Postgres and Traefik, as well as the agent and Deplo-managed
+    containers.
 
     ```bash
     # See what would happen (dry run, the default)
@@ -44,13 +47,9 @@ description: "One script, two jobs: pull the agent off a host, or remove Deplo i
 </Tabs>
 
 <Callout title="When the instance itself is unreachable">
-  Every command here pulls the script from your own instance. If the panel is
-  down, or its DNS is already gone, replace `<deplo>` with `deplo.build`:
-  `curl -fsSL https://deplo.build/uninstall.sh | sudo bash -s -- --agent-only`.
-  That host always serves the **newest** script, not the one that shipped with
-  your installed version. Usually an advantage, sometimes not: a host running an
-  older Deplo gets a script written after it, so read the dry run before you add
-  `--yes`.
+  If the panel or its DNS is unavailable, use `https://deplo.build/uninstall.sh`.
+  It serves the newest script, so always read the dry run before adding
+  `--yes` to an older installation.
 </Callout>
 
 <TypeTable
@@ -77,14 +76,16 @@ description: "One script, two jobs: pull the agent off a host, or remove Deplo i
   }}
 />
 
-One script, two jobs. By default it removes the control plane in
-`/opt/deplo` (the panel, its Postgres, its Traefik), the agent, Deplo's
-named containers, every container labelled as Deplo-managed, the `deplo`
-network and `/var/lib/deplo-agent`. `--agent-only` stops at the agent. It
-never touches Docker Engine, never rewrites `/etc/docker/daemon.json` (the
-installer's backup stays as `daemon.json.deplo-bak`), and never touches a
-container it did not label. Safe on a machine that was never a Deplo host,
-and safe to run twice.
+## What it removes
+
+By default, it removes the panel, Postgres, Traefik, agent, Deplo-managed
+containers, the `deplo` network, and `/var/lib/deplo-agent`.
+
+- `--agent-only` stops after removing the agent and host agent data.
+- It never removes Docker Engine, rewrites `/etc/docker/daemon.json`, or
+  touches containers without a Deplo label.
+- It is safe to run on a host that was never a Deplo host and safe to run
+  twice.
 
 <Callout type="warn">
   **`--purge-data` deletes `/opt/deplo/.env`, and that holds
@@ -93,12 +94,10 @@ and safe to run twice.
   restore one.
 </Callout>
 
-The older `/uninstall-agent.sh` URL still works and always will: it serves
-this same script with `--agent-only` already applied, so a command copied
-into a runbook before `uninstall.sh` existed still means what it meant
-then.
+The older `/uninstall-agent.sh` URL still works and applies
+`--agent-only` automatically.
 
-## Next steps
+## See also
 
 <Cards>
   <Card title="Installers reference" description="All three scripts" href="/reference/installers" />
