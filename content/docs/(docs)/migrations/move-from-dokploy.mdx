@@ -299,7 +299,7 @@ again when you tick it, and **Install** shows the line to paste once more.
 | The data step stops half way | Nothing is rolled back. A second run skips what is already here and copies the data again, or use **Copy the data again** on the app. |
 | Two apps mount the same absolute path | The copy empties its target before it writes, so Deplo refuses and names the other app. Give one of them its own directory. |
 | The port move failed | The unit put the ports back and started Dokploy again. The step names what is holding the port, next to **Try again**. |
-| Stuck on **Moving the ports** for good | The host's own half never ran. On the machine, `systemctl status deplo-takeover` and `/var/log/deplo-takeover.log` say why. While the ports have not moved, the https address is still the old panel's, so it answers 404 - stay on the http one. |
+| Stuck on **Moving the ports** for good | The host's own half never ran. On the machine, `systemctl status deplo-takeover` and `/var/log/deplo-takeover.log` say why; `curl -fsSL https://deplo.build/install.sh \| bash` refreshes it and the takeover picks up where it was. While the ports have not moved, the https address is still the old panel's, so it answers 404 - stay on the http one. |
 
 More in [Servers and agents](/troubleshooting/servers-and-agents).
 
