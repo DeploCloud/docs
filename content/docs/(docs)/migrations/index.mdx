@@ -117,9 +117,12 @@ Read this before you start. It is the part that cannot be undone by pressing a b
   own final confirmation.
 - **The destination is emptied before it is written.** Each volume and each bind is wiped and
   rewritten, so a second run does not merge two copies.
-- **There is no byte-level rollback.** Once the data step has begun, a stop keeps everything
-  already created here. A service whose data did not arrive is marked and refuses to deploy, so
-  it cannot start on empty storage: copy the data again, or press **Deploy anyway** to accept it.
+- **Stop undoes the whole run, in any step.** Everything it created here is removed with its
+  data, whatever it had stopped on the old panel is started again, and the old panel keeps all
+  of its own data.
+- **A run that fails on its own is not rolled back.** What is already here stays, and a service
+  whose data did not arrive is marked and refuses to deploy, so it cannot start on empty storage:
+  copy the data again, or press **Deploy anyway** to accept it.
 - **Nothing is deployed for you.** You open each app, check it, and press **Deploy**.
 
 ## How this is measured

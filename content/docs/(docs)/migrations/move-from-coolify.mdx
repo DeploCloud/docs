@@ -301,12 +301,13 @@ could not. Past runs stay under **History** with their reports.
 
 ## Backing out
 
-**Before the data step.** **Stop and undo** removes everything the run created here and takes the
-agent back off the source. Coolify keeps all of its data.
+**While the run is going, in any step.** **Stop and undo** removes everything the run created
+here with its data, starts again whatever it had stopped on Coolify, and takes the agent back off
+the source. The copy only ever reads Coolify, so Coolify keeps all of its data.
 
-**During or after the data step.** Nothing is rolled back. Everything already created here stays
-as it is, every service whose data did not arrive is marked and refuses to deploy, and what this
-run stopped on Coolify is started again. The agents stay where they are so the copy can run again.
+**A run that fails on its own during the data step.** Nothing is rolled back. Everything already
+created here stays as it is, every service whose data did not arrive is marked and refuses to
+deploy, and the agents stay where they are so the copy can run again.
 
 **A takeover, before the ports move.** **Cancel and remove Deplo** starts every service the
 migration stopped, starts Coolify's own containers with the restart policy each had, removes
@@ -338,7 +339,7 @@ again when you tick it, and **Install** shows the line to paste once more.
 | A volume arrives empty | The app refuses to deploy until you decide. One volume has six hours to copy, so a very big volume over a slow link is one to bring over yourself. |
 | A shared-variable level is missing from the report's imports | An older panel has no endpoint for one of them. Copy those in by hand. |
 | A single-file bind is refused by name | The **destination** server's agent is too old for it. Update that agent and copy the data again. |
-| The data step stops half way | Nothing is rolled back. A second run skips what is already here and copies the data again, or use **Copy the data again** on the app. |
+| The data step fails half way | Nothing is rolled back - only **Stop and undo** does that. A second run skips what is already here and copies the data again, or use **Copy the data again** on the app. |
 | Two apps mount the same absolute path | The copy empties its target before it writes, so Deplo refuses and names the other app. Give one of them its own directory. |
 | The port move failed | The unit put the ports back and started Coolify again. The step names what is holding the port, next to **Try again**. |
 
