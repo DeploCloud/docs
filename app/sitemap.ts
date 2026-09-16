@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { source } from "@/lib/source";
-import { basePath } from "@/lib/base-path";
+import { pageUrl } from "@/lib/base-path";
 
 /**
  * The docs sitemap. deplo.build serves this app under /docs, so the main
@@ -12,13 +12,10 @@ import { basePath } from "@/lib/base-path";
  * Nothing is listed by hand: a new page under content/docs/ shows up here
  * the moment it is built. deplo-web's robots.txt points crawlers at it.
  */
-const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://deplo.build";
-
-const url = (path: string) => `${origin}${basePath}${path}`.replace(/\/$/, "");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return source.getPages().map((page) => ({
-    url: url(page.url),
+    url: pageUrl(page.url),
     changeFrequency: "weekly",
     priority: page.url === "/" ? 0.9 : 0.7,
   }));

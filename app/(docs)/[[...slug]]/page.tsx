@@ -8,6 +8,7 @@ import {
 } from "fumadocs-ui/layouts/docs/page";
 import { getMDXComponents } from "@/mdx-components";
 import { source } from "@/lib/source";
+import { pageUrl } from "@/lib/base-path";
 import { PageFeedback } from "@/components/page-feedback";
 import { ViewOptions } from "@/components/view-options";
 import { BetaChip } from "@/components/beta-chip";
@@ -76,5 +77,8 @@ export async function generateMetadata(props: PageProps<"/[[...slug]]">) {
   return {
     title: page.data.title,
     description: page.data.description,
+    // Without one Google picks a canonical itself and files the page as a
+    // duplicate. Absolute because Next does not add basePath to metadata.
+    alternates: { canonical: pageUrl(page.url) },
   };
 }
