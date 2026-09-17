@@ -1,6 +1,6 @@
 ---
 title: Deploy from a template
-description: One-click deploys of software somebody else already configured.
+description: One-click deploys of software that is already configured.
 ---
 
 import Image from "next/image";
@@ -8,24 +8,17 @@ import { basePath } from "@/lib/base-path";
 
 import { Layers, Database, SlidersHorizontal } from "lucide-react";
 
-A one-click deploy of software somebody else already configured: WordPress, Ghost, n8n, Plausible,
-Supabase, MinIO, Uptime Kuma, Postgres, Redis and a few hundred more. You pick it, name it, choose
-a server, and it comes up with sensible defaults and generated passwords.
+A one-click deploy of software that is already configured: WordPress, Ghost, n8n, Plausible,
+Supabase, MinIO, Uptime Kuma, Postgres, Redis and a few hundred more. Pick it, name it, choose a
+server, and it starts with generated passwords.
 
-The catalogue is a **remote service**, not files in this repository, so a fresh install has the
-whole catalogue with no configuration and new entries appear without upgrading Deplo. Responses
-are cached for an hour, and the search box filters what is already loaded.
+The catalogue is an online service, so new entries appear without updating Deplo.
 
-A **Template** is a family, identified by its name, slug and logo. Each family holds one or more
-**variants**, and a variant is what actually deploys: a `docker-compose.yml` plus a small manifest
-carrying its own description, screenshots, category and links. A family with one variant shows no
-chooser. A family with several opens on its **default** variant - the one the page is already
-describing - and the dropdown swaps to another.
+A **Template** can have several **variants**. A variant is what you deploy: a
+`docker-compose.yml` plus its description and screenshots.
 
-Deploying resolves the variant into a real Compose stack with your values filled in and creates an
-ordinary app from it. Nothing about the template is stored on the app afterwards - it is yours
-from that moment: edit the Compose, change the variables, add domains. The logo is copied into the
-app as inline data, so your icons survive even if the catalogue is unreachable.
+Deploying creates a normal app from the variant. After that the app is yours: edit the Compose
+file, change the variables, add domains.
 
 ## Deploy one
 
@@ -35,16 +28,15 @@ app as inline data, so your icons survive even if the catalogue is unreachable.
 ### Open Templates
 
 Open **Templates** in the sidebar, or the **Template** button on the first step of the new-app
-wizard, which leaves the wizard for the catalogue.
+wizard.
 
 </Step>
 <Step>
 
 ### Find what you want
 
-The page opens on a row of **featured** templates, then a search box, category chips and curated
-collections: **Serving hot now**, **Run your own AI** and **Be your own bank**.
-Every category row has a **See all** link, and **All templates** lists the whole catalogue A to Z.
+The page has **featured** templates, a search box, categories and collections. **All templates**
+lists the whole catalogue A to Z.
 
 <Image
   src={`${basePath}/screenshots/from-template/01-catalogue.png`}
@@ -59,8 +51,7 @@ Every category row has a **See all** link, and **All templates** lists the whole
 
 ### Pick a variant
 
-Open it and read the description. The page shows the family's default variant. If there are
-others, the dropdown next to **Deploy** swaps to them, and the description follows.
+If there are several variants, the dropdown next to **Deploy** switches between them.
 
 <Image
   src={`${basePath}/screenshots/from-template/02-template-detail.png`}
@@ -75,12 +66,12 @@ others, the dropdown next to **Deploy** swaps to them, and the description follo
 
 ### Fill in the wizard
 
-**Deploy** opens the new-app wizard with everything already answered. Set the app name, pick the
-server, and check the **Environment variables** card: passwords and keys are generated for you,
-and anything the template wants from you is listed there.
+**Deploy** opens the new-app wizard already filled in. Set the app name, pick the server, and
+check the **Environment variables** card: passwords are generated, and anything the template needs
+from you is listed there.
 
-To change the stack before it ever runs, open **Advanced**, then **Compose**, and click **Edit
-compose**. There is no undo back to the template's own file, so copy it first if you want it.
+To change the stack before it runs, open **Advanced**, then **Compose**, and click **Edit
+compose**. Copy the original first if you need it: there is no way back.
 
 </Step>
 <Step>
@@ -89,54 +80,43 @@ compose**. There is no undo back to the template's own file, so copy it first if
 
 Click **Deploy**.
 
-To set the app up now and start it later, open the caret next to **Deploy** and pick **Create
-without deploying**. The wizard is the same one, its last button reads **Create app**, and the app
-arrives stopped - deploy it from its own page whenever you are ready.
+To create the app without starting it, open the arrow next to **Deploy** and pick **Create
+without deploying**.
 
 </Step>
 </Steps>
 
 ## After it is running
 
-It is a normal app. Give it your own hostname in
-[Domains](/guides/networking/domains-and-https), its data is in
-[volumes](/guides/data/persistent-storage) that survive redeploys, back it up like anything else
-with [Backups and restore](/guides/data/backups-and-restore), and read what it prints in
-[Logs](/guides/observability/logs).
+It is a normal app: [Domains](/guides/networking/domains-and-https),
+[volumes](/guides/data/persistent-storage), [Backups](/guides/data/backups-and-restore) and
+[Logs](/guides/observability/logs) all work.
 
-Most templates are multi-container Compose stacks, so a few things behave the way
-[Compose apps](/advanced/compose-apps) describes: a domain names which **Container** it routes to,
-and rollbacks are not available.
+Most templates are [Compose apps](/advanced/compose-apps): a domain names which **Container** it
+routes to, and rollbacks are not available.
 
 ## Good to know
 
-- **Templates are a starting point, not a subscription.** Updating the catalogue entry does not
-  update apps you already created from it.
-- **Read the variables before you deploy.** Some templates need a domain or an admin email set at
-  first boot, and changing them afterwards means the software has already initialised itself with
-  the old value.
-- **A template can carry configuration files**, written next to the stack and mounted into the
-  container. They show up under the app's storage.
-- **Deploying the same template twice into one environment needs a hand.** Two stacks in one
-  Environment cannot both answer to `db` on that network. Deplo refuses a compose file that claims
-  a name already taken, and warns in the deploy log when an existing stack overlaps. Rename the
-  service yourself, or put the second copy in another Environment. See
+- **Updating the catalogue entry does not update apps** you already created from it.
+- **Read the variables before you deploy.** Some templates need a domain or an admin email at
+  first start, and keep the first value they get.
+- **A template can include configuration files.** They show up under the app's storage.
+- **The same template twice in one Environment needs a change.** Two stacks cannot both use the
+  service name `db`. Rename the service, or use another Environment. See
   [Network isolation](/advanced/network-isolation).
-- **Browsing is open to anybody on the team; deploying needs `create_apps`.**
-- **If the catalogue is unreachable**, the store shows an offline state. Apps you already deployed
-  are unaffected.
-- **The names and logos in the catalogue belong to their owners.** Deplo lists that software so you
-  can find and run it, which is not an affiliation with, or an endorsement by, whoever makes it.
-  The same note is printed at the bottom of the store and of every template's page.
+- **Browsing is open to anybody on the team. Deploying needs `create_apps`.**
+- **If the catalogue is unreachable**, apps you already deployed keep working.
+- **The names and logos in the catalogue belong to their owners.** Listing them is not an
+  affiliation or an endorsement.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
 | The store is empty or offline | The instance cannot reach the catalogue service. Check outbound network access, or point `DEPLO_TEMPLATES_API_URL` at your own mirror. |
-| The stack starts and one container keeps restarting | Almost always a required variable was left blank. Read that container's logs. |
-| The deploy is refused over a service name | Another stack in this Environment already answers to it. Rename the service in the compose, or deploy into a different Environment. |
-| Two templates fight over a port | Only one thing can hold a host port. Use a domain instead of publishing a port. |
+| One container keeps restarting | Usually a required variable was left blank. Read that container's logs. |
+| The deploy is refused over a service name | Another stack in this Environment already uses it. Rename the service, or deploy into a different Environment. |
+| Two templates want the same port | Only one app can hold a host port. Use a domain instead of publishing a port. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

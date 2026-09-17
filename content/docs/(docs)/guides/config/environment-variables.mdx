@@ -1,6 +1,6 @@
 ---
 title: Environment variables
-description: The configuration your app reads from its environment, encrypted, layered and injected on deploy.
+description: The configuration your app reads from its environment.
 ---
 
 import Image from "next/image";
@@ -8,53 +8,43 @@ import { basePath } from "@/lib/base-path";
 
 import { Share2, Database, GitPullRequest, ShieldCheck } from "lucide-react";
 
-The configuration your app reads from its environment: API keys, database URLs, feature flags,
-`NODE_ENV`. Deplo stores them encrypted, injects them at build time and at run time, and never
-shows a secret back to anybody.
+API keys, database URLs, feature flags, `NODE_ENV`. Deplo stores them encrypted, injects them at
+build time and at run time, and never shows a secret back.
 
 ## The four layers
 
-A deploy folds four layers together, lowest priority first, and a name defined twice takes the
-value from the highest layer that defines it.
+When the same name is defined in more than one layer, the highest layer wins:
 
-1. **Instance-wide variables**, set by an instance admin, reaching every team and every app.
+1. **Instance-wide variables**, set by an instance admin for every team and app.
 2. **The app's own variables.**
-3. **A shared variable** the app has linked.
+3. **A shared variable** linked to the app.
 4. **A preview override**, on previews only.
 
 ## Plain and secret
 
-Every value carries a type, `plain` or `secret`, on every layer. The type is not decoration.
-
 <Tabs items={['Plain', 'Secret']}>
 <Tab value="Plain">
 
-Stored and shown back to you. Can be edited freely, and can be promoted to secret at any time.
+Stored and shown back to you. Can be edited, and can be changed to secret at any time.
 
 </Tab>
 <Tab value="Secret">
 
-- **Write-only.** Never returned by the API, never rendered into a stack shown back to you, and
-  there is no reveal path anywhere in the product.
-- **Immutable.** Not the value, not the name, not the type. Changing one means deleting it and
-  adding it again, which is the honest description of what rotating a credential is anyway.
+- **Write-only.** Never shown again, in the API or in the panel.
+- **Cannot be edited.** To change it, delete it and add it again.
 
 </Tab>
 </Tabs>
 
-Promoting `plain` to `secret` is always allowed. The other direction is not.
+A `plain` variable can become `secret`. The other direction is not allowed.
 
-**Deplo says so when a name reads like a credential.** A plain variable called `PAYLOAD_SECRET`,
-`S3_ACCESS_KEY_ID` or `DB_PASSWORD` carries a **Secret?** badge in **Environment**, and the add
-dialog says the same thing. It is a suggestion, not a refusal: the variable works either way, and
-the rule is Docker's own, so names holding `PUBLIC`, `FILE` or `VERSION` (`NEXT_PUBLIC_API_KEY`,
-`TOKEN_FILE`) are exempt.
+**Deplo warns when a name looks like a credential.** A plain `PAYLOAD_SECRET`, `S3_ACCESS_KEY_ID`
+or `DB_PASSWORD` gets a **Secret?** badge. It is only a suggestion. Names containing `PUBLIC`,
+`FILE` or `VERSION` are not flagged.
 
-**Build time and run time are the same set.** Every resolved variable is passed to the build as a
-build argument, so build-time inlined configuration such as `NEXT_PUBLIC_*` or `VITE_*` works with
-no extra toggle. The built image does not keep the value in its environment, but Docker records
-every build argument in the image's build history, so `docker history` shows it in plaintext on
-the server that built it. Only someone with Docker access to that server can read it.
+**Build time and run time get the same variables.** So `NEXT_PUBLIC_*` or `VITE_*` work with no
+extra setting. Docker keeps build arguments in the image history, so anyone with Docker access to
+the build server can read them.
 
 ## Set variables on one app
 
@@ -78,8 +68,7 @@ Open the app, then **Environment**, and click **Add**.
 
 ### Name it and set the type
 
-Type the name and the value, and pick **Plain** or **Secret**. A name that reads like a credential
-is flagged here, so you can flip it before it is stored.
+Type the name and the value, then pick **Plain** or **Secret**.
 
 <Image
   src={`${basePath}/screenshots/environment-variables/02-add-dialog.png`}
@@ -99,15 +88,15 @@ Save, then **Redeploy**. Variables apply on the next deploy.
 </Step>
 </Steps>
 
-To bring over a whole `.env` file, paste it into the add dialog: Deplo parses `KEY=value` lines in
-bulk instead of making you add twenty rows by hand. Each row records who created it and who last
-changed it, with an avatar, so a surprising value has a name attached to it.
+To import a whole `.env` file, paste it into the add dialog. Each row shows who created it and who
+last changed it.
 
 ## See everything at once
 
-The **Variables** page in the sidebar has two tabs. **All** lists every app's variables, grouped
-by app, expandable and filterable - the fastest way to find which app has the stale key.
-**Shared** lists the team's shared variables, plus any another team shares with it.
+The **Variables** page in the sidebar has two tabs:
+
+- **All** lists every app's variables, grouped by app, with search and filters.
+- **Shared** lists the team's shared variables, plus the ones other teams share with it.
 
 <Image
   src={`${basePath}/screenshots/environment-variables/03-team-wide.png`}
@@ -119,42 +108,35 @@ by app, expandable and filterable - the fastest way to find which app has the st
 
 ## Preview overrides
 
-The app's **Environment** page grows a **Preview overrides** section once
-[pull request previews](/guides/networking/pull-request-previews) are enabled on the app. A
-variable set there takes a different value in previews only, folding above everything else.
+Once [pull request previews](/guides/networking/pull-request-previews) are enabled, the app's
+**Environment** page gets a **Preview overrides** section. A variable set there is used in previews
+only, and wins over every other layer. Typical use: point previews at a test database.
 
-The normal use is pointing previews at a scratch database instead of the real one. Most apps never
-need it, which is why it is empty by default.
-
-**A preview built from a fork inherits nothing.** Not the app's own variables, not a linked shared
-variable, not an instance-wide one, whatever the type: the code in that pull request is a
-stranger's, so it gets the preview overrides and nothing else. Plan for that if you enable fork
-previews - an app whose `DATABASE_URL` only comes from its own variables will not boot in a fork
-preview until you set one as an override.
+<Callout type="warn" title="A preview built from a fork inherits nothing">
+For security reasons, a fork preview gets only the preview overrides. If your app needs
+`DATABASE_URL` to start, set it there.
+</Callout>
 
 ## Good to know
 
-- **Nothing applies until the next deploy.** Setting a variable does not restart anything.
-- **A secret cannot be edited, only replaced.** By design.
-- **`reveal_secrets` does not reveal secret-typed variables.** That capability unmasks
-  basic-auth passwords, backup recovery keys, database connection strings and deploy hook URLs.
-  Nothing unmasks a secret variable.
-- **Names are not validated against your framework.** A typo is a missing variable at run time,
-  not an error at save time.
-- **Ticking a shared variable's scope does not inject it.** Only the per-app link does, unless the
-  variable covers more than one team - that one adds itself everywhere. See
+- **Nothing applies until the next deploy.**
+- **A secret cannot be edited, only replaced.**
+- **`reveal_secrets` does not reveal secret variables.** It unmasks basic-auth passwords, backup
+  recovery keys, database connection strings and deploy hook URLs. Nothing unmasks a secret
+  variable.
+- **Names are not checked.** A typo becomes a missing variable at run time.
+- **A shared variable's scope does not inject it.** Only the per-app link does. See
   [Shared variables](/guides/config/shared-variables).
-- **Compose apps get their variables injected into every service** as pass-through entries, with
-  the values riding in a `0600` env file next to the stack.
+- **Compose apps get the variables in every service.**
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The app cannot see a variable it should have | It was added after the last deploy. Redeploy. |
-| The value is right in Deplo and wrong in the app | Something above it in the precedence list defines the same name. Check the app's own variables first, then its linked shared variables. |
-| A build-time variable is empty in the browser bundle | The framework inlines only prefixed names (`NEXT_PUBLIC_`, `VITE_`). The prefix is the framework's rule, not Deplo's. |
-| A fork preview starts with no configuration | Expected. A fork inherits nothing; set what it needs as a preview override. |
+| The app cannot see a variable | It was added after the last deploy. Redeploy. |
+| The value is right in Deplo and wrong in the app | A higher layer defines the same name. Check the app's own variables, then its linked shared variables. |
+| A build-time variable is empty in the browser bundle | The framework only inlines prefixed names (`NEXT_PUBLIC_`, `VITE_`). |
+| A fork preview starts with no configuration | Expected. Set what it needs as a preview override. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

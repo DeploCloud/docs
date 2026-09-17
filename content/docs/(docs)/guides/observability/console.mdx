@@ -1,6 +1,6 @@
 ---
 title: Console
-description: Look inside a running container, over the agent, with no SSH.
+description: Look inside a running container, with no SSH.
 ---
 
 import Image from "next/image";
@@ -8,8 +8,8 @@ import { basePath } from "@/lib/base-path";
 
 import { HardDrive, Timer, ScrollText } from "lucide-react";
 
-An escape hatch for when you need to look inside a running container. It goes through the agent on
-the server, it is not on the first-run path, and it is not required to use Deplo.
+The console lets you look inside a running container. It goes through the
+agent on the server and is not required to use Deplo.
 
 <Image
   src={`${basePath}/screenshots/console/03-terminal.png`}
@@ -19,13 +19,15 @@ the server, it is not on the first-run path, and it is not required to use Deplo
   className="w-full rounded-lg"
 />
 
-There are two tabs, and the difference matters:
+There are two tabs:
 
-- **Shell** runs one `docker exec` per line you type. Each line is its own process, so a `cd` does
-  not stick between commands, and anything that wants a terminal to itself - `top`, `vim`, `less`,
-  an interactive `psql` - will not work. It is for `ls`, `cat`, `env`, a one-off script.
-- **Attach** connects to the main process's live input and output. That is the real terminal, and
-  it only works for a container started with a TTY and an open stdin.
+- **Shell** runs one `docker exec` per line you type. Each line is a separate
+  process, so `cd` does not carry over to the next command, and interactive
+  programs like `top`, `vim`, `less` or `psql` do not work. Use it for `ls`,
+  `cat`, `env` or a one-off script.
+- **Attach** connects to the main process's input and output. This is a real
+  terminal, but only works for a container started with a TTY and an open
+  stdin.
 
 ## Open a console
 
@@ -51,9 +53,9 @@ Open the app, then **Settings -> Advanced**, and click **Open console**.
 
 ### Acknowledge the warning
 
-A modal holds the terminal until you answer it. Read it and click **I understand**. From then on
-the sidebar shows a **Console** entry whenever a container is running. The acknowledgement is
-stored in this browser, so a different browser or a private window asks again.
+Read the warning and click **I understand**. From then on the sidebar shows a
+**Console** entry whenever a container is running. The acknowledgement is
+stored in this browser only, so another browser asks again.
 
 <Image
   src={`${basePath}/screenshots/console/02-confirm.png`}
@@ -66,32 +68,31 @@ stored in this browser, so a different browser or a private window asks again.
 </Step>
 </Steps>
 
-Pick which container from the picker. Each row shows a running dot, the service name, and an
-**app** badge on the one your domains route to; the image and the working directory are in the
-row's tooltip and in the banner once you connect, and the user appears in the prompt itself as
-`user@service$`.
+Pick the container from the picker. Each row shows a running dot, the service
+name, and an **app** badge on the one your domains route to. The prompt shows
+the user as `user@service$`.
 
-The **Shell** select offers `auto`, `/bin/sh`, `/bin/bash` and raw exec with no shell. An image
-with no shell at all - distroless or scratch - says so rather than failing mysteriously; you can
+The **Shell** select offers `auto`, `/bin/sh`, `/bin/bash` and raw exec with no
+shell. An image with no shell at all (distroless or scratch) says so. You can
 still run a binary that exists in it.
 
 ## Good to know
 
-- **Changes inside a container do not survive a redeploy.** The container is recreated from the
-  image, so anything you fix in a console is gone on the next deploy unless it lives in a volume
-  or in your repository.
-- **`open_app_console` and `open_database_console` are separate, sensitive capabilities.** A
-  console is arbitrary code as that container's user.
-- **The console needs something running.** A stopped app has no container to enter.
-- **This is not a way onto the host.** You are inside a container. Reaching the server itself
-  needs [host access](/advanced/host-access-and-privileges), which is a different grant entirely.
+- **Changes inside a container do not survive a redeploy.** The container is
+  recreated from the image. Keep changes in a volume or in your repository.
+- **`open_app_console` and `open_database_console` are separate, sensitive
+  capabilities.** A console runs any code as that container's user.
+- **The console needs something running.** A stopped app has no container to
+  enter.
+- **This is not a way onto the host.** You are inside a container. Reaching
+  the server itself needs [host access](/advanced/host-access-and-privileges).
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| No **Console** entry in the sidebar | The one-time acknowledgement has not been given in this browser, nothing is running, or you lack the capability. |
-| `cd` has no effect on the next command | Expected in the **Shell** tab: every line is a separate `docker exec`. Chain them on one line with `&&`. |
+| No **Console** entry in the sidebar | The acknowledgement has not been given in this browser, nothing is running, or you lack the capability. |
+| `cd` has no effect on the next command | Expected in the **Shell** tab: every line is a separate `docker exec`. Chain commands on one line with `&&`. |
 | `top` or `vim` draws nothing | Same reason. Use **Attach**, and only on a container started with a TTY. |
 | Raw exec, no shell | A distroless or scratch image. Run a binary that exists in it. |
 

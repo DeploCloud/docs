@@ -1,18 +1,16 @@
 ---
 title: Folder shares
-description: "Give somebody one corner of the fleet: a grant that replaces the team role inside a single folder."
+description: "Give somebody access to one folder: a grant that replaces the team role inside that folder."
 ---
 
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-A role applies across the whole team. A **folder share** applies inside
-one folder, and it **replaces** the team role's set there, and **may
-exceed it**.
+A role applies to the whole team. A **folder share** applies inside one folder: it **replaces**
+the team role there, and it **can give more** than the role does.
 
-That combination is the point. Somebody on **Viewer** can be the person
-who deploys, configures and restarts everything inside `Marketing`,
-without gaining any of that anywhere else.
+For example, somebody with the **Viewer** role can deploy, configure and restart everything
+inside `Marketing`, and nothing anywhere else.
 
 <Steps>
 <Step>
@@ -61,26 +59,23 @@ Choose what they get inside this folder.
 </Step>
 </Steps>
 
-Most specific wins, over four rungs: a grant on a single **app** beats one on its
-**environment**, which beats one on its **folder** chain, which beats one on the **project**,
-which beats the team role. Members reached this way carry a **Limited access** badge on the
-members list, because their role name no longer tells the whole story.
+The most specific grant wins: a grant on an **app** beats one on its **environment**, which
+beats one on its **folder**, which beats one on the **project**, which beats the team role.
+Members with such grants show a **Limited access** badge on the members list.
 
-## Who can create and share one
+## Who can share a folder
 
-Creating a folder needs the `create_folders` capability. **Sharing one needs no capability at
-all**: you share a folder because you own it, or because you are a team or instance
-administrator. What you may hand out is bounded by what you yourself hold inside that folder, so
-a share can never manufacture access its author does not have.
+Creating a folder needs the `create_folders` capability. Sharing one needs no capability: you
+can share a folder you own, or any folder if you are a team or instance administrator. You can
+only hand out what you have inside that folder yourself.
 
 ## A folder is private
 
-A folder is visible to its **owner**, the people it is **shared** with, and team administrators.
-Move an app into a folder and it leaves everyone else's Overview until the folder is shared with
-them.
+A folder is visible to its **owner**, the people it is **shared** with, and team
+administrators. An app moved into a folder disappears from everyone else's Overview until the
+folder is shared with them.
 
-A share ends with the membership: remove the member and it is revoked, and the folders they owned
-pass to the primary owner.
+Removing a member revokes their shares. Folders they owned pass to the primary owner.
 
 ## Next steps
 

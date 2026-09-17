@@ -1,6 +1,6 @@
 ---
 title: Search
-description: Open the command palette with Ctrl K and reach anything in Deplo by typing its name.
+description: Press Ctrl K and reach anything in Deplo by typing its name.
 ---
 
 import Image from "next/image";
@@ -10,8 +10,8 @@ import { Rocket, Users, Database } from "lucide-react";
 
 ## Open it
 
-Press **Ctrl K** (**⌘K** on a Mac) anywhere in Deplo. Clicking the search box
-at the top of the sidebar does the same thing, and so does pressing **/**.
+Press **Ctrl K** (**⌘K** on a Mac) anywhere in Deplo. Clicking the search box at the top of the
+sidebar or pressing **/** does the same.
 
 <Image
   src={`${basePath}/screenshots/search/01-palette.png`}
@@ -25,8 +25,8 @@ On a phone, the magnifier in the header opens it full screen.
 
 ## What it finds
 
-Type a few letters and the palette searches everything at once. Case and
-separators are ignored, so `better auth` finds `better-auth-docs`.
+Type a few letters and the palette searches everything at once. Case and separators are
+ignored, so `better auth` finds `better-auth-docs`.
 
 <Image
   src={`${basePath}/screenshots/search/02-results.png`}
@@ -49,18 +49,15 @@ separators are ignored, so `better auth` finds `better-auth-docs`.
 | Pages                           | Every page in Deplo, New app included, and each app's own tabs   |
 | Settings                        | Two-factor, passkeys, registries, cleanup and the rest           |
 
-**Every row is a page.** Pressing **Enter** opens it and closes the palette -
-on an app or a database that is its Overview. The palette never redeploys,
-starts or stops anything: those verbs stay on the page that owns them, behind
-their own confirmation.
+**Every row is a page.** **Enter** opens it and closes the palette. For an app or a database,
+that is its Overview. The palette never deploys, starts or stops anything: those actions stay
+on their own page, behind their own confirmation.
 
-You only ever see what you are allowed to see. The palette hides what your
-Capabilities do not cover, and the server checks again when you open it.
+You only see what you are allowed to see.
 
 ## Reach one app's page directly
 
-Name a page and you get it in every app; name the app too and you get just that
-one:
+Type a page name to get it for every app. Add the app name to get only that one:
 
 | You type              | You get                                            |
 | --------------------- | -------------------------------------------------- |
@@ -69,35 +66,29 @@ one:
 | `gamewatcher domains` | **gamewatcher / Domains**                          |
 | `main backups`        | **main / Backups**                                 |
 
-These rows wear the app's own logo with the page's icon badged onto it, so a
-page belonging to one app never reads as a setting of Deplo itself.
+These rows show the app's logo with the page's icon on it.
 
-The page is matched on its description too, not only its name - which is why
-`variables` finds the page Deplo calls **Environment**.
+A page also matches on its description, which is why `variables` finds the page called
+**Environment**.
 
-Only six show at once; **Show N more** opens the rest without leaving the
-palette.
+Six rows show at once. **Show N more** opens the rest.
 
 <Callout type="info">
-  A word that names one of your apps is spent naming it. Typing `blog` gives you
-  the app, not fourteen rows of its pages.
+  A word that names one of your apps matches the app. Typing `blog` gives you the app, not
+  all of its pages.
 </Callout>
 
 ## Other teams
 
-The palette searches every team you can reach, not only the active one. Hits
-from where you are working come first; anything else lands under **Other
-teams**, each row labelled with the team it belongs to.
+The palette searches every team you can reach. Results from the current team come first.
+Others are listed under **Other teams**, each labelled with its team.
 
-Pressing **Enter** on one of those switches you to that team and opens the
-page in a single step.
+**Enter** on one of those switches team and opens the page in one step.
 
-**Team settings count too.** Searching `roles` gives you the active team's Roles
-page and one for every other team you reach - and the roles themselves are
-searchable by name, so typing what a role is called opens it.
+**Team settings are included.** Searching `roles` gives you the Roles page of every team you
+can reach, and the roles themselves are searchable by name.
 
-Teams you cannot enter right now - an unmet two-factor policy, for example -
-contribute nothing rather than failing the search.
+Teams you cannot enter right now, for example because two-factor is required, are skipped.
 
 ## Keys
 

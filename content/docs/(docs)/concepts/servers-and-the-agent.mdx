@@ -1,101 +1,86 @@
 ---
 title: Servers and agents
-description: What a server is, how it joins the fleet, and what it can be for.
+description: What a server is, how it joins Deplo, and what it can be used for.
 ---
 
 import { PlusCircle, Settings, ListTree, Trash2, LifeBuoy } from "lucide-react";
 
-A **server** is a machine you own that Deplo can deploy to. It becomes one
-by running a small Go program, the **server agent**, which is the only
-thing in the entire system that runs Docker.
+A **server** is a machine you own that Deplo can deploy to. It becomes one by running a small
+program, the **server agent**. The agent is the only part of Deplo that runs Docker.
 
-Servers are instance-wide, not team-owned. One server can serve several
-teams, and one team can spread across several servers.
+Servers belong to the instance, not to a team. One server can serve several teams, and one team
+can use several servers.
 
 ## How a server joins
 
-The control plane never connects to your machine. Your machine connects to
-it.
+The control plane never connects to your machine. Your machine connects to it.
 
 <Steps>
 <Step>
-### Ask for an install command
+### Get an install command
 
-In **Settings -> Servers** you click **Add server** and Deplo prints an
-install command containing a **one-time bootstrap token**.
+In **Settings -> Servers** click **Add server**. Deplo shows an install command with a
+**one-time token**.
 </Step>
 <Step>
 ### Run it on the server
 
-You paste that command on the server. It installs Docker and git if the
-machine has neither, downloads the agent binary, verifies its SHA-256 (a
-mismatch is a hard refusal, not a warning), installs it as a systemd unit
-and starts it.
+Paste the command on the server. It installs Docker and git if missing, downloads the agent,
+checks its SHA-256, and starts it as a systemd service.
 
-<Callout title="git is what clones your repositories">
-The agent clones on the host, so a server without git cannot build an app
-from a repository. Backups-only and migration-only servers never build,
-so they are left as they are.
+<Callout title="git is needed to clone your repositories">
+The agent clones on the server, so a server without git cannot build an app from a repository.
+Backups-only and migration-only servers never build, so they do not need it.
 </Callout>
 </Step>
 <Step>
-### The agent requests a certificate
+### The agent asks for a certificate
 
-The agent generates its own private key, sends a certificate signing
-request and calls home with the token.
+The agent creates its own private key and sends a certificate request with the token.
 </Step>
 <Step>
-### The control plane signs and pins
+### The control plane signs and pins it
 
-The control plane is a private certificate authority, derived from
-`DEPLO_SECRET`. It signs the certificate and **pins the fingerprint**.
+The control plane signs the certificate and **pins its fingerprint**. From now on only that
+certificate is trusted.
 </Step>
 <Step>
 ### Online
 
-The server flips to online.
+The server turns online.
 </Step>
 </Steps>
 
-The token is single-use, stored only as a hash, and expires in about an
-hour. Over HTTPS the agent also pins the control plane by certificate
-fingerprint; over a bare-IP install with no TLS, the token authenticates
-the response instead.
+The token works once and expires after about an hour. From then on the two sides talk over an
+encrypted connection (mutual TLS) on port **9443**.
 
-From then on the two talk over gRPC with mutual TLS on port **9443**.
+## What a server can be used for
 
-## What a server can be for
-
-The role is chosen when you install it, and it changes what gets set up:
-Everything, Build only, Backups only, or the migration-only role created by
-the Dokploy import wizard. See [Server roles](/advanced/server-roles) for
-the full comparison and what each one changes on the host.
+You choose the role when you install it: Everything, Build only, Backups only, or the
+migration-only role created by the [migration wizard](/migrations). See
+[Server roles](/advanced/server-roles) for the comparison.
 
 ## Health is not readiness
 
-Two different questions, two different answers, and it is worth keeping
-them apart because the interface does.
-
-**Health** answers "can we reach and trust this agent right now?". It is
-an observation from the last handshake, stamped with when it was taken.
-Five values:
+**Health** answers "can Deplo reach and trust this agent right now?". It comes from the last
+contact and has five values:
 
 <TypeTable
   type={{
     provisioning: {
-      description: "No agent has called home yet. Never dialled, never demoted",
+      description: "No agent has contacted the control plane yet",
       type: "string",
     },
     online: {
-      description: "The handshake answered and Docker is reachable",
+      description: "The agent answered and Docker is reachable",
       type: "string",
     },
     warning: {
-      description: "The agent is up and trusted, but Docker is not answering, so nothing can deploy there",
+      description: "The agent answered, but Docker is not, so nothing can deploy there",
       type: "string",
     },
     error: {
-      description: "Something answered, but its agent is wrong: untrusted certificate, unsupported contract, or an application error",
+      description: "Something answered, but the agent is wrong: untrusted certificate, unsupported version, or an application error",
       type: "string",
     },
     offline: {
@@ -105,56 +90,43 @@ Five values:
   }}
 />
 
-<Callout type="info" title="The stored value is a cache, not a gate">
-Past a staleness window the Servers page shows **Unknown** rather than a
-confident stale green, and nothing in the deploy path consults it. A
-deploy gates on a live handshake taken at that moment.
+<Callout type="info" title="The stored value is only a cache">
+When it is too old, the Servers page shows **Unknown**. A deploy never relies on it: it contacts
+the agent at that moment.
 </Callout>
 
-**Readiness** answers a different question: "is this host's installation
-complete enough to deploy apps to?". It is a live report, run from the
-server's menu, never stored, and nothing gates on it either. Rows are
-grouped as agent, docker, routing, capacity, build methods and Deplo
-configuration, and each row is `pass`, `info`, `warn`, `fail` or `skip`.
-**`skip` means it could not be evaluated**, which is deliberately
-different from a pass.
+**Readiness** answers "is this server set up well enough to deploy apps to?". It is a live report
+you run from the server's menu. Rows are grouped as agent, docker, routing, capacity, build
+methods and Deplo configuration, and each row is `pass`, `info`, `warn`, `fail` or `skip`.
+**`skip` means it could not be checked**, which is not a pass.
 
 ## The Deplo host is a server too
 
-The machine running the control plane enrolls itself during installation
-and appears in the list like any other. Deploying to it uses the same
-network path, the same certificates and the same code as deploying to a
-machine on another continent. There is no local shortcut, which is why
-the everyday path is also the well-tested one.
+The machine running the control plane adds itself during installation and appears in the list
+like any other server. Deploying to it uses the same path and the same code as any remote server.
 
-The one thing it cannot do is remove itself from the fleet.
+The only difference: it cannot remove itself from the list.
 
-## Removing a server is trust revocation
+## Removing a server
 
-Removal is **refused while anything still points at the machine**: an app, a managed database, or
-a backup destination on its disk. Each refusal names what is in the way, so a server never
-disappears out from under a running workload. The Deplo host cannot remove itself at all.
+Removal is **refused while anything still uses the machine**: an app, a managed database, or a
+backup destination on its disk. Each refusal names what is in the way.
 
-Once nothing points at it, removing a server **clears the pinned certificate** so Deplo will never
-talk to it again. It does not reach into the host and uninstall anything, because by that point it
-may not be able to.
+Once nothing uses it, removing a server **deletes the pinned certificate**, so Deplo will never
+talk to it again. Deplo does not uninstall anything on the machine itself.
 
-Deplo prints a one-line uninstall command for you to run on the machine if
-you want the agent, its Traefik and its state directory gone. The only
-exception is a migration source, which Deplo does uninstall itself from
-once you are done with it.
+Deplo shows a one-line uninstall command to run on the machine if you want the agent, its Traefik
+and its data removed. A migration source is the exception: Deplo uninstalls itself from it once
+you are done.
 
-## Two behaviours worth knowing
+## Two behaviours to know
 
-**Deploy concurrency.** Each server has a slot count, default `1`, so
-deploys to one machine serialize. Other servers keep working in parallel,
-and two deploys of the same app never overlap regardless.
+**Deploy concurrency.** Each server has a slot count, default `1`, so deploys to one machine run
+one at a time. Other servers keep working in parallel. Two deploys of the same app never overlap.
 
-**Pending teardowns.** If Deplo tells a host to destroy a stack and the
-host does not confirm, the instruction is kept and retried on a backoff
-ladder from one minute up to a day, eight times. Giving up writes an
-activity entry and raises an alert, so an orphaned container is never
-silently left behind.
+**Pending teardowns.** If Deplo tells a server to remove a stack and the server does not confirm,
+Deplo retries up to eight times, from one minute up to a day apart. If it gives up, it writes an
+activity entry and raises an alert.
 
 ## Next steps
 

@@ -1,6 +1,6 @@
 ---
 title: The deploy trace
-description: The full trace of one deploy, from trigger to a container serving traffic.
+description: What happens during one deploy, step by step.
 ---
 
 import Image from "next/image";
@@ -8,9 +8,8 @@ import { basePath } from "@/lib/base-path";
 
 import { Hammer, Zap, RotateCcw, Variable, LifeBuoy } from "lucide-react";
 
-The full trace of one deploy, from the thing that triggered it to a
-container serving traffic. Reading it once makes most failure messages
-self-explanatory.
+One deploy, from the trigger to a running container. Knowing these steps makes most error
+messages easy to understand.
 
 <Steps>
 <Step>
@@ -23,53 +22,44 @@ self-explanatory.
 | A new tag | The same webhook, when the trigger is set to tags |
 | A `POST` to the app's deploy hook URL | CI, a script, a provider Deplo cannot register a webhook with |
 | A pull request opened or updated | Previews, if they are on |
-| **Rollback** | A person, and it skips almost all of what follows |
-| The MCP server or the GraphQL API | A token holding `deploy_apps` |
+| **Rollback** | A person, and it skips most of the steps below |
+| The MCP server or the GraphQL API | A token with `deploy_apps` |
 
-An automatic trigger can be filtered before it starts: **watch paths** skip
-the deploy if the push touched nothing under the globs you listed, and
-**skip unchanged deployments** skips it if nothing under the root
+An automatic trigger can be filtered: **watch paths** skip the deploy if the push touched nothing
+under the paths you listed, and **skip unchanged deployments** skips it if nothing under the root
 directory changed. A manual redeploy always runs.
 </Step>
 
 <Step>
 ### It waits for a slot
 
-Every server has a deploy concurrency, `1` by default, so deploys to the
-same machine queue rather than fighting over CPU and the build cache.
-Deploys to other servers run in parallel. Two deploys of the same app
-never overlap.
+Every server runs `1` deploy at a time by default, so deploys to the same machine queue. Deploys
+to other servers run in parallel. Two deploys of the same app never overlap.
 
-A queued deploy shows its position in the build log while it waits. If
-the app builds on a [build server](/advanced/build-servers), it takes a
-slot on **that** machine, because that is where the cost is.
+A queued deploy shows its position in the build log. If the app builds on a
+[build server](/advanced/build-servers), it waits for a slot on **that** machine.
 </Step>
 
 <Step>
 ### The agent fetches the source
 
-The control plane opens a mutual-TLS connection to the agent on the
-target server and hands over the job. This is where credentials are
-decrypted: plaintext exists only inside that call, and the agent never
-holds the key.
+The control plane contacts the agent on the target server over an encrypted connection and hands
+over the job, including the decrypted credentials. The agent never holds the encryption key.
 
-- **Git sources** are cloned by the agent, on the host, with the token
-  from the git connection. `--recurse-submodules` is added if the app
-  asks for it.
+- **Git sources** are cloned by the agent with the token from the git connection. Submodules are
+  included if the app asks for it.
 - **Upload sources** use the archive you uploaded.
-- **Docker image** and **Compose** sources skip this step entirely.
+- **Docker image** and **Compose** sources skip this step.
 </Step>
 
 <Step>
 ### The framework is detected
 
-For Nixpacks and Railpack builds, Deplo re-derives the framework from
-`package.json` and the root configuration **on every deploy**. It is
-never a stored setting.
+For Nixpacks and Railpack builds, Deplo detects the framework from `package.json` and the root
+configuration **on every deploy**. It is never stored.
 
-Detection produces the install, build and start commands and the default
-container port. Anything you typed by hand wins over it, permanently.
-Dockerfile and Static builds skip detection: you named everything already.
+Detection gives the install, build and start commands and the default container port. Anything
+you typed by hand always wins. Dockerfile and Static builds skip detection.
 </Step>
 
 <Step>
@@ -77,78 +67,67 @@ Dockerfile and Static builds skip detection: you named everything already.
 
 | Method | What happens |
 | --- | --- |
-| **Railpack** (default) | Generates a build plan from the detected language and framework, with its own pinned version |
+| **Railpack** (default) | Creates a build plan from the detected language and framework |
 | **Nixpacks** | The same idea, a different builder |
 | **Dockerfile** | Your `Dockerfile`, with your build context and optionally a `--target` stage |
 | **Static** | Builds, then serves the output directory, with an optional single-page fallback |
 
-Every resolved environment variable is available **during** the build, not just at run time, so
-build-time inlined configuration such as `NEXT_PUBLIC_*` works. The generated Dockerfile declares
-each one as an `ARG`; only `NODE_ENV` is also promoted to an `ENV`, so a value you need at run
-time as well belongs in the app's own variables, which the running container gets anyway.
+Every environment variable is available **during** the build too, so build-time values such as
+`NEXT_PUBLIC_*` work. Each one becomes a build `ARG`. Only `NODE_ENV` also becomes an `ENV`, and
+the running container gets the app's variables anyway.
 
 <Callout type="info">
-The image stays on that host. Deplo pushes to no registry, which is why a
-rollback needs the image still to be there.
+The image stays on that server. Deplo pushes to no registry, so a rollback needs the image to
+still be there.
 </Callout>
 
-Build output streams to the dashboard as it happens, survives a page reload and survives a
-control plane restart. It is stored with a cap - 20,000 lines, each truncated at 4,000
-characters - so a runaway build cannot fill the disk.
+Build output streams to the dashboard live and survives a page reload or a control plane restart.
+It is capped at 20,000 lines of 4,000 characters each.
 </Step>
 
 <Step>
 ### The environment is resolved
 
-Four layers fold together, lowest priority first: **instance-wide
-variables**, then **the app's own variables**, then **a shared variable**
-the app has linked, then **a preview override** (previews only). A name
-defined on more than one layer takes the value from the highest layer that
-defines it.
+Four layers, lowest priority first: **instance-wide variables**, **the app's own variables**, **a
+shared variable** the app has linked, then **a preview override** (previews only). The highest
+layer that defines a name wins.
 
-Every layer carries a type, and a **secret**-typed value is write-only. A preview built from a
-**fork** is stricter than that: it receives the preview-only overrides and **nothing the app
-itself was given**, whatever the variable's type, because the pull request's code is a stranger's.
+A **secret** value is write-only on every layer. For security reasons, a preview built from a
+**fork** gets only the preview overrides and nothing the app itself was given.
 </Step>
 
 <Step>
 ### The stack is rendered
 
-This happens on the control plane, never on the host. It produces:
+This happens on the control plane, never on the server. It produces:
 
-- **The Compose file.** One service for a single-image app, or your
-  authored Compose stack with Deplo's own entries folded in.
-- **The Traefik labels.** One router per domain, carrying the rule, the
-  entry point, the certificate resolver and the middleware chain. Path
-  routers are given priority above whole-host ones, longest prefix first.
-- **The port.** One container port per app, plus any per-hostname
-  override.
+- **The Compose file.** One service for a single-image app, or your Compose stack with Deplo's
+  entries added.
+- **The Traefik labels.** One route per domain, with its rule, entry point, certificate provider
+  and extras. Path routes win over whole-host ones, longest path first.
+- **The port.** One container port per app, plus any per-hostname override.
 - **The volumes, the resource limits and the mounts.**
 
-The result is opaque YAML by the time it reaches the agent. Compose and
-routing logic never live on the host side.
+The agent receives the finished YAML. No routing logic lives on the server side.
 </Step>
 
 <Step>
-### The agent brings it up
+### The agent starts it
 
-The agent writes the stack and, when there are secrets, a `0600` environment file beside it, then
-runs Compose. The containers join the app's **Environment network**, `deplo-env-<id>`, or its
-team's `deplo-team-<id>` when the app is in no Environment, or `deplo-preview-<key>` for a
-preview. That is how apps and databases in the same Environment reach each other by name, and why
-two apps in different Environments cannot.
+The agent writes the stack and, when there are secrets, a private environment file next to it,
+then runs Compose. The containers join the app's **Environment network**, `deplo-env-<id>`, or
+the team's `deplo-team-<id>` when the app is in no Environment, or `deplo-preview-<key>` for a
+preview. This is why apps and databases in the same Environment reach each other by name.
 
-Traefik notices the new labels through its read-only socket proxy and
-starts routing. If the domain asked for a certificate, Traefik requests
-it on the first HTTPS request.
+Traefik sees the new labels and starts routing. If the domain has a certificate provider, Traefik
+requests the certificate on the first HTTPS request.
 </Step>
 
 <Step>
 ### The result is recorded
 
-The deployment row gets its final status, its image reference, its
-duration and its logs. The app's status moves to `active`, or to `error`
-if the build or the bring-up failed.
+The deployment gets its final status, its image reference, its duration and its logs. The app's
+status becomes `active`, or `error` if the build or the start failed.
 
 <Image
   src={`${basePath}/screenshots/what-happens-on-a-deploy/01-deploy-trace.png`}
@@ -158,28 +137,23 @@ if the build or the bring-up failed.
   className="w-full rounded-lg"
 />
 
-Older images beyond the app's **rollbacks kept** setting (default `3`)
-become eligible for removal by the server's disk cleanup. That number is
-the real retention: Deplo pushes to no registry, so a pruned image is
-gone.
+Images older than the app's **rollbacks kept** setting (default `3`) can be removed by the
+server's disk cleanup. Deplo pushes to no registry, so a removed image is gone.
 </Step>
 </Steps>
 
 ## What a deploy does not do
 
-- **It does not touch your data.** Volumes are reattached, never
-  recreated.
-- **It does not change the slug**, the volume names or the app's
-  identity.
-- **It does not roll back on failure.** A failed deploy leaves the
-  previous stack running. See [App status is intent, not observation](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
+- **It does not touch your data.** Volumes are reattached, never recreated.
+- **It does not change the slug**, the volume names or the app's identity.
+- **It does not roll back on failure.** A failed deploy leaves the previous version running. See
+  [App status](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
 
 ## A rollback is much shorter
 
-Steps 3 to 6 are skipped. Deplo re-runs an existing image with the
-**current** configuration: the code goes back, the variables, domains,
-volumes and limits do not. It is recorded as a real deployment of its
-own, with its own logs.
+Steps 3 to 6 are skipped. Deplo runs an existing image again with the **current** configuration:
+the code goes back, the variables, domains, volumes and limits do not. It is recorded as a real
+deployment with its own logs.
 
 ## Next steps
 

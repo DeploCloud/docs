@@ -1,14 +1,14 @@
 ---
 title: Git connections
-description: Connect a GitLab, Bitbucket, or Gitea (Forgejo included) host as a stored git connection, cloud or self-hosted.
+description: Connect a GitLab, Bitbucket or Gitea host, cloud or self-hosted.
 ---
 
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-A git connection is one stored credential per host, reused by every app that
-deploys from it. GitLab, Bitbucket and Gitea connect this way, self-hosted or
-not, and are marked **Beta**. GitHub is different, see
+A git connection is one stored token per host, reused by every app that deploys
+from it. GitLab, Bitbucket and Gitea (Forgejo included) connect this way,
+self-hosted or not, and are marked **Beta**. GitHub is different, see
 [GitHub](/guides/git-providers/github).
 
 ## Connect it
@@ -34,7 +34,7 @@ not, and are marked **Beta**. GitHub is different, see
 ### Pick the type and fill in the details
 
 Pick the provider as the **Type**, then set the **Address**, **Username** and
-token. The exact values differ per provider:
+token:
 
 <Image
   src={`${basePath}/screenshots/git-connections/02-provider-menu.png`}
@@ -47,22 +47,19 @@ token. The exact values differ per provider:
 <Tabs items={['GitLab', 'Bitbucket', 'Gitea']}>
 <Tab value="GitLab">
 
-- **Address**: leave the default for gitlab.com, or point it at your
-  self-hosted instance's base URL.
-- **Username**: **`oauth2`**, exactly. GitLab expects this value for token
-  authentication, not your account name.
+- **Address**: leave the default for gitlab.com, or set your self-hosted
+  instance's base URL.
+- **Username**: **`oauth2`**, exactly. Not your account name.
 - **Token**: a GitLab personal or project access token with repository read
   scope.
 
-GitLab reports token expiry, so an expiring token surfaces before it
-actually breaks a deploy.
+GitLab reports token expiry, so you are warned before a token breaks a deploy.
 
 </Tab>
 <Tab value="Bitbucket">
 
 - **Address**: Bitbucket's base URL.
-- **Username**: **`x-token-auth`**, exactly. Bitbucket expects this value
-  for token authentication, not your account name.
+- **Username**: **`x-token-auth`**, exactly. Not your account name.
 - **Token**: a Bitbucket app password or repository access token.
 
 </Tab>
@@ -72,8 +69,7 @@ actually breaks a deploy.
 - **Username**: your Gitea account name.
 - **Token**: a Gitea access token with repository read scope.
 
-Gitea does not report token expiry. Unlike GitLab, there is no advance
-warning before a token dies, so **This connection stopped working** is the
+Gitea does not report token expiry. **This connection stopped working** is the
 first signal you get.
 
 </Tab>
@@ -89,19 +85,17 @@ Click **Test connection**, then **Save**.
 </Step>
 </Steps>
 
-Later, **Replace the token** swaps it without recreating anything, and
-**This connection stopped working** appears when a background check finds
-it broken.
+Later, **Replace the token** swaps it without recreating anything.
+**This connection stopped working** appears when a background check finds the
+connection broken.
 
-For a self-hosted GitLab or Gitea address that is not publicly routable, an
-instance admin can tick **This git server is on my own network**. It is
-deliberately admin-only, because it turns off a guard that stops Deplo
-being used to probe your internal network.
+For a self-hosted address on a private network, an instance admin can tick
+**This git server is on my own network**. Only an admin can do this, for
+security reasons.
 
 ## What the token needs
 
-A token that authenticates but cannot do the job is the failure nobody sees
-coming, so tick these when you mint it:
+Tick these when you create the token:
 
 | Provider | On its token page | What it unlocks |
 | --- | --- | --- |
@@ -112,23 +106,21 @@ coming, so tick these when you mint it:
 | Gitea | **`read:repository`** | List and clone your repositories |
 | Gitea | **`write:repository`** | Register the push webhook so a push deploys |
 
-GitLab reports what its tokens cover, so Deplo names the missing scope on the
-connection's card as **This token is missing access**. Bitbucket and Gitea do
-not report it, so Deplo says nothing until the host actually refuses something,
-and then shows this list beside the refusal.
+GitLab reports what a token covers, so Deplo shows **This token is missing
+access** on the connection's card. Bitbucket and Gitea do not, so Deplo shows
+this list only when the host refuses something.
 
 ## Troubleshooting
 
-- **`Authentication failed` in a clone**: the token expired or was
-  revoked. **Test connection** confirms it.
-- **"This token is missing access"**: it authenticates, but a scope in the
-  table above is not ticked. Mint a replacement with it, then **Replace the
-  token**.
-- **"Deplo could not add the push webhook"**: usually the same cause, and
-  the notice lists what the token needs. The webhook address is there to
-  paste by hand in the meantime.
+- **`Authentication failed` in a clone**: the token expired or was revoked.
+  **Test connection** confirms it.
+- **"This token is missing access"**: a scope in the table above is not
+  ticked. Create a new token with it, then **Replace the token**.
+- **"Deplo could not add the push webhook"**: usually the same cause. The
+  notice lists what the token needs, and shows the webhook address to paste by
+  hand in the meantime.
 - **Saving a self-hosted address is refused**: it resolves to a private
-  address, and only an instance admin can allow that.
+  address. Only an instance admin can allow that.
 
 ## Next steps
 

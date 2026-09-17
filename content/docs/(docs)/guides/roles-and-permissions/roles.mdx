@@ -1,6 +1,6 @@
 ---
 title: Build a role
-description: Name a set of capabilities, tick the ones it needs, and every member holding it updates together.
+description: Name a set of capabilities, tick the ones it needs, and every member holding it updates at once.
 ---
 
 import Image from "next/image";
@@ -26,8 +26,7 @@ Open **Settings -> Roles**.
 
 ### Start a new role
 
-Click **New role**. It asks first whether to start blank or from an
-existing role.
+Click **New role**. Choose to start blank or from an existing role.
 
 </Step>
 <Step>
@@ -41,9 +40,8 @@ Give it a **Name** and a **Description**.
 
 ### Tick capabilities
 
-Tick capabilities. There is a search box and browse categories, because forty-four checkboxes
-need both, and each category header carries a **Select all** / **Unselect all** toggle that acts
-on whatever the search has left visible. `view` is always ticked and cannot be turned off.
+Use the search box or browse by category. Each category header has a **Select all** /
+**Unselect all** toggle for the visible items. `view` is always ticked.
 
 <Image
   src={`${basePath}/screenshots/roles/02-role-detail.png`}
@@ -56,18 +54,17 @@ on whatever the search has left visible. `view` is always ticked and cannot be t
 </Step>
 <Step>
 
-### Mind the sensitive ones
+### Check the sensitive ones
 
-Ones flagged **Sensitive** are the ones worth a second thought: deleting
-things, opening consoles, revealing secrets, managing tokens, managing
-roles.
+Capabilities marked **Sensitive** deserve a second look: deleting things, opening consoles,
+revealing secrets, managing tokens, managing roles.
 
 </Step>
 <Step>
 
 ### Optionally require two-factor
 
-Optionally turn on **Require two-factor authentication** for this role.
+Turn on **Require two-factor authentication** for this role if needed.
 
 </Step>
 <Step>
@@ -79,15 +76,13 @@ Save.
 </Step>
 </Steps>
 
-**Reset to default** restores a built-in role. **Delete role** removes one
-you authored.
+**Reset to default** restores a built-in role. **Delete role** removes one you created.
 
-You cannot grant what you do not hold: capabilities beyond your own reach
-show as **Out of reach** rather than pretending to be available.
+You cannot grant what you do not have: those capabilities show as **Out of reach**.
 
 ## Next steps
 
 <Cards>
   <Card title="Roles and permissions" description="The capability model" href="/guides/roles-and-permissions" />
-  <Card title="Folder shares" description="Grant one corner of the fleet instead" href="/guides/roles-and-permissions/folder-shares" />
+  <Card title="Folder shares" description="Grant access to one folder instead" href="/guides/roles-and-permissions/folder-shares" />
 </Cards>

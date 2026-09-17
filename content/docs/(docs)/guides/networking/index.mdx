@@ -3,13 +3,12 @@ title: Networking
 description: How traffic reaches an app, your own hostnames over HTTPS, and a URL per pull request.
 ---
 
-Every hostname Deplo serves, permanent or temporary, goes through the same router: a rule bound to
-a container, a certificate resolver when HTTPS is asked for, and a DNS check that decides whether
-the hostname is routed yet. A preview's hostname follows the same HTTPS rule as a manual domain -
-Let's Encrypt when a real domain is behind it, plain HTTP on `nip.io` when there is none.
+Every hostname Deplo serves goes through the same router. Each hostname is
+routed only after its DNS check passes. HTTPS uses Let's Encrypt when a real
+domain is behind it, and plain HTTP on `nip.io`.
 
-**Domains and HTTPS** covers the permanent case: your own hostnames, certificates, path-based
+**Domains and HTTPS** covers your own hostnames, certificates, path-based
 routing and redirects. [Learn more ->](/guides/networking/domains-and-https)
 
-**Pull request previews** covers the temporary case: a deterministic URL per open pull request,
-torn down when it closes. [Learn more ->](/guides/networking/pull-request-previews)
+**Pull request previews** covers a temporary URL per open pull request, removed
+when it closes. [Learn more ->](/guides/networking/pull-request-previews)

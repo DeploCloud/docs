@@ -1,13 +1,13 @@
 ---
 title: Deploy
-description: Five ways to get code onto Deplo, plus templates that fill it in for you.
+description: Five ways to get code onto Deplo, plus ready-made templates.
 ---
 
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-Every app starts from one of five sources. Pick the one that matches what you already have, or let
-a template fill all of it in.
+Every app starts from one of five sources. Pick the one that matches what you have, or start from
+a template.
 
 <Image
   src={`${basePath}/screenshots/deploy/01-five-sources.png`}
@@ -23,17 +23,15 @@ a template fill all of it in.
 | [Git](/guides/deploy/from-git) (beta) | GitLab, Bitbucket, Gitea or any git server | yes | yes |
 | [Docker image](/guides/deploy/docker-image) | An image reference | no, already built | no |
 | [Upload](/guides/deploy/upload-code) | A compressed archive of the project | yes | yes |
-| [Compose](/advanced/compose-apps) | A `docker-compose.yml`, brought up as written | no | no |
+| [Compose](/advanced/compose-apps) | A `docker-compose.yml`, started as written | no | no |
 
 ## Or start from a template
 
-A [template](/guides/deploy/from-template) is not a sixth source: it is a Compose stack the
-catalogue already wrote, with its passwords generated and its address picked. Deplo creates an
-ordinary Compose app out of it, and nothing links the app back to the template afterwards.
+A [template](/guides/deploy/from-template) is a Compose stack from the catalogue, with passwords
+generated and the address picked for you. Deplo creates a normal Compose app from it.
 
-Reach the catalogue from **Templates** in the sidebar, or from the **Template** button under the
-five tiles on the first step of the new-app wizard - that button leaves the wizard for the
-catalogue rather than being a source of its own.
+Open the catalogue from **Templates** in the sidebar, or from the **Template** button under the
+five tiles in the new-app wizard.
 
 ## In this section
 
@@ -49,5 +47,5 @@ catalogue rather than being a source of its own.
 **Upload your code** - deploy an archive, with no repository at all.
 [Learn more ->](/guides/deploy/upload-code)
 
-**Compose apps** - bring up a `docker-compose.yml` as written.
+**Compose apps** - start a `docker-compose.yml` as written.
 [Learn more ->](/advanced/compose-apps)

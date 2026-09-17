@@ -101,7 +101,7 @@ Tenant networks are created per Environment:
     },
     "deplo-preview-<deploy key>": {
       type: "tenant",
-      description: "One pull request preview, sealed on its own",
+      description: "One pull request preview, isolated on its own",
     },
   }}
 />
@@ -126,7 +126,7 @@ pool with `size: 24` in `/etc/docker/daemon.json`.
 /opt/deplo/.env                     generated secrets, chmod 600
 /opt/deplo/docker-compose.yml       Postgres + the control plane
 /opt/deplo/traefik/                 the proxy stack
-/opt/deplo/traefik/certs/           the fallback certificate, minted once
+/opt/deplo/traefik/certs/           the fallback certificate, created once
 /opt/deplo/data/                    build and upload staging
 /opt/deplo/acme/acme.json           issued certificates, chmod 600
 ```

@@ -1,14 +1,12 @@
 ---
 title: Config
-description: Variables your app reads from its environment, and variables your team shares across several apps.
+description: Variables for one app, and variables shared by several apps.
 ---
 
-Two kinds of configuration value, both encrypted, both typed `plain` or `secret`, both injected at
-build time and at run time. A linked shared variable folds in above an app's own variable of the
-same name.
+Two kinds of configuration value. Both are encrypted, typed `plain` or `secret`, and injected at
+build time and at run time. A linked shared variable wins over an app variable with the same name.
 
-**Environment variables** are set directly on one app, with instance-wide and preview-only layers
-folding in around them. [Learn more ->](/guides/config/environment-variables)
+**Environment variables** are set on one app. [Learn more ->](/guides/config/environment-variables)
 
-**Shared variables** are owned by the team and linked into several apps at once, so one change
-reaches every app that uses it. [Learn more ->](/guides/config/shared-variables)
+**Shared variables** belong to the team and can be linked to several apps. Change them once and
+every linked app gets the new value. [Learn more ->](/guides/config/shared-variables)

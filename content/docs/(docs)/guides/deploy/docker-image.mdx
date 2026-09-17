@@ -8,17 +8,15 @@ import { basePath } from "@/lib/base-path";
 
 import { Container, LayoutTemplate, Layers, HardDrive, Upload } from "lucide-react";
 
-Running an image that is already built, from Docker Hub, GitHub Container Registry, or any
-registry you can reach. There is no build step at all: the app stores a reference such as
-`nginx:1.27-alpine` or `ghcr.io/acme/api:v2.3.1`, the control plane renders a Compose file with
-that image plus the routing labels and your variables, and the agent pulls and starts it.
+Run an image that is already built, from Docker Hub, GitHub Container Registry, or any registry
+you can reach. There is no build step: you give a reference such as `nginx:1.27-alpine` or
+`ghcr.io/acme/api:v2.3.1`, and the agent pulls and starts it.
 
-Use it for software you did not write - a database viewer, a metrics dashboard, a game server -
-and for images your own CI already builds and pushes.
+Use it for software you did not write, like a database viewer, a metrics dashboard or a game
+server, and for images your own CI already builds.
 
-Because nothing is built, several features do not apply: no build log worth reading, no build
-cache, no build server, and **no rollback**, because a rollback re-runs an image Deplo built and
-kept. Moving the tag is your version control here.
+Because nothing is built, there is no build log, no build cache, no build server, and **no
+rollback**. Changing the tag is your version control.
 
 ## Deploy one
 
@@ -34,9 +32,9 @@ kept. Moving the tag is your version control here.
 
 ### Pick the image
 
-Pick the **Docker Image** tile and type the image reference. The name field autocompletes against
-Docker Hub; tags are completed and checked for existence using any registry credentials you have
-added. The **App name** fills itself in from the image.
+Pick the **Docker Image** tile and type the image reference. The name field autocompletes from
+Docker Hub, and tags are checked against any registry credentials you added. The **App name** is
+filled in from the image.
 
 <Image
   src={`${basePath}/screenshots/docker-image/01-wizard-image.png`}
@@ -51,28 +49,28 @@ added. The **App name** fills itself in from the image.
 
 ### Deploy
 
-The wizard shows no build settings for an image app, because there is nothing to build. The server
-is under **Advanced**, already picked. Click **Deploy**.
+There are no build settings for an image app. The server is under **Advanced**, already picked.
+Click **Deploy**.
 
 </Step>
 </Steps>
 
 ## The port
 
-**Deplo reads the port out of the image.** Most images declare one with `EXPOSE`, and that is the
-port routing uses: `nginx` and `traefik/whoami` come up on 80, `redis` on 6379, without being told.
-An image that declares several, or none, falls back to **3000**.
+**Deplo reads the port from the image.** Most images declare one with `EXPOSE`: `nginx` and
+`traefik/whoami` use 80, `redis` uses 6379. An image that declares several ports, or none, gets
+**3000**.
 
-Whatever it found is in the wizard, under **Advanced -> Port**, editable before the first deploy.
-Afterwards the port lives **on the domain**, in the app's **Domains** tab: the **Application port**
-field on each hostname is what routing reads, it applies within seconds without a redeploy, and it
-is how one image serves two hostnames on two different ports.
+Before the first deploy, the port is under **Advanced -> Port** in the wizard. After that, it lives
+on each hostname in the app's **Domains** tab, in the **Application port** field. Changing it
+applies in seconds without a redeploy. This is also how one image serves two hostnames on two
+different ports.
 
 ## Private registries
 
 Add credentials once in **Settings -> Registries** and every app on the team can pull from that
 registry. The password is encrypted and never returned. See
-[Container registries](/operations/servers/container-registries) for the full setup.
+[Container registries](/operations/servers/container-registries).
 
 <Image
   src={`${basePath}/screenshots/docker-image/02-registries.png`}
@@ -86,31 +84,30 @@ registry. The password is encrypted and never returned. See
 
 | Setting | Where | Note |
 | --- | --- | --- |
-| Image reference | **Settings -> Deployments** | Change it and redeploy to move versions |
+| Image reference | **Settings -> Deployments** | Change it and redeploy to change version |
 | Port | **Domains**, per hostname | An image app has no build settings card |
 | Environment variables | **Environment** | The normal way to configure this kind of software |
-| Volumes | **Settings -> Storage** | A prebuilt image must name the mount path itself |
-| Resource limits | **Settings -> Resources** | Worth setting for software you did not write |
+| Volumes | **Settings -> Storage** | You must type the full mount path |
+| Resource limits | **Settings -> Resources** | Useful for software you did not write |
 
 ## Good to know
 
-- **No rollback.** There is no image Deplo owns to go back to. Pin a specific tag or a digest
-  rather than `latest` if you care about reproducibility.
-- **`latest` does not re-pull by itself.** Redeploying pulls again; nothing watches the registry
+- **No rollback.** Pin a specific tag or a digest instead of `latest` if you want to go back to a
+  known version.
+- **`latest` does not re-pull by itself.** Redeploying pulls again. Nothing watches the registry
   for you.
-- **The mount path is not derived.** For a built app Deplo can infer that `uploads` means
-  `/app/uploads`. For a prebuilt image it cannot, so you type the full path.
-- **Multi-container software wants Compose, not this.** If the vendor ships a
-  `docker-compose.yml`, use [Compose apps](/advanced/compose-apps) or look in
-  [Templates](/guides/deploy/from-template).
+- **The mount path is not guessed.** For a prebuilt image you type the full path, like
+  `/app/uploads`.
+- **Multi-container software needs Compose.** If the vendor ships a `docker-compose.yml`, use
+  [Compose apps](/advanced/compose-apps) or look in [Templates](/guides/deploy/from-template).
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
 | `pull access denied` | The image is private and no registry credential matches its host. Add one in **Settings -> Registries**. |
-| The container starts and exits immediately | It usually needs a variable or a volume. Read [Logs](/guides/observability/logs); the exit reason is in there. |
-| The URL answers 502 | Wrong port. Deplo could not read one from the image, so it guessed 3000 - set **Application port** on the domain. |
+| The container starts and exits immediately | It usually needs a variable or a volume. Read the [Logs](/guides/observability/logs). |
+| The URL answers 502 | Wrong port. Deplo could not read one from the image and used 3000. Set **Application port** on the domain. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

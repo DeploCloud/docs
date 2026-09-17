@@ -1,6 +1,6 @@
 ---
 title: Build settings
-description: How your source becomes a container image, which builder runs and which port it listens on.
+description: How your code becomes a container image, which builder runs and which port it uses.
 ---
 
 import Image from "next/image";
@@ -8,9 +8,9 @@ import { basePath } from "@/lib/base-path";
 
 import { Workflow, Webhook, Globe, Gauge } from "lucide-react";
 
-How your source becomes a container image: which builder runs, what commands it runs, and which
-port the result listens on. Most apps never need to touch any of it. A Docker image or a Compose
-source has nothing to build, so none of this page applies to them.
+These settings decide how your code becomes a container image: the builder, its commands, and
+the port the app listens on. Most apps never need to change them. A Docker image or a Compose app
+has nothing to build, so this page does not apply to them.
 
 ## The four build methods
 
@@ -27,32 +27,30 @@ Pick one under **Build method**, on the **Build & output** card in **Settings ->
 | Method | Use it when | Fields it adds |
 | --- | --- | --- |
 | **Railpack** (default) | Normal application code, any common language | **Framework**, **Railpack version** |
-| **Nixpacks** | The same job, a different builder. Try it if Railpack mis-detects | **Framework**, **Publish directory** |
-| **Dockerfile** | You already have a `Dockerfile` and want it used exactly | **Dockerfile path**, **Build context path**, **Build stage (target)** |
+| **Nixpacks** | Same job, different builder. Try it if Railpack detects the wrong thing | **Framework**, **Publish directory** |
+| **Dockerfile** | You already have a `Dockerfile` and want it used as is | **Dockerfile path**, **Build context path**, **Build stage (target)** |
 | **Static** | The build produces plain files to serve | **Single-page application** |
 
-**Single-page application** makes unmatched paths fall back to `index.html`, which is what a
-client-side router needs. Dockerfile and Static skip framework detection entirely: you have
-already said what happens.
+**Single-page application** sends unknown paths to `index.html`, which a client-side router
+needs. Dockerfile and Static skip framework detection.
 
-Changing the build method leaves domains, variables and volumes untouched.
+Changing the build method does not touch domains, variables or volumes.
 
-## Framework detection, and overriding it
+## Framework detection
 
-For Railpack and Nixpacks, Deplo re-derives the framework from `package.json` and the root
-configuration **on every deploy** and records what it found on the app, so upgrading your
-framework changes the build without you editing anything. The **Framework** select overrides that:
-a value you pick is stored in its own column, survives every redeploy, and carries the framework's
-default container port with it.
+For Railpack and Nixpacks, Deplo detects the framework from `package.json` and the root
+configuration **on every deploy**. Upgrading your framework changes the build with no edits
+from you. The **Framework** select overrides detection: your choice is kept on every redeploy
+and sets the framework's default container port.
 
-Detection fills in the build command, a deploy command for the few frameworks that publish exactly
-one, and the container port. It never copies your `start` script: in most projects that script is
-the dev server.
+Detection fills in the build command, the container port, and a deploy command for the few
+frameworks that have only one. It never uses your `start` script, because in most projects
+that is the dev server.
 
-Anything you type by hand is stored and wins from then on; clearing a field hands it back to
-detection. The greyed text in an empty field is the builder's generic default (`npm ci`,
-`npm run build`, `npm run start`, `dist`), not the value detection actually found, so an empty
-field means "let the builder decide", not "it will run this".
+Anything you type wins over detection. Clearing a field gives it back to detection. The grey
+text in an empty field is the builder's generic default (`npm ci`, `npm run build`,
+`npm run start`, `dist`), not the detected value. An empty field means "let the builder
+decide".
 
 ## The fields
 
@@ -93,16 +91,15 @@ field means "let the builder decide", not "it will run this".
   }}
 />
 
-**Root directory** is not on this card. It lives on the **Deploy Source** card, inside
-**Additional options**, and it is the subdirectory to build from in a monorepo.
+**Root directory** is on the **Deploy Source** card, inside **Additional options**. It is the
+subdirectory to build from in a monorepo.
 
-Click **Save build settings**. Saving does not deploy: click **Redeploy** when you want the change
-to take effect.
+Click **Save build settings**. Saving does not deploy: click **Redeploy** to apply the change.
 
-## The port is the one people get wrong
+## Check the port
 
-Deplo routes traffic to exactly one port per app, and detection sets a default per framework. The
-ones that surprise people:
+Deplo sends traffic to one port per app, and detection sets a default per framework. The ones
+that often surprise:
 
 | Framework | Port | | Framework | Port |
 | --- | --- | --- | --- | --- |
@@ -111,12 +108,11 @@ ones that surprise people:
 | Gatsby | `9000` | | Strapi | `1337` |
 | Eleventy, Vue CLI | `8080` | | Everything else | `3000` |
 
-If the container starts fine and the URL times out, this is nearly always why. Your process must
-also listen on `0.0.0.0`, not `127.0.0.1`: a server bound to localhost inside a container is
-unreachable from outside it.
+If the container starts but the URL times out, the port is almost always the reason. Your
+process must also listen on `0.0.0.0`, not `127.0.0.1`.
 
-A single hostname can override the port for itself, which is how one app serves an API on one
-domain and a dashboard on another. That override lives in **Domains**, not here.
+A single hostname can override the port for itself. This is how one app serves an API on one
+domain and a dashboard on another. That setting is in **Domains**, not here.
 
 ## Build cache
 
@@ -128,30 +124,28 @@ domain and a dashboard on another. That override lives in **Domains**, not here.
   className="w-full rounded-lg"
 />
 
-**Settings -> Advanced**, on the **Build & triggers** card. **Build cache** is on by default. The
-cache lives on the **server**, one BuildKit cache shared by every app on that host, which is why a
-first build is slow and later ones are not.
+**Settings -> Advanced**, on the **Build & triggers** card. **Build cache** is on by default.
+The cache lives on the **server** and is shared by every app on it. This is why the first build
+is slow and the next ones are not.
 
-The switch turns caching off for this app only. **Clear cache** arms a one-shot clear, applied on
-the next build; it does not prune anything on disk, which is
-[disk cleanup](/operations/servers/cleanup)'s job.
+The switch turns the cache off for this app only. **Clear cache** clears it on the next build.
+It does not free disk: that is the job of [disk cleanup](/operations/servers/cleanup).
 
-The same card carries **Build server** (beta: compile on a different machine than the one that
-runs the app), **Extra compose flags** (passed to `docker compose up` exactly as typed, additive
-only - anything that would change the project name, the stack file or the env file is refused),
-and the **Deploy hook** URL.
+The same card has **Build server** (beta: build on another machine), **Extra compose flags**
+(added to `docker compose up` as typed; flags that change the project name, the stack file or
+the env file are refused), and the **Deploy hook** URL.
 
-If a build server is set and cannot take the job, Deplo does not fail: it falls back to another
-build server in the fleet, then to the app's own server.
+If the build server cannot take the job, Deplo uses another build server, then the app's own
+server.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| `command not found` during the build | Detection guessed wrong, or the command belongs to a dependency that is not installed. Set **Build command** explicitly, or pick the **Framework** by hand. |
-| The build passes, the site does not answer | Wrong **Container port**, or the process is bound to `127.0.0.1` instead of `0.0.0.0`. |
-| The build is slow every single time | The cache is off for this app, or a cleanup sweep is removing it. Check **Build cache** and the server's cleanup scopes. |
-| A setting saved but nothing changed | Saving is not deploying. Nothing changes on the server until the next build. |
+| `command not found` during the build | Detection guessed wrong, or a dependency is missing. Set **Build command**, or pick the **Framework** by hand. |
+| The build passes, the site does not answer | Wrong **Container port**, or the process listens on `127.0.0.1` instead of `0.0.0.0`. |
+| The build is slow every time | The cache is off for this app, or a cleanup is removing it. Check **Build cache** and the server's cleanup settings. |
+| A setting saved but nothing changed | Saving is not deploying. Redeploy. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

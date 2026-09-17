@@ -1,6 +1,6 @@
 ---
 title: Databases
-description: A managed Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse instance on one of your servers.
+description: A managed Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse on one of your servers.
 ---
 
 import Image from "next/image";
@@ -8,7 +8,8 @@ import { basePath } from "@/lib/base-path";
 
 import { Archive, HardDrive, Terminal, Gauge, Network } from "lucide-react";
 
-A managed database running on one of your servers: Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse. Deplo provisions it, gives you a connection string, and handles backups, logs, metrics and a console.
+A managed database on one of your servers: Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse.
+Deplo creates it, gives you a connection string, and handles backups, logs, metrics and a console.
 
 <Image
   src={`${basePath}/screenshots/databases/01-storage-list.png`}
@@ -18,15 +19,14 @@ A managed database running on one of your servers: Postgres, MySQL, MariaDB, Mon
   className="w-full rounded-lg"
 />
 
-A database is provisioned exactly like an app, by the agent on the server you pick. It runs as its
-own Compose stack keyed `db-<slug>`, where the slug is minted from the display name at creation and
-frozen there - renaming the database later does not move it. The stack joins the network of the
-**environment you place it in**, which is what lets the apps there reach it **by name** rather than
-by IP, so the connection string never changes when the container is recreated.
+A database is created like an app, on the server you pick, as a stack named `db-<slug>`. The slug
+is generated from the name at creation and never changes. The database joins the network of its
+**environment**, so the apps there reach it **by name**.
 
-Images are the official ones, tagged with the version you pick: `postgres:<v>-alpine`, `mysql:<v>`, `mariadb:<v>`, `mongo:<v>`, `redis:<v>-alpine` and `clickhouse/clickhouse-server:<v>`.
+Images are the official ones: `postgres:<v>-alpine`, `mysql:<v>`, `mariadb:<v>`, `mongo:<v>`,
+`redis:<v>-alpine` and `clickhouse/clickhouse-server:<v>`.
 
-Credentials are encrypted at rest and masked in the interface. Revealing them needs `reveal_secrets`.
+Credentials are encrypted and masked. Revealing them needs `reveal_secrets`.
 
 ## Create one
 
@@ -71,7 +71,7 @@ Name it.
 
 ### Set the password
 
-Use **Generate** for the password unless you have a reason not to.
+Use **Generate** unless you need a specific password.
 
 </Step>
 <Step>
@@ -85,16 +85,16 @@ Pick the server.
 
 ### Pick the environment
 
-Pick the **Environment** the apps that will use it live in. The apps there
-reach it by name; nothing outside it does. Leave it on **No environment** if
-your apps are not in a project.
+Pick the **Environment** where the apps that will use it live. Leave **No environment** if your
+apps are not in a project.
 
 </Step>
 <Step>
 
 ### Optional: host port
 
-Optionally set a **Host port** to expose it outside the server. This needs the `canExposePorts` grant, and you should think twice: an app on the same Deplo instance does not need it. You can also turn it on later, from the database's overview.
+Set a **Host port** only if something outside the server needs it. This needs the
+`canExposePorts` grant. You can also turn it on later.
 
 </Step>
 <Step>
@@ -106,11 +106,13 @@ Click **Create database**.
 </Step>
 </Steps>
 
-Then open it and copy the connection string into the app that needs it, as an environment variable of type **Secret**.
+Then copy the connection string into the app that needs it, as an environment variable of type
+**Secret**.
 
 ## Connect an app to it
 
-An app reaches a database **in the same environment and on the same server** by the database's stable name, which is the host in the connection string. Nothing else is required: no port publishing, no firewall rule, no IP. (A Docker network lives on one machine, so a database on another server needs a published port and the server's address instead.)
+An app reaches a database **in the same environment and on the same server** by name. No port,
+firewall rule or IP is needed.
 
 ```
 DATABASE_URL = postgres://appuser:••••••@db-orders:5432/orders
@@ -118,21 +120,17 @@ DATABASE_URL = postgres://appuser:••••••@db-orders:5432/orders
 
 Set it in the app's **Environment** tab as a **Secret**, then redeploy.
 
-For a Compose app **every service reaches it**, not only the one with a domain: a
-worker or a cron container is part of the app and joins the same network. The
-exceptions are a service you sealed off yourself with `internal: true`, one using
-`network_mode:`, and one named after Deplo's own infrastructure - see
+In a Compose app **every service reaches it**. Exceptions: a service with `internal: true`, one
+using `network_mode:`, and one named after Deplo's own infrastructure. See
 [Compose apps](/advanced/compose-apps).
 
-The app and the database have to be in the **same environment and on the same server**. Nothing
-crosses an environment boundary, and no network spans two machines, so an app in Production does
-not reach a database placed in Staging, nor one on another server: it gets `cannot resolve host`.
-Deplo says which one, and where it lives, in the deploy log before the container tries. See
-[Network isolation](/advanced/network-isolation).
+<Callout type="warn" title="Same environment, same server">
+An app in Production does not reach a database in Staging, and no app reaches a database on
+another server. The result is `cannot resolve host`. A database on another server needs a
+published port. See [Network isolation](/advanced/network-isolation).
+</Callout>
 
 ## The overview
-
-Opening a database lands on its overview: two cards and a row of three tiles.
 
 <Image
   src={`${basePath}/screenshots/databases/03-database-overview.png`}
@@ -142,47 +140,45 @@ Opening a database lands on its overview: two cards and a row of three tiles.
   className="w-full rounded-lg"
 />
 
-**Connection** holds the connection string (click to reveal, needs `reveal_secrets`) and the facts fixed at creation: engine and version, username, logical database, server.
+**Connection** holds the connection string (click to reveal, needs `reveal_secrets`), the engine
+and version, the username, the database name and the server.
 
-**Networking** holds the **Environment** the database lives in, and the two
-addresses, which are not the same thing:
+**Networking** holds the **Environment** and the two addresses:
 
 | Address | What it is | Who uses it |
 | --- | --- | --- |
-| **Internal** | `db-<slug>` on its environment's network, on the engine's own port: `5432` for Postgres, `3306` for MySQL and MariaDB, `27017` for MongoDB, `6379` for Redis, `8123` for ClickHouse | Apps in the same environment, on the same server |
+| **Internal** | `db-<slug>` on the environment's network, on the engine's port: `5432` for Postgres, `3306` for MySQL and MariaDB, `27017` for MongoDB, `6379` for Redis, `8123` for ClickHouse | Apps in the same environment, on the same server |
 | **Public** | `<server>:<host port>`, or **Not published** | Anything that can reach the server |
 
-The **Environment** row is what decides who the internal address answers for. Got
-it wrong at creation? **Move to environment** in the menu on the database's card,
-in the list, moves it - the container comes back up on the new network before the
-action returns.
+Wrong environment? Use **Move to environment** in the card menu of the database list.
 
-The switch on the **Public** row and the **Host port** field are right there, so exposing a database, or taking it off the internet, never means opening Settings. It needs both `configure_databases` and the `canExposePorts` grant; without either the switch is disabled and says why.
+The switch on the **Public** row and the **Host port** field publish the database. This needs
+`configure_databases` and the `canExposePorts` grant.
 
-**A published port is plaintext.** Publishing binds the engine's port on `0.0.0.0` with no proxy
-and no certificate: traffic is not encrypted and the engine password is the only thing in front of
-it. The card says so while the switch is on.
+<Callout type="warn" title="A published port is not encrypted">
+The engine's port is opened directly, with no proxy and no certificate. The password is the only
+protection.
+</Callout>
 
-The three tiles are **Health** (the engine's own healthcheck, its uptime and its restart count), **Data** (the volume measured on disk, plus live memory use) and **Backups** (the last run and the schedule). Data reads `-` when the server's agent is older than the measurement: a dash, never a wrong number.
+The three tiles are **Health** (healthcheck, uptime, restarts), **Data** (disk and memory use) and
+**Backups** (last run and schedule). **Data** shows `-` when the server's agent is too old.
 
-## The lifecycle verbs, and which one destroys data
+## Actions, and which ones delete data
 
 | Action | What it does | Data |
 | --- | --- | --- |
 | **Start** / **Stop** / **Restart** | Container lifecycle | kept |
-| **Redeploy** | Re-renders the stack and brings it back up. The data-preserving recreate | kept |
-| **Rebuild** | Danger Zone. Tears the stack down **with its volume** and provisions a fresh one from the stored credentials | **erased** |
-| **Delete** | Removes the database and reclaims its volume | **erased** |
+| **Redeploy** | Recreates the container with the same data | kept |
+| **Rebuild** | Danger Zone. Removes the stack **and its volume**, then creates a new empty database with the same credentials | **erased** |
+| **Delete** | Removes the database and its volume | **erased** |
 
 <Callout type="warn" title="Rebuild is a factory reset">
-The connection string keeps working because the engine re-initialises from the same stored
-credentials, which is what makes it dangerous: everything looks fine and the data is gone.
-Rebuild is gated on `delete_databases`, not on `configure_databases`, for that reason.
+The connection string keeps working, so everything looks fine and the data is gone. Rebuild needs
+`delete_databases`.
 </Callout>
 
-**Delete is authoritative.** It refuses unless the host confirms both the container and the volume
-are gone, so a half-deleted database cannot linger as a row pointing at a live volume. If the host
-is dead and never coming back, a `force` option appears after the refusal.
+**Delete** is refused until the host confirms the container and the volume are gone. If the host
+is permanently gone, a `force` option appears.
 
 ## Settings
 
@@ -194,7 +190,8 @@ is dead and never coming back, a `force` option appears after the refusal.
   className="w-full rounded-lg"
 />
 
-**Settings -> Connection** carries the same exposure controls as the overview, plus the two things that do not belong on one: password rotation, and the server move - the **Server** select appears only when the fleet has more than one machine.
+**Settings -> Connection** has the exposure controls, password rotation and the server move. The
+**Server** select appears only when you have more than one server.
 
 <TypeTable
   type={{
@@ -213,7 +210,7 @@ is dead and never coming back, a `force` option appears after the refusal.
   }}
 />
 
-Password rotation runs inside the engine for Postgres, MySQL, MariaDB and MongoDB, because their users live in the data volume. Redis and ClickHouse take theirs from the rendered stack, so rotation is a recreate.
+For Redis and ClickHouse, rotating the password recreates the container.
 
 **Settings -> Advanced**
 
@@ -221,11 +218,11 @@ Password rotation runs inside the engine for Postgres, MySQL, MariaDB and MongoD
   type={{
     "Custom image": {
       type: "text",
-      description: "Replaces the derived image. Version goes inert while it is set",
+      description: "Replaces the default image. Version is ignored while it is set",
     },
     "Custom command": {
       type: "text",
-      description: "Replaces the container command verbatim",
+      description: "Replaces the container command",
     },
     "Config files": {
       type: "file",
@@ -234,39 +231,46 @@ Password rotation runs inside the engine for Postgres, MySQL, MariaDB and MongoD
   }}
 />
 
-**Redis and `--requirepass`:** the default command carries the password, and a custom command that
-omits it silently drops authentication. The interface warns you about exactly this.
+**Redis and `--requirepass`:** the default command contains the password. A custom command
+without it removes authentication.
 
-Config files are how you set `postgresql.conf`, `my.cnf`, `redis.conf` or an init script without a shell. **Save and apply** writes them next to the stack and reroutes the container so they take effect.
+Config files are how you set `postgresql.conf`, `my.cnf`, `redis.conf` or an init script.
+**Save and apply** writes them and restarts the container.
 
 ## Move a database to another server
 
-Change **Server** in **Settings -> Connection**. Deplo stops both sides, streams the gzipped data volume off the source host and imports it on the destination, relayed through the control plane because agents cannot talk to each other.
+Change **Server** in **Settings -> Connection**. Deplo stops the database, copies the data to the
+new server, and starts it there.
 
-If the copy fails, the database is blocked from starting until you resolve it. That block is deliberate: an engine started on an emptied volume does not fail, it quietly initialises a brand-new empty database over your data.
+If the copy fails, the database is blocked from starting until you fix it. This protects your
+data from being replaced by an empty database.
 
 ## The other tabs
 
-**Logs**, **Monitoring** and **Backups** work exactly as they do for an app. **Console** gives you the engine's own shell (`psql`, `mysql`, `redis-cli`) behind a one-time acknowledgement, and **Cron jobs** runs scheduled commands inside the container once you turn the switch on.
+**Logs**, **Monitoring** and **Backups** work like for an app. **Console** opens the engine's own
+shell (`psql`, `mysql`, `redis-cli`) after a one-time confirmation. **Cron jobs** runs scheduled
+commands inside the container.
 
 ## Good to know
 
-- **The username and the logical database name are set at creation and never change.** The official images apply them only on first initialisation against an empty volume, so afterwards they are display-only. Renaming the database itself is just a label change.
-- **Neither Redeploy nor Rebuild works while the database is provisioning.**
-- **An app's backup schedule does not cover its database.** Databases are backed up as databases. Schedule both.
-- **`Host port` is a real exposure.** Anything that can reach the server on that port can try to log in.
-- **Starting and stopping is its own capability.** `control_databases` covers the lifecycle verbs,
-  `configure_databases` the settings, `delete_databases` both Rebuild and Delete.
-- **Version upgrades are not migrations.** Changing the version tag restarts the engine on the same volume, and major-version upgrades of Postgres in particular will refuse to start on an older data directory. Dump, rebuild, restore.
+- **The username and the database name never change.** Renaming the database only changes its
+  label.
+- **Redeploy and Rebuild do not work while the database is provisioning.**
+- **An app's backup schedule does not cover its database.** Schedule both.
+- **`Host port` opens the database to anything that can reach the server.**
+- **Capabilities:** `control_databases` for start, stop and restart, `configure_databases` for
+  settings, `delete_databases` for Rebuild and Delete.
+- **Version upgrades are not migrations.** A major Postgres upgrade refuses to start on older
+  data. Dump, rebuild, restore.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The app cannot resolve the database name | They are in different Environments, or on different servers. A network is per host and per Environment. |
+| The app cannot resolve the database name | They are in different Environments, or on different servers. |
 | Authentication fails after a rotate | The app still has the old string. Update the variable and redeploy. |
 | Stuck in provisioning | The agent could not pull the image, or the server is unreachable. Check the server's health. |
-| `Data` reads `-` | That server's agent is older than the measurement. Update it. |
+| `Data` reads `-` | That server's agent is too old. Update it. |
 
 More in [Databases and backups](/troubleshooting/databases-and-backups).
 
@@ -275,7 +279,7 @@ More in [Databases and backups](/troubleshooting/databases-and-backups).
 <Cards>
   <Card icon={<Archive className="text-blue-400" />} title="Backups and restore" description="Schedule the database separately from the app" href="/guides/data/backups-and-restore" />
   <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="How the volume behind a database works" href="/guides/data/persistent-storage" />
-  <Card icon={<Terminal className="text-blue-400" />} title="Console" description="A one-time-acknowledged engine shell" href="/guides/observability/console" />
+  <Card icon={<Terminal className="text-blue-400" />} title="Console" description="The engine's own shell" href="/guides/observability/console" />
   <Card icon={<Gauge className="text-blue-400" />} title="Resource limits" description="CPU and memory for a database container" href="/advanced/resource-limits" />
   <Card icon={<Network className="text-blue-400" />} title="Network isolation" description="Why an app reaches a database only from the same environment" href="/advanced/network-isolation" />
 </Cards>

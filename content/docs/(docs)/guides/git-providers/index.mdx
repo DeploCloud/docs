@@ -1,30 +1,24 @@
 ---
 title: Git providers
-description: Connect Deplo to where your code lives, once per team, so every app can clone it without anybody pasting a token into an app.
+description: Connect your code host once per team, so every app can clone from it.
 ---
 
 import { GitCommit, Workflow, GitPullRequest } from "lucide-react";
 
 **Settings -> Git**.
 
-Two mechanisms, not one.
+There are two ways to connect:
 
-**GitHub** connects as a **GitHub App**, created through GitHub's manifest
-flow: you click, you approve on GitHub, and Deplo receives the credentials
-directly. There is no client id or private key to copy. The App is
-installed on the accounts and organisations that hold your repositories,
-and mints short-lived tokens to list and clone them. See
-[GitHub](/guides/git-providers/github).
+- **GitHub** connects as a **GitHub App**. You click, approve on GitHub, and
+  Deplo receives the credentials. Nothing to copy. See
+  [GitHub](/guides/git-providers/github).
+- **Everything else** connects as a **git connection**: one stored token per
+  host, reused by every app. This covers
+  [GitLab, Bitbucket and Gitea or Forgejo](/guides/git-providers/git-connections),
+  self-hosted included, and is marked **Beta**. A plain **Git** connection works
+  for any other server, but has no repository picker, branch list or webhook.
 
-**Everything else** connects as a **git connection**, which is one stored
-credential per host, reused by every app that deploys from it. This
-covers [GitLab, Bitbucket and Gitea or Forgejo](/guides/git-providers/git-connections),
-self-hosted included, and is marked **Beta**. A plain **Git** connection is stored the same way
-for any other server, but it has no provider API behind it, so it gets no repository picker, no
-branch list and no webhook.
-
-Tokens are encrypted at rest, never returned by the API, and decrypted
-only at the clone edge and when calling the provider's own API.
+Tokens are encrypted and never returned by the API.
 
 ## What each connection unlocks
 
@@ -36,39 +30,38 @@ only at the clone edge and when calling the provider's own API.
 | Pull request previews | yes | no | no |
 | Preview comments | yes | no | no |
 
-The last column is the escape hatch: it clones and nothing else. Its automatic trigger is the
+The last column only clones. To deploy automatically, use the
 [deploy hook](/guides/releases/automatic-deployments).
 
-## Where the choice lives in the interface
+## Where to find it in the interface
 
-The deploy source chips stay at five: GitHub, Git, Docker Image, Upload,
-Compose. Providers other than GitHub live in a dropdown **inside** the
-Git chip, which is why you will not find a Bitbucket tab.
+The deploy sources are GitHub, Git, Docker Image, Upload and Compose. GitLab,
+Bitbucket and Gitea are in a dropdown **inside** the Git source.
 
 ## Good to know
 
-- **A team may connect more than one GitHub App**, one per GitHub owner, which is how a personal
-  account and an organisation live side by side.
+- **A team can connect more than one GitHub App**, one per GitHub owner. This
+  is how a personal account and an organisation live side by side.
 - **GitLab reports token expiry, Gitea does not.** For Gitea or Forgejo, a
-  background check is what tells you a token died.
-- **A revoked token surfaces before a deploy fails on it**, because the
-  maintenance sweep re-tests connections.
-- **Webhooks are registered automatically** for both connected kinds, and
-  removed when the app stops using them.
-- **The token is per host, not per repository.** Everything that host
-  serves is reachable with it, so scope the token on the provider's side.
+  background check tells you when a token stopped working.
+- **A revoked token is reported before a deploy fails**, because connections
+  are re-tested in the background.
+- **Webhooks are registered automatically** and removed when the app stops
+  using them.
+- **The token is per host, not per repository.** Limit its scope on the
+  provider's side.
 
 ## Troubleshooting
 
 - **The repository list is empty**: the GitHub App has no access. Use
   **Manage** and grant it there.
-- **`Authentication failed` in a clone**: the token expired or was
-  revoked. **Test connection** confirms it.
-- **Pushes do not deploy**: check the webhook status on the app's
-  **Settings -> Deployments**. A provider that cannot reach this instance
-  cannot deliver.
+- **`Authentication failed` in a clone**: the token expired or was revoked.
+  **Test connection** confirms it.
+- **Pushes do not deploy**: check the webhook status in the app's
+  **Settings -> Deployments**. The provider must be able to reach this
+  instance.
 - **Saving a self-hosted address is refused**: it resolves to a private
-  address, and only an instance admin can allow that.
+  address. Only an instance admin can allow that.
 
 See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.
 

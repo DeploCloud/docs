@@ -98,13 +98,13 @@ For a fleet, use this order:
 2. Check readiness, deploy, and read its logs.
 3. Update the remaining servers, then the control-plane host last.
 
-Do not update an agent while a deploy is in flight on that host.
+Do not update an agent while a deploy is running on that host.
 
 ## Before you upgrade again
 
 - **Agents cannot be downgraded.** Test on a canary.
 - **Some features need a newer agent.** When one is missing, Deplo says so rather than silently doing something else.
-- **Re-running the installer is safe and idempotent.** It is what the button does, so running it by hand is never a workaround.
+- **Re-running the installer is safe.** It is what the button does, so running it by hand is never a workaround.
 - **Read the release notes for a minor bump.** During `0.x`, minor means something you notice: a feature, changed behavior, a database migration, or a newer agent required.
 - **Back up before a big jump.** Migrations apply at boot and are not reversed by rolling the image back.
 

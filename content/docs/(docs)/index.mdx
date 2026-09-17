@@ -90,7 +90,7 @@ import { basePath } from "@/lib/base-path";
   <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
     <Terminal className="mb-3 size-5 text-fd-muted-foreground" />
     <p className="font-medium text-fd-foreground">The shell is optional</p>
-    <p className="mt-1 text-sm text-fd-muted-foreground">An escape hatch for experts, never a requirement.</p>
+    <p className="mt-1 text-sm text-fd-muted-foreground">Useful for experts, never required.</p>
   </div>
   <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
     <LayoutTemplate className="mb-3 size-5 text-fd-muted-foreground" />
@@ -175,7 +175,7 @@ import { basePath } from "@/lib/base-path";
 <div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
   <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">How it works</h2>
   <div className="text-fd-muted-foreground">
-    Two programs, one rule: the control plane decides, the agent executes.
+    The control plane decides, the agent executes.
   </div>
 </div>
 
@@ -184,14 +184,14 @@ import { basePath } from "@/lib/base-path";
     <Cpu className="mt-0.5 size-5 shrink-0 text-fd-muted-foreground" />
     <div>
       <p className="font-medium text-fd-foreground">The control plane decides</p>
-      <p className="mt-1 text-sm text-fd-muted-foreground">Renders the Compose file and the routing, resolves secrets, never touches Docker directly.</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Prepares the Compose file, the routing and the secrets. It never touches Docker directly.</p>
     </div>
   </div>
   <div className="flex items-start gap-3">
     <Bot className="mt-0.5 size-5 shrink-0 text-fd-muted-foreground" />
     <div>
       <p className="font-medium text-fd-foreground">The server agent executes</p>
-      <p className="mt-1 text-sm text-fd-muted-foreground">One Go binary per host, the only thing that runs Docker, reached over mutual TLS.</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">One small program per server. It is the only thing that runs Docker.</p>
     </div>
   </div>
   <div className="flex items-start gap-3">
@@ -204,14 +204,14 @@ import { basePath } from "@/lib/base-path";
   <div className="flex items-start gap-3">
     <Database className="mt-0.5 size-5 shrink-0 text-fd-muted-foreground" />
     <div>
-      <p className="font-medium text-fd-foreground">Postgres remembers</p>
-      <p className="mt-1 text-sm text-fd-muted-foreground">The single source of truth for the whole control plane.</p>
+      <p className="font-medium text-fd-foreground">Postgres stores everything</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">All control plane data lives in one database.</p>
     </div>
   </div>
 </div>
 
 <div className="not-prose mx-auto mt-6 max-w-2xl text-center text-sm text-fd-muted-foreground">
-  The box running Deplo itself is just another server in the fleet, no special shortcut.
+  The machine running Deplo is a normal server like any other.
 </div>
 
 <div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
@@ -222,8 +222,8 @@ import { basePath } from "@/lib/base-path";
 
 - **Not a hosting provider.** You bring the server. Deplo never bills you for compute, seats or build minutes.
 - **Not a DNS provider.** You keep your registrar. Deplo tells you which record to create and checks that it resolves.
-- **Not Kubernetes.** The unit is a Docker container on a host you picked, not a scheduled pod. There is no cluster to operate.
-- **Not a black box.** The rendered Compose file, the routing labels and the build logs are all readable from the dashboard.
+- **Not Kubernetes.** Apps run as Docker containers on a server you picked. There is no cluster to operate.
+- **Nothing is hidden.** The rendered Compose file, the routing labels and the build logs are all readable from the dashboard.
 
 </div>
 
@@ -234,7 +234,7 @@ import { basePath } from "@/lib/base-path";
 <div className="mx-auto max-w-2xl">
 
 - [Getting Started](/getting-started/install): install Deplo and deploy your first app.
-- [Concepts](/concepts/how-deplo-works): how Deplo works, under the hood.
+- [Concepts](/concepts/how-deplo-works): how Deplo works.
 - [Guides](/guides/deploy/from-git): every day-to-day task.
 - [Advanced](/advanced/compose-apps): Compose apps, build servers, custom certificates.
 - [Operations](/operations/upgrade): upgrade, back up and administer your instance.

@@ -1,6 +1,6 @@
 ---
 title: Backups and restore
-description: Scheduled, encrypted copies of a database or an app, sent to S3 or to another server's disk.
+description: Scheduled, encrypted copies of a database or an app, sent to S3 or to another server.
 ---
 
 import Image from "next/image";
@@ -8,15 +8,15 @@ import { basePath } from "@/lib/base-path";
 
 import { LifeBuoy, Server, Database } from "lucide-react";
 
-Scheduled, encrypted copies of a database or an app, sent to an S3 bucket **or to another server's disk**, with a restore that puts them back.
+Scheduled, encrypted copies of a database or an app, sent to an S3 bucket or to another server's
+disk, with a restore that puts them back.
 
-The second destination kind is the point: disaster recovery can use hardware you already own, instead of requiring a cloud account you were trying to leave.
+- A **destination** is where the copies go.
+- A **schedule** says what to copy, where, how often and how many to keep.
+- A **run** is one execution. It produces one **artifact**.
 
-A **destination** is where artifacts go. A **schedule** says what to copy, where, how often and how many to keep. A **run** is one execution, producing one artifact.
-
-The work happens on the agent that stands on the data. For a database it is a dump; for an app it is its data and its configuration. The stream is compressed and **encrypted before it leaves the process**, with `age`, using one key pair per destination. The agent only ever receives the public half, so a server acting as a backup store produces artifacts it cannot itself read.
-
-When the destination lives on a different host than the workload, the bytes relay through the control plane, because agents cannot dial each other. They relay as ciphertext: nothing in the middle ever holds your plaintext.
+The backup runs on the server that holds the data. It is compressed and encrypted with `age`
+before it leaves the server, with one key pair per destination. Nothing in between can read it.
 
 ## Add a destination
 
@@ -25,7 +25,8 @@ When the destination lives on a different host than the workload, the bytes rela
 <Tabs items={['A folder on a server', 'An S3-compatible bucket']}>
 <Tab value="A folder on a server">
 
-Pick any server in the fleet, including a [storage-only](/advanced/server-roles) box that runs nothing else. Leave the path empty to use the agent's own managed store: naming a path instead requires an absolute one and instance admin.
+Pick any server, including a [storage-only](/advanced/server-roles) one. Leave the path empty to
+use the agent's managed store. A custom path must be absolute and needs instance admin.
 
 </Tab>
 <Tab value="An S3-compatible bucket">
@@ -46,7 +47,7 @@ Pick any server in the fleet, including a [storage-only](/advanced/server-roles)
     },
     Advanced: {
       type: "text",
-      description: "Extra provider quirk flags, and an instance-admin-only option for an endpoint inside your own network",
+      description: "Extra provider flags, and an instance-admin-only option for an endpoint inside your own network",
     },
   }}
 />
@@ -54,15 +55,16 @@ Pick any server in the fleet, including a [storage-only](/advanced/server-roles)
 </Tab>
 </Tabs>
 
-Then click **Test connection**. It is a real probe run by an agent: a bucket gets a head request, a zero-byte write and a delete, so a read-only key is correctly reported as failed. A folder gets a resolve, a probe write and a free-space check.
+Then click **Test connection**. An agent runs a real test: a small write and a delete on a bucket,
+a write and a free-space check on a folder. A read-only key is reported as failed.
 
-A failed probe is a normal result, not an error dialog. **Connection log** in the destination's menu shows the whole sequence, the agent's own message, and the equivalent commands to reproduce it by hand.
+A failed test is a normal result. **Connection log** in the destination's menu shows every step
+and the commands to repeat it by hand.
 
 ## Read the destinations list
 
-Opening **Storage -> Destinations** tests every destination in the team, so what you see is
-measured now, not last week. The round is rate-limited, and a destination that cannot be
-reached keeps its previous figures and turns its badge red - it never goes blank.
+Opening **Storage -> Destinations** tests every destination. One that cannot be reached keeps its
+last figures and turns red.
 
 <Image
   src={`${basePath}/screenshots/backups-and-restore/01-destinations.png`}
@@ -72,35 +74,27 @@ reached keeps its previous figures and turns its badge red - it never goes blank
   className="w-full rounded-lg"
 />
 
-Each destination reports how much it holds:
+- **A folder on a server** shows a bar: your backups, everything else on that disk, and free
+  space. It turns amber past 80% used.
+- **A bucket** shows the total: `48.2 GB in 137 backups`.
 
-- **A folder on a server** gets a bar: how much your backups take, how much everything else
-  on that filesystem takes, and how much is free. It turns amber past 80% used.
-- **A bucket** has no size limit, so it reports the total instead: `48.2 GB in 137 backups`.
-
-The refresh icon next to the figure re-tests that one destination.
-
-The same toolbar sits on **Destinations** and **Backups**: search, filters, and a switch
-between cards and a table. Cards show the bar and any warnings in full; the table fits more
-rows and puts the warnings on the name as icons you can hover.
+The refresh icon re-tests one destination. The toolbar has search, filters, and a switch between
+cards and a table.
 
 ## Save the recovery key
 
-Every destination has one, and the card keeps nudging you until somebody downloads it. **Download recovery key** in the destination's menu.
+Every destination has one. Download it from **Download recovery key** in the destination's menu.
+The card keeps reminding you until somebody does.
 
-It is the private half of the encryption key pair. Two situations make it the only thing standing between you and permanent loss:
-
-- `DEPLO_SECRET` was rotated or lost, so the stored copy cannot be decrypted.
-- The control plane itself is gone, which is exactly the disaster the backups were for.
-
-With the file, any artifact from that destination can be decrypted anywhere:
+You need it when `DEPLO_SECRET` was rotated or lost, or when the control plane itself is gone. With
+the file, any artifact from that destination can be decrypted anywhere:
 
 ```bash
 age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
 ```
 
 <Callout type="info">
-Fetching the key is recorded in the activity trail. It is one of only two places in Deplo where a secret is deliberately shown.
+Downloading the key is recorded in the activity log.
 </Callout>
 
 ## Schedule a backup
@@ -126,14 +120,15 @@ Fetching the key is recorded in the activity trail. It is one of only two places
   className="w-full rounded-lg"
 />
 
-**Storage -> Backups -> New Backup**, or **Back up -> New schedule** on the **Backups** tab of an app or a database.
+**Storage -> Backups -> New Backup**, or **Back up -> New schedule** on the **Backups** tab of an
+app or a database.
 
 </Step>
 <Step>
 
 ### Pick the target
 
-Pick the target: one app or one database.
+One app or one database.
 
 </Step>
 <Step>
@@ -147,15 +142,14 @@ Pick the **Destination**.
 
 ### Name it
 
-Name it. A name is suggested from the schedule.
+A name is suggested from the schedule.
 
 </Step>
 <Step>
 
 ### Set the schedule
 
-Set the schedule and its **Timezone**. The frequencies start at **every 15 minutes**: a dump any
-more often than that pins the host's disk and holds up every other backup on the instance.
+Set the schedule and its **Timezone**. The shortest interval is **every 15 minutes**.
 
 </Step>
 <Step>
@@ -167,16 +161,16 @@ Set **Keep**.
 </Step>
 </Steps>
 
-**Keep is a count, not a number of days.** "Keep 7" - the default - means the seven most recent
-successful artifacts, whether they were taken over a week or a year. Older ones are removed after
-each successful run, the newest successful artifact is never removed, and a failed run consumes no
-slot. The ceiling is 365, and a target holds at most 50 recorded runs.
+**Keep is a count, not a number of days.** `Keep 7` (the default) keeps the seven most recent
+successful artifacts. The newest one is never removed, and a failed run does not use a slot. The
+maximum is 365.
 
-**Back up -> Back up now** runs one immediately without touching the schedule.
+**Back up -> Back up now** runs one backup right away.
 
 ## Restore
 
-Every finished run is a restore point. On the target's **Backups** tab they are listed under **Restore points**, and each row's menu holds **Restore**, **Download** and **Delete**.
+Every finished run is a restore point, listed under **Restore points** on the target's **Backups**
+tab. Each row's menu has **Restore**, **Download** and **Delete**.
 
 <Image
   src={`${basePath}/screenshots/backups-and-restore/03-app-backups.png`}
@@ -186,48 +180,55 @@ Every finished run is a restore point. On the target's **Backups** tab they are 
   className="w-full rounded-lg"
 />
 
-**In place and destructive.** It asks you to type the target's name.
+**A restore replaces the current data.** It asks you to type the target's name.
 
 <Tabs items={['Database', 'App']}>
 <Tab value="Database">
 
-Drops and recreates, per engine.
+Drops and recreates the database.
 
 </Tab>
 <Tab value="App">
 
-Stops it, wipes its data, unpacks the artifact and brings it back up. The app shows a `restoring` status throughout, so the host truthfully reporting "nothing running" does not read as a failure.
+Stops the app, clears its data, unpacks the artifact and starts it again. The app shows
+`restoring` during the process.
 
 </Tab>
 </Tabs>
 
-The artifact's checksum is verified before a single byte is fed to anything. An artifact taken before checksumming existed says so out loud rather than skipping the check quietly.
+The artifact's checksum is checked before the restore starts.
 
-**Back up -> Restore from file** takes an artifact you are holding yourself. If it is encrypted, you paste the recovery key.
+**Back up -> Restore from file** restores an artifact from your computer. If it is encrypted,
+paste the recovery key.
 
 ## Download an artifact
 
-**Download** in a restore point's menu. Every successful artifact is downloadable wherever it is
-kept, bucket or server disk, and it is decrypted on the way out. Downloading needs
-`restore_backups`; an **app** archive additionally needs `reveal_secrets`, because it carries that
-app's decrypted environment.
+**Download** in a restore point's menu. The artifact is decrypted on the way out. This needs
+`restore_backups`. An **app** archive also needs `reveal_secrets`, because it contains the app's
+environment variables.
 
 ## Good to know
 
-- **An app schedule does not include its databases.** Schedule the database separately. This trips people up more than anything else here.
-- **Retention counts successes.** Failed runs do not consume a slot.
-- **A skipped hour on a DST change raises a warning** rather than silently missing a run.
-- **Deleting runs can leave a target with no restore point.** That is why `delete_backups` is a separate, flagged capability.
-- **Deleting a schedule does not delete what it already backed up.** Retention prunes per schedule, so once the schedule is gone nothing prunes its copies: they stay in the destination, and on the target's **Restore points**, until you delete them there. Check the list before you delete a schedule that was writing large artifacts.
-- **Deleting the app or database itself does clear them,** after 30 days. An artifact whose target is gone is kept that long on purpose, so a delete you regret is still recoverable, then removed from the destination.
-- **A destination on the same server as the workload survives everything except losing that server**, which is the failure people actually have. Put at least one copy elsewhere.
-- **Backups are encrypted, always, both kinds.** There is no plaintext mode.
+- **An app schedule does not include its databases.** Schedule the database separately.
+- **Retention counts successes.** Failed runs do not use a slot.
+- **A skipped hour on a DST change shows a warning.**
+- **`delete_backups` is a separate capability**, because deleting runs can leave a target with no
+  restore point.
+- **Deleting a schedule does not delete its backups.** They stay until you delete them under
+  **Restore points**.
+- **Deleting the app or database removes its backups after 30 days.** Until then they can still
+  be recovered.
+- **A destination on the same server as the data is lost with that server.** Put at least one
+  copy elsewhere.
+- **Backups are always encrypted.**
 
 ## Troubleshooting
 
-- **Test connection fails on a bucket** - most often the key is read-only, or the endpoint and region do not match the bucket. Read the **Connection log**.
-- **Runs fail with no space** - the destination server's disk is full. Its card on **Storage -> Destinations** shows how full, and how much of it is your backups.
-- **Restore refuses** - the checksum did not match, or the artifact is encrypted with a key this destination does not hold. Use **Restore from file** with the recovery key.
+- **Test connection fails on a bucket** - usually the key is read-only, or the endpoint and region
+  do not match the bucket. Read the **Connection log**.
+- **Runs fail with no space** - the destination server's disk is full.
+- **Restore refuses** - the checksum did not match, or the artifact is encrypted with a key this
+  destination does not hold. Use **Restore from file** with the recovery key.
 
 More in [Databases and backups](/troubleshooting/databases-and-backups).
 
