@@ -89,9 +89,8 @@ Everything stays editable on the next step.
 ### Name it and set an expiry
 
 The picker offers **30 days**, **90 days**, **a year** and **Never**, and a new token defaults to
-90 days. So does a token minted over the API without an expiry - asking for one that never expires
-takes saying so. A token can never mint or re-author a successor that outlives it: one that expires
-hands its own date down to anything it creates.
+90 days. A token created over the API without an expiry also gets 90 days.
+A token cannot create another token that expires later than itself.
 
 </Step>
 <Step>
@@ -150,11 +149,10 @@ first team the token reaches. The full surface is in the
 at that level**, and drops the rest. Managing the team's members is not one of them, so a token
 scoped to one app cannot do it. Naming a whole **team** does not clamp anything.
 
-That is deliberate: a scope that silently kept team-level powers would be a scope in name only.
-Need both? Mint two tokens.
+If you need both, create two tokens.
 
-Two more limits worth knowing. A bearer token can edit or revoke **only itself**, never another
-token. And instance admin is opt-in **per token**: minting one as an instance admin does not make
+Two more limits. A token can edit or revoke **only itself**, never another
+token. Instance admin is opt-in **per token**: creating one as an instance admin does not make
 it one.
 
 ## Connected clients and OAuth
@@ -163,7 +161,7 @@ A web AI application (claude.ai, chatgpt.com) cannot be handed a pasted
 token, so Deplo acts as an OAuth authorization server for exactly this one
 purpose.
 
-Approving on the consent screen **mints an ordinary API token** with the
+Approving on the consent screen **creates an ordinary API token** with the
 capabilities and scope you picked there. The access token the client
 holds is only a pointer at that row:
 
@@ -179,15 +177,14 @@ should only see part of that.
 
 Expiry is checked before access, across GraphQL, MCP and deploy hooks.
 
-Nothing sweeps an expired token away, on purpose: the list has to be able
-to tell you why a credential stopped working.
+Expired tokens stay in the list, so you can see why a credential stopped
+working.
 
-Tokens minted before expiry existed have none, and stay that way until you
-edit them.
+Tokens created before expiry existed have none, until you edit them.
 
 ## Important limits
 
-- **Shown once.** Lost means revoke and mint again.
+- **Shown once.** If you lose it, revoke it and create a new one.
 - **A token cannot transfer team ownership.** That action needs a human
   with a password and a second factor.
 - **A token cannot reveal a secret** through MCP, whatever it holds.

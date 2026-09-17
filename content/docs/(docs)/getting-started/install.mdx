@@ -98,7 +98,7 @@ Then, four [Docker's containers](https://docs.docker.com/get-started/docker-conc
 | `traefik:v3.7` | To serve the web apps to a domain | 80, 443 |
 | `tecnativa/docker-socket-proxy:v0.5.0` | A secure way for Traefik to know which web apps to serve | Nothing |
 
-Running it again when already installed it will just update deplo and its services.
+Running it again when already installed it will just update Deplo and its services.
 
 Neither Traefik nor the control plane ever gets the Docker socket itself. See
 [How Deplo works](/concepts/how-deplo-works).
@@ -134,7 +134,7 @@ like any other machine. Four things are worth knowing before you do:
   what `install.sh --public-setup` does.
 - **`DEPLO_SECRET` is not rotatable.** It derives every encryption key, every session signature
   and the agent certificate authority. Change it and every stored secret becomes unreadable,
-  every session ends, and every agent certificate is re-minted. Back it up with the rest of
+  every session ends, and every agent certificate is created again. Back it up with the rest of
   `/opt/deplo/.env`.
 - **The domain must resolve before the certificate can issue.** Let's Encrypt validates over HTTP
   on port 80, so point the A record first. The generated address answers meanwhile.
