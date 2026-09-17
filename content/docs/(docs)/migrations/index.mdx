@@ -1,6 +1,6 @@
 ---
 title: Migrations
-description: Move an existing Dokploy or Coolify installation onto Deplo, with the data copied across.
+description: Move an existing Dokploy or Coolify installation to Deplo, data included.
 ---
 
 import { Layers, Globe, Database, ServerCog } from "lucide-react";
@@ -11,10 +11,9 @@ import { Layers, Globe, Database, ServerCog } from "lucide-react";
   GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-Deplo reads an existing Dokploy or Coolify installation over that panel's own HTTP API and
-recreates it here: projects, apps, databases, domains, variables and volumes, with the data
-copied across. It never asks for SSH into the panel, and it never deletes anything on the
-source. Two routes reach the same wizard.
+Deplo reads an existing Dokploy or Coolify installation through its API and recreates it here:
+projects, apps, databases, domains, variables and volumes, with the data copied across. It does
+not need SSH into the old panel, and it never deletes anything on the source.
 
 ## Two routes
 
@@ -27,17 +26,15 @@ source. Two routes reach the same wizard.
 | Ports 80 and 443 | Deplo takes them at the end | Untouched |
 | The old panel afterwards | Removed from the machine | Still running, still yours |
 
-Everything after **Connect** is the same wizard and the same import engine. The takeover only
-adds a step at the front, where you choose whether to bring anything across at all, and a step
-at the end, where Deplo takes the ports.
+Both routes use the same wizard. The takeover adds one step at the start (bring data over or start
+clean) and one at the end (move the ports).
 
-On both routes the volume bytes are read by an agent on the source machine and relayed through
-the control plane, because agents cannot dial each other. That is true even when the source and
-the destination are the same box.
+On both routes a Deplo agent on the source machine reads the volumes. The data passes through the
+control plane, also when source and destination are the same machine.
 
 ## The wizard
 
-Seven steps, and a step opens only when the one before it has finished.
+Seven steps. A step opens only when the one before it is finished.
 
 | Step | What it asks for |
 | --- | --- |
@@ -49,13 +46,10 @@ Seven steps, and a step opens only when the one before it has finished.
 | **Take over** | Takeover only. The confirmation that moves ports 80 and 443. |
 | **Done** | The report. |
 
-Once **Start migration** is pressed the review goes inert and it is the only step you can reach
-until the run ends. A takeover that chose **Start clean** skips the middle entirely: only
-**Take over** and **Done**.
+After **Start migration** the review is locked until the run ends. A takeover with **Start clean**
+skips the middle steps and goes straight to **Take over** and **Done**.
 
 ## What comes across
-
-These shapes land on both panels and by either route.
 
 | Shape | Notes |
 | --- | --- |
@@ -65,8 +59,8 @@ These shapes land on both panels and by either route.
 | Managed databases | Postgres, MySQL, MariaDB, MongoDB, Redis and ClickHouse, with their data. |
 | Named volumes | Including deep trees, empty directories and zero-byte files. |
 | Bind mounts of a host directory | Copied to the destination and re-pointed. |
-| Bind mounts of a single file | Carried with its contents, not just re-mounted. |
-| Config files | The bytes travel, not only the mount path. |
+| Bind mounts of a single file | Copied with its contents. |
+| Config files | The file contents travel, not only the mount path. |
 | A volume shared between services of one stack | Copied once, mounted where it was. |
 | Environment variables | Per app and shared, with their values. |
 | Domains and routes | Including a path prefix and a per-domain port. |
@@ -75,66 +69,58 @@ These shapes land on both panels and by either route.
 | Backup destinations and schedules | The store's credentials, tested on arrival. |
 | Preview-only variables | As the app's own preview variables here. |
 
-Inside a volume, this is preserved and checked on every release: file contents byte for byte,
-permissions and ownership, empty directories and zero-byte files, unicode and long paths, hard
-links that stay hard links, and symbolic links pointing inside their own volume.
+Inside a volume, file contents, permissions, ownership, empty directories, zero-byte files,
+unicode and long paths, hard links and symbolic links inside the same volume are all preserved.
 
 ## What needs a look
 
-Not failures. These are the shapes where a machine cannot decide for you, so Deplo brings across
-what it can and names the rest in the report.
+These are not failures. Deplo brings across what it can and lists the rest in the report.
 
 | Shape | What happens |
 | --- | --- |
-| A stack that reaches the host | `privileged`, `network_mode: host`, `cap_add`, device passthrough. Deplo refuses to render it rather than stripping the line, and says which key stopped it. |
+| A stack that reaches the host | `privileged`, `network_mode: host`, `cap_add`, device passthrough. For security reasons Deplo refuses it and says which key stopped it. |
 | An image from a private registry | The image reference comes across, the credentials do not. The report names the registry so you can add it. |
-| A compose file kept in a git repository | Dokploy will not resolve it over its API. The app is created and the report tells you to paste the file in. |
-| Device nodes, sockets and named pipes in a volume | Not copied: they are runtime objects, not data. Each one is listed with its path. |
-| Symbolic links pointing outside their volume | Not copied, for the same reason a bind mount of `/` is not. Listed with its path. |
+| A compose file kept in a git repository | Dokploy does not return it over its API. The app is created and the report tells you to paste the file in. |
+| Device nodes, sockets and named pipes in a volume | Not copied. Each one is listed with its path. |
+| Symbolic links pointing outside their volume | Not copied. Listed with its path. |
 | State that lives outside the app | A cron entry on the host, a systemd unit, a file no mount points at. Deplo only knows what the app mounts. |
-| Data written outside a declared mount | It is inside the container and it is gone on the next restart, on the old panel as much as here. |
-| A very large volume onto a tight disk | Deplo checks the destination's free space first and warns before it starts. |
+| Data written outside a declared mount | It is lost on the next restart, on the old panel as much as here. |
+| A very large volume onto a small disk | Deplo checks the destination's free space first and warns before it starts. |
 
 ## What does not come across
 
-- Private registry credentials. No panel hands the password over.
-- Git deploy keys and connected-source credentials. Attach a git connection here instead.
+- Private registry credentials.
+- Git deploy keys and connected-source credentials. Add a git connection here instead.
 - Device nodes, sockets and named pipes inside a volume.
 - Symbolic links that leave their own volume.
-- Host files such as `/etc/localtime` and `/etc/resolv.conf`. They belong to the machine.
+- Host files such as `/etc/localtime` and `/etc/resolv.conf`.
 - Networks you created by hand on the source machine.
-- Engines with no twin here: `libsql` on Dokploy, `keydb` and `dragonfly` on Coolify.
+- Engines that do not exist here: `libsql` on Dokploy, `keydb` and `dragonfly` on Coolify.
 
 ## Stopping, data, and going back
 
-Read this before you start. It is the part that cannot be undone by pressing a button.
+Read this before you start.
 
-- **Every service you tick is stopped on the old panel when its data copy starts.** A volume read
-  while its container is writing to it arrives corrupted, so the copy stops the service first.
-- **On a run that finishes, it stays stopped.** Deplo starts a service again only when you stop
-  the run during the data step, or cancel a takeover. Neither happens on its own.
-- **The source is only ever read.** Nothing on the old panel is deleted, except by the takeover's
-  own final confirmation.
-- **The destination is emptied before it is written.** Each volume and each bind is wiped and
-  rewritten, so a second run does not merge two copies.
-- **Stop undoes the whole run, in any step.** Everything it created here is removed with its
-  data, whatever it had stopped on the old panel is started again, and the old panel keeps all
-  of its own data.
-- **A run that fails on its own is not rolled back.** What is already here stays, and a service
-  whose data did not arrive is marked and refuses to deploy, so it cannot start on empty storage:
-  copy the data again, or press **Deploy anyway** to accept it.
-- **Nothing is deployed for you.** You open each app, check it, and press **Deploy**.
+- **Every service you tick is stopped on the old panel when its data copy starts.** This keeps
+  the copy consistent.
+- **On a run that finishes, it stays stopped.** Deplo starts it again only when you stop the run
+  during the data step, or cancel a takeover.
+- **The source is only read.** Nothing on the old panel is deleted, except by the takeover's own
+  final confirmation.
+- **The destination is emptied before it is written.** A second run does not merge two copies.
+- **Stop undoes the whole run, in any step.** Everything created here is removed with its data,
+  and the stopped services are started again on the old panel.
+- **A run that fails on its own is not rolled back.** What is already here stays. A service whose
+  data did not arrive refuses to deploy until you copy the data again or press **Deploy anyway**.
+- **Nothing is deployed for you.** Open each app, check it, and press **Deploy**.
 
-## How this is measured
+## How this is tested
 
 Every release, migrations run against a live Dokploy and a live Coolify installation with real
-apps and real data. Each app is checked five ways: a record is created through the app's own
-interface before anything moves, the same requests are compared on both sides, the same
-count-and-checksum query is run per engine, every volume and bind is compared file list by file
-list including permissions and owner, and the record from step one is looked for afterwards. The
-same suite runs behind a closed firewall, behind a CDN with an invalid origin certificate, across
-a panel spread over several machines with one going unreachable mid-run, onto a nearly full disk,
-and against a crowded instance with several teams, a private registry and clashing service names.
+apps and real data. Each app is checked before and after the move: data records, HTTP responses,
+database counts and checksums, and every file in every volume with its permissions and owner.
+The same tests also run behind a firewall, behind a CDN, with a source machine going offline
+during the run, onto a nearly full disk, and on a busy instance with several teams.
 
 Measured on 4 September 2026, each panel spread over two machines, the remote route landing on a
 third.
