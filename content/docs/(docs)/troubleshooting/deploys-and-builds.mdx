@@ -49,6 +49,9 @@ Open the app's **Logs** tab and look at the runtime notice:
   named in the notice and its logs.
 - **Not running:** the app is deployed but no container is running. The logs
   usually show why it exited.
+- **Stopped after 10 restarts:** restart loop protection stopped the container
+  because it kept crashing. Fix what the logs show, then press **Start**. See
+  [Logs](/guides/observability/logs).
 
 After changing variables, the healthcheck, or storage, **Redeploy**. Use
 **Rebuild container** only when the rendered stack must be recreated.

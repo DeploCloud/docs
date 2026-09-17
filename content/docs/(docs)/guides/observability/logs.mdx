@@ -81,6 +81,28 @@ minimum 1, maximum 90. Instance admins only.
 Raising it does not make the host keep more. Docker rotates log files **by
 size**, not by age. For long retention, send logs to a tool built for it.
 
+## Restart loop protection
+
+A container that crashes on startup restarts forever, burning the server's CPU
+and filling its disk with logs. Deplo watches for that and stops it.
+
+**After 10 restarts in 30 minutes**, Deplo stops the container and the Logs page
+says so, with a **Start** button to bring it back once you have fixed it. The
+app's status turns red, an **App keeps restarting** alert goes out, and the stop
+is recorded in **Activity**.
+
+Only what is looping stops. In a Compose stack with several services, the other
+services keep serving.
+
+<Callout type="info">
+  A deploy resets the count. Restarts spread further apart than the window never
+  add up, so an app that crashes once in a while is never stopped.
+</Callout>
+
+To let a container keep crashing instead, turn **Restart loop protection** off:
+**Settings -> Advanced** on the app, or on the database. It takes effect at
+once; there is nothing to redeploy.
+
 ## Good to know
 
 - **This is not a log search engine.** It is a live tail with filters, for
@@ -99,6 +121,7 @@ size**, not by age. For long retention, send logs to a tool built for it.
 | Empty pane, app running | The app writes to a file instead of stdout. Container logs only capture stdout and stderr. |
 | **No logs yet**, with a link to the build | There is no container: the app has never deployed, or the stack is gone. The build output is on the deployment's page. |
 | **Not running** notice | The container exists but is stopped. Start it, or read the last build. |
+| **Stopped** notice, after repeated crashes | Restart loop protection stopped it. Fix what the logs show, then press **Start**. |
 | The chip reads `ended` | The container was recreated. Press **Reconnect**. |
 | You want build output on the Logs tab | It is not there. Use **View build logs**, or open the deployment. |
 
