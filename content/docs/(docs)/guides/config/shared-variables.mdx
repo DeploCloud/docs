@@ -1,6 +1,6 @@
 ---
 title: Shared variables
-description: One variable, owned by the team, that several apps can link to and use.
+description: One variable, owned by the team, used by several apps.
 ---
 
 import Image from "next/image";
@@ -8,54 +8,53 @@ import { basePath } from "@/lib/base-path";
 
 import { SlidersHorizontal, FolderTree } from "lucide-react";
 
-One variable that several apps can use, across one team or across several. Change it once and
-every app that uses it gets the new value on its next deploy: an API key three services all call,
-an S3 bucket name, a `SENTRY_DSN`.
+One variable that several apps use: an API key, an S3 bucket name, a `SENTRY_DSN`. Change it once
+and every app that uses it gets the new value on its next deploy.
 
-A shared variable has two independent parts, and confusing them is the single most common mistake
-here.
+A shared variable has two separate parts: **who it is offered to**, and **which apps link it**.
 
 ## Who it is offered to
 
-**Availability scopes say who it is offered to.** A scope is a suggestion. A variable can carry several:
+**Availability scopes** say which apps can see the variable:
 
-| Scope | Suggested to |
+| Scope | Offered to |
 | --- | --- |
 | **Teams** | Every app in each team you tick |
-| **Projects** | Every app inside the chosen projects, or only the environments you narrow it to |
-| **Specific apps** | Exactly the apps you pick - the one scope that links right away |
+| **Projects** | Every app in the chosen projects, or only in the environments you pick |
+| **Specific apps** | Exactly the apps you pick. The only scope that links right away |
 
-Two variables may carry the same name, as long as they are offered to different audiences: one `DATABASE_URL` per project is the point of the model. The same name offered to exactly the same apps, projects and teams is refused, because nothing on the page could tell the two rows apart and one would silently win at deploy time.
+Two variables can have the same name if they are offered to different apps, for example one
+`DATABASE_URL` per project.
 
 <Callout type="info">
-**The per-app link is what actually injects it.** Until an app links the variable, the value reaches nothing, whatever its scopes say.
-
-That is deliberate. A variable that appeared in every app the moment somebody ticked a team would make a shared secret a footgun, and would make "why does this app have that value" unanswerable.
+**Only the per-app link injects the variable.** Until an app links it, the value reaches nothing.
 </Callout>
 
-At deploy time a linked shared variable folds **above** the app's own variable of the same name, and below a preview override.
+At deploy time a linked shared variable wins over the app's own variable with the same name, and
+loses to a preview override.
 
-### Two teams or more, and it stops asking
+### Shared with two teams or more
 
-Ticking a **second** team changes what the variable does. It is then added to every app in every team you ticked, with no link and no opt-in, and it folds at the **lowest** priority - so an app's own value for the same name still wins.
+Ticking a **second** team changes the behaviour:
 
-That is the setting for a corporate proxy or an internal registry mirror, and the wrong one for anything a single team should keep to itself. The review step spells out which of the two you are about to create, and the wording changes as you tick.
+- The variable is added to every app in every ticked team. No link needed.
+- It has the **lowest** priority, so an app's own value still wins.
 
-You can only tick a team you hold **Manage environment variables** in, across the whole of that team. A team the variable already reaches stays ticked and locked, so a variable shared instance-wide is still editable by an admin who is not a member of every team.
+Use this for things like a company proxy or an internal registry mirror. The review step tells you
+which kind you are creating.
 
-Unticking a team until only one is left turns the automatic add off, and the variable is a suggestion again. A team that is **deleted** does not: the variable keeps injecting into the teams that are left, which is why removing a colleague's team never silently strips a value from yours.
+You can only tick a team where you hold **Manage environment variables** on the whole team.
+Unticking teams until one is left turns the automatic add off. Deleting a team does not.
 
 ### A variable another team shares with you
 
-It shows in your **Shared** tab with the owning team's name and no edit buttons: they own the value, you receive it. You can still link it to your own apps. You are told who owns it, not which other teams it also reaches.
+It shows in your **Shared** tab with the owner team's name and no edit buttons. You can link it to
+your apps, but not change it. On an app's **Environment** tab the only action is **Remove from
+this app**.
 
-On an app's **Environment** tab a variable that arrives this way is listed read-only, so a value in the container is never a value with no explanation. The one thing you can do to it there is **Remove from this app**, which takes back your own link.
-
-If the owner later stops sharing it with your team, your apps' links to it go with it. Nothing is left behind to spring back to life if they ever share it again.
+If the owner stops sharing it with your team, your links to it are removed.
 
 ## Create one
-
-You can start from two places: the **Variables** page, or the app you want the variable in.
 
 ### From the Variables page
 
@@ -87,25 +86,24 @@ Open **Variables** in the sidebar, then the **Shared** tab, then **New shared va
 
 ### Fill the table
 
-Type a name and a value per row. **Add another** takes as many rows as you like, and pasting a whole `.env` into a name field explodes it into rows - every one of them becomes its own shared variable.
+A name and a value per row. **Add another** adds rows. Pasting a whole `.env` into a name field
+splits it into rows.
 
-The **Secret** switch applies to the whole table. A secret is write-only and immutable, here as anywhere else.
+The **Secret** switch applies to the whole table.
 
 </Step>
 <Step>
 
 ### Set availability
 
-Choose at least one availability scope, or pick specific apps. One of the two is required, and the choice applies to every row you typed.
-
-Picking **Teams** opens the list of teams you may share with, all ticked. Untick to narrow it - one team is the ordinary case.
+Choose at least one scope, or pick specific apps. The choice applies to every row.
 
 </Step>
 <Step>
 
 ### Review and create
 
-The last step lists what is about to be created and how many apps each scope reaches.
+The last step shows what will be created and how many apps it reaches.
 
 </Step>
 </Steps>
@@ -131,13 +129,15 @@ On the **Shared** tab, click **New shared variable**.
 
 ### Fill it in
 
-Same table. This app is already the destination and cannot be unpicked - the variable is linked to it as soon as it is created. You can still offer it to teams or to projects at the same time.
+Same table. The variable is linked to this app as soon as it is created. You can also offer it to
+teams or projects.
 
 </Step>
 </Steps>
 
 <Callout type="info">
-Creating a shared variable needs the **Manage environment variables** permission held across the whole team, not only on one app. Without it the button is not there.
+Creating a shared variable needs **Manage environment variables** on the whole team. Without it
+the button is not shown.
 </Callout>
 
 ## Use one in an app
@@ -154,7 +154,7 @@ Open the app, then **Environment**.
 
 ### Link it
 
-Click **Add**, then the **Shared** tab: every shared variable offered to this app is listed there. Add the one you want.
+Click **Add**, then the **Shared** tab. Add the variable you want.
 
 <Image
   src={`${basePath}/screenshots/shared-variables/03-used-in-an-app.png`}
@@ -174,33 +174,36 @@ Redeploy.
 </Step>
 </Steps>
 
-A linked row in an app offers two actions. **Manage** opens the variable on **Variables ->
-Shared**, where its audience and its value live. **Remove from this app** unlinks it here, and the
-variable and every other app keep it. Deleting the variable outright is done from that Shared tab,
-not from an app.
+A linked row has two actions:
 
-On a variable that reaches more than one team there is no link to take back: **Remove from this
-app** drops your explicit one, and the variable keeps arriving from the team that shares it, at
-the lowest priority. The row says so, and stays.
+- **Manage** opens the variable on **Variables -> Shared**.
+- **Remove from this app** removes the link here. Other apps keep the variable.
+
+To delete the variable itself, use the **Shared** tab. A variable shared with more than one team
+keeps arriving after **Remove from this app**, at the lowest priority.
 
 ## Good to know
 
-- **Scope is not injection.** Worth repeating: the link is the only mechanism, unless the variable covers more than one team.
-- **The app's own variable loses to a linked shared one** of the same name. If an app needs its own value, unlink the shared one rather than fighting it.
-- **A shared variable belongs to the team that created it.** Deleting that team deletes the variable, including for any other team it reached - the delete dialog counts them.
-- **Deleting one affects every app that links it**, on their next deploy. The dialog says how many.
-- **A preview built from a fork receives no shared value at all**, plain or secret, along with
-  none of the app's own. It gets its preview overrides and nothing else.
-- **A compose app's own file wins.** Deplo passes a variable into every service of a compose stack, but a key the compose file sets itself keeps the compose value. Those rows are marked **Set in the compose file** on the app's Environment tab: change the value there, or remove the key from the compose.
-- **Deleting the last project, environment or app a variable was offered to** leaves the variable, not the sharing: the row reads **Not shared with anything** until you give it a new audience. Its value is untouched and still editable.
+- **Scope is not injection.** The link is the only way in, unless the variable is shared with
+  more than one team.
+- **A linked shared variable wins over the app's own variable.** If an app needs its own value,
+  unlink the shared one.
+- **The variable belongs to the team that created it.** Deleting that team deletes the variable
+  everywhere.
+- **Deleting a variable affects every linked app** on its next deploy.
+- **A fork preview receives no shared value.**
+- **The compose file wins.** A key set in the compose file keeps the compose value. Those rows are
+  marked **Set in the compose file**.
+- **If everything it was offered to is deleted**, the variable stays and reads **Not shared with
+  anything** until you give it a new audience.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The app does not see the value | It is scoped but not linked. Link it on the app's **Environment** tab. |
+| The app does not see the value | It is offered but not linked. Link it on the app's **Environment** tab. |
 | The value changed and the app still has the old one | It applies on the next deploy. Redeploy. |
-| A different value than expected | The app defines the same name itself, a preview override does, or the app is a compose stack whose file sets that key. |
+| A different value than expected | The app defines the same name itself, a preview override does, or the compose file sets that key. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

@@ -1,6 +1,6 @@
 ---
 title: Members
-description: Add people to a team, give them a role, and answer "who did that" afterwards.
+description: Add people to a team, give them a role, and remove them later.
 ---
 
 import Image from "next/image";
@@ -8,17 +8,14 @@ import { basePath } from "@/lib/base-path";
 
 import { ShieldCheck, History, KeyRound, Settings } from "lucide-react";
 
-Everything in Deplo belongs to a team, and a person reaches it through a
-**membership**. A membership carries a **role**, which is a named set of
-[capabilities](/reference/capabilities).
+Everything in Deplo belongs to a team. A person joins a team as a **member** with a **role**,
+which is a named set of [capabilities](/reference/capabilities).
 
-There is **no email invite flow**. Deplo does not send mail on its own,
-and a self-hosted instance often cannot. Instead there are two paths:
+There is **no email invite**, because Deplo does not send mail. There are two ways in:
 
-- The person **already has an account here**: you add them to your team
-  directly.
-- The person **has no account**: an instance admin mints a **registration
-  link** and sends it to them however they like.
+- The person **already has an account**: add them to your team directly.
+- The person **has no account**: an instance admin creates a **registration link** and sends
+  it to them.
 
 ## Add somebody who already has an account
 
@@ -73,7 +70,7 @@ This needs an instance admin.
 
 ### Open users settings
 
-Open **Settings -> Users**, the system section.
+Open **Settings -> Users**, in the system section.
 
 </Step>
 <Step>
@@ -87,29 +84,27 @@ Start **Create a new user** and follow the wizard.
 
 ### Get the link
 
-Deplo mints a single-use link. **It works once and expires in 24 hours.**
+Deplo creates a single-use link. **It works once and expires in 24 hours.**
 
 </Step>
 <Step>
 
 ### Share it
 
-**Share this link** with them, over whatever channel you already trust.
+**Share this link** with them over a channel you trust.
 
 </Step>
 </Steps>
 
-They open it, choose a username and a password, and land in **their own
-team**. Add them to yours from **Settings -> Members**.
+They open it, choose a username and a password, and land in **their own team**. Then add them
+to yours from **Settings -> Members**.
 
-Pending links are listed on the same page, and can be revoked before use. A link is consumed
-atomically, so it cannot be used twice even by two people clicking at the same time. Deplo keeps
-an encrypted copy of the link for its 24 hours so an admin can copy it again from the list; after
-that only its hash remains.
+Pending links are listed on the same page and can be revoked before use. An admin can copy a
+link again from the list during its 24 hours.
 
 ## Roles and limited access
 
-Each member row shows their role. Two badges are worth recognising:
+Each member row shows their role. Two badges to know:
 
 <Image
   src={`${basePath}/screenshots/team-members/03-table-view.png`}
@@ -119,63 +114,50 @@ Each member row shows their role. Two badges are worth recognising:
   className="w-full rounded-lg"
 />
 
-- **Primary owner** is the founder's crown. Nobody can remove, demote or
-  edit them, including instance admins. It transfers only from
-  **Settings -> Members -> the member -> Advanced**, only by the owner,
-  only to a member of that team, and only with the password and second
-  factor re-entered.
-- **Limited access** means their real reach is narrowed or widened by
-  [per-folder grants](/guides/roles-and-permissions), so their role name
-  alone does not tell the whole story.
+- **Primary owner** is the team's founder. Nobody can remove, demote or edit them, not even
+  instance admins. Ownership is transferred only from
+  **Settings -> Members -> the member -> Advanced**, by the owner, to a member of that team,
+  after entering the password and second factor again.
+- **Limited access** means their real access is changed by
+  [folder shares](/guides/roles-and-permissions), so the role name alone does not say
+  everything.
 
-Open a member to get **Permissions** (their role, plus the per-node scope
-tree) and **Advanced** (instance admin, transfer ownership, remove them),
-plus **[Activity](/guides/team/activity)** - the full trail, narrowed to
-what they have done.
+Open a member to see **Permissions** (their role and the scope tree), **Advanced** (instance
+admin, transfer ownership, remove), and **[Activity](/guides/team/activity)** (what they did).
 
-A member whose permissions were edited by hand stops following their role:
-editing the role no longer rewrites their set. **Assigning them a role
-again**, from the member page or the API, puts them back on it, and the
-next role edit reaches them like everyone else.
+A member whose permissions were edited by hand no longer follows their role. **Assign them a
+role again** from the member page or the API to put them back on it.
 
 ## Remove somebody
 
-From the member's **Advanced** tab. Their memberships end, their sessions
-in that team stop resolving, and every API token they created loses
-whatever it inherited from them. Their account and their own team are
-untouched.
+From the member's **Advanced** tab. Their membership ends, their sessions in that team stop
+working, and their API tokens lose the access they got from them. Their account and their own
+team are not touched.
 
-Two more things go with them, so adding the person back later starts
-clean:
+Two more things happen, so adding them back later starts clean:
 
-- **Every folder share and per-app grant they held** in this team is
-  revoked.
-- **Folders they owned pass to the primary owner.** A folder is private to
-  its owner and the people it is shared with, so one left with somebody
-  who is gone would vanish from everyone's Overview. The hand-over is
-  written to [Activity](/guides/team/activity), and the primary owner can
-  share the folder on from there.
+- **Every folder share and per-app grant they had** in this team is revoked.
+- **Folders they owned pass to the primary owner**, so they do not disappear from everyone's
+  Overview. This is written to [Activity](/guides/team/activity), and the primary owner can
+  share the folder again.
 
 ## Good to know
 
-- **A team always keeps somebody who can administer it.** No role edit and
-  no removal may leave zero holders of `manage_members`, `manage_roles` or
-  `manage_team`.
-- **Teams are isolated.** Adding somebody to this team gives them nothing
-  anywhere else.
-- **Servers are shared, not team-owned.** Which teams may deploy to a
-  server is set on the server, by an instance admin.
-- **Two-factor can be required at the team level**, and an unenrolled
-  member then resolves nothing there at all. See
-  [Account security](/guides/team/account-security).
+- **A team always keeps somebody who can manage it.** No role edit or removal can leave zero
+  holders of `manage_members`, `manage_roles` or `manage_team`.
+- **Teams are isolated.** Adding somebody to this team gives them nothing elsewhere.
+- **Servers are shared between teams.** An instance admin decides on the server which teams
+  may deploy to it.
+- **Two-factor can be required for the whole team.** A member who has not set it up sees
+  nothing in that team. See [Account security](/guides/team/account-security).
 
 ## Troubleshooting
 
-- **The user search finds nobody**: they have no account on this instance
-  yet. Use a registration link.
-- **A registration link says it is used or expired**: mint a new one.
-- **They are in the team but see nothing**: the team requires two-factor
-  and they have not enrolled, or their role has almost no capabilities.
+- **The user search finds nobody**: they have no account on this instance yet. Use a
+  registration link.
+- **A registration link says used or expired**: create a new one.
+- **They are in the team but see nothing**: the team requires two-factor and they have not set
+  it up, or their role has almost no capabilities.
 
 See [Sign-in and access](/troubleshooting/sign-in-and-access) for more.
 

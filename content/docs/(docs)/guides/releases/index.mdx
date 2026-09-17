@@ -1,21 +1,20 @@
 ---
 title: Releases
-description: How your source becomes an image, what triggers a new one, and how to undo it.
+description: How your code becomes an image, what starts a new build, and how to undo one.
 ---
 
-Every deploy runs through the same three concerns, in order. Only sources Deplo builds have any of
-them: a Docker image app skips build settings entirely, and neither a Docker image nor a Compose
-stack can roll back, because there is no single image Deplo owns for either.
+Every deploy goes through three steps. They apply only to sources Deplo builds: a Docker image
+app has no build settings, and neither a Docker image nor a Compose app can roll back.
 
-**Build settings** decide how your source becomes an image: which builder runs, what commands it
-runs, and which port the result listens on. Most apps never touch this, because detection handles
-it. [Learn more ->](/guides/releases/build-settings)
+**Build settings** decide how your code becomes an image: the builder, its commands, and the port
+the app listens on. Most apps never need to change them.
+[Learn more ->](/guides/releases/build-settings)
 
-**Automatic deployments** decide what makes a *new* build happen: a push to a tracked branch, a
-new tag, or a call to a deploy hook URL you hold.
+**Automatic deployments** decide what starts a new build: a push to the branch, a new tag, or a
+call to a deploy hook URL.
 [Learn more ->](/guides/releases/automatic-deployments)
 
-**Rollbacks** decide what happens when a build was wrong: go back to an image that already worked,
-in seconds, with no rebuild. A rollback does not undo a deploy trigger, so turn off deploy on push
-first if you are rolling back because the branch itself is broken.
+**Rollbacks** bring back an image that already worked, in seconds and without a rebuild. A
+rollback does not stop future deploys, so turn off deploy on push first if the branch itself is
+broken.
 [Learn more ->](/guides/releases/rollbacks)

@@ -1,6 +1,6 @@
 ---
 title: Cron jobs
-description: Run a command on a schedule (cronjobs) inside one of your containers, tracked by the agent so a panel restart never kills it.
+description: Run a command on a schedule inside one of your containers.
 ---
 
 import Image from "next/image";
@@ -11,27 +11,23 @@ import { Terminal, Bell, BookOpen } from "lucide-react";
 For example: a nightly cleanup, a report at 6am, a queue worker tick, or
 `php artisan schedule:run`.
 
-The panel decides **when** a job fires. The run itself is tracked by the
-**agent** on the server: restarting the panel, upgrading Deplo or losing
-the dashboard for ten minutes never kills a run in flight. While the panel
-is down, nothing new starts.
+How it works:
 
-At each occurrence Deplo resolves the target container live, from the
-Compose service you named, and runs your command in it. It never remembers
-a container id, so a redeployed app keeps working. With no service named,
-the job runs in the app's own container: the service its domain routes to.
-
-The command runs in a plain `sh -c` (or `bash -c`), with the container's
-own environment and `PATH`. No login shell, no profile files.
-
-Each job runs in **its own timezone**, unlike a backup schedule, which is
-UTC. A job that says 03:00 Europe/Rome means 03:00 in Rome, in summer and
-in winter.
+- The panel decides **when** a job runs. The **agent** on the server runs it,
+  so restarting or upgrading the panel does not kill a running job. While the
+  panel is down, nothing new starts.
+- The command runs in the current container of the Compose service you named,
+  so a redeployed app keeps working. With no service named, it runs in the
+  app's own container.
+- The command runs in a plain `sh -c` (or `bash -c`), with the container's own
+  environment. No login shell, no profile files.
+- Each job has **its own timezone**. A job set to 03:00 Europe/Rome runs at
+  03:00 in Rome, in summer and in winter. Backup schedules use UTC instead.
 
 ## Turn it on
 
-Cron jobs are opt-in per app and per database, and the switch is also the
-pause button for everything underneath it.
+Cron jobs are off by default, per app and per database. The switch is also
+the pause button for every job under it.
 
 <Steps>
 <Step>
@@ -65,8 +61,7 @@ A **Cron jobs** tab appears. Open it and click **New cron job**.
 </Step>
 </Steps>
 
-For a database it is the same, in **Settings -> Advanced** of that
-database.
+For a database it is the same, in **Settings -> Advanced** of that database.
 
 ## Create a job
 
@@ -87,7 +82,7 @@ database.
     Container: {
       type: "select",
       description:
-        "Which Compose service to run in. Blank means the app's own container, the service its domain routes to.",
+        "Which Compose service to run in. Blank means the app's own container, the one its domain routes to.",
     },
     Schedule: {
       type: "cron expression",
@@ -101,7 +96,7 @@ database.
     Shell: {
       type: '"sh" | "bash"',
       description:
-        "A shell the image does not have fails the run, deliberately, rather than silently falling back.",
+        "If the image does not have this shell, the run fails. There is no fallback.",
     },
     Command: {
       type: "text",
@@ -113,7 +108,7 @@ database.
     },
     Attempts: {
       type: "number",
-      description: "How many tries before the run is failed.",
+      description: "How many tries before the run is marked failed.",
     },
     "If it is still running": {
       type: "select",
@@ -137,8 +132,6 @@ database.
 
 ## Reading the run history
 
-Six statuses, and the distinctions matter:
-
 <Image
   src={`${basePath}/screenshots/cron-jobs/02-job-list.png`}
   alt="The cron jobs of an app with their schedule and last result"
@@ -150,66 +143,62 @@ Six statuses, and the distinctions matter:
 <TypeTable
   type={{
     running: {
-      type: "in flight",
-      description: "In flight now.",
+      type: "running",
+      description: "Running now.",
     },
     succeeded: {
-      type: "terminal",
+      type: "final",
       description: "Exit code 0.",
     },
     failed: {
-      type: "terminal",
+      type: "final",
       description: "It ran and exited non-zero.",
     },
     timedout: {
-      type: "terminal",
+      type: "final",
       description:
-        "It hit the per-attempt timeout. This points at a setting, not at your code.",
+        "It hit the per-attempt timeout. Check the Timeout setting.",
     },
     skipped: {
-      type: "terminal, silent",
+      type: "final, silent",
       description:
         "It never started: the container was stopped, or the previous run was still going. Raises no alert.",
     },
     lost: {
-      type: "terminal, uncertain",
+      type: "final, uncertain",
       description:
-        "The agent could not report the outcome. Deliberately not failed, because the command may well have completed.",
+        "The agent could not report the result. Not marked failed, because the command may have completed.",
     },
   }}
 />
 
-Retries share one row, so a job with three attempts is one run with an
-attempt counter, not three rows. The stored output is the last attempt's
-final 16 KiB. **Run now** produces a run marked as manually triggered.
+Retries share one row: a job with three attempts is one run with an attempt
+counter. The stored output is the last 16 KiB of the last attempt. **Run now**
+creates a run marked as manually triggered.
 
 ## Good to know
 
-- **This is arbitrary code as the container's user, with no sandbox.** That
-  is why `manage_crons` is flagged sensitive and why the feature is off
-  until somebody turns it on.
-- **The switch pauses everything.** Turning it off leaves the jobs defined
-  and stops all of them.
-- **A stopped app runs nothing.** Occurrences are `skipped`, quietly and on
-  purpose.
-- **Stopping a run stops the command.** A timeout, or the Stop button, kills
-  the command and everything it started inside the container.
+- **A job runs any code as the container's user.** For security reasons
+  `manage_crons` is a sensitive capability, and the feature is off by default.
+- **The switch pauses everything.** Turning it off keeps the jobs defined and
+  stops all of them.
+- **A stopped app runs nothing.** Occurrences are `skipped`.
+- **Stopping a run stops the command** and everything it started.
 - **A job that keeps failing alerts once every 30 minutes**, not on every
-  run. The first success after that arms the alert again.
-- **Timezones are per job.** Two jobs on one app can sit in two zones.
-- **This is not a job queue.** No fan-out, no dependencies, no retry
-  backoff beyond the attempt count.
+  run.
+- **This is not a job queue.** No dependencies between jobs, no backoff beyond
+  the attempt count.
 
 ## Troubleshooting
 
-- **Every run is `skipped`**: the container is stopped, or the previous
-  run never finishes.
+- **Every run is `skipped`**: the container is stopped, or the previous run
+  never finishes.
 - **`shell not found`**: the image has no `bash`. Choose `sh`.
-- **The command works in the console and fails here**: both see the
-  container's own environment, but the console is an interactive login
-  shell and a cron job is not. Anything a profile or rc file sets up is not
-  there: use absolute paths, or set it under **Variables**.
-- **Runs go `lost`**: the agent lost contact mid-run. Check that server.
+- **The command works in the console and fails here**: the console is an
+  interactive login shell, a cron job is not. Anything a profile file sets up
+  is missing. Use absolute paths, or set it under **Variables**.
+- **Runs go `lost`**: the agent lost contact during the run. Check that
+  server.
 
 See [Servers and agents](/troubleshooting/servers-and-agents) for more.
 

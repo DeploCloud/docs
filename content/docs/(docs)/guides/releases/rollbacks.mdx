@@ -1,6 +1,6 @@
 ---
 title: Rollbacks
-description: Go back to a deployment that worked in seconds, without rebuilding anything.
+description: Go back to a deployment that worked, in seconds and without a rebuild.
 ---
 
 import Image from "next/image";
@@ -8,18 +8,14 @@ import { basePath } from "@/lib/base-path";
 
 import { Hammer, Server, Workflow, Archive } from "lucide-react";
 
-Every build Deplo performs leaves an image on the server, recorded on the deployment row. A
-rollback tells the agent to run that image again, so going back takes seconds and rebuilds
-nothing. Rolling back needs the `rollback_apps` capability.
+Every build leaves an image on the server. A rollback runs that image again, so it takes seconds
+and rebuilds nothing. It needs the `rollback_apps` capability.
 
-Three things follow from re-running an image rather than rebuilding:
-
-- **There is no rebuild.** No clone, no dependency resolution, no waiting, and no chance that the
-  dependency tree resolves differently than it did in February.
-- **Only the code goes back.** Environment variables, domains, volumes and resource limits are
-  re-rendered from your **current** settings. A rollback is not a time machine for configuration.
-- **It is a real deployment.** It gets its own row, its own logs and its own activity entry,
-  marked as a rollback of the deployment it came from, and it does not consume a retention slot.
+- **No rebuild.** No clone, no dependency install, no waiting.
+- **Only the code goes back.** Variables, domains, volumes and resource limits come from your
+  **current** settings.
+- **It is a normal deployment.** It has its own row, logs and activity entry, marked as a
+  rollback, and it does not use a retention slot.
 
 ## Roll back
 
@@ -43,7 +39,7 @@ Open the app, then **Deployments**. The list shows the commit, the branch and wh
 
 ### Roll back
 
-Open the deployment's menu and click **Rollback**, or open the deployment and use **Rollback**
+Open the deployment's menu and click **Rollback**, or open the deployment and click **Rollback**
 there.
 
 <Image
@@ -57,11 +53,10 @@ there.
 </Step>
 </Steps>
 
-The app is serving the older image within seconds.
+The app serves the older image within seconds.
 
-A deployment can be rolled back to only when it still qualifies. Deplo refuses when the target
-ran on a **different server** than the app is on now, when it belongs to a **preview** rather than
-production, and when the target **is itself a rollback**. Each refusal says which it was.
+Deplo refuses a rollback when the target ran on a **different server**, belongs to a
+**preview**, or **is itself a rollback**. The message says which.
 
 ## Retention
 
@@ -79,34 +74,31 @@ production, and when the target **is itself a rollback**. Each refusal says whic
 | --- | --- |
 | Default | `3` |
 | Maximum | `20` |
-| `0` | Hides the action for this app. The save toast confirms it |
+| `0` | Hides the action for this app |
 
-The host is told to keep `Keep + 1` images per app, and the rest are removed by the server's disk
-cleanup after a deploy. A kept image is a tag sharing layers with the others, not a full copy, but
-it is still disk.
+The server keeps `Keep + 1` images per app. Older ones are removed by the server's disk cleanup
+after a deploy. Kept images share layers, but they still use disk.
 
-This number is the real retention. Deplo pushes to no registry, so once an image is pruned from
-the host, that deployment can never be rolled back to again, even though its row is still in the
-list.
+Once an image is removed from the server, that deployment can no longer be rolled back to, even
+if its row is still in the list.
 
 ## Good to know
 
-- **Only sources Deplo builds can roll back.** A Docker image app has no image Deplo owns, and a
-  Compose stack has no single image. Neither offers the action.
-- **A rolled-back app still auto-deploys.** The next push builds and releases over the top. Turn
-  off **Deploy on push** first if you are rolling back because the branch is broken.
-- **A database migration does not roll back with the code.** The image goes back; whatever it did
-  to your data does not.
-- **Rolling back does not pause anything.** If you need the app stopped, use **Stop**.
+- **Only sources Deplo builds can roll back.** A Docker image app and a Compose app do not have
+  the action.
+- **A rolled-back app still auto-deploys.** The next push replaces it. Turn off **Deploy on
+  push** first if the branch is broken.
+- **A database migration does not roll back with the code.** Your data stays as it is.
+- **Rolling back does not stop the app.** Use **Stop** for that.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The **Rollback** action is missing | The source is a Docker image or a Compose stack, **Keep** is `0`, or you do not hold `rollback_apps`. |
-| Rollback is refused on a specific deployment | It ran on another server, it is a preview deployment, or it is itself a rollback. |
-| Rollback fails with an image that is not found | It was pruned. Raise **Keep**, or exclude that server from unused-image cleanup. |
-| It rolled back and the bug is still there | The bug is in configuration or data, not in the code. Neither travelled. |
+| The **Rollback** action is missing | The source is a Docker image or a Compose app, **Keep** is `0`, or you do not have `rollback_apps`. |
+| Rollback is refused on a deployment | It ran on another server, it is a preview, or it is itself a rollback. |
+| Rollback fails with an image not found | It was removed. Raise **Keep**, or exclude that server from unused-image cleanup. |
+| The bug is still there after the rollback | The bug is in configuration or data, not in the code. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
@@ -114,7 +106,7 @@ More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
 <Cards>
   <Card icon={<Hammer className="text-blue-400" />} title="Build settings" description="Builders, framework detection, the port" href="/guides/releases/build-settings" />
-  <Card icon={<Server className="text-blue-400" />} title="Server cleanup" description="What prunes old images" href="/operations/servers/cleanup" />
+  <Card icon={<Server className="text-blue-400" />} title="Server cleanup" description="What removes old images" href="/operations/servers/cleanup" />
   <Card icon={<Workflow className="text-blue-400" />} title="The deploy trace" description="Where the image a rollback reuses comes from" href="/concepts/what-happens-on-a-deploy" />
   <Card icon={<Archive className="text-blue-400" />} title="Backups and restore" description="For data, which rollbacks do not touch" href="/guides/data/backups-and-restore" />
 </Cards>

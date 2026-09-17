@@ -1,13 +1,12 @@
 ---
 title: GitHub
-description: Connect Deplo as a GitHub App, through GitHub's own manifest flow.
+description: Connect GitHub as a GitHub App, with nothing to copy and paste.
 ---
 
-**GitHub** connects as a **GitHub App**, created through GitHub's manifest
-flow: you click, you approve on GitHub, and Deplo receives the credentials
-directly. There is no client id or private key to copy. The App is
-installed on the accounts and organisations that hold your repositories,
-and mints short-lived tokens to list and clone them.
+**GitHub** connects as a **GitHub App**. You click, approve on GitHub, and
+Deplo receives the credentials. There is no client id or private key to copy.
+The App is installed on the accounts and organisations that hold your
+repositories, and creates short-lived tokens to list and clone them.
 
 ## Connect it
 
@@ -39,44 +38,41 @@ Approve on GitHub and pick which repositories the App may see.
 
 ## What the App needs
 
-The manifest flow asks GitHub for exactly this, so a freshly connected App
-already has it. It matters when someone narrows the App later on GitHub:
+A new App already has all of this. It matters only if someone narrows the App
+later on GitHub:
 
 | On GitHub | What it unlocks |
 | --- | --- |
-| **Metadata: Read-only** | See your repositories at all |
+| **Metadata: Read-only** | See your repositories |
 | **Contents: Read-only** | Clone your code to build it |
 | **Subscribe to event: Push** | Deploy automatically when you push |
 | **Pull requests: Read and write** | Post the preview address on the pull request |
 | **Subscribe to event: Pull request** | Build a preview when a pull request opens |
 
 The last two are only needed for
-[pull request previews](/guides/networking/pull-request-previews), and Deplo
-only mentions them once a team uses them.
+[pull request previews](/guides/networking/pull-request-previews).
 
-Deplo asks GitHub what the App is allowed to do and shows **Deplo is missing
-access on GitHub** with the exact list, on **Settings -> Git**, on the app's
-**Deploy source** settings and on its **Pull requests** page. **Update on
-GitHub** opens the App's permissions page, the only place GitHub lets you
-change them.
+When something is missing, Deplo shows **Deplo is missing access on GitHub**
+with the exact list, on **Settings -> Git**, on the app's **Deploy source**
+settings and on its **Pull requests** page. **Update on GitHub** opens the
+App's permissions page.
 
 <Callout type="info">
-GitHub emails the App's owner when its permissions change, and the new ones
-stay pending until someone accepts them on each installation. Approve there
-too, or Deplo keeps reporting them as missing.
+When the App's permissions change, GitHub keeps them pending until someone
+accepts them on each installation. Approve there too, or Deplo keeps reporting
+them as missing.
 </Callout>
 
 ## Troubleshooting
 
 - **The repository list is empty**: the GitHub App has no access. Use
   **Manage** and grant it there.
-- **`Authentication failed` in a clone**: the token expired or was
-  revoked. **Test connection** confirms it.
-- **"Deplo is missing access on GitHub"**: the App no longer has
-  everything in the table above. **Update on GitHub** takes you straight
-  to its permissions page.
-- **"This repository will not clone"**: the App is fine, but this
-  repository is not in its selection. Use **Manage** and add it.
+- **`Authentication failed` in a clone**: the token expired or was revoked.
+  **Test connection** confirms it.
+- **"Deplo is missing access on GitHub"**: the App no longer has everything
+  in the table above. Click **Update on GitHub**.
+- **"This repository will not clone"**: the repository is not in the App's
+  selection. Use **Manage** and add it.
 
 ## Next steps
 

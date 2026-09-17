@@ -1,6 +1,6 @@
 ---
 title: Logs
-description: Live container output and build output, streamed from the agent, no SSH required.
+description: Live container output and build output, with no SSH.
 ---
 
 import Image from "next/image";
@@ -8,12 +8,12 @@ import { basePath } from "@/lib/base-path";
 
 import { Activity, Terminal, Bell } from "lucide-react";
 
-What your containers are printing, live, plus the output of every build. No `docker logs`, no SSH.
+What your containers are printing, live, plus the output of every build. No
+`docker logs`, no SSH.
 
-Runtime logs are streamed from the agent that owns the container, and nothing is copied into the
-control plane on a schedule: the stream opens when you open the page. Build logs work the other
-way round - they are persisted, so they survive a page reload and a control plane restart, with a
-cap of 20,000 lines, each truncated at 4,000 characters, so a runaway build cannot fill the disk.
+Runtime logs are streamed from the agent when you open the page. Build logs
+are saved, so they survive a page reload and a control plane restart. They are
+capped at 20,000 lines of 4,000 characters each.
 
 ## Where to look
 
@@ -35,15 +35,16 @@ cap of 20,000 lines, each truncated at 4,000 characters, so a runaway build cann
 
 | Surface | What is there |
 | --- | --- |
-| **Logs** in the sidebar | A picker of every app and database you can read, arranged the way the Overview arranges them: project, environment, folder, then app, with a Databases section of its own. It remembers your last target, and a team with exactly one readable target opens straight into it |
-| An app's **Logs** tab | That app's **runtime** output only. **View build logs** links out to the last deployment |
+| **Logs** in the sidebar | A picker of every app and database you can read, arranged like the Overview. It remembers your last choice |
+| An app's **Logs** tab | That app's **runtime** output only. **View build logs** links to the last deployment |
 | A deployment's page | The build output for that one build |
 | A database's **Logs** tab | The engine's output |
 
 ## The pane
 
-The stream's state is a read-only chip: `connecting`, `streaming`, `reattaching`, `ended` or
-`failed`. There is no live switch; the pause button freezes **auto-scroll**, not the stream.
+The stream's state is shown as a chip: `connecting`, `streaming`,
+`reattaching`, `ended` or `failed`. The pause button freezes **auto-scroll**,
+not the stream.
 
 <Image
   src={`${basePath}/screenshots/logs/02-app-logs.png`}
@@ -57,41 +58,38 @@ The stream's state is a read-only chip: `connecting`, `streaming`, `reattaching`
 | --- | --- |
 | Level | Filter to errors, warnings and so on, or **All levels** |
 | Search logs | Filter to lines containing text |
-| Time range | 30 minutes, 1 hour, a day, or 7 days, which is where it opens. **Show timestamps** and an absolute-or-relative **Format** switch live inside this popover |
+| Time range | 30 minutes, 1 hour, a day, or 7 days (the default). **Show timestamps** and the **Format** switch are inside this popover |
 | Container | Which container of the stack you are watching. Shown only when the stack has more than one |
 | Pause | Stops auto-scrolling so you can read. New lines keep arriving |
 | Clear, Copy, Download | Empty the pane, copy it, or save it as `<container>.log` |
 | Reconnect | Reopen a stream that ended |
 | Display | Wrapping, and the pane's height |
 
-Deplo detects a level for each runtime line - `info`, `warn`, `error`, `debug` and `success` -
-and colours it, which is what makes the level filter work on software that has no idea Deplo
-exists. Build logs add a sixth, `command`, which only a builder emits; nothing infers it from a
-runtime line.
+Deplo detects a level for each runtime line (`info`, `warn`, `error`, `debug`
+and `success`) and colours it, so the level filter works with any software.
+Build logs add a sixth level, `command`.
 
-Above the pane, notices explain what the stream cannot: a restart loop, a failing healthcheck, a
-missing container, or "3 of 5 up".
+Above the pane, notices explain what the stream cannot: a restart loop, a
+failing healthcheck, a missing container, or "3 of 5 up".
 
 ## Retention
 
-The instance sets a ceiling on how far back the time range can reach: **Settings -> Deplo ->
-Advanced**, the **Logs** card, field **Maximum range**. Default **7** days, minimum 1, maximum 90.
-Instance admins only.
+The instance sets how far back the time range can go: **Settings -> Deplo ->
+Advanced**, the **Logs** card, field **Maximum range**. Default **7** days,
+minimum 1, maximum 90. Instance admins only.
 
-Raising it does not make the host keep more. Docker rotates a container's log files **by size**,
-not by age, so the setting bounds what Deplo will ask for and what actually exists on disk is
-whatever the rotation left. If you need long retention, ship logs out to something built for it.
+Raising it does not make the host keep more. Docker rotates log files **by
+size**, not by age. For long retention, send logs to a tool built for it.
 
 ## Good to know
 
-- **Nothing here is a log search engine.** It is a live tail with filters, for answering "what is
-  it doing right now" and "why did that build fail".
-- **A crash loop still streams.** You see each attempt's output as the container restarts, which
-  is usually where the answer is.
-- **`view_logs` is its own capability**, and it can be granted per folder. An app you cannot read
-  logs for shows an explicit closed state rather than an empty pane, so you can tell "no
-  permission" from "no output".
-- **Build logs for a build server** belong to the app, not to the builder. You read them in the
+- **This is not a log search engine.** It is a live tail with filters, for
+  "what is it doing right now" and "why did that build fail".
+- **A crash loop still streams.** You see each attempt's output as the
+  container restarts.
+- **`view_logs` is its own capability**, and it can be granted per folder. An
+  app you cannot read logs for shows a closed state, not an empty pane.
+- **Build logs for a build server** belong to the app. You read them in the
   same place.
 
 ## Troubleshooting
@@ -99,10 +97,10 @@ whatever the rotation left. If you need long retention, ship logs out to somethi
 | Symptom | What to check |
 | --- | --- |
 | Empty pane, app running | The app writes to a file instead of stdout. Container logs only capture stdout and stderr. |
-| **No logs yet**, with a link to the build | There is no container at all: the app has never deployed, or the stack is gone. The build output is on the deployment's page. |
+| **No logs yet**, with a link to the build | There is no container: the app has never deployed, or the stack is gone. The build output is on the deployment's page. |
 | **Not running** notice | The container exists but is stopped. Start it, or read the last build. |
 | The chip reads `ended` | The container was recreated. Press **Reconnect**. |
-| You want build output on the Logs tab | It is not there by design. Use **View build logs**, or open the deployment. |
+| You want build output on the Logs tab | It is not there. Use **View build logs**, or open the deployment. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

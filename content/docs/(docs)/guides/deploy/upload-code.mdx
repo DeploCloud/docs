@@ -8,15 +8,11 @@ import { basePath } from "@/lib/base-path";
 
 import { Hammer, GitBranch, RotateCcw } from "lucide-react";
 
-Deploying an archive of your project instead of connecting a repository. Deplo builds it exactly
-as it would build a clone, framework detection included, so it is the same pipeline: Railpack,
-Nixpacks, a Dockerfile or a Static build.
+Deploy an archive of your project instead of connecting a repository. Deplo builds it like a
+clone, framework detection included: Railpack, Nixpacks, a Dockerfile or a Static build.
 
 Use it for a project that is not in Git, for a one-off, or when the code lives somewhere Deplo
 cannot reach.
-
-The archive is stored in the control plane's data directory, under
-`uploads/<app id>/<upload id>/`, and the agent unpacks it on the server that builds it.
 
 ## Deploy one
 
@@ -33,8 +29,8 @@ The archive is stored in the control plane's data directory, under
 ### Choose the archive
 
 Drop it on the card, or click to browse. Accepted formats are `.tar.gz`, `.tgz`, `.tar` and
-`.zip`. Include your project's root, so `package.json` or the equivalent sits at the top level, or
-under the root directory you set.
+`.zip`. Put `package.json` (or the equivalent) at the top level, or under the root directory you
+set.
 
 <Image
   src={`${basePath}/screenshots/upload-code/01-wizard-upload.png`}
@@ -44,33 +40,32 @@ under the root directory you set.
   className="w-full rounded-lg"
 />
 
-You can skip the first step entirely: drop the archive anywhere on the Overview and the wizard
-opens here with the file already in hand.
+You can also drop the archive anywhere on the Overview. The wizard opens here with the file
+already loaded.
 
 </Step>
 <Step>
 
 ### Deploy
 
-**App name** is filled in from the filename; change it if you like. The server and the build
-settings are under **Advanced**, and both already have an answer. Click **Deploy**: the wizard
-uploads the archive and starts the first build straight after.
+**App name** is filled in from the filename. The server and the build settings are under
+**Advanced**, already filled in. Click **Deploy**: the wizard uploads the archive and starts the
+first build.
 
 </Step>
 </Steps>
 
 To ship a new version, go to **Settings -> Deployments**, upload a new archive, and click **Save &
-Deploy**. For an upload source that button does both.
+Deploy**.
 
 ## Good to know
 
-- **No automatic deploys.** There is no repository to watch. You can still trigger a build from CI
-  with a [deploy hook](/guides/releases/automatic-deployments), but the hook rebuilds whatever
-  archive is currently stored.
-- **Rollbacks still work.** Deplo builds this source, so past images are kept and a rollback
-  re-runs one.
-- **Exclude `node_modules` and build output.** They make the upload huge, and the build reinstalls
-  dependencies anyway.
+- **No automatic deploys.** There is no repository to watch. A
+  [deploy hook](/guides/releases/automatic-deployments) can trigger a build from CI, but it
+  rebuilds the archive currently stored.
+- **Rollbacks work.** Deplo builds this source, so past images are kept.
+- **Exclude `node_modules` and build output.** They make the upload huge, and the build
+  reinstalls dependencies anyway.
 - **The archive replaces the previous one.** There is no upload history.
 
 ## Troubleshooting

@@ -1,6 +1,6 @@
 ---
 title: Pull request previews
-description: Every open pull request gets its own running copy of the app at its own URL, torn down when the pull request closes.
+description: Every open pull request gets its own running copy of the app, at its own URL.
 ---
 
 import Image from "next/image";
@@ -8,33 +8,28 @@ import { basePath } from "@/lib/base-path";
 
 import { GitBranch, Variable, Globe } from "lucide-react";
 
-Reviewers click a link instead of checking out a branch. A preview is a separate stack,
-`deplo-<slug>__pr-<n>`, with its own containers, its own volumes and its own files directory. A
-preview of a branch in your own repository inherits the app's environment variables with no
-configuration, because every variable is written for both production and preview; a preview of a
-**fork** inherits nothing, which is the one rule worth reading before you turn this on.
+Reviewers click a link instead of checking out a branch. A preview is a
+separate stack, `deplo-<slug>__pr-<n>`, with its own containers, volumes and
+files. It is removed when the pull request closes.
 
-The hostname is **deterministic**: the same app and the same pull request
-always produce the same URL. That matters because the URL gets posted on
-the pull request, and a link that changed on every rebuild would strand
-whoever was testing it.
-
-Two shapes, depending on whether you set a preview domain:
+- A preview of your own branch inherits the app's environment variables. A
+  preview of a **fork** inherits nothing. See
+  [the two rules about forks](#the-two-rules-about-forks).
+- The URL never changes for the same pull request, so the link posted on it
+  keeps working after a rebuild.
 
 | | Hostname | TLS |
 | --- | --- | --- |
-| No preview domain, the default | `<slug>-pr-<n>-<hash>-<hexip>.nip.io` | Plain HTTP. A `nip.io` name can never hold a certificate |
-| A preview domain set | `<slug>-pr-<n>.<your-base>` | A normal Let's Encrypt certificate per preview |
+| No preview domain, the default | `<slug>-pr-<n>-<hash>-<hexip>.nip.io` | Plain HTTP. A `nip.io` name cannot hold a certificate |
+| A preview domain set | `<slug>-pr-<n>.<your-base>` | A Let's Encrypt certificate per preview |
 
-A preview is deliberately **neither an App nor an Environment**. It has no
-team placement, no domains of its own, and no console, backups or monitoring
-surface.
+A preview is not an app and not an environment. It has no domains of its own,
+and no console, backups or monitoring.
 
 ## Turn it on
 
-Only an app deploying from a connected **GitHub** App can have previews.
-For other sources the settings are visible but disabled, with the reason
-on them.
+Only an app deploying from a connected **GitHub** App can have previews. For
+other sources the settings are visible but disabled, with the reason shown.
 
 <Steps>
 <Step>
@@ -71,7 +66,7 @@ A **Pull requests** tab appears on the app.
     },
     HTTPS: {
       type: "toggle",
-      description: "Locked until a preview domain exists, for the reason above.",
+      description: "Locked until a preview domain exists.",
     },
     "Live previews": {
       type: "number",
@@ -79,7 +74,7 @@ A **Pull requests** tab appears on the app.
     },
     "Destroy after": {
       type: "days",
-      description: "Days of inactivity before a preview is torn down.",
+      description: "Days of inactivity before a preview is removed.",
     },
     "Fork pull requests": {
       type: "select",
@@ -89,20 +84,20 @@ A **Pull requests** tab appears on the app.
     Server: {
       type: "select",
       description:
-        "Where previews run. Often a cheaper machine than production. Changing it stops the previews that are up; Redeploy brings each back on the new server, and a nip.io address follows it.",
+        "Where previews run. Often a cheaper machine than production. Changing it stops the running previews; Redeploy starts each one on the new server.",
     },
     "Rebuild on every commit": {
       type: "toggle",
       description:
-        "Rebuild on every new commit, or only on demand. Off, a new commit is still recorded, a fork has to be approved again, and Redeploy builds the branch tip.",
+        "Rebuild on every new commit, or only on demand. When off, a new commit is still recorded, a fork needs approval again, and Redeploy builds the latest commit.",
     },
     "Only pull requests labelled": {
       type: "text",
-      description: "Restrict previews to pull requests carrying a label.",
+      description: "Only build previews for pull requests with this label.",
     },
     "Build drafts": {
       type: "toggle",
-      description: "Whether draft pull requests get one.",
+      description: "Whether draft pull requests get a preview.",
     },
     "Comment on the pull request": {
       type: "toggle",
@@ -111,18 +106,18 @@ A **Pull requests** tab appears on the app.
     Port: {
       type: "number",
       description:
-        "The port a preview answers on, if it differs from the app's. Traefik forwards there and PORT is set to it. Empty means the app's own port.",
+        "The port a preview answers on, if it differs from the app's. PORT is set to it. Empty means the app's own port.",
     },
   }}
 />
 
-Everything past the switch is a normal form with a **Save** button, and
-the fields nobody needs to start are under **Advanced**.
+The fields you do not need at the start are under **Advanced**.
 
 ## Day to day
 
-The **Pull requests** tab lists them, with **Redeploy**, **Destroy preview** and **Open pull
-request** on each row. **New preview** deploys one on demand.
+The **Pull requests** tab lists every preview, with **Redeploy**,
+**Destroy preview** and **Open pull request** on each row. **New preview**
+deploys one on demand.
 
 <Image
   src={`${basePath}/screenshots/pull-request-previews/01-preview-deployments.png`}
@@ -135,58 +130,52 @@ request** on each row. **New preview** deploys one on demand.
 A preview from a fork shows **Needs approval** until somebody with
 `manage_previews` reviews it.
 
-What the list follows on its own:
+The list updates on its own:
 
 - **A title edit** updates the row without building.
-- **Retargeting** the pull request at another branch tears its preview down.
+- **Changing the target branch** of the pull request removes its preview.
 - **A closed pull request** keeps its row for a week, then disappears.
-- **The comment on the pull request** always says the current state:
+- **The comment on the pull request** always shows the current state:
   Building, Ready, Stopped, Waiting for approval, Torn down.
 
 ## The two rules about forks
 
-- **A fork preview inherits no variables at all.** Not the app's own, not a linked shared
-  variable, not an instance-wide one, whatever the type. It gets its preview overrides and nothing
-  else. The code in that pull request was written by somebody outside your team, and a build step
-  can print anything it likes. An app that needs a database URL to boot needs one set as a
-  [preview override](/guides/config/environment-variables) before a fork preview will come up.
-- **A fork preview waits for a human**, unless you set **Fork pull requests** to build them
-  automatically. Approving is saying "I read this diff".
+- **A fork preview inherits no variables at all.** Not the app's own, not a
+  shared variable, not an instance-wide one. It gets only its preview
+  overrides. This is for security reasons: the code comes from outside your
+  team. An app that needs a database URL to start needs one set as a
+  [preview override](/guides/config/environment-variables).
+- **A fork preview waits for a human**, unless **Fork pull requests** is set
+  to build them automatically.
 
 ## Over the limit
 
-At the maximum, a new preview evicts the open one with the oldest
-activity. The evicted row **survives** and keeps its deploy key and its
-hostname, so clicking **Redeploy** brings the same URL back.
-
-A push never revives an evicted preview. Only a person does. It renders
-grey, never red, because nothing failed, and the comment on the pull
-request says **Stopped** so nobody clicks a dead link.
+At the maximum, a new preview stops the one with the oldest activity. The
+stopped row stays, grey, with the same hostname, and the pull request comment
+says **Stopped**. Only **Redeploy** brings it back, never a push.
 
 <Callout type="warn" title="Limits and gotchas">
-- **Turning previews off destroys every live preview**, right then.
-- **Moving the app to another server stops its previews** unless they
-  are pinned to a server of their own. Redeploy brings each one back.
-- **Previews share the app's database unless you point them elsewhere.** A
-  [preview override](/guides/config/environment-variables) on the connection
-  string is how you give them a scratch one, and it is worth doing before
-  somebody's test run writes to production.
-- **A preview domain belongs to one team**, compared across the whole DNS
-  zone in both directions. Another team cannot claim a parent or a child
-  of it.
-- **Previews cost real resources.** Ten open pull requests are ten running
-  stacks. That is what **Live previews** is for.
+- **Turning previews off destroys every live preview** immediately.
+- **Moving the app to another server stops its previews** unless they have a
+  server of their own. Redeploy brings each one back.
+- **Previews share the app's database unless you point them elsewhere.** Set
+  a [preview override](/guides/config/environment-variables) on the connection
+  string before a test run writes to production.
+- **A preview domain belongs to one team.** Another team cannot claim a parent
+  or a child of it.
+- **Previews use real resources.** Ten open pull requests are ten running
+  stacks. Use **Live previews** to cap them.
 </Callout>
 
 <Callout type="error" title="If it does not work">
 - **The Pull requests tab never appears**: the app does not deploy from a
   GitHub App, or the switch is off.
-- ****Deplo is missing access on GitHub****: the GitHub App lacks the
-  pull request permission. Use **Update on GitHub** on that notice.
-- **The preview URL shows a certificate warning**: it is on `nip.io`,
-  which cannot have one. Set a preview domain.
-- **A fork preview never deploys**: it is waiting for approval, or forks
-  are disabled.
+- **Deplo is missing access on GitHub**: the GitHub App lacks the pull request
+  permission. Use **Update on GitHub** on that notice.
+- **The preview URL shows a certificate warning**: it is on `nip.io`, which
+  cannot have one. Set a preview domain.
+- **A fork preview never deploys**: it is waiting for approval, or forks are
+  disabled.
 
 See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.
 </Callout>

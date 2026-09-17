@@ -1,6 +1,6 @@
 ---
 title: Automatic deployments
-description: Trigger a deploy on a push, on a new tag, or by calling a URL.
+description: Deploy on a push, on a new tag, or by calling a URL.
 ---
 
 import Image from "next/image";
@@ -8,23 +8,22 @@ import { basePath } from "@/lib/base-path";
 
 import { GitBranch, GitPullRequest, KeyRound } from "lucide-react";
 
-A deploy can happen without anybody clicking anything: on a push, on a new tag, or when a script
-calls a URL you hold. Which mechanism you get depends on how the repository is connected.
+A deploy can start without anybody clicking: on a push, on a new tag, or when a script calls a
+URL. Which one you get depends on how the repository is connected.
 
 <Tabs items={['A webhook', 'The deploy hook']}>
 <Tab value="A webhook">
 
-A **GitHub App** delivers through the single App-level webhook Deplo minted when you connected it,
-so nothing is registered per repository. A **GitLab, Bitbucket or Gitea connection** gets a push
-webhook registered on each repository it deploys. Either way the provider posts to Deplo, the
-signature is verified, and a delivery that passes the filters starts a deploy.
+A **GitHub App** delivers through one webhook created when you connected it. A **GitLab,
+Bitbucket or Gitea connection** gets a webhook on each repository it deploys. In both cases the
+provider calls Deplo, the signature is checked, and a push that passes the filters starts a
+deploy.
 
 </Tab>
 <Tab value="The deploy hook">
 
-When there is no connection to deliver through - a bare git URL, say - the app gets a URL instead.
-Anything that can send a `POST` can deploy: CI, a cron job on your laptop, another provider's
-webhook.
+An app with no connection, like a plain git URL, gets a URL instead. Anything that can send a
+`POST` can deploy: CI, a cron job, another provider's webhook.
 
 </Tab>
 </Tabs>
@@ -53,35 +52,33 @@ Open **Settings -> Deployments** and turn on **Deploy on push**.
 
 In the **Trigger** drawer, set **Deploy trigger**:
 
-- **On push to branch** deploys when the tracked branch moves. This is the default.
-- **On new tag** deploys when any new tag appears, which is how you get release-only deploys. The
-  branch is ignored in this mode.
+- **On push to branch** deploys when the branch changes. This is the default.
+- **On new tag** deploys when a new tag appears. The branch is ignored.
 
 </Step>
 <Step>
 
 ### Optional: submodules and watch paths
 
-**Include submodules** makes the clone pull nested repositories. **Watch paths (optional)** takes
-one glob per line and deploys only when the push touched a matching file:
+**Include submodules** also clones nested repositories. **Watch paths (optional)** takes one
+pattern per line and deploys only when the push changed a matching file:
 
 ```
 apps/web/**
 packages/ui/**
 ```
 
-That is what makes a monorepo bearable: four apps in one repository, each rebuilding only when its
-own code changes. **Skip unchanged deployments** is a third filter on the same drawer: it skips a
-push that changed nothing under the app's root directory.
+This is useful for a monorepo: each app rebuilds only when its own code changes. **Skip unchanged
+deployments** skips a push that changed nothing under the app's root directory.
 
 </Step>
 <Step>
 
 ### Save
 
-For a GitLab, Bitbucket or Gitea connection, the webhook's health is shown on this page so you can
-see whether the provider is actually reaching you. A GitHub App has no per-repository hook, so
-there is nothing to show.
+For a GitLab, Bitbucket or Gitea connection, this page shows the webhook status, so you can see
+if the provider reaches your instance. A GitHub App has no per-repository webhook, so nothing is
+shown.
 
 </Step>
 </Steps>
@@ -96,8 +93,8 @@ there is nothing to show.
   className="w-full rounded-lg"
 />
 
-**Settings -> Advanced**, on the **Build & triggers** card. It appears only for apps that do
-**not** already deploy from a connected git provider, because those already have a trigger.
+**Settings -> Advanced**, on the **Build & triggers** card. It is shown only for apps that do
+**not** deploy from a connected git provider.
 
 <Steps>
 <Step>
@@ -120,38 +117,33 @@ curl -X POST \
 </Step>
 </Steps>
 
-It needs two independent secrets, and neither is enough alone. The last segment of the URL says
-*which app*. The bearer token is an ordinary [API token](/advanced/api-tokens-and-oauth) that says
-*who*, and it must hold `deploy_apps`. That is what keeps a leaked URL from being a deploy button
-for the internet.
+The call needs two secrets. The last part of the URL says *which app*. The bearer token is a
+normal [API token](/advanced/api-tokens-and-oauth) that says *who*, and it must have
+`deploy_apps`. For security reasons, a leaked URL alone cannot deploy.
 
-**Rotate URL** mints a new last segment and invalidates the old one. The switch next to it is a
-kill switch.
+**Rotate URL** creates a new URL and disables the old one. The switch next to it turns the hook
+off.
 
 ## Good to know
 
-- **A bare Git URL cannot have a push webhook.** No connection, nothing to register on. Use the
-  deploy hook.
-- **Watch paths fail open.** If a delivery carries no file list, which happens with some annotated
-  tag pushes, the deploy runs rather than being skipped. Better a build you did not need than a
-  release that silently never happened.
-- **A manual redeploy ignores every filter.** Watch paths and change detection gate automatic
-  deploys only.
-- **Turning off deploy on push does not remove the webhook's history.** Past deliveries stay
-  visible on the provider's side.
-- **Two apps can watch the same repository** on different branches or different watch paths, and
-  both will fire.
+- **A plain Git URL cannot have a push webhook.** Use the deploy hook.
+- **Watch paths never block a deploy by mistake.** If a push carries no file list, which happens
+  with some tag pushes, the deploy runs anyway.
+- **A manual redeploy ignores every filter.** Watch paths and change detection apply only to
+  automatic deploys.
+- **Turning off deploy on push keeps the webhook history** on the provider's side.
+- **Two apps can watch the same repository** on different branches or watch paths.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
 | Pushes do nothing | For a non-GitHub connection, check the webhook status on **Settings -> Deployments**. A red state usually means the provider cannot reach this instance, so the panel address is wrong or not public. |
-| Pushes to the wrong branch deploy | The app tracks a branch, and it may not be the one you think. Check **Deploy source**. |
-| The deploy hook returns `401` | The bearer token is missing, malformed, expired or revoked. |
-| The deploy hook returns `403` | The token is valid but does not hold `deploy_apps`, or the hook has been switched off. |
+| Pushes to the wrong branch deploy | Check the branch under **Deploy source**. |
+| The deploy hook returns `401` | The bearer token is missing, wrong, expired or revoked. |
+| The deploy hook returns `403` | The token does not have `deploy_apps`, or the hook is turned off. |
 | The deploy hook returns `404` | The URL was rotated. |
-| The deploy hook returns `405` | You opened the URL in a browser. It is `POST` only, and the response prints a worked `curl` line. |
+| The deploy hook returns `405` | You opened the URL in a browser. It accepts `POST` only, and the response shows a working `curl` example. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

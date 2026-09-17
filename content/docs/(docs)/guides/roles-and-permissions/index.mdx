@@ -1,29 +1,27 @@
 ---
 title: Roles and permissions
-description: A role is a named set of capabilities owned by your team. A folder share applies the same idea to one corner of the fleet.
+description: A role is a named set of capabilities. A folder share gives access to one folder only.
 ---
 
 import { Library, Users, KeyRound } from "lucide-react";
 
-Deciding what each person can do, using a
+What each person can do is decided by a
 **[role](/guides/roles-and-permissions/roles)** or a
 **[folder share](/guides/roles-and-permissions/folder-shares)**.
 
-A capability is **one action**: `deploy_apps`, `delete_apps`,
-`manage_domains`, `restore_backups`. There are 44 and they are
-deliberately not bundled, because an administrator who can only grant
-"deploy and delete together" ends up granting too much.
+A capability is **one action**: `deploy_apps`, `delete_apps`, `manage_domains`,
+`restore_backups`. There are 44, and each one is granted on its own, so you never give more
+than needed.
 
-A role is a **row owned by your team**, not a fixed preset. Every team
-starts with three you can rename, re-scope and later reset to what Deplo
-ships:
+A role belongs to your team. Every team starts with three, which you can rename, change and
+later reset to the default:
 
 <TypeTable
   type={{
     Owner: {
       type: "locked",
       description:
-        "Full access, and locked there, so a team can never edit its way out of administering itself.",
+        "Full access. It cannot be edited, so a team can never lock itself out.",
     },
     Member: {
       type: "editable",
@@ -36,50 +34,39 @@ ships:
   }}
 />
 
-Editing a role **rewrites the capabilities of everyone holding it**, in
-the same transaction. There is no separate "apply" step and no drift
-between what the role says and what its members can do.
+Editing a role **updates everyone holding it** at once. There is no separate "apply" step.
 
-A folder share works differently: it does not edit a role, it **replaces**
-one at a single node in the tree. See
-[Folder shares](/guides/roles-and-permissions/folder-shares) for how that
-combines with a team role.
+A folder share does not edit a role: it **replaces** the role inside one folder. See
+[Folder shares](/guides/roles-and-permissions/folder-shares).
 
-## The floor and the ceiling
+## Special capabilities
 
-- **`view`** is the always-on floor. Every member has it.
-- **`instanceAdmin`** is not a team capability at all. It unlocks Servers,
-  Users and the instance settings, and it is granted from the member's
-  **Advanced** tab by another instance admin.
-- **`canExposePorts`** and **`canMountHostVolumes`** are separate grants.
-  The second one is the serious one: it covers every route out of a
-  container, not just a bind mount. See
+- **`view`** is always on. Every member has it.
+- **`instanceAdmin`** is not a team capability. It unlocks Servers, Users and the instance
+  settings. Another instance admin grants it from the member's **Advanced** tab.
+- **`canExposePorts`** and **`canMountHostVolumes`** are separate grants. The second one
+  covers every way out of a container, not only a bind mount. See
   [Host access](/advanced/host-access-and-privileges).
 
 ## Good to know
 
-- **The interface only hides buttons.** The real check happens
-  server-side before every write, and the API and the MCP server pass
-  through the same code. A hidden button is not a security boundary and
-  is not treated as one.
-- **A role edit is immediate** for everyone holding it.
-- **No edit may orphan the team.** `manage_members`, `manage_roles` and
-  `manage_team` must always have a holder.
-- **An id from another team resolves to nothing**, rather than to an
-  error that would confirm it exists.
-- **API tokens are capped by their creator.** A token can never do more
-  than the person who made it can do **right now**, so narrowing
-  somebody's role immediately narrows every token they minted.
+- **Hidden buttons are not the security check.** The server checks every action, and the API
+  and the MCP server go through the same checks.
+- **A role edit applies immediately** to everyone holding it.
+- **A team can never lose its admins.** `manage_members`, `manage_roles` and `manage_team`
+  must always have at least one holder.
+- **An id from another team gives no result**, for security reasons.
+- **API tokens are limited by their creator.** A token can never do more than the person who
+  created it can do **right now**. Narrowing someone's role also narrows every token they
+  created.
 
 ## Troubleshooting
 
-- **A capability is greyed out while editing a role**: you do not hold it
-  yourself.
-- **Somebody still cannot do the thing**: check for a folder share on
-  that node, which replaces the team role there, and check whether the
-  team requires two-factor.
-- **They can do more than their role says**: a folder share is granting
-  it. Their member page shows the scope tree.
+- **A capability is greyed out while editing a role**: you do not have it yourself.
+- **Somebody still cannot do something**: check for a folder share on that folder, which
+  replaces the team role there, and check whether the team requires two-factor.
+- **They can do more than their role says**: a folder share is granting it. Their member page
+  shows the scope tree.
 
 See [Sign-in and access](/troubleshooting/sign-in-and-access) for more.
 
@@ -101,7 +88,7 @@ See [Sign-in and access](/troubleshooting/sign-in-and-access) for more.
   <Card
     icon={<KeyRound className="text-blue-400" />}
     title="API tokens"
-    description="Capped by their creator's current role"
+    description="Limited by their creator's current role"
     href="/advanced/api-tokens-and-oauth"
   />
 </Cards>

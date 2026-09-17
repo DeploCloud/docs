@@ -1,20 +1,19 @@
 ---
 title: Observability
-description: What is happening in your fleet right now, logs, metrics, alerts, a shell into a container, and scheduled jobs.
+description: Logs, metrics, alerts, a shell into a container, and scheduled jobs.
 ---
 
-Five windows onto the same running fleet, all sourced from the agent over the same mutual TLS
-connection everything else uses. No SSH, no exposed Docker socket. Metrics arrive on a live stream
-the control plane holds open to each host, and everything else answers the moment you open the
-page.
+Five ways to see what your apps are doing right now. Everything comes from the
+agent on the server, over the same secure connection Deplo uses for everything
+else. No SSH, no exposed Docker socket.
 
 **Logs** - live container output, and the output of every build.
 [Learn more ->](/guides/observability/logs)
 
-**Monitoring** - CPU, memory, disk and network, with a short rolling history.
+**Monitoring** - CPU, memory, disk and network, with a short history.
 [Learn more ->](/guides/observability/monitoring)
 
-**Notifications and alerts** - get told when something happens instead of watching a tail.
+**Notifications and alerts** - get told when something happens.
 [Learn more ->](/guides/observability/notifications-and-alerts)
 
 **Console** - look inside a running container.

@@ -1,19 +1,22 @@
 ---
 title: Data
-description: Databases, scheduled backups and the volumes that keep an app's writes across a redeploy.
+description: Databases, scheduled backups and storage that survives a redeploy.
 ---
 
-Anything that lives on a disk. A database is provisioned like an app and joins the same
-**Environment network** its apps are on, so it is reachable by name and its connection string
-never changes. A volume is Deplo-managed disk space an app or database keeps across every
-redeploy; a bind mount reaches an existing server folder instead. A backup is a scheduled,
-encrypted copy of a database or an app, sent to a destination you control, on S3 or on another
-server's disk.
+Everything that lives on a disk:
 
-**An app's backup schedule does not cover its database.** They are backed up separately, on
-separate schedules, and it is the single most common surprise across the three pages here.
+- A **database** is created like an app and joins the same **Environment network** as its apps,
+  so they reach it by name.
+- A **volume** is disk space managed by Deplo that an app or database keeps across redeploys. A
+  **bind mount** uses an existing server folder instead.
+- A **backup** is a scheduled, encrypted copy of a database or an app, sent to S3 or to another
+  server's disk.
 
-**Databases** - Postgres, MySQL, MariaDB, MongoDB, Redis and ClickHouse, provisioned for you.
+<Callout type="warn" title="An app's backup schedule does not cover its database">
+Apps and databases are backed up separately. Schedule both.
+</Callout>
+
+**Databases** - Postgres, MySQL, MariaDB, MongoDB, Redis and ClickHouse, created for you.
 [Learn more ->](/guides/data/databases)
 
 **Backups and restore** - encrypted, scheduled, sent to storage you own.

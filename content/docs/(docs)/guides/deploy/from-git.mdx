@@ -1,6 +1,6 @@
 ---
 title: Deploy from Git
-description: Point an app at a repository and let Deplo build, deploy and redeploy it on push.
+description: Point an app at a repository and let Deplo build and deploy it on every push.
 ---
 
 import Image from "next/image";
@@ -8,11 +8,9 @@ import { basePath } from "@/lib/base-path";
 
 import { GitBranch, Hammer, Webhook, GitPullRequest, Upload } from "lucide-react";
 
-Pointing an app at a repository and letting Deplo build it is the source most apps use. The
-repository is cloned **by the agent**, on the server that will build it, using a credential the
-control plane decrypts at that moment. Nothing is ever cloned onto the control plane.
+The source most apps use. The repository is cloned by the agent on the server that builds it.
 
-What the provider gives you depends on how it is connected:
+What you get depends on the provider:
 
 | | GitHub App | GitLab, Bitbucket, Gitea (beta) | A bare Git URL |
 | --- | --- | --- | --- |
@@ -30,8 +28,7 @@ What the provider gives you depends on how it is connected:
 
 ### Start a new app
 
-On the Overview, open **Add new**, then **Application**. The wizard's first step is where you pick
-the source.
+On the Overview, open **Add new**, then **Application**.
 
 </Step>
 <Step>
@@ -51,15 +48,15 @@ Pick the **GitHub** or **Git** tile.
 <Tabs items={['GitHub', 'Git']}>
 <Tab value="GitHub">
 
-If nothing is connected yet, click **Connect GitHub**. Deplo creates the GitHub App through
-GitHub's manifest flow, so there is no client id or private key to copy. Choose which repositories
-it can see, then pick the repository and the branch.
+If nothing is connected yet, click **Connect GitHub**. Deplo creates the GitHub App for you, with
+nothing to copy and paste. Choose which repositories it can see, then pick the repository and the
+branch.
 
 </Tab>
 <Tab value="Git">
 
-Pick the provider, paste the repository URL and set the production branch. Add the connection
-first in **Settings -> Git** if the repository is private.
+Pick the provider, paste the repository URL and set the production branch. If the repository is
+private, add the connection first in **Settings -> Git**.
 
 </Tab>
 </Tabs>
@@ -69,22 +66,18 @@ first in **Settings -> Git** if the repository is private.
 
 ### Check what Deplo read
 
-**GitHub only.** The last card arrives filled in: the **App name** from the repository, the
-framework it recognised, and a **Build command** read from your `package.json`. The **Deploy
-command** comes from the framework's own convention rather than your `start` script, which in most
-projects is the dev server. **Reset** empties a command, which hands the decision back to the
-builder.
+**GitHub only.** The last card is already filled in: **App name**, the framework, and the
+**Build command** from your `package.json`. The **Deploy command** follows the framework's
+convention, not your `start` script. **Reset** empties a command and lets the builder decide.
 
-A repository on the Git tab is not read ahead of time, so its card arrives empty and detection
-happens on the first build instead.
+A repository from the Git tab is not read ahead of time. Detection runs on the first build.
 
 </Step>
 <Step>
 
 ### Deploy
 
-Leave **Automatic deployments** on unless you want to release by hand. The server, the build
-method and the watch paths are under **Advanced**, already answered. Click **Deploy**.
+Leave **Automatic deployments** on unless you want to release by hand. Click **Deploy**.
 
 </Step>
 </Steps>
@@ -99,9 +92,8 @@ method and the watch paths are under **Advanced**, already answered. Click **Dep
   className="w-full rounded-lg"
 />
 
-**Settings -> Deployments**, the **Deploy Source** card. You can move an app between repositories,
-branches and even source types. The app keeps its slug, its domains, its variables and its
-volumes, so switching from a Docker image to a repository does not start over.
+**Settings -> Deployments**, the **Deploy Source** card. You can change the repository, the branch
+and even the source type. The app keeps its domains, variables and volumes.
 
 <TypeTable
   type={{
@@ -115,7 +107,7 @@ volumes, so switching from a Docker image to a repository does not start over.
     },
     Server: {
       type: "select",
-      description: "Which server runs it. Same drawer. Shown only when the fleet has more than one",
+      description: "Which server runs it. Same drawer. Shown only when you have more than one server",
     },
     "Build method": {
       type: "select",
@@ -131,33 +123,27 @@ volumes, so switching from a Docker image to a repository does not start over.
     },
     "Watch paths": {
       type: "text",
-      description: "Only auto-deploy when a push touched these globs. Same drawer",
+      description: "Only auto-deploy when a push changed these globs. Same drawer",
     },
   }}
 />
 
-**Save source** does not deploy: click **Redeploy** when you are ready. An upload source is the
-exception, where the same footer reads **Save & Deploy** and does both.
+**Save source** does not deploy. Click **Redeploy** when you are ready.
 
 ## Private repositories
 
-Deplo never asks you to paste a key into an app. Credentials live once on the connection, and
-every app using that host reuses them. See [Git providers](/guides/git-providers) for how each
-provider connects, what it unlocks, and what to do if a credential breaks.
+Credentials live on the connection, and every app using that host reuses them. See
+[Git providers](/guides/git-providers).
 
 ## Good to know
 
-- **Only a GitHub App can have pull request previews.** The settings page is visible for other
-  sources but disabled, with the reason on it.
-- **A bare Git URL cannot register a webhook.** Deploy on push is not available, and the
-  [deploy hook](/guides/releases/automatic-deployments) is how you trigger it instead.
-- **Watch paths fail open.** When a delivery carries no file list, which happens with some tag
-  pushes, the deploy runs rather than being skipped.
-- **The branch is the app's, not the repository's.** Two apps can track two branches of the same
-  repository, and that is a normal way to run staging.
-- **Changing the repository does not clear the volumes.** Data written by the old code is still
-  mounted.
-- **With a build server set, the clone happens there**, not on the machine that runs the app.
+- **Only a GitHub App can have pull request previews.**
+- **A bare Git URL cannot register a webhook.** Use the
+  [deploy hook](/guides/releases/automatic-deployments) instead.
+- **Watch paths fail open.** A push with no file list, like some tag pushes, always deploys.
+- **Two apps can track two branches of the same repository.** A normal way to run staging.
+- **Changing the repository does not clear the volumes.**
+- **With a build server set, the clone happens there.**
 
 ## Troubleshooting
 
@@ -166,7 +152,7 @@ provider connects, what it unlocks, and what to do if a credential breaks.
 | The repository picker is empty | The GitHub App cannot see it. Use **Manage connected apps** and grant the repository on GitHub. |
 | `Authentication failed` in the clone step | The stored token expired or was revoked. **Settings -> Git**, then **Test connection**. |
 | Pushes do not deploy | For a non-GitHub connection, check the webhook status on **Settings -> Deployments**. |
-| The wizard's last card is empty | That is a Git-tab repository. Detection runs on the first build instead. |
+| The wizard's last card is empty | That is a Git-tab repository. Detection runs on the first build. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
