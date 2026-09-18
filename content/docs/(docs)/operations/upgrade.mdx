@@ -5,13 +5,12 @@ description: Update the control plane and server agents safely, with rollback gu
 
 import { Download, Server, ShieldAlert, ShieldCheck, Settings } from "lucide-react";
 
-Deplo updates two components independently:
+**One update, one click.** From **Settings -> Deplo -> Updates**, Deplo updates the panel,
+restarts it, and then brings every connected server to the same version on its own, one
+server at a time.
 
-- The **control plane** (this panel)
-- The **server agents**, one binary per host
-
-- The control plane updates from **Settings -> Deplo -> Updates**.
-- Server agents update one host at a time from **Settings -> Servers**.
+- The **control plane** (this panel) goes first.
+- The **server agents** - one per host - follow once the panel is back.
 - Database migrations run automatically at startup.
 
 **Agent updates only ever move forward.** There is no downgrade path.
@@ -41,6 +40,11 @@ new image and restarts the panel.
 <Step>
 ### Wait about a minute
 The page reloads itself when Deplo answers again on the new version.
+</Step>
+
+<Step>
+### Watch the servers follow
+The **Server agents** card counts them as they come up to date. Nothing to click.
 </Step>
 </Steps>
 
@@ -74,31 +78,31 @@ curl -fsSL https://deplo.build/install.sh | \
   DEPLO_VERSION=0.1.0 bash
 ```
 
-## Update the agents
+## The agents follow on their own
 
-<Steps>
-<Step>
-### Open Settings -> Servers
-</Step>
+Once the panel is back, Deplo walks the fleet by itself: remote servers first, the machine
+Deplo runs on last, one at a time. The **Server agents** card on the Updates tab counts
+them down, and every agent it updates is recorded in **Activity** under your name.
 
-<Step>
-### Refresh
-Click **Refresh**: it re-checks every agent and the latest agent release.
-</Step>
+A server is skipped when Deplo cannot touch it safely, and **it is named on that card** with
+a link to it:
 
-<Step>
-### Update each server that's behind
-Open the server and click the **Update to** button on its **Overview** tab, which names the version it will install.
-</Step>
-</Steps>
+- **A deploy is running on it.** An update restarts the agent, which would drop the build.
+- **It is unreachable** right now.
+- **Its agent is too old to update itself.** Re-run the install command from the server's
+  **Advanced** tab.
 
-For a fleet, use this order:
+Deplo retries a skipped server every 15 minutes until it is up to date, so a busy host
+catches up on its own.
 
-1. One canary server.
-2. Check readiness, deploy, and read its logs.
-3. Update the remaining servers, then the control-plane host last.
+### Update one server by hand
 
-Do not update an agent while a deploy is running on that host.
+You never have to, but you can - open **Settings -> Servers**, open the server, and click
+the **Update to** button on its **Overview** tab. It only appears when that host is behind.
+
+<Callout type="info" title="Don't update an agent mid-deploy">
+The button does not check for you. If a build is running on that host, let it finish.
+</Callout>
 
 ## Before you upgrade again
 
