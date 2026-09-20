@@ -9,8 +9,8 @@ import { basePath } from "@/lib/base-path";
 
 import { Globe, ShieldCheck, GitPullRequestArrow } from "lucide-react";
 
-Every app gets a generated `deplo.site` address from its first deploy, this guide
-covers how to change it
+Most apps get a generated `deplo.site` address the moment they are created, this guide
+covers how to change it. An app that serves nothing over HTTP starts with no address at all
 
 ## Point the domain at the server
 
@@ -90,6 +90,15 @@ you only intend to serve on 443.
 ## No domain yet?
 
 The **Add Domain** dialog has a **Generate** button that automatically creates a new deplo.site hostname
+
+Deplo skips the generated address when it cannot tell where the traffic should land:
+
+- a compose app where no service declares `ports:` or `expose:`, a stack of background workers
+  for example
+- an app built from a database image, like `redis` or `postgres`
+
+Nothing is broken, the app simply has no front door yet. Open **Add Domain**, click **Generate**,
+and on a compose app pick the container the address routes to
 
 ## Troubleshooting
 
