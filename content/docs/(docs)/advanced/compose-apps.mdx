@@ -208,6 +208,11 @@ redeploy pick up a moved tag. A `--pull` of your own replaces it:
 - **`version:` and `ports:` are usually noise here.** Deplo routes through
   Traefik, so publishing a host port is rarely what you want, and it needs
   the port-exposure grant.
+- **When you do publish one, name an address.** `- "53:53/udp"` claims every
+  address on the machine, the private ones included, and on port 53 that takes
+  over the machine's own DNS - every other app then stops resolving names. Write
+  the public address instead: `- "203.0.113.10:53:53/udp"`. The editor warns you
+  when port 53 is published without one.
 - **Variable values do not appear in the file.** They ride in the env file,
   which is why a rendered stack shown back to you has bare `- KEY` entries.
 - **A rendered stack is masked on display**, values and the basic-auth hash
