@@ -35,7 +35,7 @@ These configure the dashboard, API, database and control-plane defaults.
       type: "IPv4 dotted quad",
       default: "the IPv4 in DEPLO_PUBLIC_URL when it carries one, else the first non-internal NIC IPv4, else 127.0.0.1",
       description:
-        "The literal public IPv4 baked into generated nip.io hostnames and their Traefik rules. Must be a dotted quad, never a hostname.",
+        "The literal public IPv4 baked into generated deplo.site hostnames and their Traefik rules. Must be a dotted quad, never a hostname.",
     },
     DEPLO_HOST_BOOTSTRAP_TOKEN: {
       type: "string",
@@ -59,7 +59,7 @@ These configure the dashboard, API, database and control-plane defaults.
       type: "string",
       default: "letsencrypt",
       description:
-        "The name of the Traefik ACME resolver put on every router. A nip.io host needs an HTTP-01 resolver; point this at one if your default uses DNS-01.",
+        "The name of the Traefik ACME resolver put on every router. A deplo.site host needs an HTTP-01 resolver; point this at one if your default uses DNS-01.",
     },
     DEPLO_CLOUDFLARE_CERT_RESOLVER: {
       type: "string",
@@ -116,7 +116,7 @@ them before the install command.
   type={{
     DEPLO_DOMAIN: {
       type: "domain",
-      default: "empty, meaning a generated deplo-<hex>.nip.io host",
+      default: "empty, meaning a generated deplo-<hex>.deplo.site host",
       description:
         "The domain the panel is served on. Must contain a dot, cannot be localhost, a .local name or an IP address. Either way the panel is served over HTTPS through Traefik, and the generated host stays routed alongside it.",
     },
@@ -193,7 +193,7 @@ for what each role changes on the host.
 - **`DEPLO_SERVER_IP` must be a real, internet-reachable IPv4.** Generated
   hostnames encode it in hexadecimal, so a private or loopback address
   produces URLs that only work from that machine.
-- **A hostname in `DEPLO_PUBLIC_URL` cannot seed a `nip.io` name**, so
+- **A hostname in `DEPLO_PUBLIC_URL` cannot seed a `deplo.site` name**, so
   Deplo falls through to interface detection for the IP. Set
   `DEPLO_SERVER_IP` explicitly on a multi-homed box.
 - **`DEPLO_DATA_DIR` is staging, not storage.** Nothing durable lives

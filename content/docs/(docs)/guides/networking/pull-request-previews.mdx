@@ -20,7 +20,7 @@ files. It is removed when the pull request closes.
 
 | | Hostname | TLS |
 | --- | --- | --- |
-| No preview domain, the default | `<slug>-pr-<n>-<hash>-<hexip>.nip.io` | Plain HTTP. A `nip.io` name cannot hold a certificate |
+| No preview domain, the default | `<slug>-pr-<n>-<hash>-<hexip>.deplo.site` | Plain HTTP. A `deplo.site` name cannot hold a certificate |
 | A preview domain set | `<slug>-pr-<n>.<your-base>` | A Let's Encrypt certificate per preview |
 
 A preview is not an app and not an environment. It has no domains of its own,
@@ -172,7 +172,7 @@ says **Stopped**. Only **Redeploy** brings it back, never a push.
   GitHub App, or the switch is off.
 - **Deplo is missing access on GitHub**: the GitHub App lacks the pull request
   permission. Use **Update on GitHub** on that notice.
-- **The preview URL shows a certificate warning**: it is on `nip.io`, which
+- **The preview URL shows a certificate warning**: it is on `deplo.site`, which
   cannot have one. Set a preview domain.
 - **A fork preview never deploys**: it is waiting for approval, or forks are
   disabled.

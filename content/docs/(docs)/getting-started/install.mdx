@@ -17,7 +17,7 @@ As root, on the server:
 curl -fsSL https://deplo.build/install.sh | bash
 ```
 
-The dashboard will be automatically deployed on `https://deplo-<hex>.nip.io` (check the output of the installer for the correct url)
+The dashboard will be automatically deployed on `https://deplo-<hex>.deplo.site` (check the output of the installer for the correct url)
 
 </Tab>
 <Tab value="With your own domain">
@@ -29,7 +29,7 @@ curl -fsSL https://deplo.build/install.sh | \
   DEPLO_DOMAIN=deplo.example.com ACME_EMAIL=you@example.com bash
 ```
 
-`https://deplo-<hex>.nip.io` (check the output of the installer for the correct url) is also installed as a secondary url, but it can be disabled from the panel's settings menu
+`https://deplo-<hex>.deplo.site` (check the output of the installer for the correct url) is also installed as a secondary url, but it can be disabled from the panel's settings menu
 
 </Tab>
 </Tabs>
@@ -50,7 +50,7 @@ We encourage you to start from a clean environment to prevent configurations tha
 | Size | **2 cores, 4 GB of RAM, 30 GB of disk** is the minimum, **4 cores and 8 GB** the comfortable size. Both are about your apps: the platform itself fits in about 1 GB. The installer warns below the minimum and **refuses below 8 GB free on `/`**, where Docker images alone do not fit. |
 | Ports | `80` and `443` reachable from the internet, `9443` for every [agent](/concepts/servers-and-the-agent) host. |
 | Outbound HTTPS | To `ghcr.io` for the image, to `get.docker.com` when Docker is missing, and to Let's Encrypt for the certificate. The first two are checked before anything is installed. |
-| A domain | Optional: The generated `nip.io` hostname works from the first deploy. |
+| A domain | Optional: The generated `deplo.site` hostname works from the first deploy. |
 | Docker knowledge | Optional: Only when you are ready for the best Deplo experience. |
 
 To check a machine without touching it, run the preflight and exit:
@@ -140,7 +140,7 @@ like any other machine. Four things are worth knowing before you do:
   on port 80, so point the A record first. The generated address answers meanwhile.
 - **`localhost`, `*.local`, `*.localdomain`, a bare IP and any name without a dot are rejected as
   `DEPLO_DOMAIN`.** The panel needs a hostname a certificate can be issued for; the installer says
-  so and falls back to the generated `nip.io` address.
+  so and falls back to the generated `deplo.site` address.
 
 ## Troubleshooting
 

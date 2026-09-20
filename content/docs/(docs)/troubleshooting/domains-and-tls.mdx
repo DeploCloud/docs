@@ -35,7 +35,7 @@ Check these first:
 1. **Port 80 is open.** Let's Encrypt validates over HTTP.
 2. **DNS resolves from the server.** Fix the record, then **Reload** the app
    or redeploy.
-3. **The domain is not `nip.io`.** Use a domain you own for a certificate.
+3. **The domain is not `deplo.site`.** Use a domain you own for a certificate.
 4. **Certificate is set to Let's Encrypt.** Check the domain's **HTTPS** group,
    above **Advanced**.
 
@@ -88,7 +88,7 @@ cannot be added here. The same applies to a preview base domain.
 </Accordion>
 <Accordion title="The panel is unreachable">
 
-Try the generated `https://deplo-<hex>.nip.io` address. If it works, fix the
+Try the generated `https://deplo-<hex>.deplo.site` address. If it works, fix the
 address in **Settings -> Deplo**. The browser warns about its certificate once.
 
 If that is silent too, the proxy is down. From the server itself:
