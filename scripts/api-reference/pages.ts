@@ -971,7 +971,7 @@ An app is one deployable unit: a repository, an uploaded archive, a Docker image
 </Callout>
 `,
     sections: [
-      { title: "Reading", ops: [q("apps"), q("app"), q("search"), q("appRuntime"), q("appTransferInfo")] },
+      { title: "Reading", ops: [q("apps"), q("app"), q("search"), q("appRuntime"), q("overviewAppStates"), q("appTransferInfo")] },
       {
         title: "Creating",
         intro: `\`createApp\` takes the whole first configuration in one input. The new-app wizard runs \`detectRepoFramework\` while you pick a repository and \`composeNameClashes\` before it submits a stack.`,
@@ -1008,7 +1008,7 @@ Every write here changes what the **next** deploy renders. None of them starts a
       },
       {
         title: "Runtime",
-        ops: [m("updateAppResources"), m("updateAppHealthCheck"), q("hostPortsInUse"), m("setAppPorts"), m("setAppVolumes")],
+        ops: [m("updateAppResources"), m("updateAppHealthCheck"), m("setAppRestartLoopGuard"), q("hostPortsInUse"), m("setAppPorts"), m("setAppVolumes")],
       },
       {
         title: "Config files",
@@ -1138,7 +1138,7 @@ A managed database is provisioned and versioned the same way an app is, and reac
       },
       {
         title: "Running and recreating",
-        ops: [m("setDatabaseRunning"), m("restartDatabase"), m("redeployDatabase"), m("rebuildDatabase"), m("deleteDatabase")],
+        ops: [m("setDatabaseRunning"), m("restartDatabase"), m("redeployDatabase"), m("rebuildDatabase"), m("setDatabaseRestartLoopGuard"), m("deleteDatabase")],
       },
       {
         title: "Credentials",

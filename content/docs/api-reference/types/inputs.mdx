@@ -55,7 +55,7 @@ An initial environment variable for a new app.
 | Field | Type | Description |
 | --- | --- | --- |
 | `autoDeploy` | `Boolean` | Rebuild a preview when its pull request gets a new commit. |
-| `baseDomain` | `String` | e.g. `preview.example.com`, with a wildcard DNS record pointing here. Empty clears it back to the zero-configuration nip.io default. |
+| `baseDomain` | `String` | e.g. `preview.example.com`, with a wildcard DNS record pointing here. Empty clears it back to the zero-configuration generated default. |
 | `buildDrafts` | `Boolean` | Build a pull request that is still a draft. |
 | `comment` | `Boolean` | Post the preview URL as a comment on the pull request. |
 | `enabled` | `Boolean` |  |
@@ -133,6 +133,7 @@ Partial build configuration; only the provided fields are changed.
 | `composePort` | `Int` |  |
 | `composeService` | `String` |  |
 | `composeUpArgs` | `String` | Extra flags appended to `docker compose up` for a compose stack. Validated against the same allow-list the app's settings use. |
+| `deploy` | `Boolean` | Whether to start the first deployment. Defaults to true. |
 | `dockerImage` | `String` |  |
 | `env` | [`[AppEnvInput!]`](/api-reference/types/inputs#appenvinput) |  |
 | `environmentId` | `String` |  |

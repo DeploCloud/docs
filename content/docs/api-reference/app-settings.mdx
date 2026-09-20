@@ -292,6 +292,29 @@ mutation {
 }
 ```
 
+### `setAppRestartLoopGuard`
+
+Needs `configure_apps`. Returns [`App`](/api-reference/types/objects#app).
+
+Turn restart loop protection on or off for one app. Applies at once - there is nothing to redeploy.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `value` | `Boolean!` |  |
+
+```graphql
+mutation {
+  setAppRestartLoopGuard(id: "prj_9f1c2ab7d3e4f5a6", value: true) {
+    id
+    slug
+    name
+    status
+    productionUrl
+  }
+}
+```
+
 ### `hostPortsInUse`
 
 Needs `create_databases`. Returns [`HostPortCheck`](/api-reference/types/objects#hostportcheck).

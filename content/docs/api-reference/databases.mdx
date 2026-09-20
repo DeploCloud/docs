@@ -419,6 +419,23 @@ mutation {
 }
 ```
 
+### `setDatabaseRestartLoopGuard`
+
+Needs `configure_databases`. Returns `Boolean`.
+
+Turn restart loop protection on or off for one database. Applies at once - there is nothing to redeploy.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `value` | `Boolean!` |  |
+
+```graphql
+mutation {
+  setDatabaseRestartLoopGuard(id: "db_9f1c2ab7d3e4f5a6", value: true)
+}
+```
+
 ### `deleteDatabase`
 
 Needs `delete_databases`. Returns `Boolean`.

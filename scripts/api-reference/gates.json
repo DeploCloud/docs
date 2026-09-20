@@ -280,6 +280,9 @@
   "cap": "manage_previews",
   "orInstanceAdmin": false
  },
+ "Query.overviewAppStates": {
+  "kind": "loggedIn"
+ },
  "Query.panelAddressImpact": {
   "kind": "instanceAdmin"
  },
@@ -1087,6 +1090,11 @@
   "cap": "manage_previews",
   "orInstanceAdmin": false
  },
+ "Mutation.setAppRestartLoopGuard": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
  "Mutation.setAppRollbackKeep": {
   "kind": "capability",
   "cap": "configure_apps",
@@ -1111,6 +1119,11 @@
   "orInstanceAdmin": false
  },
  "Mutation.setDatabaseMounts": {
+  "kind": "capability",
+  "cap": "configure_databases",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setDatabaseRestartLoopGuard": {
   "kind": "capability",
   "cap": "configure_databases",
   "orInstanceAdmin": false

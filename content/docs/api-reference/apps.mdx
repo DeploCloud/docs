@@ -99,6 +99,26 @@ query {
 }
 ```
 
+### `overviewAppStates`
+
+Any signed-in principal. Returns [`[OverviewAppState!]!`](/api-reference/types/objects#overviewappstate).
+
+Batch runtime state for the visible Overview apps. Unknown or inaccessible IDs are omitted.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `appIds` | `[ID!]!` |  |
+
+```graphql
+query {
+  overviewAppStates(appIds: [["prj_9f1c2ab7d3e4f5a6"]]) {
+    status
+    appId
+    neverDeployed
+  }
+}
+```
+
 ### `appTransferInfo`
 
 Needs `move_apps`. Returns [`AppTransferInfo`](/api-reference/types/objects#apptransferinfo).
@@ -144,6 +164,7 @@ Create an app from a repository, an uploaded archive, a Docker image or a compos
 | `input.composePort` | `Int` |  |
 | `input.composeService` | `String` |  |
 | `input.composeUpArgs` | `String` | Extra flags appended to `docker compose up` for a compose stack. Validated against the same allow-list the app's settings use. |
+| `input.deploy` | `Boolean` | Whether to start the first deployment. Defaults to true. |
 | `input.dockerImage` | `String` |  |
 | `input.env` | [`[AppEnvInput!]`](/api-reference/types/inputs#appenvinput) |  |
 | `input.environmentId` | `String` |  |

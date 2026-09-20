@@ -67,7 +67,7 @@ Turn pull request previews on or off, and set their options.
 | `appId` | `ID!` |  |
 | `input` | [`AppPreviewSettingsInput!`](/api-reference/types/inputs#apppreviewsettingsinput) |  |
 | `input.autoDeploy` | `Boolean` | Rebuild a preview when its pull request gets a new commit. |
-| `input.baseDomain` | `String` | e.g. `preview.example.com`, with a wildcard DNS record pointing here. Empty clears it back to the zero-configuration nip.io default. |
+| `input.baseDomain` | `String` | e.g. `preview.example.com`, with a wildcard DNS record pointing here. Empty clears it back to the zero-configuration generated default. |
 | `input.buildDrafts` | `Boolean` | Build a pull request that is still a draft. |
 | `input.comment` | `Boolean` | Post the preview URL as a comment on the pull request. |
 | `input.enabled` | `Boolean` |  |

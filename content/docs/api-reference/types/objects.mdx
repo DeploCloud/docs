@@ -99,6 +99,8 @@ A deployable application owned by a team.
 | `productionUrl` | `String` |  |
 | `projectId` | `ID` | The Project container this app belongs to, if any. |
 | `resources` | [`ResourceLimits`](/api-reference/types/objects#resourcelimits) | Per-app resource caps applied at deploy time, or null when the app has no limits set. |
+| `restartLoopGuard` | `Boolean` | Whether Deplo stops this app's container once it has restarted 10 times in half an hour. On by default; off lets it keep crashing. |
+| `restartLoopStoppedAt` | `String` | When restart loop protection last stopped this app, or null. Cleared by a start or a successful deploy. |
 | `rollbackKeep` | `Int` | How many previous deployments this app can be rolled back to (0-20, default 3). Retention: its server keeps this many of the app's images behind the running one. 0 means there is nothing to go back to. |
 | `serverId` | `ID` |  |
 | `slug` | `String` |  |
@@ -601,6 +603,8 @@ A provisioned database container owned by a team. The connection string is maske
 | `name` | `String` | Display name, editable with renameDatabase. Not the container's identity - `host` is, and it is fixed at creation. |
 | `port` | `Int` |  |
 | `resources` | [`ResourceLimits`](/api-reference/types/objects#resourcelimits) | Per-database resource caps applied at provision/redeploy time, or null when no limits are set. |
+| `restartLoopGuard` | `Boolean` | Whether Deplo stops this database's container once it has restarted 10 times in half an hour. On by default. |
+| `restartLoopStoppedAt` | `String` | When restart loop protection last stopped this database, or null. Cleared by a start or a restart. |
 | `serverId` | `ID` |  |
 | `sizeMb` | `Int` |  |
 | `status` | [`DatabaseStatus`](/api-reference/types/enums#databasestatus) |  |
@@ -1118,7 +1122,7 @@ Settings that belong to this Deplo instance rather than to a team or a host: the
 | `gravatarEnabled` | `Boolean` | Whether a person with no uploaded picture falls back to their Gravatar. The panel never dials gravatar.com itself - it only computes the address, and each viewer's browser fetches it. |
 | `logMaxDays` | `Int` | How far back the log viewer's time range may reach, in days. Instance-wide because the logs live on the host, which several teams share. It bounds what may be ASKED for and nothing else: docker rotates its json-file logs by size, so no setting here makes the host actually hold that much. |
 | `panelFallbackDisabled` | `Boolean` | Whether that backup address is turned off. It then routes nowhere, and a panel whose domain stops answering is reached again only with `deplo recover panel-address` on the server itself. The address above is what turning it back on would restore. |
-| `panelFallbackUrl` | `String` | The generated address the panel also answers on, over https (https://deplo-&lt;hexip>.nip.io). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach. |
+| `panelFallbackUrl` | `String` | The generated address the panel also answers on, over https (https://deplo-&lt;hexip>.deplo.site). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach. |
 | `panelUrl` | `String` | The address Deplo uses for itself right now. Every install command, deploy hook URL and invite link is built from it. |
 | `panelUrlSource` | `String` | `stored` (set here), `environment` (DEPLO_PUBLIC_URL, set at install time) or `request` (derived from the browser's own host, which is a guess). |
 | `storedPanelUrl` | `String` |  |
@@ -1307,7 +1311,7 @@ One service on the panel (an application, a compose stack, or a database) as it 
 | Field | Type | Description |
 | --- | --- | --- |
 | `buildsFromSource` | `Boolean` | Whether Deplo would ever compile this. False for a compose stack, a prebuilt image and a database - all of them deploy as they are, so a build server would have nothing to do for them. |
-| `domains` | `[String!]` | The hostnames that would come across. The panel's generated throwaway hosts (traefik.me, sslip.io, nip.io) are already dropped - Deplo mints its own. |
+| `domains` | `[String!]` | The hostnames that would come across. The panel's generated throwaway hosts (traefik.me, sslip.io, nip.io, deplo.site) are already dropped - Deplo mints its own. |
 | `engine` | `String` | Deplo's own engine id for a database (`mongo` over there is `mongodb` here), so a client can show the engine's brand mark. Null for anything that is not a database Deplo has. |
 | `exposedPort` | `Int` | The host port this database publishes over there, so a review can say what will be published and offer another port when that one is taken here. Describes the SOURCE: it is reported whether or not the caller holds the publish-ports grant, and null only for something that is not a database or publishes nothing. |
 | `kind` | `String` | What it is over there: application, compose, or one of the panel's database engines. |
@@ -1422,6 +1426,27 @@ Instance-wide monitoring settings (a fleet-scoped singleton, like the Docker cle
 | --- | --- | --- |
 | `saveMetrics` | `Boolean` |  |
 | `updatedAt` | `String` |  |
+
+### OverviewAppState
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `appId` | `ID!` |  |
+| `neverDeployed` | `Boolean!` |  |
+| `runtime` | [`OverviewRuntime`](/api-reference/types/objects#overviewruntime) |  |
+| `status` | [`AppStatus!`](/api-reference/types/enums#appstatus) |  |
+
+### OverviewRuntime
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `maxRestartCount` | `Int!` |  |
+| `restarting` | `Int!` |  |
+| `running` | `Int!` |  |
+| `total` | `Int!` |  |
+| `unhealthy` | `Int!` |  |
+| `unhealthyContainers` | `[String!]!` |  |
+| `unreachable` | `Boolean!` |  |
 
 ### PanelAddressImpact
 

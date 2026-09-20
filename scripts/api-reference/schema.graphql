@@ -235,6 +235,16 @@ type App {
   resources: ResourceLimits
 
   """
+  Whether Deplo stops this app's container once it has restarted 10 times in half an hour. On by default; off lets it keep crashing.
+  """
+  restartLoopGuard: Boolean
+
+  """
+  When restart loop protection last stopped this app, or null. Cleared by a start or a successful deploy.
+  """
+  restartLoopStoppedAt: String
+
+  """
   How many previous deployments this app can be rolled back to (0-20, default 3). Retention: its server keeps this many of the app's images behind the running one. 0 means there is nothing to go back to.
   """
   rollbackKeep: Int
@@ -312,7 +322,7 @@ input AppPreviewSettingsInput {
   autoDeploy: Boolean
 
   """
-  e.g. `preview.example.com`, with a wildcard DNS record pointing here. Empty clears it back to the zero-configuration nip.io default.
+  e.g. `preview.example.com`, with a wildcard DNS record pointing here. Empty clears it back to the zero-configuration generated default.
   """
   baseDomain: String
 
@@ -989,6 +999,9 @@ input CreateAppInput {
   Extra flags appended to `docker compose up` for a compose stack. Validated against the same allow-list the app's settings use.
   """
   composeUpArgs: String
+
+  """Whether to start the first deployment. Defaults to true."""
+  deploy: Boolean
   dockerImage: String
   env: [AppEnvInput!]
   environmentId: String
@@ -1310,6 +1323,16 @@ type Database {
   Per-database resource caps applied at provision/redeploy time, or null when no limits are set.
   """
   resources: ResourceLimits
+
+  """
+  Whether Deplo stops this database's container once it has restarted 10 times in half an hour. On by default.
+  """
+  restartLoopGuard: Boolean
+
+  """
+  When restart loop protection last stopped this database, or null. Cleared by a start or a restart.
+  """
+  restartLoopStoppedAt: String
   serverId: ID
   sizeMb: Int
   status: DatabaseStatus
@@ -2185,7 +2208,7 @@ type InstanceSettings {
   panelFallbackDisabled: Boolean
 
   """
-  The generated address the panel also answers on, over https (https://deplo-<hexip>.nip.io). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach.
+  The generated address the panel also answers on, over https (https://deplo-<hexip>.deplo.site). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach.
   """
   panelFallbackUrl: String
 
@@ -2205,7 +2228,7 @@ type InstanceSettings {
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
-scalar JSON
+scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
 
 type LogLine {
   level: String
@@ -2480,7 +2503,7 @@ type MigrationPlanService {
   buildsFromSource: Boolean
 
   """
-  The hostnames that would come across. The panel's generated throwaway hosts (traefik.me, sslip.io, nip.io) are already dropped - Deplo mints its own.
+  The hostnames that would come across. The panel's generated throwaway hosts (traefik.me, sslip.io, nip.io, deplo.site) are already dropped - Deplo mints its own.
   """
   domains: [String!]
 
@@ -3559,6 +3582,11 @@ type Mutation {
   setAppPreviewSettings(appId: ID!, input: AppPreviewSettingsInput!): Boolean
 
   """
+  Turn restart loop protection on or off for one app. Applies at once - there is nothing to redeploy.
+  """
+  setAppRestartLoopGuard(id: String!, value: Boolean!): App
+
+  """
   How many previous deployments this app can be rolled back to (0-20, default 3). It is retention: the app's server keeps this many of its images behind the running one. Takes effect on the next sweep - lowering it removes nothing now, and raising it cannot bring back images already removed.
   """
   setAppRollbackKeep(count: Int!, id: String!): App
@@ -3593,6 +3621,11 @@ type Mutation {
   Replace the database's config files (whole set - an omitted file is removed) and APPLY them: the files are written next to the stack and the container is recreated, unlike the image/command overrides beside them. A path inside the engine's data directory is refused.
   """
   setDatabaseMounts(id: String!, mounts: [DatabaseMountInput!]!): Database
+
+  """
+  Turn restart loop protection on or off for one database. Applies at once - there is nothing to redeploy.
+  """
+  setDatabaseRestartLoopGuard(id: String!, value: Boolean!): Boolean
   setDatabaseRunning(id: String!, running: Boolean!): Database
 
   """Make an environment the project's default (unsets the previous one)."""
@@ -3648,7 +3681,7 @@ type Mutation {
   ): String
 
   """
-  Turn the generated `deplo-<hexip>.nip.io` backup route on or off. Off drops the second router from the panel's own Traefik file and remembers the choice, so moving the address or the scheme afterwards does not put it back - which is the whole reason this is stored rather than read off the host. The panel then answers on its domain and nowhere else: if that domain, its DNS or its certificate breaks, the way back in is `deplo recover panel-address` on the server. Refused while the generated address IS the panel's own address, which would leave no route at all.
+  Turn the generated `deplo-<hexip>.deplo.site` backup route on or off. Off drops the second router from the panel's own Traefik file and remembers the choice, so moving the address or the scheme afterwards does not put it back - which is the whole reason this is stored rather than read off the host. The panel then answers on its domain and nowhere else: if that domain, its DNS or its certificate breaks, the way back in is `deplo recover panel-address` on the server. Refused while the generated address IS the panel's own address, which would leave no route at all.
   """
   setPanelFallback(enabled: Boolean!): InstanceSettings
 
@@ -3976,6 +4009,23 @@ input NodeGrantInput {
   capabilities: [Capability!]!
   folderIds: [String!]
   projectIds: [String!]
+}
+
+type OverviewAppState {
+  appId: ID!
+  neverDeployed: Boolean!
+  runtime: OverviewRuntime
+  status: AppStatus!
+}
+
+type OverviewRuntime {
+  maxRestartCount: Int!
+  restarting: Int!
+  running: Int!
+  total: Int!
+  unhealthy: Int!
+  unhealthyContainers: [String!]!
+  unreachable: Boolean!
 }
 
 """
@@ -4480,6 +4530,11 @@ type Query {
   Open pull requests on the app's repository, for the deploy picker. Needs only `pull_requests: read`, which every Deplo GitHub App has.
   """
   openPullRequests(appId: ID!): [GithubPullRequest!]
+
+  """
+  Batch runtime state for the visible Overview apps. Unknown or inaccessible IDs are omitted.
+  """
+  overviewAppStates(appIds: [ID!]!): [OverviewAppState!]!
 
   """
   What moving the panel to this address would break: passkeys welded to the current hostname, sessions, deploy hooks already pasted into someone's CI, connected AI clients, invite links, servers still waiting for their install command, notification subscriptions. Counted live and instance-wide, and only meaningful when the address actually moves - an unchanged address answers all zeroes. A query, not a mutation: it reads the database and dials nothing.
