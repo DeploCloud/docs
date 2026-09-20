@@ -30,7 +30,7 @@ export default function NotFound() {
 
       <Link
         href="/"
-        className="cursor-pointer rounded-md bg-white px-5 py-2.5 font-medium text-black transition duration-300 focus:outline-hidden active:opacity-100 lg:hover:opacity-80"
+        className="cursor-pointer rounded-full bg-white px-5 py-2.5 font-medium text-black transition duration-300 focus:outline-hidden active:opacity-100 lg:hover:opacity-80"
       >
         Back to docs
       </Link>

@@ -147,6 +147,14 @@ summary,
   cursor: pointer;
 }
 
+/* Pill buttons, like deplo.build. fumadocs bakes the radius into
+   buttonVariants, so the class signature is the only hook it leaves. The
+   search box and the tree picker keep theirs: those are fields, not buttons. */
+.inline-flex.items-center.justify-center.rounded-md,
+.inline-flex.items-center.justify-center.rounded-lg {
+  border-radius: calc(infinity * 1px);
+}
+
 /* "Did this page help you" card illustration: a page with a checkmark badge
    that draws itself in on a loop, on a slow breathing halo behind it. Same
    grammar as Deplo's own illustrations (DeploCloud/deplo): pure SVG + CSS
