@@ -147,12 +147,14 @@ summary,
   cursor: pointer;
 }
 
-/* Pill buttons, like deplo.build. fumadocs bakes the radius into
-   buttonVariants, so the class signature is the only hook it leaves. The
-   search box and the tree picker keep theirs: those are fields, not buttons. */
+/* Pill buttons at the body weight, like deplo.build. fumadocs bakes the
+   radius and font-medium into buttonVariants, so the class signature is the
+   only hook it leaves. The search box and the tree picker keep theirs: those
+   are fields, not buttons. */
 .inline-flex.items-center.justify-center.rounded-md,
 .inline-flex.items-center.justify-center.rounded-lg {
   border-radius: calc(infinity * 1px);
+  font-weight: 400;
 }
 
 /* "Did this page help you" card illustration: a page with a checkmark badge

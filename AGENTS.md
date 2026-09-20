@@ -83,6 +83,19 @@ import { basePath } from "@/lib/base-path";
 current tool produces. Older 1606x1088 shots are gone. Nothing here gets
 committed until the user asks for it explicitly.
 
+## Styling
+
+- **A button never carries a bolder weight.** No `font-medium`, `font-semibold`
+  or `font-bold` on a button, a link styled as one, or an icon button, in any
+  state: they read at the body weight, and the label earns attention from the
+  shape and the colour. The same goes for anything new that looks like a button.
+  fumadocs bakes `font-medium` into its `buttonVariants`, so `app/global.css`
+  overrides it on that class signature; do not add the class back at a call site.
+- Headings, chips and table headers are free to stay bold. The rule is about
+  buttons only.
+- **Buttons are pills** (`rounded-full`), set in the same rule. Fields keep their
+  radius: the search box and the tree picker are not buttons.
+
 ## Comments and commits
 
 Code comments are few and short, **hard cap about 3 lines per block**. No file-header essays,
