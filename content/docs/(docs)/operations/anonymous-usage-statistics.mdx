@@ -1,0 +1,81 @@
+---
+title: Anonymous usage statistics
+description: What a Deplo instance reports once a day, how to see it, and how to turn it off.
+---
+
+Deplo sends one anonymous **Usage report** a day to a service Deplo runs itself. The report
+carries versions, counts and feature switches. It carries nothing that names the instance,
+its servers, its people or its apps.
+
+The setting is **Anonymous usage statistics**, on **Settings -> Deplo -> General**. It is on
+by default, and any instance admin can turn it off at any moment.
+
+## What is sent
+
+Every field, as the report itself lists them. **See what would be sent** on the card shows the
+exact document your instance would send right now, built from the same code that sends it.
+
+| Field | What it holds |
+| --- | --- |
+| `schema` | The version of this list. A field added never bumps it; a field renamed or removed does |
+| `instanceId` | A random id, minted on the first send. Turning the switch off deletes it; turning it back on mints a new one, so the old history cannot be joined to the new |
+| `deploVersion` | The Deplo version this instance runs |
+| `expectedAgentVersion` | The server agent version this Deplo expects on its servers |
+| `installKind` | `plain`, or the platform Deplo took over from when the install was a migration |
+| `daysSinceFirstReport` | Whole days since the current id was minted |
+| `hosts` | One entry per server, at most 500: agent version, Docker version, CPU architecture, and whether it is the Deplo host, a build server, or import-only |
+| `counts` | Teams, users, servers, environments, previews and backup schedules, plus apps by source kind, databases by engine and backup destinations by kind |
+| `features` | Six switches: MCP in use, a two-factor policy on any team or role, any passkey, any git provider connected, any notification channel, Gravatar on |
+
+Never in a report: a hostname, an IP address, a domain, an email address, a username, an app
+name, a repository URL, a template name, an error message or a stack trace.
+
+## When it is sent
+
+- **Once a day at most.** The daily maintenance sweep sends a report when the last one is more
+  than 24 hours old. The service also accepts one report per instance id per 24 hours and
+  quietly drops the rest, so a clock that runs fast changes nothing.
+- **Never before setup is done.** The setup wizard says so on its last step, and no report leaves
+  until the instance has an owner.
+- **Never from a development build.**
+- **A failed send waits for the next sweep.** One line in the log, no retry loop.
+
+The report goes to `https://usage.deplo.build/v1/report` and nowhere else. The address is fixed,
+so blocking it at your firewall stops reports without touching templates or updates.
+
+## Turn it off
+
+<Steps>
+<Step>
+### Open the card
+
+**Settings -> Deplo -> General**, the **Anonymous usage statistics** card.
+</Step>
+<Step>
+### Flip the switch
+
+Off takes effect at once. Nothing more is sent, not even a final message, and the instance id
+is deleted. The change is recorded in **Activity**.
+</Step>
+</Steps>
+
+The switch is only for instance admins. A team seat cannot change it.
+
+### For a whole install
+
+Set the standard `DO_NOT_TRACK=1` in Deplo's environment. The card then shows the switch
+disabled with **Turned off by the install**. It is the only environment variable involved;
+there is no Deplo-specific one.
+
+## What Deplo keeps
+
+- The service stores the report and the time it arrived. It never stores the sender's address:
+  the per-address limits it applies live in memory and are forgotten on restart.
+- Raw reports are kept for 90 days. Daily aggregates are kept for good and are the only thing the
+  dashboard reads. There is no per-instance view.
+
+## Ask for erasure
+
+Open **See what would be sent** and copy the **instance id** shown under the report. Quote it in
+an issue on [our GitHub](https://github.com/DeploCloud/deplo/issues) and every report under that
+id is deleted. The id is random and names nothing, so posting it gives nothing away.
