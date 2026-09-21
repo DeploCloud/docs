@@ -154,7 +154,7 @@ same hostname and a **Path** of `/api`.
 | Field | What changes |
 | --- | --- |
 | **Domains name a container** | A domain routes to one Compose service. This field replaces the port override, because your file already declares the ports. |
-| **No rollbacks** | There is no single image Deplo built, so there is nothing to re-run. |
+| **No rollbacks** | There is no single image Deplo built, so there is nothing to re-run. The app header carries **Stop** and **Reload** in that slot instead. |
 | **No build server** | Same reason. |
 | **Storage names a service** | Every storage row says which service to mount into. A name your file does not contain is a hard error, never a silent remount. |
 | **Cron jobs name a service** | Blank means the stack's main container. |
