@@ -7,7 +7,7 @@ Deplo sends one anonymous **Usage report** a day to a service Deplo runs itself.
 carries versions, counts and feature switches. It carries nothing that names the instance,
 its servers, its people or its apps.
 
-The setting is **Anonymous usage statistics**, on **Settings -> Deplo -> General**. It is on
+The setting is **Anonymous usage statistics**, on **Settings -> Deplo -> Advanced**. It is on
 by default, and any instance admin can turn it off at any moment.
 
 ## What is sent
@@ -49,7 +49,7 @@ so blocking it at your firewall stops reports without touching templates or upda
 <Step>
 ### Open the card
 
-**Settings -> Deplo -> General**, the **Anonymous usage statistics** card.
+**Settings -> Deplo -> Advanced**, the **Anonymous usage statistics** card.
 </Step>
 <Step>
 ### Flip the switch
@@ -71,11 +71,55 @@ there is no Deplo-specific one.
 
 - The service stores the report and the time it arrived. It never stores the sender's address:
   the per-address limits it applies live in memory and are forgotten on restart.
-- Raw reports are kept for 90 days. Daily aggregates are kept for good and are the only thing the
-  dashboard reads. There is no per-instance view.
+- Raw reports are kept for **90 days**, then deleted. Daily aggregates are kept for good; they
+  are totals across all instances and hold no instance id.
+- While a raw report is kept, Deplo can look at the reports of **one instance id** over time, to
+  spot a version or a setup that keeps failing. That view shows the fields above and nothing
+  else, and it cannot tell whose instance it is.
 
-## Ask for erasure
+## Privacy notice
 
-Open **See what would be sent** and copy the **instance id** shown under the report. Quote it in
-an issue on [our GitHub](https://github.com/DeploCloud/deplo/issues) and every report under that
-id is deleted. The id is random and names nothing, so posting it gives nothing away.
+This section is the information the GDPR (articles 13 and 14) asks for.
+
+| Item | Detail |
+| --- | --- |
+| **Controller** | Kevin Paratore, domiciled in Italy, who maintains Deplo |
+| **Contact** | [privacy@deplo.build](mailto:privacy@deplo.build) |
+| **Purpose** | Knowing how many instances exist, on which versions and hosts, and which features are used, to plan releases and server agent rollouts |
+| **Legal basis** | Legitimate interest (article 6(1)(f)): keeping Deplo working across the versions people actually run. The report is built so that it names no one, and one switch stops it |
+| **What is processed** | The fields listed in [What is sent](#what-is-sent). The sender's IP address is seen while the request is answered, and is never written anywhere |
+| **Where** | A server run for Deplo in the Netherlands, inside the EU. No third-party analytics service and no transfer outside the EU |
+| **Who receives it** | Only Deplo's maintainer and the hosting provider that runs that server for Deplo. Reports are never sold or shared |
+| **How long** | 90 days for raw reports, as above. Aggregates keep no instance id |
+| **Required?** | No. Turning the switch off, or setting `DO_NOT_TRACK=1`, changes nothing else in Deplo |
+| **Automated decisions** | None |
+
+### Your rights
+
+- **Object** at any time: turn the switch off. It takes effect at once.
+- **Access** or **erasure**: write to [privacy@deplo.build](mailto:privacy@deplo.build) with your
+  instance id (see below). Every report under that id is sent to you or deleted.
+- **Complain** to a data protection authority: in Italy the
+  [Garante per la protezione dei dati personali](https://www.garanteprivacy.it), or the one where you live or work.
+
+## Ask for access or erasure
+
+<Callout type="warn" title="Copy the id before you turn the switch off">
+Turning the switch off deletes the instance id from your instance. Without it, nobody can tell
+which reports were yours.
+</Callout>
+
+<Steps>
+<Step>
+### Copy your instance id
+
+Open **See what would be sent** on the card and copy the **instance id** shown under the report.
+</Step>
+<Step>
+### Write to us
+
+Send it to [privacy@deplo.build](mailto:privacy@deplo.build), saying whether you want a copy of
+your reports or want them deleted. The id is random and names nothing, so sending it gives
+nothing away.
+</Step>
+</Steps>
