@@ -13,7 +13,7 @@ export function IsolationDiagram() {
             label: "deplo-traefik",
             sub: "joins every network",
             icon: "Waypoints",
-            art: "router",
+            art: "traefik",
             accent: true,
           },
         },

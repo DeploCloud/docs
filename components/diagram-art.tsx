@@ -1,4 +1,12 @@
 import type { ReactNode } from "react";
+import {
+  siDocker,
+  siGit,
+  siLetsencrypt,
+  siPostgresql,
+  siTraefikproxy,
+  type SimpleIcon,
+} from "simple-icons";
 
 const A = "var(--color-blue-400)";
 
@@ -28,7 +36,26 @@ function Art({ children }: { children: ReactNode }) {
   );
 }
 
+// Real product logos (Simple Icons, CC0), monochrome, only to name the product.
+function Logo({ icon }: { icon: SimpleIcon }) {
+  return (
+    <Art>
+      <path
+        d={icon.path}
+        transform="translate(16 16)"
+        className="fill-fd-foreground"
+        stroke="none"
+      />
+    </Art>
+  );
+}
+
 export const ART = {
+  docker: <Logo icon={siDocker} />,
+  git: <Logo icon={siGit} />,
+  letsencrypt: <Logo icon={siLetsencrypt} />,
+  postgres: <Logo icon={siPostgresql} />,
+  traefik: <Logo icon={siTraefikproxy} />,
   dashboard: (
     <Art>
       <rect x="9" y="12" width="38" height="30" rx="4" />

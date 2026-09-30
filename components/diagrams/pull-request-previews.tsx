@@ -13,6 +13,7 @@ export function PreviewSourcesDiagram() {
             label: "Pull request #42",
             sub: "from your repository",
             icon: "GitPullRequest",
+            art: "git",
           },
         },
         {
@@ -42,6 +43,7 @@ export function PreviewSourcesDiagram() {
             label: "Pull request #43",
             sub: "from a fork",
             icon: "GitFork",
+            art: "git",
           },
         },
         {
