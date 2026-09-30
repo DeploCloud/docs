@@ -118,12 +118,12 @@ fills in any variables.
 | Message | What to do |
 | --- | --- |
 | This button's link is broken: it has to point at an https compose file. | The link after `compose=` is missing or not `https://`. |
-| `<host>` has no file at this address. | Check the link, the tag and that the repository is public. |
+| `github.com` has no file at this address. | Check the link, the tag and that the repository is public. |
 | This file isn't a Compose file: it has no services. | The link points at a web page, not at the file. Link the file itself. |
 | The "web" service builds from source, which needs the repository. | Publish an image and use `image:`, or deploy from Git. |
 | The compose file is too large (256 KiB max). | Trim it, or split it into several apps. |
 | The compose URL must not point at a private or internal address | The file has to be on the public internet. |
-| `<host>` took too long to answer. | Try again; the file host is slow or down. |
+| `github.com` took too long to answer. | Try again; the file host is slow or down. |
 
 ## Next steps
 
