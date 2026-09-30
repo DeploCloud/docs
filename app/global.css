@@ -131,6 +131,33 @@ img {
   }
 }
 
+.has-tabs-indicator {
+  position: relative;
+}
+
+.has-tabs-indicator [role="tab"][data-state="active"] {
+  border-color: transparent;
+}
+
+.tabs-active-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background-color: var(--color-fd-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 200ms ease,
+    width 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabs-active-indicator {
+    transition: none;
+  }
+}
+
 /* drop the icon fumadocs renders next to "On this page" in the TOC header */
 #toc-title svg {
   display: none;
