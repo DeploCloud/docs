@@ -352,3 +352,25 @@ h4 {
 .diagram .react-flow__node {
   cursor: default;
 }
+
+.diagram .diagram-accent {
+  box-shadow: 0 0 24px -6px color-mix(in srgb, var(--color-blue-400) 45%, transparent);
+}
+
+.diagram .react-flow__controls {
+  --xy-controls-button-background-color: var(--color-fd-card);
+  --xy-controls-button-background-color-hover: var(--color-fd-accent);
+  --xy-controls-button-color: var(--color-fd-foreground);
+  --xy-controls-button-color-hover: var(--color-fd-foreground);
+  --xy-controls-button-border-color: var(--color-fd-border);
+  --xy-controls-box-shadow: none;
+  overflow: hidden;
+  border: 1px solid var(--color-fd-border);
+  border-radius: var(--radius-lg);
+}
+
+.diagram .react-flow__controls-button {
+  width: 24px;
+  height: 24px;
+  padding: 5px;
+}

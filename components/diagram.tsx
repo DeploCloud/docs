@@ -3,6 +3,7 @@
 import "@xyflow/react/dist/style.css";
 import { useEffect, useRef, useState } from "react";
 import {
+  Controls,
   Handle,
   MarkerType,
   Position,
@@ -18,6 +19,7 @@ export type DiagramNodeData = {
   label: string;
   sub?: string;
   icon?: keyof typeof icons;
+  accent?: boolean;
 };
 
 const SIDES = [
@@ -30,8 +32,14 @@ const SIDES = [
 function Box({ data }: NodeProps<Node<DiagramNodeData>>) {
   const Icon = data.icon ? icons[data.icon] : null;
   return (
-    <div className="flex w-[220px] items-center gap-2.5 rounded-xl border border-fd-foreground/15 bg-fd-card px-3.5 py-2.5 shadow-lg">
-      {Icon && <Icon className="size-4 shrink-0 text-fd-muted-foreground" />}
+    <div
+      className={`flex w-[220px] items-center gap-2.5 rounded-xl border bg-fd-card px-3.5 py-2.5 shadow-lg ${data.accent ? "diagram-accent border-blue-400/50" : "border-fd-foreground/15"}`}
+    >
+      {Icon && (
+        <Icon
+          className={`size-4 shrink-0 ${data.accent ? "text-blue-400" : "text-fd-muted-foreground"}`}
+        />
+      )}
       <div className="leading-tight">
         <div className="text-sm font-medium text-fd-foreground">
           {data.label}
@@ -80,7 +88,9 @@ function styleEdge({ variant = "plain", ...edge }: DiagramEdge): Edge {
   const never = variant === "never";
   const color = never
     ? "var(--color-fd-error)"
-    : "var(--color-fd-muted-foreground)";
+    : variant === "flow"
+      ? "var(--color-blue-400)"
+      : "var(--color-fd-muted-foreground)";
   return {
     type: "smoothstep",
     animated: variant === "flow",
@@ -119,7 +129,7 @@ function aspectOf(nodes: Node<DiagramNodeData>[]) {
       Math.max(y1, y + h),
     ];
   }
-  return (x1 - x0 + 120) / (y1 - y0 + 120);
+  return (x1 - x0 + 120) / (y1 - y0 + 180);
 }
 
 export function Diagram({
@@ -130,11 +140,17 @@ export function Diagram({
   edges: DiagramEdge[];
 }) {
   const box = useRef<HTMLDivElement>(null);
+  const [finePointer, setFinePointer] = useState(false);
   const [flow, setFlow] = useState<ReactFlowInstance<
     Node<DiagramNodeData>,
     Edge
   > | null>(null);
   const aspect = aspectOf(nodes);
+
+  // Drag-to-pan only with a mouse: on touch it would swallow the page scroll.
+  useEffect(() => {
+    setFinePointer(matchMedia("(pointer: fine)").matches);
+  }, []);
 
   useEffect(() => {
     if (!flow || !box.current) return;
@@ -157,13 +173,20 @@ export function Diagram({
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable={false}
-          panOnDrag={false}
+          panOnDrag={finePointer}
           zoomOnScroll={false}
-          zoomOnPinch={false}
-          zoomOnDoubleClick={false}
+          zoomOnPinch
+          zoomOnDoubleClick
           preventScrolling={false}
           proOptions={{ hideAttribution: true }}
-        />
+        >
+          <Controls
+            showInteractive={false}
+            fitViewOptions={{ padding: 0.08 }}
+            position="bottom-right"
+            orientation="horizontal"
+          />
+        </ReactFlow>
       </div>
     </div>
   );
