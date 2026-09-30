@@ -88,11 +88,11 @@ committed until the user asks for it explicitly.
 
 ## Styling
 
-- **Primary buttons are semibold, every other button is regular.** No
-  `font-medium` anywhere on a button, a link styled as one, or an icon button.
-  fumadocs bakes `font-medium` into its `buttonVariants`, so `app/global.css`
-  sets 400 on that class signature and 600 when it carries `bg-fd-primary`; do
-  not set a weight at a call site.
+- **Fonts match deplo.build exactly.** Funnel Sans 400/500, Funnel Display
+  500/600/700 for headings, `antialiased`, and `font-synthesis-weight: none` so a
+  missing cut never renders as a fake bold halo. Primary buttons are 500 (as on
+  the site), every other button 400, both set in `app/global.css`; do not set a
+  weight at a call site.
 - Headings, chips and table headers are free to stay bold. The rule is about
   buttons only.
 - **Buttons are pills** (`rounded-full`), set in the same rule. Fields keep their

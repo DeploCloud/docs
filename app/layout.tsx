@@ -15,7 +15,7 @@ const funnelDisplay = Funnel_Display({
 const funnelSans = Funnel_Sans({
   variable: "--font-funnel-sans",
   subsets: ["latin"],
-  weight: ["300"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${funnelDisplay.variable} ${funnelSans.variable} selection:bg-white/10`}
+      className={`${funnelDisplay.variable} ${funnelSans.variable} antialiased selection:bg-white/10`}
       suppressHydrationWarning
     >
       <Script

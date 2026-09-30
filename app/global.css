@@ -158,7 +158,21 @@ summary,
 }
 
 .inline-flex.items-center.justify-center.bg-fd-primary {
-  font-weight: 600;
+  font-weight: 500;
+}
+
+/* Same fonts as deplo.build: Funnel Sans ships 400/500 only, so never let the
+   browser fake a bolder cut (the blurry halo), and headings use Funnel Display. */
+html {
+  font-synthesis-weight: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
 }
 
 /* "Did this page help you" card illustration: a page with a checkmark badge
