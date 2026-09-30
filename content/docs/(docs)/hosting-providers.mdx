@@ -1,0 +1,158 @@
+---
+title: Offer Deplo to your customers
+description: Ship Deplo as a VPS template that installs itself on first boot and hands the customer a ready setup link.
+icon: Building2
+---
+
+import { Download, Terminal, Globe } from "lucide-react";
+
+A VPS template with Deplo takes three things: a clean base image, one cloud-init line, and a
+link you build from the server's IP. No log to read, no key to copy.
+
+<Steps>
+<Step>
+
+### Create the base template
+
+Start from a clean, minimal image. Recommended:
+
+| OS | Versions |
+| --- | --- |
+| <Os name="ubuntu">Ubuntu</Os> | 24.04 LTS, 26.04 LTS |
+| <Os name="debian">Debian</Os> | 12, 13 |
+
+- `x86-64` or `arm64`, with `systemd`.
+- Ports `80` and `443` open from the internet.
+- **2 cores, 4 GB of RAM, 30 GB of disk** as the smallest plan, 4 cores and 8 GB as the
+  comfortable one. See [what you need](/getting-started/install#what-you-need).
+
+</Step>
+<Step>
+
+### Run the installer on first boot
+
+Add this to the template's cloud-init user data:
+
+```yaml
+#cloud-config
+runcmd:
+  - curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
+```
+
+<Callout type="warn" title="Never install before the snapshot">
+  The installer generates the instance's `DEPLO_SECRET` and reads the public IP when it runs.
+  Install Deplo and then snapshot the image, and every customer shares the same secret and the
+  wrong address. Always install on the customer's VM, at first boot.
+</Callout>
+
+</Step>
+<Step>
+
+### Why `--public-setup`
+
+Without it, the setup link carries a random key that only appears in the install output
+(`/var/log/deplo-install.log`), so you would have to read the log of every VM.
+
+With `--public-setup` there is no key: the link is always `https://<panel>/setup`, and you can
+build it without touching the server.
+
+<Callout type="info">
+  Whoever opens `/setup` first creates the Owner account. Send the link only to the customer,
+  as soon as the VM is up.
+</Callout>
+
+</Step>
+<Step>
+
+### Build the customer's link
+
+`deplo.site` is wildcard DNS: a name that carries an IPv4 in hexadecimal resolves to that IP,
+with no DNS setup. So the panel address is predictable:
+
+```
+https://deplo-<ip-in-hex>.deplo.site/setup
+```
+
+Each octet becomes two hex digits. `203.0.113.10` gives `cb00710a`:
+
+```
+https://deplo-cb00710a.deplo.site/setup
+```
+
+<Tabs items={['Bash', 'JavaScript', 'PHP']}>
+<Tab value="Bash">
+
+```bash
+IP=203.0.113.10
+echo "https://deplo-$(printf '%02x' ${IP//./ }).deplo.site/setup"
+```
+
+</Tab>
+<Tab value="JavaScript">
+
+```js
+const setupUrl = (ip) =>
+  `https://deplo-${ip.split(".").map((n) => (+n).toString(16).padStart(2, "0")).join("")}.deplo.site/setup`;
+```
+
+</Tab>
+<Tab value="PHP">
+
+```php
+$url = "https://deplo-" . bin2hex(inet_pton($ip)) . ".deplo.site/setup";
+```
+
+</Tab>
+</Tabs>
+
+</Step>
+<Step>
+
+### Send it
+
+Put the link in the welcome email or the VPS detail page, next to the IP and root password.
+The install takes a few minutes after boot: until then the link does not answer yet.
+
+Later the customer can move the panel to their own domain from **Settings -> Deplo**. See
+[the panel's own address](/operations/panel-address-and-certificates).
+
+</Step>
+</Steps>
+
+## Use your own wildcard domain
+
+`deplo.site` is optional. To put the panel under your brand, run wildcard DNS on a domain of
+yours and pass the hostname with `--domain`, filling in the VM's IP when you render the user
+data:
+
+```yaml
+#cloud-config
+runcmd:
+  - curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain deplo-cb00710a.vps.example.com
+```
+
+The link becomes `https://deplo-cb00710a.vps.example.com/setup`, with a Let's Encrypt
+certificate.
+
+- **We recommend self-hosting [nip.io](https://github.com/exentriquesolutions/nip.io)**: it
+  resolves the hex form of the IP out of the box. Point an `NS` record for
+  `vps.example.com` at it.
+- **Even better, host it on Deplo itself** when you can, on a server of yours: it is a DNS
+  server, so that server needs port `53` open on UDP and TCP.
+- The generated `deplo.site` address stays on as a backup. The customer can turn it off from
+  **Settings -> Deplo**.
+
+## Become a partner
+
+<Callout type="info" title="Let's work together">
+  We are always looking for hosting providers to partner with. If you offer Deplo, or want to,
+  write to [partnerships@deplo.build](mailto:partnerships@deplo.build).
+</Callout>
+
+## See also
+
+<Cards>
+  <Card icon={<Download className="text-blue-400" />} title="Installation" description="Requirements and what the installer changes" href="/getting-started/install" />
+  <Card icon={<Terminal className="text-amber-400" />} title="install.sh" description="Every flag of the installer" href="/reference/installers/install" />
+  <Card icon={<Globe className="text-green-400" />} title="The panel's own address" description="Move the panel to a custom domain" href="/operations/panel-address-and-certificates" />
+</Cards>
