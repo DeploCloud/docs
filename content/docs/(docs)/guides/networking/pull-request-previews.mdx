@@ -7,6 +7,7 @@ import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
 import { GitBranch, Variable, Globe } from "lucide-react";
+import { PreviewSourcesDiagram } from "@/components/diagrams/pull-request-previews";
 
 Reviewers click a link instead of checking out a branch. A preview is a
 separate stack, `deplo-<slug>__pr-<n>`, with its own containers, volumes and
@@ -147,6 +148,8 @@ The list updates on its own:
   [preview override](/guides/config/environment-variables).
 - **A fork preview waits for a human**, unless **Fork pull requests** is set
   to build them automatically.
+
+<PreviewSourcesDiagram />
 
 ## Over the limit
 

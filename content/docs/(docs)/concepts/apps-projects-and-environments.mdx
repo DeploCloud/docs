@@ -7,10 +7,13 @@ import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
 import { Users, ShieldCheck, Variable, Network } from "lucide-react";
+import { HierarchyDiagram } from "@/components/diagrams/apps-projects-and-environments";
 
 An **App** is the thing that runs. A **Folder** groups apps. A **Project** is a folder with
 environments. An **Environment** is one isolated copy of a project's apps. None of this is
 required: a flat list of apps with no folders is a normal setup.
+
+<HierarchyDiagram />
 
 ## App
 

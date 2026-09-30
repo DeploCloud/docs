@@ -4,6 +4,7 @@ description: Build the image on a dedicated host and ship it to the server that 
 ---
 
 import { Tags, Hammer } from "lucide-react";
+import { BuildServerDiagram } from "@/components/diagrams/build-servers";
 
 <Callout type="info" title="Beta">
 This feature is currently beta/experimental and subject to change. It is
@@ -19,6 +20,8 @@ but no Traefik and never appears as a deploy target.
 
 The builder sends the image to the target host through the control plane.
 The deploy uses a slot in the builder's queue.
+
+<BuildServerDiagram />
 
 Build logs still belong to the app. Read them where you always do.
 

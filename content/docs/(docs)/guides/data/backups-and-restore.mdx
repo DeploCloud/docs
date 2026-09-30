@@ -7,6 +7,7 @@ import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
 import { LifeBuoy, Server, Database } from "lucide-react";
+import { BackupDiagram } from "@/components/diagrams/backups-and-restore";
 
 Scheduled, encrypted copies of a database or an app, sent to an S3 bucket or to another server's
 disk, with a restore that puts them back.
@@ -17,6 +18,8 @@ disk, with a restore that puts them back.
 
 The backup runs on the server that holds the data. It is compressed and encrypted with `age`
 before it leaves the server, with one key pair per destination. Nothing in between can read it.
+
+<BackupDiagram />
 
 ## Add a destination
 

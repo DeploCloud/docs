@@ -4,6 +4,7 @@ description: Every environment gets its own private network, so a service name m
 ---
 
 import { Boxes, Database, FolderTree, Layers } from "lucide-react";
+import { IsolationDiagram } from "@/components/diagrams/network-isolation";
 
 An **environment** gets a private Docker network named
 `deplo-env-<environment id>`. Apps and managed databases there reach each
@@ -14,6 +15,8 @@ network instead. Pull request previews use an isolated
 Folders do not create a network boundary. To separate workloads, put them in
 different environments. Deplo derives the network from the app's location;
 you never create or select it.
+
+<IsolationDiagram />
 
 ## What sees what
 
