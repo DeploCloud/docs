@@ -51,7 +51,10 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
 ### Build the customer's link
 
 `deplo.site` is wildcard DNS: a name that carries an IPv4 in hexadecimal resolves to that IP,
-with no DNS setup. So the panel address is predictable:
+with no DNS setup. Want to use your own wildcard domain? See
+[Use your own wildcard domain](#use-your-own-wildcard-domain).
+
+So the panel address is predictable:
 
 ```
 https://deplo-<ip-in-hex>.deplo.site/setup
