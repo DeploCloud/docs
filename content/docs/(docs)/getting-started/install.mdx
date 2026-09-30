@@ -46,10 +46,11 @@ curl -fsSL https://deplo.build/install.sh | \
 </Tab>
 </Tabs>
 
-<Callout type="warn" title="Already running another control panel?">
-  Two panels cannot share ports 80 and 443, so on a machine that has one the installer offers to
-  take it over instead: it brings your projects across, then removes the old panel when you say
-  so. Answer no and nothing is installed. See [Migrations](/migrations).
+<Callout type="info" title="Already have Deplo running?">
+  Don't run this script on a second machine. To add a server for your apps, a
+  [build server](/advanced/build-servers) or a backup host, paste the command from
+  **Settings -> Servers** on it instead. See [Add a server](/operations/servers/add-a-server)
+  and [Server roles](/advanced/server-roles).
 </Callout>
 
 ## What you need
