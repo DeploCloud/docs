@@ -6,7 +6,7 @@ icon: Building2
 
 import { Download, Terminal, Globe } from "lucide-react";
 
-A VPS template with Deplo takes three things: a clean base image, one cloud-init line, and a
+A VPS template with Deplo takes three things: a clean base image, one command, and a
 link you build from the server's IP. No log to read, no key to copy.
 
 <Steps>
@@ -31,12 +31,10 @@ Start from a clean, minimal image. Recommended:
 
 ### Run the installer on first boot
 
-Add this to the template's cloud-init user data:
+Chain this command to your provisioning, right after the operating system install finishes:
 
-```yaml
-#cloud-config
-runcmd:
-  - curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
+```bash
+curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
 ```
 
 <Callout type="warn" title="Never install before the snapshot">
@@ -122,8 +120,7 @@ Later the customer can move the panel to their own domain from **Settings -> Dep
 ## Use your own wildcard domain
 
 `deplo.site` is optional. To put the panel under your brand, run wildcard DNS on a domain of
-yours and pass the hostname with `--domain`, filling in the VM's IP when you render the user
-data:
+yours and pass the hostname with `--domain`, filling in the VM's IP:
 
 <Callout type="warn" title="Use a dedicated domain">
   Keep the wildcard on a domain separate from your main one, the way Deplo keeps `deplo.site`
@@ -131,10 +128,8 @@ data:
   cookies stay away from your website and your billing panel.
 </Callout>
 
-```yaml
-#cloud-config
-runcmd:
-  - curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain deplo-cb00710a.example-vps.net
+```bash
+curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain deplo-cb00710a.example-vps.net
 ```
 
 The link becomes `https://deplo-cb00710a.example-vps.net/setup`, with a Let's Encrypt
