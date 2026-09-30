@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className="relative flex min-h-screen flex-1 flex-col items-center justify-center gap-6 px-6 py-24 text-center">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-black px-6 py-24 text-center">
       <div className="deplo-aurora pointer-events-none fixed inset-x-0 bottom-0 -z-10 h-[55vh] overflow-hidden">
         <span className="deplo-blob" />
         <span className="deplo-blob" />
