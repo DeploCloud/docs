@@ -13,13 +13,17 @@ import {
   type NodeProps,
   type ReactFlowInstance,
 } from "@xyflow/react";
-import { icons } from "lucide-react";
+import { icons, Maximize2, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { buttonVariants } from "fumadocs-ui/components/ui/button";
+import { ART, type ArtName } from "@/components/diagram-art";
 
 export type DiagramNodeData = {
   label: string;
   sub?: string;
   icon?: keyof typeof icons;
   accent?: boolean;
+  art?: ArtName;
 };
 
 const SIDES = [
@@ -33,13 +37,15 @@ function Box({ data }: NodeProps<Node<DiagramNodeData>>) {
   const Icon = data.icon ? icons[data.icon] : null;
   return (
     <div
-      className={`flex w-[220px] items-center gap-2.5 rounded-xl border bg-fd-card px-3.5 py-2.5 shadow-lg ${data.accent ? "diagram-accent border-blue-400/50" : "border-fd-foreground/15"}`}
+      className={`flex min-h-[70px] w-[240px] items-center gap-3 rounded-xl border bg-fd-card px-3 py-2.5 shadow-lg ${data.accent ? "diagram-accent border-blue-400/50" : "border-fd-foreground/15"}`}
     >
-      {Icon && (
-        <Icon
-          className={`size-4 shrink-0 ${data.accent ? "text-blue-400" : "text-fd-muted-foreground"}`}
-        />
-      )}
+      {data.art
+        ? ART[data.art]
+        : Icon && (
+            <Icon
+              className={`size-4 shrink-0 ${data.accent ? "text-blue-400" : "text-fd-muted-foreground"}`}
+            />
+          )}
       <div className="leading-tight">
         <div className="text-sm font-medium text-fd-foreground">
           {data.label}
@@ -120,8 +126,8 @@ function aspectOf(nodes: Node<DiagramNodeData>[]) {
     const parent = n.parentId ? byId.get(n.parentId) : undefined;
     const x = n.position.x + (parent?.position.x ?? 0);
     const y = n.position.y + (parent?.position.y ?? 0);
-    const w = Number(n.style?.width ?? 220);
-    const h = Number(n.style?.height ?? 60);
+    const w = Number(n.style?.width ?? 240);
+    const h = Number(n.style?.height ?? 70);
     [x0, y0, x1, y1] = [
       Math.min(x0, x),
       Math.min(y0, y),
@@ -129,8 +135,66 @@ function aspectOf(nodes: Node<DiagramNodeData>[]) {
       Math.max(y1, y + h),
     ];
   }
-  return (x1 - x0 + 120) / (y1 - y0 + 180);
+  return (x1 - x0 + 120) / (y1 - y0 + 120);
 }
+
+function Flow({
+  nodes,
+  edges,
+  interactive,
+}: {
+  nodes: Node<DiagramNodeData>[];
+  edges: DiagramEdge[];
+  interactive: boolean;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  const [flow, setFlow] = useState<ReactFlowInstance<
+    Node<DiagramNodeData>,
+    Edge
+  > | null>(null);
+
+  useEffect(() => {
+    if (!flow || !box.current) return;
+    const ro = new ResizeObserver(() => flow.fitView(FIT));
+    ro.observe(box.current);
+    return () => ro.disconnect();
+  }, [flow]);
+
+  return (
+    <div ref={box} className="size-full">
+      <ReactFlow
+        nodes={nodes.map((n) => ({ type: "box", ...n }))}
+        edges={edges.map(styleEdge)}
+        nodeTypes={nodeTypes}
+        onInit={setFlow}
+        fitView
+        fitViewOptions={FIT}
+        minZoom={0.1}
+        maxZoom={2.5}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        panOnDrag={interactive}
+        zoomOnScroll={interactive}
+        zoomOnPinch={interactive}
+        zoomOnDoubleClick={interactive}
+        preventScrolling={interactive}
+        proOptions={{ hideAttribution: true }}
+      >
+        {interactive && (
+          <Controls
+            showInteractive={false}
+            fitViewOptions={FIT}
+            position="bottom-right"
+            orientation="horizontal"
+          />
+        )}
+      </ReactFlow>
+    </div>
+  );
+}
+
+const FIT = { padding: 0.08, maxZoom: 1.25 };
 
 export function Diagram({
   nodes,
@@ -139,55 +203,56 @@ export function Diagram({
   nodes: Node<DiagramNodeData>[];
   edges: DiagramEdge[];
 }) {
-  const box = useRef<HTMLDivElement>(null);
-  const [finePointer, setFinePointer] = useState(false);
-  const [flow, setFlow] = useState<ReactFlowInstance<
-    Node<DiagramNodeData>,
-    Edge
-  > | null>(null);
-  const aspect = aspectOf(nodes);
-
-  // Drag-to-pan only with a mouse: on touch it would swallow the page scroll.
-  useEffect(() => {
-    setFinePointer(matchMedia("(pointer: fine)").matches);
-  }, []);
+  const [full, setFull] = useState(false);
 
   useEffect(() => {
-    if (!flow || !box.current) return;
-    const ro = new ResizeObserver(() => flow.fitView({ padding: 0.08 }));
-    ro.observe(box.current);
-    return () => ro.disconnect();
-  }, [flow]);
+    if (!full) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
+    document.addEventListener("keydown", onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [full]);
 
   return (
-    <div className="not-prose diagram my-6 overflow-x-auto rounded-xl border bg-fd-background">
-      <div ref={box} className="min-w-[720px]" style={{ aspectRatio: aspect }}>
-        <ReactFlow
-          nodes={nodes.map((n) => ({ type: "box", ...n }))}
-          edges={edges.map(styleEdge)}
-          nodeTypes={nodeTypes}
-          onInit={setFlow}
-          fitView
-          fitViewOptions={{ padding: 0.08 }}
-          minZoom={0.1}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          panOnDrag={finePointer}
-          zoomOnScroll={false}
-          zoomOnPinch
-          zoomOnDoubleClick
-          preventScrolling={false}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Controls
-            showInteractive={false}
-            fitViewOptions={{ padding: 0.08 }}
-            position="bottom-right"
-            orientation="horizontal"
-          />
-        </ReactFlow>
+    <div className="not-prose diagram group relative my-6">
+      <div className="overflow-x-auto rounded-xl border bg-fd-background">
+        <div className="min-w-[720px]" style={{ aspectRatio: aspectOf(nodes) }}>
+          <Flow nodes={nodes} edges={edges} interactive={false} />
+        </div>
       </div>
+      <button
+        type="button"
+        onClick={() => setFull(true)}
+        aria-label="Open the diagram full screen"
+        className={`${buttonVariants({ color: "secondary", size: "icon-sm" })} absolute right-3 bottom-3 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100`}
+      >
+        <Maximize2 />
+      </button>
+      {full &&
+        createPortal(
+          <div
+            role="dialog"
+            aria-modal
+            aria-label="Diagram"
+            className="not-prose diagram fixed inset-0 z-[100] bg-fd-background"
+          >
+            <Flow nodes={nodes} edges={edges} interactive />
+            <button
+              type="button"
+              onClick={() => setFull(false)}
+              aria-label="Close"
+              autoFocus
+              className={`${buttonVariants({ color: "secondary", size: "icon-sm" })} absolute top-4 right-4 z-10`}
+            >
+              <X />
+            </button>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

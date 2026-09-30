@@ -18,6 +18,7 @@ export function PartsDiagram() {
             label: "Control plane",
             sub: "decides",
             icon: "LayoutDashboard",
+            art: "dashboard",
             accent: true,
           },
         },
@@ -25,7 +26,7 @@ export function PartsDiagram() {
           id: "srv",
           type: "frame",
           position: { x: 640, y: -45 },
-          style: { width: 600, height: 150 },
+          style: { width: 640, height: 150 },
           data: { label: "Every server" },
         },
         {
@@ -36,6 +37,7 @@ export function PartsDiagram() {
             label: "deplo-agent",
             sub: "executes",
             icon: "Cpu",
+            art: "terminal",
             accent: true,
           },
         },
@@ -47,6 +49,7 @@ export function PartsDiagram() {
             label: "Docker",
             sub: "containers, volumes",
             icon: "Container",
+            art: "containers",
           },
         },
       ]}
@@ -115,6 +118,7 @@ export function TraefikDiagram() {
             label: "deplo-traefik",
             sub: "routes, TLS",
             icon: "Waypoints",
+            art: "router",
             accent: true,
           },
         },
@@ -188,7 +192,7 @@ export function DataDiagram() {
           id: "cpf",
           type: "frame",
           position: { x: 0, y: 0 },
-          style: { width: 280, height: 220 },
+          style: { width: 300, height: 240 },
           data: { label: "Control plane" },
         },
         {
@@ -205,6 +209,7 @@ export function DataDiagram() {
             label: "Postgres",
             sub: "apps, teams, secrets",
             icon: "Database",
+            art: "database",
             accent: true,
           },
         },
@@ -212,7 +217,7 @@ export function DataDiagram() {
           id: "srvf",
           type: "frame",
           position: { x: 400, y: 0 },
-          style: { width: 280, height: 220 },
+          style: { width: 300, height: 240 },
           data: { label: "Your servers" },
         },
         {
@@ -229,6 +234,7 @@ export function DataDiagram() {
             label: "Docker volumes",
             sub: "your app data",
             icon: "HardDrive",
+            art: "volumes",
             accent: true,
           },
         },
@@ -296,16 +302,18 @@ export function SecretsDiagram() {
             label: "Control plane",
             sub: "decrypts at deploy",
             icon: "KeyRound",
+            art: "key",
             accent: true,
           },
         },
         {
           id: "pg",
-          position: { x: 680, y: 0 },
+          position: { x: 720, y: 0 },
           data: {
             label: "Postgres",
             sub: "encrypted at rest",
             icon: "Database",
+            art: "database",
           },
         },
         {
@@ -319,7 +327,7 @@ export function SecretsDiagram() {
         },
         {
           id: "app",
-          position: { x: 680, y: 160 },
+          position: { x: 720, y: 160 },
           data: {
             label: "Your container",
             sub: "gets the values",
