@@ -1,43 +1,22 @@
 ---
 title: Deploy button
-description: Let anyone deploy your project on their own Deplo, straight from your README.
+description: One link in your README deploys your project on the reader's own Deplo.
 ---
 
 import { Layers, LayoutTemplate } from "lucide-react";
 
-A **Deploy on Deplo** button in a README opens the reader's own Deplo with your stack already
-filled in. They check it and click **Deploy**.
+The **Deploy on Deplo** button puts your project one click away from anyone who runs Deplo. It
+opens **their** Deplo, on **their** server, with your stack already filled in.
 
-## Add the button
+<DeployButton compose="https://github.com/DeploCloud/templates/blob/main/src/templates/actual-budget/default/docker-compose.yml" />
 
-<Steps>
-<Step>
+Try it: the button above deploys [Actual Budget](https://actualbudget.org) on your Deplo.
 
-### Commit a `docker-compose.yml`
+## Quick start
 
-Every service needs an `image:`. See [Limits](#limits).
+Copy a snippet and put the link to your `docker-compose.yml` after `compose=`.
 
-</Step>
-<Step>
-
-### Copy its link, pinned to a tag or a commit
-
-Open the file on GitHub and copy the address, with a tag or commit in place of the branch:
-
-```
-https://github.com/acme/app/blob/v1.2.0/docker-compose.yml
-```
-
-The file is read when someone clicks, so a branch link deploys whatever is on the branch that day.
-
-</Step>
-<Step>
-
-### Paste the snippet
-
-Put your link after `compose=`:
-
-<Tabs items={["Markdown", "HTML"]}>
+<Tabs items={["Markdown", "HTML", "URL"]}>
 <Tab value="Markdown">
 
 ```md
@@ -54,34 +33,74 @@ Put your link after `compose=`:
 ```
 
 </Tab>
+<Tab value="URL">
+
+```
+https://deplo.build/deploy?compose=https://github.com/acme/app/blob/v1.2.0/docker-compose.yml
+```
+
+</Tab>
 </Tabs>
 
-If your link has its own `?` or `&`, URL-encode it.
+That is the whole setup: one parameter, no account, nothing to register.
+
+## What happens on click
+
+<Steps>
+<Step>
+
+### deplo.build finds their Deplo
+
+The first time, it asks for the address of their Deplo, like `deplo.acme.com`. After that, a
+3-second countdown and they are on their way, with **Change instance** and **Cancel** to stop it.
+
+</Step>
+<Step>
+
+### Their Deplo reads your files
+
+It fetches your `docker-compose.yml`, plus a `template.toml` and a logo if they sit next to it.
+They sign in if needed, and land in the new-app wizard of the last team they used.
+
+</Step>
+<Step>
+
+### They review and deploy
+
+The wizard is the one a [template](/guides/deploy/from-template) opens, marked **Not from the
+Deplo catalog**, with the compose file open to read. Nothing is created until they click
+**Deploy**.
 
 </Step>
 </Steps>
 
-## What the reader sees
+## Parameters
 
-1. **The first time**, deplo.build asks for the address of their Deplo, like `deplo.acme.com`.
-2. **A 3-second countdown**, then their Deplo opens. They can change the address or cancel.
-3. **They sign in if needed** and land in the new-app wizard of the last team they used, with a
-   **Not from the Deplo catalog** warning and the compose file open to read.
-4. **Nothing is created until they click Deploy.** A link alone never deploys anything.
+<TypeTable
+  type={{
+    compose: {
+      type: "https URL",
+      required: true,
+      description:
+        "Your docker-compose.yml. A GitHub or GitLab page link works: it is turned into the raw file.",
+    },
+  }}
+/>
 
-<Callout type="info" title="The address stays in the browser">
-  The reader's Deplo address is saved in their browser only (`deplo.instance` in local storage).
-  deplo.build never receives it. **Forget** on
-  [deplo.build/deploy](https://deplo.build/deploy) removes it.
-</Callout>
+There is no other parameter. Everything else comes from the files next to the compose.
 
-## Variables, a domain and a logo
+## Configure the deploy
 
-Put these next to the compose file, in the same folder. Both are optional.
+Put these in the same folder as the compose file:
 
-- **`template.toml`**: generated passwords, variables and which container gets the domain. Same
-  format as the [template catalogue](https://github.com/DeploCloud/templates).
-- **`logo.png`** or **`logo.svg`**: the app's icon.
+```
+acme-app/
+├── docker-compose.yml   the stack (required)
+├── template.toml        variables, secrets, which service gets the domain
+└── logo.svg             the icon (or logo.png)
+```
+
+`template.toml` is the format of the [template catalogue](https://github.com/DeploCloud/templates):
 
 ```toml title="template.toml"
 [variables]
@@ -99,13 +118,28 @@ host = "${domain}"
 DATABASE_PASSWORD = "${db_password}"
 ```
 
-Without a `template.toml`, Deplo picks the web container and its port itself, and the reader
-fills in any variables.
+| Helper | Becomes |
+| --- | --- |
+| `${password:32}` | A random secret of that length. `secret`, `jwt` and `base64` work too. |
+| `${hash:64}` | A random hex string of that length. |
+| `${uuid}` | A random UUID. |
+| `${domain}` | The address Deplo gives the app. |
+
+Without a `template.toml`, Deplo picks the web service and its port itself, and the reader fills
+in any variables.
+
+## Pin a version
+
+The file is read when someone clicks, not when you write the link.
+
+| Link | Deploys |
+| --- | --- |
+| `.../blob/main/docker-compose.yml` | Whatever is on `main` that day |
+| `.../blob/v1.2.0/docker-compose.yml` | Always `v1.2.0` (recommended) |
 
 ## Limits
 
-- **A public https link.** A GitHub or GitLab page link is turned into the raw file. Private
-  repositories are not supported.
+- **A public https link.** Private repositories are not supported.
 - **Images only.** A service with `build:` needs the repository: deploy it
   [from Git](/guides/deploy/from-git) instead.
 - **Only the three files above are read.** An `env_file:` or a config file beside the compose is
@@ -113,21 +147,28 @@ fills in any variables.
 - **Sizes:** compose 256 KiB, `template.toml` 64 KiB, logo 2 MB.
 - **Needs a Deplo newer than 0.3.0.** An older one opens an empty wizard.
 
+<Callout type="info" title="The reader's address stays in their browser">
+  deplo.build keeps the address of their Deplo in their browser only, and never receives it. It
+  counts clicks per repository, and not even that once they turn analytics off on the
+  [privacy page](https://deplo.build/privacy). **Forget** on
+  [deplo.build/deploy](https://deplo.build/deploy) removes the address.
+</Callout>
+
 ## Troubleshooting
 
 | Message | What to do |
 | --- | --- |
 | This button's link is broken: it has to point at an https compose file. | The link after `compose=` is missing or not `https://`. |
-| `github.com` has no file at this address. | Check the link, the tag and that the repository is public. |
+| `raw.githubusercontent.com` has no file at this address. | Check the link, the tag and that the repository is public. |
 | This file isn't a Compose file: it has no services. | The link points at a web page, not at the file. Link the file itself. |
 | The "web" service builds from source, which needs the repository. | Publish an image and use `image:`, or deploy from Git. |
 | The compose file is too large (256 KiB max). | Trim it, or split it into several apps. |
 | The compose URL must not point at a private or internal address | The file has to be on the public internet. |
-| `github.com` took too long to answer. | Try again; the file host is slow or down. |
+| `raw.githubusercontent.com` took too long to answer. | Try again; the file host is slow or down. |
 
 ## Next steps
 
 <Cards>
-  <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="The catalogue these files come from" href="/guides/deploy/from-template" />
+  <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="The catalogue this format comes from" href="/guides/deploy/from-template" />
   <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="What happens after the stack is created" href="/advanced/compose-apps" />
 </Cards>

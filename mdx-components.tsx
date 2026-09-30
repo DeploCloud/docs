@@ -6,6 +6,7 @@ import { TypeTable } from "fumadocs-ui/components/type-table";
 import type { MDXComponents } from "mdx/types";
 import { Os } from "@/components/os-icon";
 import { CtaCard } from "@/components/cta-card";
+import { DeployButton } from "@/components/deploy-button";
 
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
@@ -19,6 +20,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     TypeTable,
     Os,
     CtaCard,
+    DeployButton,
     ...components,
   };
 }
