@@ -80,7 +80,7 @@ function Box({ data }: NodeProps<Node<DiagramNodeData>>) {
 
 function Frame({ data }: NodeProps<Node<DiagramNodeData>>) {
   return (
-    <div className="size-full rounded-2xl border border-dashed border-fd-foreground/15 bg-fd-foreground/[0.02]">
+    <div className="size-full rounded-2xl border border-dashed border-fd-foreground/15 bg-fd-card">
       <div className="px-3.5 pt-2.5 text-xs uppercase tracking-wide text-fd-muted-foreground">
         {data.label}
       </div>
