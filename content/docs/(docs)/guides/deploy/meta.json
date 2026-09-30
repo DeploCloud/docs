@@ -1,4 +1,5 @@
 {
   "title": "Deploy",
+  "icon": "Rocket",
   "pages": ["from-git", "docker-image", "from-template", "deploy-button", "upload-code"]
 }
