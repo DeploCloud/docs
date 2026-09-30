@@ -36,13 +36,46 @@ Start from a clean, minimal image. Recommended:
 
 ### Run the installer on first boot
 
-Chain this command to your provisioning, right after the operating system install finishes.
+Chain the installer to your provisioning, right after the operating system install finishes.
 `--public-setup` drops the setup key, so the link is predictable and you never read the install
-log:
+log.
+
+The command depends on the address the customer's panel starts on:
+
+<Tabs groupId="panel-domain" persist items={['Temporary domain', 'Custom domain']}>
+<Tab value="Temporary domain">
+
+The panel starts on an automatic wildcard address, with no DNS to set up and nothing to ask
+the customer:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
 ```
+
+By default that address is on `deplo.site`, Deplo's own wildcard domain. You can use yours
+instead: see [Use your own wildcard domain](#use-your-own-wildcard-domain).
+
+</Tab>
+<Tab value="Custom domain">
+
+If your order form already asks the customer for a domain, pass it to the installer with
+`--domain`. The panel starts directly on that domain, with a Let's Encrypt certificate:
+
+```bash
+curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain panel.customer-domain.com
+```
+
+<Callout type="info" title="The flow we recommend">
+  When you can pass the domain at install time, do it. The customer lands on their own address
+  from the very first login, and never has to move the panel later.
+</Callout>
+
+The domain's DNS has to point at the VM's IP: the certificate is issued on the first request
+to the domain. If DNS is not ready yet, the generated `deplo.site` address still works as a
+backup.
+
+</Tab>
+</Tabs>
 
 <Callout type="warn" title="Never install before the snapshot">
   The installer generates the instance's `DEPLO_SECRET` and reads the public IP when it runs.
@@ -55,11 +88,11 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
 
 ### Build the customer's link
 
-`deplo.site` is wildcard DNS: a name that carries an IPv4 in hexadecimal resolves to that IP,
-with no DNS setup. Want to use your own wildcard domain? See
-[Use your own wildcard domain](#use-your-own-wildcard-domain).
+<Tabs groupId="panel-domain" persist items={['Temporary domain', 'Custom domain']}>
+<Tab value="Temporary domain">
 
-So the panel address is predictable:
+`deplo.site` is wildcard DNS: a name that carries an IPv4 in hexadecimal resolves to that IP,
+with no DNS setup. So the panel address is predictable:
 
 ```
 https://deplo-<ip-in-hex>.deplo.site/setup
@@ -92,6 +125,20 @@ const setupUrl = (ip) =>
 
 ```php
 $url = "https://deplo-" . bin2hex(inet_pton($ip)) . ".deplo.site/setup";
+```
+
+</Tab>
+</Tabs>
+
+With your own wildcard domain, replace `deplo.site` with it.
+
+</Tab>
+<Tab value="Custom domain">
+
+The link is the customer's domain followed by `/setup`, nothing to compute:
+
+```
+https://panel.customer-domain.com/setup
 ```
 
 </Tab>
