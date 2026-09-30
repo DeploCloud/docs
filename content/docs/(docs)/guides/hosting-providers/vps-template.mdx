@@ -5,31 +5,25 @@ description: Ship Deplo as a VPS template that installs itself on first boot and
 
 import { Download, Terminal, Globe } from "lucide-react";
 
-<Callout type="info" title="The setup we recommend">
-  This guide is the common practice we suggest to every hosting provider. Have a different
-  setup in mind? Our technical team is happy to review it: write to
-  [hello@deplo.build](mailto:hello@deplo.build).
-</Callout>
-
-A VPS template with Deplo takes three things: a clean base image, one command, and a
-link you build from the server's IP. No log to read, no key to copy.
+The setup we recommend to every hosting provider: a clean base image, one command at first
+boot, and a link you can predict. No log to read, no key to copy.
 
 <Steps>
 <Step>
 
 ### Create the base template
 
-Start from a clean, minimal image. Recommended:
+Start from a clean, minimal image:
 
-| OS | Versions |
+| | Requirement |
 | --- | --- |
-| <Os name="ubuntu">Ubuntu</Os> | 24.04 LTS, 26.04 LTS |
-| <Os name="debian">Debian</Os> | 12, 13 |
+| OS | <Os name="ubuntu">Ubuntu</Os> 24.04 LTS, 26.04 LTS · <Os name="debian">Debian</Os> 12, 13 |
+| Architecture | `x86-64` or `arm64`, with `systemd` |
+| Ports | `80` and `443` open from the internet |
+| Smallest plan | 2 cores, 4 GB of RAM, 30 GB of disk |
+| Comfortable plan | 4 cores, 8 GB of RAM |
 
-- `x86-64` or `arm64`, with `systemd`.
-- Ports `80` and `443` open from the internet.
-- **2 cores, 4 GB of RAM, 30 GB of disk** as the smallest plan, 4 cores and 8 GB as the
-  comfortable one. See [what you need](/getting-started/install#what-you-need).
+More in [what you need](/getting-started/install#what-you-need).
 
 </Step>
 <Step>
@@ -62,7 +56,8 @@ If your order form already asks the customer for a domain, pass it to the instal
 `--domain`. The panel starts directly on that domain, with a Let's Encrypt certificate:
 
 ```bash
-curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain panel.customer-domain.com
+curl -fsSL https://deplo.build/install.sh | bash -s -- \
+  --public-setup --yes --domain panel.customer-domain.com
 ```
 
 <Callout type="info" title="The flow we recommend">
@@ -78,9 +73,8 @@ backup.
 </Tabs>
 
 <Callout type="warn" title="Never install before the snapshot">
-  The installer generates the instance's `DEPLO_SECRET` and reads the public IP when it runs.
-  Install Deplo and then snapshot the image, and every customer shares the same secret and the
-  wrong address. Always install on the customer's VM, at first boot.
+  The installer creates the instance's `DEPLO_SECRET` and reads the public IP. Install it in the
+  image and every customer shares one secret and the wrong address: install at first boot.
 </Callout>
 
 </Step>
@@ -149,12 +143,12 @@ https://panel.customer-domain.com/setup
 
 ### Send it
 
-Put the link in the welcome email or the VPS detail page, next to the IP and root password.
-The install takes a few minutes after boot: until then the link does not answer yet.
-Send it only to the customer: whoever opens it first becomes the Owner.
+- **Where**: in the welcome email or the VPS detail page, next to the IP and root password.
+- **When**: the install takes a few minutes after boot; until then the link does not answer.
+- **Who**: only the customer. Whoever opens it first becomes the Owner.
 
-Later the customer can move the panel to their own domain from **Settings -> Deplo**. See
-[the panel's own address](/operations/panel-address-and-certificates).
+On a temporary domain, the customer can later move the panel to their own from
+**Settings -> Deplo**: see [the panel's own address](/operations/panel-address-and-certificates).
 
 </Step>
 </Steps>
@@ -171,7 +165,8 @@ yours and pass the hostname with `--domain`, filling in the VM's IP:
 </Callout>
 
 ```bash
-curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain deplo-cb00710a.example-vps.net
+curl -fsSL https://deplo.build/install.sh | bash -s -- \
+  --public-setup --yes --domain deplo-cb00710a.example-vps.net
 ```
 
 The link becomes `https://deplo-cb00710a.example-vps.net/setup`, with a Let's Encrypt
@@ -184,6 +179,10 @@ certificate.
   server, so that server needs port `53` open on UDP and TCP.
 - The generated `deplo.site` address stays on as a backup. The customer can turn it off from
   **Settings -> Deplo**.
+
+<Callout type="info" title="A different setup in mind?">
+  Our technical team is happy to review it: write to [hello@deplo.build](mailto:hello@deplo.build).
+</Callout>
 
 ## See also
 
