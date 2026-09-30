@@ -1,0 +1,133 @@
+---
+title: Deploy button
+description: Let anyone deploy your project on their own Deplo, straight from your README.
+---
+
+import { Layers, LayoutTemplate } from "lucide-react";
+
+A **Deploy on Deplo** button in a README opens the reader's own Deplo with your stack already
+filled in. They check it and click **Deploy**.
+
+## Add the button
+
+<Steps>
+<Step>
+
+### Commit a `docker-compose.yml`
+
+Every service needs an `image:`. See [Limits](#limits).
+
+</Step>
+<Step>
+
+### Copy its link, pinned to a tag or a commit
+
+Open the file on GitHub and copy the address, with a tag or commit in place of the branch:
+
+```
+https://github.com/acme/app/blob/v1.2.0/docker-compose.yml
+```
+
+The file is read when someone clicks, so a branch link deploys whatever is on the branch that day.
+
+</Step>
+<Step>
+
+### Paste the snippet
+
+Put your link after `compose=`:
+
+<Tabs items={["Markdown", "HTML"]}>
+<Tab value="Markdown">
+
+```md
+[![Deploy on Deplo](https://deplo.build/button.svg)](https://deplo.build/deploy?compose=https://github.com/acme/app/blob/v1.2.0/docker-compose.yml)
+```
+
+</Tab>
+<Tab value="HTML">
+
+```html
+<a href="https://deplo.build/deploy?compose=https://github.com/acme/app/blob/v1.2.0/docker-compose.yml">
+  <img src="https://deplo.build/button.svg" alt="Deploy on Deplo" height="40" />
+</a>
+```
+
+</Tab>
+</Tabs>
+
+If your link has its own `?` or `&`, URL-encode it.
+
+</Step>
+</Steps>
+
+## What the reader sees
+
+1. **The first time**, deplo.build asks for the address of their Deplo, like `deplo.acme.com`.
+2. **A 3-second countdown**, then their Deplo opens. They can change the address or cancel.
+3. **They sign in if needed** and land in the new-app wizard of the last team they used, with a
+   **Not from the Deplo catalog** warning and the compose file open to read.
+4. **Nothing is created until they click Deploy.** A link alone never deploys anything.
+
+<Callout type="info" title="The address stays in the browser">
+  The reader's Deplo address is saved in their browser only (`deplo.instance` in local storage).
+  deplo.build never receives it. **Forget** on
+  [deplo.build/deploy](https://deplo.build/deploy) removes it.
+</Callout>
+
+## Variables, a domain and a logo
+
+Put these next to the compose file, in the same folder. Both are optional.
+
+- **`template.toml`**: generated passwords, variables and which container gets the domain. Same
+  format as the [template catalogue](https://github.com/DeploCloud/templates).
+- **`logo.png`** or **`logo.svg`**: the app's icon.
+
+```toml title="template.toml"
+[variables]
+db_password = "${password:32}"
+
+[config]
+mounts = []
+
+[[config.domains]]
+serviceName = "web"
+port = 3000
+host = "${domain}"
+
+[config.env]
+DATABASE_PASSWORD = "${db_password}"
+```
+
+Without a `template.toml`, Deplo picks the web container and its port itself, and the reader
+fills in any variables.
+
+## Limits
+
+- **A public https link.** A GitHub or GitLab page link is turned into the raw file. Private
+  repositories are not supported.
+- **Images only.** A service with `build:` needs the repository: deploy it
+  [from Git](/guides/deploy/from-git) instead.
+- **Only the three files above are read.** An `env_file:` or a config file beside the compose is
+  not: ship it as a `[[config.mounts]]` entry in `template.toml`.
+- **Sizes:** compose 256 KiB, `template.toml` 64 KiB, logo 2 MB.
+- **Needs a Deplo newer than 0.3.0.** An older one opens an empty wizard.
+
+## Troubleshooting
+
+| Message | What to do |
+| --- | --- |
+| This button's link is broken: it has to point at an https compose file. | The link after `compose=` is missing or not `https://`. |
+| `<host>` has no file at this address. | Check the link, the tag and that the repository is public. |
+| This file isn't a Compose file: it has no services. | The link points at a web page, not at the file. Link the file itself. |
+| The "web" service builds from source, which needs the repository. | Publish an image and use `image:`, or deploy from Git. |
+| The compose file is too large (256 KiB max). | Trim it, or split it into several apps. |
+| The compose URL must not point at a private or internal address | The file has to be on the public internet. |
+| `<host>` took too long to answer. | Try again; the file host is slow or down. |
+
+## Next steps
+
+<Cards>
+  <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="The catalogue these files come from" href="/guides/deploy/from-template" />
+  <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="What happens after the stack is created" href="/advanced/compose-apps" />
+</Cards>
