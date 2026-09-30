@@ -125,18 +125,24 @@ Later the customer can move the panel to their own domain from **Settings -> Dep
 yours and pass the hostname with `--domain`, filling in the VM's IP when you render the user
 data:
 
+<Callout type="warn" title="Use a dedicated domain">
+  Keep the wildcard on a domain separate from your main one, the way Deplo keeps `deplo.site`
+  apart from `deplo.build`. Customer servers answer on it, so abuse reports, blocklists and
+  cookies stay away from your website and your billing panel.
+</Callout>
+
 ```yaml
 #cloud-config
 runcmd:
-  - curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain deplo-cb00710a.vps.example.com
+  - curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain deplo-cb00710a.example-vps.net
 ```
 
-The link becomes `https://deplo-cb00710a.vps.example.com/setup`, with a Let's Encrypt
+The link becomes `https://deplo-cb00710a.example-vps.net/setup`, with a Let's Encrypt
 certificate.
 
 - **We recommend self-hosting [nip.io](https://github.com/exentriquesolutions/nip.io)**: it
-  resolves the hex form of the IP out of the box. Point an `NS` record for
-  `vps.example.com` at it.
+  resolves the hex form of the IP out of the box. Set it as the nameserver of
+  `example-vps.net` at your registrar.
 - **Even better, host it on Deplo itself** when you can, on a server of yours: it is a DNS
   server, so that server needs port `53` open on UDP and TCP.
 - The generated `deplo.site` address stays on as a backup. The customer can turn it off from
