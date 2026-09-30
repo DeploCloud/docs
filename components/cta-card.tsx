@@ -22,7 +22,7 @@ export function CtaCard({
           {badge}
         </span>
       )}
-      <p className="font-display text-xl font-semibold text-fd-foreground">{title}</p>
+      <p className="font-display text-2xl font-semibold text-fd-foreground md:text-3xl">{title}</p>
       <div className="mt-2 text-sm leading-relaxed text-fd-muted-foreground">{children}</div>
       <a
         href={href}
