@@ -23,7 +23,7 @@ export function CtaCard({
         </span>
       )}
       <p className="font-display text-2xl font-semibold text-fd-foreground md:text-3xl">{title}</p>
-      <div className="mt-2 text-sm leading-relaxed text-fd-muted-foreground">{children}</div>
+      <div className="mt-3 text-sm leading-7 text-balance text-fd-muted-foreground">{children}</div>
       <a
         href={href}
         className={`${buttonVariants({ color: "primary" })} mt-5 gap-2 px-4`}

@@ -6,8 +6,24 @@ icon: Building2
 
 import { Download, Terminal, Globe } from "lucide-react";
 
+<CtaCard
+  badge="Partners"
+  title="Are you a hosting provider?"
+  href="mailto:partnerships@deplo.build"
+  cta="Become a partner"
+>
+  We are always looking for hosting providers to work with. Offer Deplo to your customers and
+  get listed on our onboarding, where new users pick where to run it.
+</CtaCard>
+
 A VPS template with Deplo takes three things: a clean base image, one command, and a
 link you build from the server's IP. No log to read, no key to copy.
+
+<Callout type="info" title="The setup we recommend">
+  This guide is the common practice we suggest to every hosting provider. Have a different
+  setup in mind? Our technical team is happy to review it: write to
+  [partnerships@deplo.build](mailto:partnerships@deplo.build).
+</Callout>
 
 <Steps>
 <Step>
@@ -132,13 +148,6 @@ certificate.
   server, so that server needs port `53` open on UDP and TCP.
 - The generated `deplo.site` address stays on as a backup. The customer can turn it off from
   **Settings -> Deplo**.
-
-## Become a partner
-
-<Callout type="info" title="Let's work together">
-  We are always looking for hosting providers to partner with. If you offer Deplo, or want to,
-  write to [partnerships@deplo.build](mailto:partnerships@deplo.build).
-</Callout>
 
 ## See also
 
