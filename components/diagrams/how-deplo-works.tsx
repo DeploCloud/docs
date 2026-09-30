@@ -13,7 +13,7 @@ export function PartsDiagram() {
         },
         {
           id: "cp",
-          position: { x: 320, y: 0 },
+          position: { x: 340, y: 0 },
           data: {
             label: "Control plane",
             sub: "decides",
@@ -25,8 +25,8 @@ export function PartsDiagram() {
         {
           id: "srv",
           type: "frame",
-          position: { x: 640, y: -45 },
-          style: { width: 640, height: 150 },
+          position: { x: 310, y: 130 },
+          style: { width: 620, height: 150 },
           data: { label: "Every server" },
         },
         {
@@ -66,8 +66,8 @@ export function PartsDiagram() {
           id: "e2",
           source: "cp",
           target: "agent",
-          sourceHandle: "r",
-          targetHandle: "l",
+          sourceHandle: "b",
+          targetHandle: "t",
           label: "mTLS",
           variant: "flow",
         },
@@ -83,8 +83,8 @@ export function PartsDiagram() {
           id: "e4",
           source: "cp",
           target: "docker",
-          sourceHandle: "b",
-          targetHandle: "b",
+          sourceHandle: "r",
+          targetHandle: "t",
           label: "never directly",
           variant: "never",
         },

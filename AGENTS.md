@@ -27,6 +27,8 @@ suggestions, they are the bar every doc page is reviewed against.
 - **Concrete examples, never abstract placeholders.** Write `https://deplo.example.com/api/graphql`,
   not `https://<deplo>/...`; `deplo-cb00710a.deplo.site` (IP `203.0.113.10`), not
   `deplo-<hex>.deplo.site`. Placeholders stay only for secrets (`<token>`) and command synopses.
+- **Diagrams: at most 3 nodes per row.** Built with `<Diagram>` (`components/diagram.tsx`, one
+  file per page under `components/diagrams/`). Four nodes in a flow become two rows of two.
 - **Stay inside Deplo's mission.** Self-hosted, no SSH required on the happy path, no Docker
   socket exposed, the control plane never touches a host directly. Never invent a feature
   that doesn't exist in the product. If you're unsure whether something is real, check the

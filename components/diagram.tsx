@@ -3,6 +3,8 @@
 import "@xyflow/react/dist/style.css";
 import { useEffect, useRef, useState } from "react";
 import {
+  Background,
+  BackgroundVariant,
   Controls,
   Handle,
   MarkerType,
@@ -37,7 +39,7 @@ function Box({ data }: NodeProps<Node<DiagramNodeData>>) {
   const Icon = data.icon ? icons[data.icon] : null;
   return (
     <div
-      className={`flex min-h-[70px] w-[240px] items-center gap-3 rounded-xl border bg-fd-card px-3 py-2.5 shadow-lg ${data.accent ? "diagram-accent border-blue-400/50" : "border-fd-foreground/15"}`}
+      className={`flex min-h-[70px] w-[240px] items-center gap-3 rounded-xl border bg-fd-secondary px-3 py-2.5 shadow-lg ${data.accent ? "diagram-accent border-blue-400/50" : "border-fd-foreground/15"}`}
     >
       {data.art
         ? ART[data.art]
@@ -181,6 +183,12 @@ function Flow({
         preventScrolling={interactive}
         proOptions={{ hideAttribution: true }}
       >
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={18}
+          size={1.6}
+          color="color-mix(in srgb, var(--color-fd-foreground) 26%, transparent)"
+        />
         {interactive && (
           <Controls
             showInteractive={false}
@@ -219,7 +227,7 @@ export function Diagram({
 
   return (
     <div className="not-prose diagram group relative my-6">
-      <div className="overflow-x-auto rounded-xl border bg-fd-background">
+      <div className="overflow-x-auto rounded-xl border bg-fd-card">
         <div className="min-w-[720px]" style={{ aspectRatio: aspectOf(nodes) }}>
           <Flow nodes={nodes} edges={edges} interactive={false} />
         </div>
@@ -238,7 +246,7 @@ export function Diagram({
             role="dialog"
             aria-modal
             aria-label="Diagram"
-            className="not-prose diagram fixed inset-0 z-[100] bg-fd-background"
+            className="not-prose diagram fixed inset-0 z-[100] bg-fd-card"
           >
             <Flow nodes={nodes} edges={edges} interactive />
             <button
