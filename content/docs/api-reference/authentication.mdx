@@ -11,7 +11,7 @@ Three credentials, one model: every request resolves to a **principal** (a perso
 **For CI, scripts and your own tooling.** Create one under **Settings -> API tokens**. It is shown once. Send it as a bearer token:
 
 ```bash
-curl https://<deplo>/api/graphql \
+curl https://deplo.example.com/api/graphql \
   -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -H "X-Deplo-Team: acme" \
@@ -39,7 +39,7 @@ A session is what the REST byte streams (upload, logs, console, backup download)
 **Web AI clients.** A hosted client (Claude, ChatGPT) cannot be handed a token, so Deplo is also an OAuth 2.1 authorization server. The client registers itself (RFC 7591), the user approves a consent screen, and that approval mints an ordinary API token. The `dplo_at_` access token the client then sends points at that token, so everything on the API token tab applies unchanged: same capabilities, same cap, same revocation.
 
 ```bash
-curl https://<deplo>/api/graphql \
+curl https://deplo.example.com/api/graphql \
   -H "Authorization: Bearer dplo_at_xxxxxxxxxxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -d '{"query":"{ me { username } }"}'

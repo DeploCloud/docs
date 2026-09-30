@@ -29,7 +29,7 @@ As root, on the server:
 curl -fsSL https://deplo.build/install.sh | bash
 ```
 
-The dashboard will be automatically deployed on `https://deplo-<hex>.deplo.site` (check the output of the installer for the correct url)
+The dashboard will be automatically deployed on a generated address like `https://deplo-cb00710a.deplo.site` (check the output of the installer for the correct url)
 
 </Tab>
 <Tab value="With your own domain">
@@ -41,7 +41,7 @@ curl -fsSL https://deplo.build/install.sh | \
   DEPLO_DOMAIN=deplo.example.com ACME_EMAIL=you@example.com bash
 ```
 
-`https://deplo-<hex>.deplo.site` (check the output of the installer for the correct url) is also installed as a secondary url, but it can be disabled from the panel's settings menu
+A generated address like `https://deplo-cb00710a.deplo.site` (check the output of the installer for the correct url) is also installed as a secondary url, but it can be disabled from the panel's settings menu
 
 </Tab>
 </Tabs>
@@ -87,7 +87,7 @@ The setup will create the first account with the [Owner role](/guides/roles-and-
 
 <Callout type="warn" title="Handing the address to somebody else">
   `--public-setup` can be used to install without a key, directly from
-  `https://<your-host>/setup`, this is only intended to be used in rare
+  `https://deplo-cb00710a.deplo.site/setup`, this is only intended to be used in rare
   situations and we discourage its use. Hosting providers, see
   [Offer Deplo to your customers](/guides/hosting-providers)
 </Callout>

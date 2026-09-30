@@ -16,13 +16,13 @@ irreversible**: it deletes Deplo's volumes, secrets and data on that host.
 
     ```bash
     # See what would happen (dry run, the default)
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --agent-only
+    curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --agent-only
 
     # Do it
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --agent-only
+    curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --agent-only
 
     # Do it, and delete the data too
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --agent-only --purge-data
+    curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --agent-only --purge-data
     ```
   </Tab>
   <Tab value="Uninstall Deplo itself">
@@ -32,16 +32,16 @@ irreversible**: it deletes Deplo's volumes, secrets and data on that host.
 
     ```bash
     # See what would happen (dry run, the default)
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash
+    curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash
 
     # Do it, keeping every volume and /opt/deplo
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes
+    curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes
 
     # Do it, and delete the data too
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --purge-data
+    curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --purge-data
 
     # And the backups stored on this machine
-    curl -fsSL https://<deplo>/uninstall.sh | sudo bash -s -- --yes --purge-data --purge-backups
+    curl -fsSL https://deplo.example.com/uninstall.sh | sudo bash -s -- --yes --purge-data --purge-backups
     ```
   </Tab>
 </Tabs>

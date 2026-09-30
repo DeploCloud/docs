@@ -16,7 +16,7 @@ The MCP server is a different framing of this same API, not a second one: each t
 An ordinary [API token](/api-reference/authentication), or the OAuth access token a web client obtains. There is no MCP-specific credential.
 
 ```bash
-claude mcp add --transport http deplo https://<deplo>/api/mcp \
+claude mcp add --transport http deplo https://deplo.example.com/api/mcp \
   --header "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
   --header "X-Deplo-Team: acme"
 ```
@@ -30,7 +30,7 @@ JSON-RPC over plain HTTP `POST`, stateless: no session, no `initialize` handshak
 `tools/list` returns only the tools the token can actually call. Destructive tools carry `destructiveHint`, which is what makes a well-behaved MCP client ask its own user first.
 
 ```bash
-curl https://<deplo>/api/mcp \
+curl https://deplo.example.com/api/mcp \
   -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_apps","arguments":{}}}'

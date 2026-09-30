@@ -20,8 +20,8 @@ files. It is removed when the pull request closes.
 
 | | Hostname | TLS |
 | --- | --- | --- |
-| No preview domain, the default | `<slug>-pr-<n>-<hash>-<hexip>.deplo.site` | Plain HTTP. A `deplo.site` name cannot hold a certificate |
-| A preview domain set | `<slug>-pr-<n>.<your-base>` | A Let's Encrypt certificate per preview |
+| No preview domain, the default | `blog-pr-42-3f9a1c-cb00710a.deplo.site` | Plain HTTP. A `deplo.site` name cannot hold a certificate |
+| A preview domain set | `blog-pr-42.preview.example.com` | A Let's Encrypt certificate per preview |
 
 A preview is not an app and not an environment. It has no domains of its own,
 and no console, backups or monitoring.

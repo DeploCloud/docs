@@ -58,7 +58,7 @@ Lists come back whole, newest first unless the page says otherwise, filtered to 
 Five subscriptions stream over **Server-Sent Events**, not WebSockets. Each fires once immediately with the current snapshot, then on every change, so a client tracks state with no polling.
 
 ```bash
-curl -N https://<deplo>/api/graphql \
+curl -N https://deplo.example.com/api/graphql \
   -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
   -H "Accept: text/event-stream" \
   -H "Content-Type: application/json" \

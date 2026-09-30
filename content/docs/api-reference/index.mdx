@@ -6,8 +6,8 @@ description: One GraphQL endpoint for everything, a few REST endpoints for byte 
 Deplo has one API. The dashboard, the MCP server, your CI and your scripts all speak it.
 
 ```
-POST  https://<deplo>/api/graphql      # the API
-GET   https://<deplo>/api/graphql      # GraphiQL, in a browser
+POST  https://deplo.example.com/api/graphql      # the API
+GET   https://deplo.example.com/api/graphql      # GraphiQL, in a browser
 ```
 
 Every page in this section is generated from the live schema, so every query, mutation and subscription is here, each with who may call it, its arguments, and a working example.
@@ -19,7 +19,7 @@ Every page in this section is generated from the live schema, so every query, mu
 Create a token under **Settings -> API tokens**, then:
 
 ```bash
-curl https://<deplo>/api/graphql \
+curl https://deplo.example.com/api/graphql \
   -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -d '{"query":"{ me { username } apps { slug status } }"}'

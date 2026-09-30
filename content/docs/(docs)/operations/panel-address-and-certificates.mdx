@@ -8,13 +8,13 @@ import { Settings, Globe, KeyRound, ShieldAlert } from "lucide-react";
 **Settings -> Deplo**, instance admins only.
 
 The panel is served over **HTTPS**. It is never reachable at
-`http://<server-ip>:3000`: that port is bound to `127.0.0.1` for recovery access
+`http://203.0.113.10:3000`: that port is bound to `127.0.0.1` for recovery access
 only.
 
 The panel has two addresses:
 
 - **Your domain**, when you gave one, with a Let's Encrypt certificate.
-- **A generated `deplo-<hex>.deplo.site` host**, which works without DNS setup and
+- **A generated host (like `deplo-cb00710a.deplo.site`)**, which works without DNS setup and
   remains available if the custom domain breaks. It is on by default.
 
 Changing the address also changes:
@@ -50,14 +50,14 @@ The certificate issues on the first request to the new address.
 </Step>
 </Steps>
 
-The generated `deplo-<hex>.deplo.site` address keeps working throughout, so the panel
+The generated address (like `deplo-cb00710a.deplo.site`) keeps working throughout, so the panel
 stays reachable while DNS moves. See
 [ports, networks, and files](/reference/ports-networks-and-files).
 
 ## HTTPS is not optional
 
 There is no switch to serve the panel on plain http from the General tab, and no
-way to reach it on `<server-ip>:3000`. The one exception lives under
+way to reach it on `203.0.113.10:3000`. The one exception lives under
 **Settings -> Deplo -> Advanced**, **Serve the panel over plain HTTP**, and it
 exists for one case: a panel on an internal network that no certificate authority
 can reach. Turning it on sends every password and every session cookie across the

@@ -35,7 +35,7 @@ POST /api/apps/[id]/deploy-hook/[token]
 Two secrets are required. The `[token]` in the URL says **which app**: read the URL with `revealAppDeployHook`, replace it with `rotateAppDeployHook`, switch the hook off with `setAppDeployHookEnabled`, all on [Deployments](/api-reference/deployments). The bearer token says **who**, and must hold `deploy_apps` in that app's team. The **Deploy hook & CI** token template is exactly that. The deploy runs through the same gates the dashboard button does.
 
 ```bash
-curl -X POST https://<deplo>/api/apps/prj_9f1c2ab7d3e4f5a6/deploy-hook/<token> \
+curl -X POST https://deplo.example.com/api/apps/prj_9f1c2ab7d3e4f5a6/deploy-hook/<token> \
   -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
@@ -67,7 +67,7 @@ POST /api/apps/[id]/upload
 The body is the archive itself, streamed, not multipart. Name it with `X-Upload-Filename`; the extension picks the format: `.tar.gz`, `.tgz`, `.tar` or `.zip`. The app must have been created with `source: UPLOAD`. Nothing deploys: the archive is stored and the app points at it, and `redeploy` builds it. Needs `deploy_apps`.
 
 ```bash
-curl -X POST https://<deplo>/api/apps/prj_9f1c2ab7d3e4f5a6/upload \
+curl -X POST https://deplo.example.com/api/apps/prj_9f1c2ab7d3e4f5a6/upload \
   -b "deplo.session_token=..." \
   -H "X-Upload-Filename: shop.tar.gz" \
   --data-binary @shop.tar.gz
@@ -104,7 +104,7 @@ GET /api/databases/[id]/logs
 | `timestamps` | `1` to prefix every line with its write time. |
 
 ```bash
-curl -N "https://<deplo>/api/apps/prj_9f1c2ab7d3e4f5a6/logs?tail=100&timestamps=1" \
+curl -N "https://deplo.example.com/api/apps/prj_9f1c2ab7d3e4f5a6/logs?tail=100&timestamps=1" \
   -b "deplo.session_token=..."
 ```
 
@@ -134,7 +134,7 @@ DELETE /api/apps/[id]/attach          close it
 The same three for `/api/databases/[id]/attach`. An interactive `docker attach` to the running container, needing `open_app_console` or `open_database_console`. `GET` takes `container`, `cols` and `rows` and answers the same SSE frames as a log stream. Then:
 
 ```bash
-curl -X POST https://<deplo>/api/apps/prj_9f1c2ab7d3e4f5a6/attach \
+curl -X POST https://deplo.example.com/api/apps/prj_9f1c2ab7d3e4f5a6/attach \
   -b "deplo.session_token=..." \
   -H "Content-Type: application/json" \
   -d '{"sessionId":"ses_...","data":"ls -la\n"}'
@@ -156,7 +156,7 @@ POST /api/backups/restore-upload?app=[id]      or ?database=[id]
 **Restore from a file** takes the artifact as the request body and overwrites the live target. Needs `restore_backups`. An encrypted artifact needs its recovery key in `X-Recovery-Key`. The response is a streamed text log of the restore; a failure this late arrives as its last line, not as a status.
 
 ```bash
-curl -X POST "https://<deplo>/api/backups/restore-upload?database=db_9f1c2ab7d3e4f5a6" \
+curl -X POST "https://deplo.example.com/api/backups/restore-upload?database=db_9f1c2ab7d3e4f5a6" \
   -b "deplo.session_token=..." \
   -H "X-Recovery-Key: ..." \
   --data-binary @orders-2026-09-01.tar.gz

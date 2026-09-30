@@ -88,7 +88,7 @@ cannot be added here. The same applies to a preview base domain.
 </Accordion>
 <Accordion title="The panel is unreachable">
 
-Try the generated `https://deplo-<hex>.deplo.site` address. If it works, fix the
+Try the generated address (like `https://deplo-cb00710a.deplo.site`). If it works, fix the
 address in **Settings -> Deplo**. The browser warns about its certificate once.
 
 If that is silent too, the proxy is down. From the server itself:
@@ -103,7 +103,7 @@ docker logs deplo-deplo-1
 If the proxy is down, tunnel to the panel:
 
 ```bash
-ssh -L 3000:localhost:3000 root@<server-ip>   # then open http://localhost:3000
+ssh -L 3000:localhost:3000 root@203.0.113.10   # then open http://localhost:3000
 ```
 
 </Accordion>

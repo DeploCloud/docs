@@ -21,9 +21,12 @@ suggestions, they are the bar every doc page is reviewed against.
 - **The product is `Deplo`, with a capital D.** Always, in every sentence a reader sees -
   page titles, body copy, callouts, alt text, commit messages. Lowercase `deplo` survives
   only as a machine token something matches on: the `deplo` Docker network, the `deplo`
-  container and Postgres role, `deplo-agent`, `deplo.build`, `/opt/deplo`, the `<deplo>`
-  URL placeholder, and the MCP server name in `claude mcp add`. If changing the case would
-  change what a command does, it stays lowercase.
+  container and Postgres role, `deplo-agent`, `deplo.build`, `/opt/deplo`, the
+  `deplo.example.com` panel address, and the MCP server name in `claude mcp add`. If changing
+  the case would change what a command does, it stays lowercase.
+- **Concrete examples, never abstract placeholders.** Write `https://deplo.example.com/api/graphql`,
+  not `https://<deplo>/...`; `deplo-cb00710a.deplo.site` (IP `203.0.113.10`), not
+  `deplo-<hex>.deplo.site`. Placeholders stay only for secrets (`<token>`) and command synopses.
 - **Stay inside Deplo's mission.** Self-hosted, no SSH required on the happy path, no Docker
   socket exposed, the control plane never touches a host directly. Never invent a feature
   that doesn't exist in the product. If you're unsure whether something is real, check the
