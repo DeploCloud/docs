@@ -31,7 +31,9 @@ Start from a clean, minimal image. Recommended:
 
 ### Run the installer on first boot
 
-Chain this command to your provisioning, right after the operating system install finishes:
+Chain this command to your provisioning, right after the operating system install finishes.
+`--public-setup` drops the setup key, so the link is predictable and you never read the install
+log:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
@@ -41,22 +43,6 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
   The installer generates the instance's `DEPLO_SECRET` and reads the public IP when it runs.
   Install Deplo and then snapshot the image, and every customer shares the same secret and the
   wrong address. Always install on the customer's VM, at first boot.
-</Callout>
-
-</Step>
-<Step>
-
-### Why `--public-setup`
-
-Without it, the setup link carries a random key that only appears in the install output
-(`/var/log/deplo-install.log`), so you would have to read the log of every VM.
-
-With `--public-setup` there is no key: the link is always `https://<panel>/setup`, and you can
-build it without touching the server.
-
-<Callout type="info">
-  Whoever opens `/setup` first creates the Owner account. Send the link only to the customer,
-  as soon as the VM is up.
 </Callout>
 
 </Step>
@@ -110,6 +96,7 @@ $url = "https://deplo-" . bin2hex(inet_pton($ip)) . ".deplo.site/setup";
 
 Put the link in the welcome email or the VPS detail page, next to the IP and root password.
 The install takes a few minutes after boot: until then the link does not answer yet.
+Send it only to the customer: whoever opens it first becomes the Owner.
 
 Later the customer can move the panel to their own domain from **Settings -> Deplo**. See
 [the panel's own address](/operations/panel-address-and-certificates).
