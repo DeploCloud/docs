@@ -338,3 +338,17 @@ h4 {
     animation: none;
   }
 }
+
+.diagram .react-flow {
+  --xy-background-color: transparent;
+  font-family: var(--font-sans);
+}
+
+.diagram .diagram-handle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.diagram .react-flow__node {
+  cursor: default;
+}

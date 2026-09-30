@@ -4,6 +4,12 @@ description: The two parts of Deplo and the one rule between them.
 ---
 
 import { Server, Rocket, FolderTree } from "lucide-react";
+import {
+  PartsDiagram,
+  TraefikDiagram,
+  DataDiagram,
+  SecretsDiagram,
+} from "@/components/diagrams/how-deplo-works";
 
 Deplo is two programs with one rule between them. This explains most of what you see in the
 product, including why a deploy fails when a server is unreachable and why the dashboard cannot
@@ -18,6 +24,8 @@ it hands the result to a server.
 **The server agent executes.** One small program per server, `deplo-agent`. It is the only thing
 that runs Docker, touches the filesystem or opens a shell. Builds, deploys, logs, the web console,
 metrics, backups, restores and disk cleanup all go through it.
+
+<PartsDiagram />
 
 ## The rule
 
@@ -40,6 +48,8 @@ What this means for you:
 One reverse proxy per server, in a container called `deplo-traefik`, on ports `80` and `443`.
 Deplo writes its routing rules.
 
+<TraefikDiagram />
+
 Every hostname you add becomes a route with its rule, its entry point (HTTP or HTTPS), its
 certificate provider, and its extras: basic auth, path stripping, redirects. Certificates come
 from Let's Encrypt and Traefik renews them itself.
@@ -55,6 +65,8 @@ secrets and activity. There is no other store.
 copied into the control plane. The only exception is an encrypted backup passing through on its
 way to a destination on another server.
 
+<DataDiagram />
+
 ## How secrets move
 
 Secrets are encrypted at rest with a key derived from `DEPLO_SECRET`. They are **write-only**:
@@ -66,6 +78,8 @@ and an app's deploy hook URL. An environment variable never can.
 
 **The agent never holds the encryption key.** The control plane decrypts at deploy time and sends
 the values inside the encrypted connection.
+
+<SecretsDiagram />
 
 ## What this means day to day
 
