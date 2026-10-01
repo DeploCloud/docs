@@ -1,6 +1,6 @@
 ---
 title: Capabilities
-description: The full list of the 44 capabilities, one action each, grouped by what they touch.
+description: The full list of the 45 capabilities, one action each, grouped by what they touch.
 ---
 
 import { ShieldCheck as ShieldCheckIcon, Users, KeyRound } from "lucide-react";
@@ -166,6 +166,10 @@ capability; there is no category-level grant.
         delete_databases: {
           type: "Delete databases",
           description: "Sensitive. Permanently delete a database and its data volume.",
+        },
+        move_databases: {
+          type: "Move databases",
+          description: "Sensitive. Transfer a database, with its data, to another team.",
         },
         open_database_console: {
           type: "Open a database console",

@@ -1145,6 +1145,11 @@ A managed database is provisioned and versioned the same way an app is, and reac
         intro: `Both return the connection string as a \`String\`, not the entity. \`rotateDatabasePassword\` cuts off anything still using the old credentials the moment it succeeds.`,
         ops: [m("revealConnection"), m("rotateDatabasePassword")],
       },
+      {
+        title: "Moving to another team",
+        intro: `Needs \`move_databases\` in both teams. Ask \`databaseTransferInfo\` first: it lists the teams that can take it and what the move removes. See [Move to another team](/guides/team/transfers).`,
+        ops: [q("databaseTransferInfo"), m("transferDatabaseToTeam")],
+      },
       { title: "Subscription", ops: [s("databaseStatus")] },
     ],
     seeAlso: [

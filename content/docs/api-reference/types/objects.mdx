@@ -229,12 +229,17 @@ What a transfer of this app would cost, plus the teams that could take it.
 | --- | --- | --- |
 | `appName` | `String` |  |
 | `backupCount` | `Int` | Backup schedules targeting this app - removed on transfer, because they point at the current team's backup destination. |
+| `cronCount` | `Int` | Cron jobs of this app - removed on transfer. |
+| `databasesLost` | `[String!]` | Databases of the current team this app names by host. They stay behind, so the app stops reaching them once it moves. |
 | `gitConnectionLabel` | `String` | The git connection authenticating this app's clone, or null. It is always dropped on transfer - a token is owned by the current team and cannot be assumed to reach the repository from another one. |
 | `githubConnected` | `Boolean` |  |
 | `homeLabel` | `String` | Where the app currently sits in its team ("folder Marketing"), or null at the top level. It leaves that home on transfer. |
+| `peopleLosingAccess` | `Int` | People granted this app on its own (a per-app grant or a role scoped to it). Those grants are removed on transfer. |
+| `running` | `Boolean` | True when the app is live: it restarts briefly on the new team's network. Nothing is rebuilt. |
 | `serverName` | `String` |  |
 | `sharedVarCount` | `Int` | Shared variables linked to this app. The links do not survive the move (the variables belong to the current team). |
 | `targets` | [`[AppTransferTarget!]`](/api-reference/types/objects#apptransfertarget) |  |
+| `tokensLosingAccess` | `Int` | API tokens limited to this app. They lose it on transfer. |
 
 ### AppTransferTarget
 
@@ -622,6 +627,33 @@ One config file of a database: its name in the stack's files directory, its body
 | `content` | `String` |  |
 | `filePath` | `String` |  |
 | `mountPath` | `String` |  |
+
+### DatabaseTransferInfo
+
+What a transfer of this database would cost, plus the teams that could take it.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `backupCount` | `Int` | Backup schedules for this database - removed on transfer, because they write to the current team's storage. Backups already taken stay. |
+| `cronCount` | `Int` | Cron jobs for this database - removed on transfer. |
+| `databaseName` | `String` |  |
+| `environmentName` | `String` | The Environment it sits in, or null at the top level. It lands at the top level of the new team. |
+| `running` | `Boolean` |  |
+| `serverName` | `String` |  |
+| `targets` | [`[DatabaseTransferTarget!]`](/api-reference/types/objects#databasetransfertarget) |  |
+| `usedBy` | `[String!]` | Apps of the current team whose variables or compose name this database's host. They stop reaching it once it leaves. |
+
+### DatabaseTransferTarget
+
+A team the viewer could hand this database to - one of their own other teams where they hold move_databases.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `avatarUrl` | `String` |  |
+| `id` | `ID` |  |
+| `name` | `String` |  |
+| `nameTaken` | `Boolean` | True when that team already has a database with this name - the transfer is refused until one of them is renamed. |
+| `serverAvailable` | `Boolean` | False when the database's server is not shared with that team - the transfer is refused until an instance admin grants access. |
 
 ### DeleteUserImpact
 

@@ -132,6 +132,11 @@
  "Query.databaseShellLabel": {
   "kind": "loggedIn"
  },
+ "Query.databaseTransferInfo": {
+  "kind": "capability",
+  "cap": "move_databases",
+  "orInstanceAdmin": false
+ },
  "Query.databases": {
   "kind": "loggedIn"
  },
@@ -1314,6 +1319,11 @@
  "Mutation.transferAppToTeam": {
   "kind": "capability",
   "cap": "move_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.transferDatabaseToTeam": {
+  "kind": "capability",
+  "cap": "move_databases",
   "orInstanceAdmin": false
  },
  "Mutation.transferInstanceOwner": {

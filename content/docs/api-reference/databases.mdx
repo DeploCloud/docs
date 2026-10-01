@@ -490,6 +490,48 @@ mutation {
 }
 ```
 
+## Moving to another team
+
+Needs `move_databases` in both teams. Ask `databaseTransferInfo` first: it lists the teams that can take it and what the move removes. See [Move to another team](/guides/team/transfers).
+
+### `databaseTransferInfo`
+
+Needs `move_databases`. Returns [`DatabaseTransferInfo`](/api-reference/types/objects#databasetransferinfo).
+
+What transferring this database to another team would change, and which of the viewer's other teams could take it.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+query {
+  databaseTransferInfo(id: "db_9f1c2ab7d3e4f5a6") {
+    backupCount
+    cronCount
+    databaseName
+    environmentName
+  }
+}
+```
+
+### `transferDatabaseToTeam`
+
+Needs `move_databases`. Returns `Boolean`.
+
+Hand this database, with its data, to another team the viewer belongs to. It lands at that team's top level and restarts on its network; backup schedules and cron jobs are removed. Returns true.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `teamId` | `String!` |  |
+
+```graphql
+mutation {
+  transferDatabaseToTeam(id: "db_9f1c2ab7d3e4f5a6", teamId: "team_9f1c2ab7d3e4f5a6")
+}
+```
+
 ## Subscription
 
 ### `databaseStatus`

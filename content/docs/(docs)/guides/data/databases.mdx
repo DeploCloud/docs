@@ -245,6 +245,16 @@ new server, and starts it there.
 If the copy fails, the database is blocked from starting until you fix it. This protects your
 data from being replaced by an empty database.
 
+## Move a database to another team
+
+**Settings -> Advanced -> Danger Zone -> Transfer**, or **Transfer to another team** in the card
+menu. It needs `move_databases` in both teams.
+
+The data, the host `db-<slug>` and the connection string stay the same. It lands at the new
+team's top level and restarts once. Backup schedules and cron jobs are removed, and apps of the
+old team stop reaching it: the dialog names them.
+[Everything the move costs ->](/guides/team/transfers)
+
 ## The other tabs
 
 **Logs**, **Monitoring** and **Backups** work like for an app. **Console** opens the engine's own
@@ -259,7 +269,8 @@ commands inside the container.
 - **An app's backup schedule does not cover its database.** Schedule both.
 - **`Host port` opens the database to anything that can reach the server.**
 - **Capabilities:** `control_databases` for start, stop and restart, `configure_databases` for
-  settings, `delete_databases` for Rebuild and Delete.
+  settings, `delete_databases` for Rebuild and Delete, `move_databases` to hand it to another
+  team.
 - **Version upgrades are not migrations.** A major Postgres upgrade refuses to start on older
   data. Dump, rebuild, restore.
 

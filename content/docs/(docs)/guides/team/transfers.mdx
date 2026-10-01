@@ -1,0 +1,66 @@
+---
+title: Move to another team
+description: Hand an app or a database to another team you belong to, with its data.
+---
+
+An app or a database can change team. It keeps its data, its address and its connection
+string. The team it leaves loses access to it.
+
+## Where
+
+| What | Where |
+| --- | --- |
+| An app | **Settings -> Advanced -> Danger Zone -> Transfer**, or **Transfer to another team** in the app's menu |
+| A database | **Settings -> Advanced -> Danger Zone -> Transfer**, or **Transfer to another team** in the card menu on **Storage** |
+
+Pick the destination team, read what the move costs, type the name to confirm.
+
+## Who can do it
+
+You need the capability in **both** teams:
+
+| What | Here | There |
+| --- | --- | --- |
+| An app | `move_apps` and `manage_env` | `move_apps` |
+| A database | `move_databases` | `move_databases` |
+
+The list only offers teams where you hold it. Owners have both by default.
+
+## What the move costs
+
+The dialog names every cost before you confirm. In short:
+
+- **It lands at the top level** of the new team. A folder or an Environment stays behind.
+- **Backup schedules and cron jobs are removed.** They belong to the old team. Backups already
+  taken stay in the old team.
+- **It restarts once**, for a second or two, on the new team's network. Nothing is rebuilt. A
+  stopped app or database stays stopped.
+- **Apps and databases only reach each other inside one team.** If `web` uses the `orders`
+  database and only `web` moves, `web` stops reaching `orders`. The dialog names them, for
+  example: `It stops reaching orders, which stays in this team.`
+
+For an app, also:
+
+- **Shared variables of the old team are unlinked.** The change applies on the next deploy.
+- **Per-app access is removed**: people granted just this app, and API tokens limited to it.
+- **The git connection** stays only if the new team has its own GitHub App on that account.
+  Otherwise auto-deploy turns off until you reconnect the repository.
+
+<Callout type="info" title="Move them together">
+To keep an app and its database working, move both to the same team. The order does not matter:
+they reach each other again as soon as both have arrived.
+</Callout>
+
+## When it is refused
+
+- **The new team cannot use the server.** An instance admin shares the server with that team in
+  **Settings -> Servers**.
+- **The new team already has a database with that name.** Rename one of the two first.
+- **A database is still being created.** Wait for it to finish.
+
+## Good to know
+
+- **Only the new team can hand it back.** After the move, it is theirs.
+- **Both teams' Activity record the move**, with who did it.
+- **The same through the API:** `transferAppToTeam` and `transferDatabaseToTeam`, or the MCP tools
+  `transfer_app` and `transfer_database`.
