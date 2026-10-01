@@ -48,21 +48,21 @@ The command depends on the address the customer's panel starts on:
 The panel starts on an automatic wildcard address, with no DNS to set up and nothing to ask
 the customer:
 
-<Tabs groupId="provisioning" persist items={['Provisioning script', 'Using cloud-init']}>
-<Tab value="Provisioning script">
-
-```bash
-curl -fsSL https://deplo.build/install.sh | bash -s -- \
-  --yes --owner-email ada@acme.com --owner-password '<temporary password>'
-```
-
-</Tab>
+<Tabs groupId="provisioning" persist items={['Using cloud-init', 'Provisioning script']}>
 <Tab value="Using cloud-init">
 
 ```yaml
 #cloud-config
 runcmd:
   - curl -fsSL https://deplo.build/install.sh | bash -s -- --yes --owner-email ada@acme.com --owner-password '<temporary password>'
+```
+
+</Tab>
+<Tab value="Provisioning script">
+
+```bash
+curl -fsSL https://deplo.build/install.sh | bash -s -- \
+  --yes --owner-email ada@acme.com --owner-password '<temporary password>'
 ```
 
 </Tab>
@@ -77,22 +77,22 @@ instead: see [Use your own wildcard domain](#use-your-own-wildcard-domain).
 If your order form already asks the customer for a domain, pass it to the installer with
 `--domain`. The panel starts directly on that domain, with a Let's Encrypt certificate:
 
-<Tabs groupId="provisioning" persist items={['Provisioning script', 'Using cloud-init']}>
-<Tab value="Provisioning script">
-
-```bash
-curl -fsSL https://deplo.build/install.sh | bash -s -- \
-  --yes --owner-email ada@acme.com --owner-password '<temporary password>' \
-  --domain panel.customer-domain.com
-```
-
-</Tab>
+<Tabs groupId="provisioning" persist items={['Using cloud-init', 'Provisioning script']}>
 <Tab value="Using cloud-init">
 
 ```yaml
 #cloud-config
 runcmd:
   - curl -fsSL https://deplo.build/install.sh | bash -s -- --yes --owner-email ada@acme.com --owner-password '<temporary password>' --domain panel.customer-domain.com
+```
+
+</Tab>
+<Tab value="Provisioning script">
+
+```bash
+curl -fsSL https://deplo.build/install.sh | bash -s -- \
+  --yes --owner-email ada@acme.com --owner-password '<temporary password>' \
+  --domain panel.customer-domain.com
 ```
 
 </Tab>
