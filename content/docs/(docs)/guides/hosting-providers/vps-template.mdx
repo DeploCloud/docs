@@ -1,12 +1,13 @@
 ---
 title: Offer Deplo to your customers
-description: Ship Deplo as a VPS template that installs itself on first boot and hands the customer a ready setup link.
+description: Ship Deplo as a VPS template that installs itself on first boot, with the customer's account already in it.
 ---
 
 import { Download, Terminal, Globe } from "lucide-react";
 
 The setup we recommend to every hosting provider: a clean base image, one command at first
-boot, and a link you can predict. No log to read, no key to copy.
+boot, and an address you can predict. The customer signs in with the email and password from
+your welcome email. No log to read, no key to copy.
 
 <Steps>
 <Step>
@@ -31,8 +32,13 @@ More in [what you need](/getting-started/install#what-you-need).
 ### Run the installer on first boot
 
 Chain the installer to your provisioning, right after the operating system install finishes.
-`--public-setup` drops the setup key, so the link is predictable and you never read the install
-log.
+`--owner-email` and `--owner-password` create the customer's account during the install:
+
+- **The email** is the customer's, the one on their order.
+- **The password** is a temporary one you already send them, at least 8 characters. The root
+  password works.
+- **At the first sign-in** Deplo asks for a password of their own. Until then the account
+  cannot do anything else, so knowing the temporary password gives you no access.
 
 The command depends on the address the customer's panel starts on:
 
@@ -46,7 +52,8 @@ the customer:
 <Tab value="Provisioning script">
 
 ```bash
-curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
+curl -fsSL https://deplo.build/install.sh | bash -s -- \
+  --yes --owner-email ada@acme.com --owner-password '<temporary password>'
 ```
 
 </Tab>
@@ -55,7 +62,7 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
 ```yaml
 #cloud-config
 runcmd:
-  - curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes
+  - curl -fsSL https://deplo.build/install.sh | bash -s -- --yes --owner-email ada@acme.com --owner-password '<temporary password>'
 ```
 
 </Tab>
@@ -75,7 +82,8 @@ If your order form already asks the customer for a domain, pass it to the instal
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash -s -- \
-  --public-setup --yes --domain panel.customer-domain.com
+  --yes --owner-email ada@acme.com --owner-password '<temporary password>' \
+  --domain panel.customer-domain.com
 ```
 
 </Tab>
@@ -84,7 +92,7 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- \
 ```yaml
 #cloud-config
 runcmd:
-  - curl -fsSL https://deplo.build/install.sh | bash -s -- --public-setup --yes --domain panel.customer-domain.com
+  - curl -fsSL https://deplo.build/install.sh | bash -s -- --yes --owner-email ada@acme.com --owner-password '<temporary password>' --domain panel.customer-domain.com
 ```
 
 </Tab>
@@ -102,10 +110,15 @@ backup.
 </Tab>
 </Tabs>
 
+<Callout type="info" title="On Virtualizor">
+  In a recipe, `{{username}}` is the customer's email and `{{root_pass}}` their root password:
+  `--owner-email '{{username}}' --owner-password '{{root_pass}}'`.
+</Callout>
+
 </Step>
 <Step>
 
-### Build the customer's link
+### Build the customer's address
 
 <Tabs groupId="panel-domain" persist items={['Temporary domain', 'Custom domain']}>
 <Tab value="Temporary domain">
@@ -114,13 +127,13 @@ backup.
 with no DNS setup. So the panel address is predictable:
 
 ```
-https://deplo-<ip-in-hex>.deplo.site/setup
+https://deplo-<ip-in-hex>.deplo.site
 ```
 
 Each octet becomes two hex digits. `203.0.113.10` gives `cb00710a`:
 
 ```
-https://deplo-cb00710a.deplo.site/setup
+https://deplo-cb00710a.deplo.site
 ```
 
 <Tabs items={['Bash', 'JavaScript', 'PHP']}>
@@ -128,22 +141,22 @@ https://deplo-cb00710a.deplo.site/setup
 
 ```bash
 IP=203.0.113.10
-echo "https://deplo-$(printf '%02x' ${IP//./ }).deplo.site/setup"
+echo "https://deplo-$(printf '%02x' ${IP//./ }).deplo.site"
 ```
 
 </Tab>
 <Tab value="JavaScript">
 
 ```js
-const setupUrl = (ip) =>
-  `https://deplo-${ip.split(".").map((n) => (+n).toString(16).padStart(2, "0")).join("")}.deplo.site/setup`;
+const panelUrl = (ip) =>
+  `https://deplo-${ip.split(".").map((n) => (+n).toString(16).padStart(2, "0")).join("")}.deplo.site`;
 ```
 
 </Tab>
 <Tab value="PHP">
 
 ```php
-$url = "https://deplo-" . bin2hex(inet_pton($ip)) . ".deplo.site/setup";
+$url = "https://deplo-" . bin2hex(inet_pton($ip)) . ".deplo.site";
 ```
 
 </Tab>
@@ -154,10 +167,10 @@ With your own wildcard domain, replace `deplo.site` with it.
 </Tab>
 <Tab value="Custom domain">
 
-The link is the customer's domain followed by `/setup`, nothing to compute:
+The address is the customer's domain, nothing to compute:
 
 ```
-https://panel.customer-domain.com/setup
+https://panel.customer-domain.com
 ```
 
 </Tab>
@@ -168,9 +181,11 @@ https://panel.customer-domain.com/setup
 
 ### Send it
 
-- **Where**: in the welcome email or the VPS detail page, next to the IP and root password.
-- **When**: the install takes a few minutes after boot; until then the link does not answer.
-- **Who**: only the customer. Whoever opens it first becomes the Owner.
+- **Where**: in the welcome email or the VPS detail page, next to the email and temporary
+  password they sign in with.
+- **When**: the install takes a few minutes after boot; until then the address does not answer.
+- **What they see**: a sign-in page, then a short setup that replaces the temporary password and
+  names their team.
 
 On a temporary domain, the customer can later move the panel to their own from
 **Settings -> Deplo**: see [the panel's own address](/operations/panel-address-and-certificates).
@@ -191,10 +206,11 @@ yours and pass the hostname with `--domain`, filling in the VM's IP:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash -s -- \
-  --public-setup --yes --domain deplo-cb00710a.example-vps.net
+  --yes --owner-email ada@acme.com --owner-password '<temporary password>' \
+  --domain deplo-cb00710a.example-vps.net
 ```
 
-The link becomes `https://deplo-cb00710a.example-vps.net/setup`, with a Let's Encrypt
+The address becomes `https://deplo-cb00710a.example-vps.net`, with a Let's Encrypt
 certificate.
 
 - **We recommend self-hosting [nip.io](https://github.com/exentriquesolutions/nip.io)**: it

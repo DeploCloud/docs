@@ -85,11 +85,10 @@ Set up   https://deplo-cb00710a.deplo.site/setup?key=4f9c2a7e1b8d3f60a5e2c9d4b7f
 
 The setup will create the first account with the [Owner role](/guides/roles-and-permissions).
 
-<Callout type="warn" title="Handing the address to somebody else">
-  `--public-setup` can be used to install without a key, directly from
-  `https://deplo-cb00710a.deplo.site/setup`, this is only intended to be used in rare
-  situations and we discourage its use. Hosting providers, see
-  [Offer Deplo to your customers](/guides/hosting-providers/vps-template)
+<Callout type="info" title="Installed by your hosting provider?">
+  Sign in with the email and temporary password from their welcome email. Deplo then asks for a
+  password of your own. Hosting providers, see
+  [Offer Deplo to your customers](/guides/hosting-providers/vps-template).
 </Callout>
 
 ## What the installer does
@@ -144,8 +143,8 @@ Going this way, you enroll the host as a server yourself from **Settings -> Serv
 like any other machine. Four things are worth knowing before you do:
 
 - **`DEPLO_SETUP_KEY` is yours to set.** The installer generates one; Compose does not. Leave it
-  unset or empty and the first account is created by whoever reaches `/setup` first - which is
-  what `install.sh --public-setup` does.
+  unset and Deplo derives one from `DEPLO_SECRET` and prints the setup link in its log at boot:
+  `docker compose logs deplo | grep setup`.
 - **`DEPLO_SECRET` is not rotatable.** It derives every encryption key, every session signature
   and the agent certificate authority. Change it and every stored secret becomes unreadable,
   every session ends, and every agent certificate is created again. Back it up with the rest of

@@ -81,7 +81,7 @@ These configure the dashboard, API, database and control-plane defaults.
     DEPLO_SETUP_KEY: {
       type: "string",
       description:
-        "The key the /setup link carries. The installer generates one into .env; set it yourself when running from Compose. Unset or empty, the first person to reach /setup claims the instance - install.sh --public-setup writes it empty on purpose.",
+        "The key the /setup link carries. The installer generates one into .env. Unset or empty, Deplo derives one from DEPLO_SECRET and prints the setup link in its log at boot.",
     },
     DEPLO_PANEL_PORT: {
       type: "number",
