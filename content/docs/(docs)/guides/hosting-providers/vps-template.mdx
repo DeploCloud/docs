@@ -36,7 +36,8 @@ Chain the installer to your provisioning, right after the operating system insta
 
 - **The email** is the customer's, the one on their order.
 - **The password** is a temporary one you already send them, at least 8 characters. Best is a
-  random one generated for each order.
+  random one generated for each order, like the service password your billing (WHMCS, for
+  example) already creates.
 - **Only the root password available?** Some panels cannot pass anything else (Virtualizor
   recipes, for example). That works too: it is only used for the first sign-in.
 - **At the first sign-in** Deplo makes the customer replace it with a password of their own.
@@ -112,6 +113,10 @@ backup.
 
 </Tab>
 </Tabs>
+
+The cloud-init version works as is on any panel that accepts cloud-init user-data: Proxmox VE,
+SolusVM 2, Convoy, OpenStack, CloudStack. On VirtFusion, add it as a server provisioner, in
+Bash or cloud-init YAML.
 
 <Callout type="info" title="On Virtualizor">
   In a recipe, `{{username}}` is the customer's email and `{{root_pass}}` their root password,
