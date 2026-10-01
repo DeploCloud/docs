@@ -40,10 +40,15 @@ dashboard. `--domain` is how you put it on a hostname of your own.
       default: "latest",
       description: "Install this Deplo version instead of the newest one.",
     },
-    "--public-setup": {
-      type: "flag",
+    "--owner-email <e>": {
+      type: "email",
       description:
-        "Drops the setup key: the setup link is the bare dashboard address and anyone who opens it creates the first account. For a hosting provider that ships Deplo as a template and hands out the address without reading this transcript. It sticks across re-runs. See [Offer Deplo to your customers](/guides/hosting-providers/vps-template).",
+        "Create the Owner account with this email during the install, instead of printing a setup link. Needs --owner-password. Ignored when an account already exists. See [Offer Deplo to your customers](/guides/hosting-providers/vps-template).",
+    },
+    "--owner-password <p>": {
+      type: "string",
+      description:
+        "The temporary password for --owner-email, at least 8 characters. The owner replaces it at the first sign-in, and until then the account can do nothing else. Never written to the transcript.",
     },
     "--yes": {
       type: "flag",
