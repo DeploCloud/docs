@@ -35,10 +35,13 @@ Chain the installer to your provisioning, right after the operating system insta
 `--owner-email` and `--owner-password` create the customer's account during the install:
 
 - **The email** is the customer's, the one on their order.
-- **The password** is a temporary one you already send them, at least 8 characters. The root
-  password works.
-- **At the first sign-in** Deplo asks for a password of their own. Until then the account
-  cannot do anything else, so knowing the temporary password gives you no access.
+- **The password** is a temporary one you already send them, at least 8 characters. Best is a
+  random one generated for each order.
+- **Only the root password available?** Some panels cannot pass anything else (Virtualizor
+  recipes, for example). That works too: it is only used for the first sign-in.
+- **At the first sign-in** Deplo makes the customer replace it with a password of their own.
+  Until then the account cannot do anything else, so the temporary password, root or not,
+  gives no access to the panel.
 
 The command depends on the address the customer's panel starts on:
 
@@ -111,8 +114,8 @@ backup.
 </Tabs>
 
 <Callout type="info" title="On Virtualizor">
-  In a recipe, `{{username}}` is the customer's email and `{{root_pass}}` their root password:
-  `--owner-email '{{username}}' --owner-password '{{root_pass}}'`.
+  In a recipe, `{{username}}` is the customer's email and `{{root_pass}}` their root password,
+  used as the temporary one: `--owner-email '{{username}}' --owner-password '{{root_pass}}'`.
 </Callout>
 
 </Step>
