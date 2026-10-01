@@ -1,0 +1,213 @@
+---
+title: Move from another Deplo
+description: Move a team from one Deplo to another, data included, without installing anything on the old one.
+---
+
+import { ArrowRightLeft, KeyRound, Database, Globe } from "lucide-react";
+
+<Callout type="info" title="Beta">
+  This feature is currently beta/experimental and subject to change. It is not
+  recommended for production. Try it out and share your feedback on [our
+  GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+A wizard reads one team from another Deplo and recreates it here: projects, environments, apps,
+compose stacks, databases, variables, domains, crons, basic auth and backup destinations, with the
+data copied across.
+
+The old Deplo hands everything over itself. **Nothing is installed on its machines**, and there is
+no **Install** step: the wizard goes from **Connect** straight to **Review**.
+
+Use it to move to a bigger machine, to a different provider, or from one company's instance to
+another's.
+
+## Before you start
+
+### Both Deplos need 0.5.0 or newer
+
+The old Deplo has to know how to hand a team over. If it is older, **Connect** says
+**That Deplo is too old to hand itself over**. Update it under **Settings -> Deplo -> Updates**,
+then connect again.
+
+### Create a token on the old Deplo
+
+On the old Deplo, open **API tokens** from your account menu and press **New token**:
+
+- **Access**: tick the team you are moving, as a whole. A token limited to some projects or apps
+  is refused.
+- **Capabilities**: tick **Reveal secret values**, **Start & stop apps** and
+  **Start & stop databases**.
+- **Expires**: a short span is enough, for example **In 30 days**.
+
+Press **Create token** and copy it. It starts with `deplo_`.
+
+<Callout type="warn" title="This token can read every secret of the team">
+  That is what moves your variables and database passwords. Every time the new Deplo reads the
+  team, the old one writes **Read this team, secrets included, to move it to another Deplo** to
+  its **Activity**. Revoke the token when the migration is done.
+</Callout>
+
+### One token per team
+
+A token reads one team. For each extra team, create a token with only that team under **Access**,
+paste it here and press **Add**. It joins the **Teams to bring over** list with the Deplo team it
+lands in. Each team is one run, done one after another on the server.
+
+### The new Deplo must reach the old one
+
+The new Deplo talks to the old one at its **panel address**, the one you open in a browser, for
+example `https://deplo.example.com`. Nothing else has to be open: no SSH, no agent port.
+
+A private address such as `http://10.0.0.5:3000` works too, but only an instance admin can point
+the wizard at one.
+
+### What the run stops
+
+Every service you tick is stopped on the old Deplo when its data copy starts, so the copy is
+consistent. After a finished run it stays stopped. Anything you leave unticked is not touched.
+
+## Run the migration
+
+<Steps>
+<Step>
+
+**Open Settings -> System -> Migrations** on the new Deplo, the **Migrate** tab. You need to be an
+instance admin.
+
+</Step>
+<Step>
+
+**Connect.** Enter the old Deplo's **Panel address** and paste the token. The wizard recognises a
+Deplo from its token and shows its name and mark. Add one token per team.
+
+</Step>
+<Step>
+
+**Review and start.** Tick what comes over. Per item you can set the target server, **Expose
+publicly** and a **Host port**. **Place everything on** sets the whole tree at once. Then press
+**Start migration**.
+
+The run happens on the server, so you can close the tab. A chip at the top of every page shows
+the progress.
+
+</Step>
+<Step>
+
+**People, then Done.** Instance admins get single-use registration links for the team's members.
+Everyone arrives as a plain member, and the report names the role they had, for example
+**Was Developer**. Somebody who already has an account here is added to the team instead.
+
+</Step>
+<Step>
+
+**Point your domains here and deploy.** Nothing is deployed for you. Update each domain's DNS to
+the new server, open each app, check it, and press **Deploy**.
+
+</Step>
+</Steps>
+
+## What comes across
+
+### What lands as what
+
+| On the old Deplo | Here |
+| --- | --- |
+| Project and its environments | The same project and environments |
+| App outside any project, in a folder | A project named after the folder, for example `Clients / Acme` |
+| App at the top level | A project named after the team |
+| App from a git repository | The same repository, branch, watch paths and every build setting |
+| App from a Docker image | The same image |
+| Compose stack | The same compose file and its files |
+| Database | The same engine, version, user and password, with its data |
+| Volumes and the app's own files | Copied across |
+| Variables | The same values. A secret stays a secret |
+| Preview-only variables | The app's preview variables |
+| Shared variables | Shared at the same level (team, project, environment), linked to the same apps |
+| Domains | The same hostnames, with their path and port |
+| Basic auth | The same users and passwords |
+| Health check and resources | The same settings |
+| Published host ports | The same ports, with the publish-ports permission |
+| An app's cron jobs | The same schedule and command |
+| Backup schedules to a bucket | The same schedules, on the bucket that came with them |
+
+### What changes on the way
+
+- **An address the old Deplo generated gets a new one.** Domains you own come across as they are.
+  The app's **Domains** section shows which address became which.
+- **Connection strings are rewritten.** A database answers under a new host name here, and every
+  variable that used the old one is updated. Values an app stored by itself are not changed.
+- **A service name already used in the Environment is renamed.** The second `db` arrives as
+  `<app>-db`, and its references follow.
+- **Apps in a folder you cannot open on the old Deplo are left out.** A private folder stays
+  private, even from a migration. The report says how many apps that was, never their names.
+  Ask the folder's owner to share it with you, then run the migration again.
+- **Anything that needs a permission you do not hold goes in the report**, with who can turn it
+  on.
+
+### What is left behind
+
+- **A database's cron jobs.** The report names each one. Add them again under **Crons**.
+- **Extra compose flags** on a stack. Set them again under the app's settings.
+- **Preview settings** other than on or off: the port, the limit and the preview domain.
+- **A domain that only redirects**, such as `www.example.com` to `example.com`. Add it again
+  under **Domains**.
+- **An app built from an uploaded archive.** The archive stays on the old Deplo. Upload it again.
+- **Git connections and registries.** Attach a [git connection](/guides/git-providers) for a
+  private repository and add the [registry](/operations/servers/container-registries) for a
+  private image.
+- **Backups stored on a server's disk.** Only bucket destinations come across.
+- **API tokens, deploy hooks and notification channels.** They are tied to the old instance.
+  Create them again here.
+
+## Backing out
+
+- **While the run is going, in any step.** **Stop and undo** removes everything the run created
+  here with its data, and starts again what it stopped on the old Deplo.
+- **A run that fails on its own during the data step.** Nothing is rolled back. A service whose
+  data did not arrive refuses to deploy until you copy the data again or press **Deploy anyway**.
+- **Nothing on the old Deplo is deleted.** Remove the team there yourself once the new one works.
+
+## Troubleshooting
+
+| Symptom | What to check |
+| --- | --- |
+| **That address is this Deplo** | You pasted the address of the Deplo you are on. Use the old one's. |
+| **That is a Deplo. Paste one of its API tokens** | The key is not a Deplo token. Create one on the old Deplo. |
+| **That Deplo refused the token** | The token expired, was revoked, or comes from another Deplo. |
+| **This token cannot stop what it would move** | Add **Start & stop apps** or **Start & stop databases** to the token. |
+| A permission error at **Connect** | The token lacks **Reveal secret values**, or its **Access** covers only part of the team. |
+| **That Deplo is too old to hand itself over** | Update the old Deplo. |
+| **That Deplo is newer than this one** | Update this Deplo. |
+| **Could not reach the server this service runs on** | That server is offline on the old Deplo. Bring it back, then copy the data again. |
+| The certificate is not trusted | Deplo cannot accept an untrusted certificate. Use an address with a valid one. |
+
+More in [Servers and agents](/troubleshooting/servers-and-agents).
+
+## Next steps
+
+<Cards>
+  <Card
+    icon={<ArrowRightLeft className="text-blue-400" />}
+    title="Migrations"
+    description="What comes across, and what needs a look"
+    href="/migrations"
+  />
+  <Card
+    icon={<KeyRound className="text-blue-400" />}
+    title="API tokens"
+    description="Access, capabilities and expiry"
+    href="/advanced/api-tokens-and-oauth"
+  />
+  <Card
+    icon={<Globe className="text-blue-400" />}
+    title="Domains and HTTPS"
+    description="Repointing DNS after a migration"
+    href="/guides/networking/domains-and-https"
+  />
+  <Card
+    icon={<Database className="text-blue-400" />}
+    title="Backups and restore"
+    description="What to take before you move anything"
+    href="/guides/data/backups-and-restore"
+  />
+</Cards>

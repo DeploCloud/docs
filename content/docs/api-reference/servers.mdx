@@ -457,6 +457,46 @@ mutation {
 }
 ```
 
+### `fleetAgents`
+
+Instance admin only. Returns [`FleetAgents`](/api-reference/types/objects#fleetagents).
+
+The fleet's agent versions, and whether Deplo is still rolling an update out to them.
+
+```graphql
+query {
+  fleetAgents {
+    expected
+    total
+    updating
+  }
+}
+```
+
+### `setServerAgentCanary`
+
+Instance admin only. Returns [`Server`](/api-reference/types/objects#server).
+
+Offer this server's agent canary (pre-release) versions as updates, or go back to stable ones. Nothing is installed by the switch: a newer version shows up as an update, and turning it off never downgrades an agent already on a canary.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `agentCanary` | `Boolean!` |  |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  setServerAgentCanary(agentCanary: true, id: "srv_9f1c2ab7d3e4f5a6") {
+    id
+    name
+    host
+    role
+    status
+    agentVersion
+  }
+}
+```
+
 ### `restartServerTraefik`
 
 Instance admin only. Returns `Boolean`.

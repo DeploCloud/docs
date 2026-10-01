@@ -1452,6 +1452,8 @@ type DeploChangelog {
 
 """One published release of Deplo, as the changelog renders it."""
 type DeploRelease {
+  """Newer than the running version, so installing an update brings it in."""
+  available: Boolean
   body: String
   current: Boolean
   name: String
@@ -1506,8 +1508,10 @@ type Deployment {
   environment: DeploymentEnvironment
   id: ID
 
-  """Build logs for this deployment (most recent lines, capped)."""
-  logs: [LogLine!]
+  """
+  Build logs for this deployment (most recent lines, capped). With `after`, only the lines after that many, oldest first.
+  """
+  logs(after: Int): [LogLine!]
 
   """
   The pull request number, denormalized so it survives the preview itself being reaped. Null for a production build.
@@ -1878,6 +1882,27 @@ input ExtraDomainInput {
   service: String!
 }
 
+"""One server whose agent is older than the fleet version."""
+type FleetAgent {
+  id: ID
+  name: String
+  version: String
+}
+
+"""
+How far the server agents are from the version this panel expects. They follow a panel update on their own, so `behind` is what that rollout has not carried yet.
+"""
+type FleetAgents {
+  behind: [FleetAgent!]
+  expected: String
+  total: Int
+
+  """
+  A rollout is still owed: Deplo retries every 15 minutes until every server is on `expected`.
+  """
+  updating: Boolean
+}
+
 """
 One server's headline reading for the Monitoring page's fleet list, plus a thinned CPU/memory trace.
 """
@@ -2222,6 +2247,19 @@ type InstanceSettings {
   """
   panelUrlSource: String
   storedPanelUrl: String
+
+  """When the last Usage report left, or null when none ever has."""
+  usageReportLastSentAt: String
+
+  """
+  Whether this instance sends Deplo one anonymous Usage report a day: versions, counts and feature switches, keyed by a random instance id, never a hostname, address, name or email. On by default; any instance admin may turn it off, and nothing more is sent from that moment.
+  """
+  usageReportsEnabled: Boolean
+
+  """
+  True when the install set DO_NOT_TRACK=1, which turns reporting off regardless of the switch above. The switch then shows as disabled with that reason rather than hiding.
+  """
+  usageReportsForcedOff: Boolean
   version: String
 }
 
@@ -2553,10 +2591,11 @@ enum MigrationPlanStatus {
 }
 
 """
-Which product a migration reads. Deplo migrates from these two and refuses anything else by name.
+Which product a migration reads: Dokploy, Coolify or another Deplo. Anything else is refused by name.
 """
 enum MigrationPlatform {
   coolify
+  deplo
   dokploy
 }
 
@@ -2722,7 +2761,7 @@ input MigrationServerChoiceInput {
 
 input MigrationSourceInput {
   """
-  The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored.
+  The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Another Deplo: an API token there, limited to the one team, with Reveal secret values, Start & stop apps and Start & stop databases. Never stored.
   """
   apiKey: String!
 
@@ -3124,6 +3163,11 @@ type Mutation {
   Register the credential the authenticator produced. No password: the challenge it answers was minted behind one.
   """
   finishPasskeyRegistration(name: String!, response: JSON!): Passkey
+
+  """
+  Finish an account the installer created with a temporary password: profile, new password, team. Signs in again.
+  """
+  finishSetup(image: String, name: String!, password: String!, teamImage: String, teamName: String!, username: String): AuthPayload
 
   """
   Suggest a host port that is currently free on the target server, for the database 'Expose publicly' flow. Requires the publish-ports grant.
@@ -3597,6 +3641,11 @@ type Mutation {
   setAppVolumes(id: String!, volumes: [VolumeInput!]!): App
 
   """
+  Offer canary (pre-release) versions of Deplo as updates, or go back to stable ones. Installs nothing: a newer version shows up as an update, and turning it off never downgrades a panel already on a canary.
+  """
+  setCanaryReleases(enabled: Boolean!): UpdateInfo
+
+  """
   Point every manageable server's certificates at this account email, where Let's Encrypt sends expiry and revocation notices. Each host's proxy is recreated to pick it up, one host at a time, so routing there is interrupted for a few seconds; certificates already issued keep working. Servers Deplo cannot manage are skipped and reported as skipped, never counted as done.
   """
   setCertificateEmail(email: String!): [CertificateAccount!]
@@ -3714,6 +3763,11 @@ type Mutation {
   setSaveMetrics(enabled: Boolean!): MonitoringSettings
 
   """
+  Offer this server's agent canary (pre-release) versions as updates, or go back to stable ones. Nothing is installed by the switch: a newer version shows up as an update, and turning it off never downgrades an agent already on a canary.
+  """
+  setServerAgentCanary(agentCanary: Boolean!, id: String!): Server
+
+  """
   Whether this host may compile for an app whose own build server could not be reached (the app's own server stays the last resort). Omit the flag to go back to automatic: the Deplo host builds as a fallback, no other server does. Refused on a host with no Docker of ours to build with.
   """
   setServerBuildFallback(buildFallback: Boolean, id: String!): Server
@@ -3745,6 +3799,11 @@ type Mutation {
 
   """Link or unlink a shared variable to one app. Returns true."""
   setSharedVarAppLink(appId: String!, linked: Boolean!, varId: String!): Boolean
+
+  """
+  Turn anonymous usage statistics on or off for the whole instance. Off takes effect at once - no final report, no goodbye - and clears the instance id, so turning it on again starts a history that cannot be joined to the old one. Recorded in Activity. Has no effect while the install set DO_NOT_TRACK=1.
+  """
+  setUsageReportsEnabled(enabled: Boolean!): InstanceSettings
 
   """
   Set one person's role and per-node overrides in one team. Whole-set replace: node grants not sent are removed.
@@ -4333,7 +4392,7 @@ type Query {
   deleteUserImpact(userId: String!): DeleteUserImpact
 
   """
-  Deplo's published releases with their notes, newest first; cached for an hour and refreshed by checkForUpdates.
+  Deplo's published releases with their notes, newest first; canaries only while `updateInfo.canary` is on (or the one running). Cached for an hour and refreshed by checkForUpdates.
   """
   deploChangelog: DeploChangelog
   deployment(id: String!): Deployment
@@ -4402,6 +4461,11 @@ type Query {
 
   """The environments of a Project container, in display order."""
   environments(projectId: ID!): [Environment!]
+
+  """
+  The fleet's agent versions, and whether Deplo is still rolling an update out to them.
+  """
+  fleetAgents: FleetAgents
 
   """
   Every server's newest reading plus a thinned trace, for the Monitoring page's fleet list. Reads the control plane's buffers only - no agent is dialled, so watching N hosts costs what watching one does.
@@ -4490,6 +4554,11 @@ type Query {
 
   """Members of the active team, oldest first."""
   members: [Member!]
+
+  """
+  The active team as another Deplo reads it to migrate it: projects, apps, databases, variables, domains, schedules and the volumes that hold their data - secret values DECRYPTED. Needs `reveal_secrets` over the whole team, and every read is recorded in Activity. Versioned (`version`); the shape is lib/migration/deplo/export-shape.ts.
+  """
+  migrationExport: JSON
 
   """One import with its full report."""
   migrationRun(id: String!): MigrationRun
@@ -4630,6 +4699,11 @@ type Query {
   Check the upstream repository for a newer Deplo release; cached for an hour.
   """
   updateInfo: UpdateInfo
+
+  """
+  See what would be sent: the anonymous Usage report as it stands this second. A plain database read that dials nothing.
+  """
+  usageReport: UsageReportPreview
 
   """Full detail (incl. email) for one user."""
   userDetail(userId: String!): UserDetail
@@ -5071,6 +5145,10 @@ type SearchTemplate {
 
 """A connected host running deployments (reached via its agent)."""
 type Server {
+  """
+  Whether this server is offered canary (pre-release) agent versions as updates. Nothing installs one on its own: the update stays a click. Set with setServerAgentCanary.
+  """
+  agentCanary: Boolean
   agentPort: Int
 
   """
@@ -5098,7 +5176,7 @@ type Server {
   dockerVersion: String
 
   """
-  The agent version this server should be running - the latest GitHub release of the agent (DeploCloud/deplo-agent). Resolved at request time and cached; falls back to a built-in version when GitHub is unreachable.
+  The agent version this server should be running - the latest GitHub release of the agent (DeploCloud/deplo-agent), or the newest canary when `agentCanary` is on. Resolved at request time and cached; falls back to a built-in version when GitHub is unreachable.
   """
   expectedAgentVersion: String
   host: String
@@ -5775,6 +5853,10 @@ input UpdateGitConnectionInput {
 Result of checking the upstream GitHub repository for a newer Deplo release.
 """
 type UpdateInfo {
+  """
+  Whether canary (pre-release) versions count as updates. Off: only stable releases do.
+  """
+  canary: Boolean
   checkedAt: String
   current: String
   error: String
@@ -5842,6 +5924,20 @@ input UpsertEnvInput {
   targets: [EnvTarget!]
   type: EnvVarType!
   value: String!
+}
+
+"""
+The Usage report this instance would send right now, built live from the same code that sends it. Nothing stores a sent payload: what is shown here is what leaves.
+"""
+type UsageReportPreview {
+  """
+  The random id the reports are keyed by - quote it to ask Deplo to erase them. Null until the first send mints one; turning the switch off clears it and the next on mints a fresh one.
+  """
+  instanceId: String
+
+  """The whole document, pretty-printed JSON."""
+  json: String
+  lastSentAt: String
 }
 
 """

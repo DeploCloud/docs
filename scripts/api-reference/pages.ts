@@ -1280,7 +1280,7 @@ A server's \`role\` is \`everything\`, \`build\`, \`storage\` or \`import\`. The
       },
       {
         title: "Maintenance",
-        ops: [m("updateServerAgent"), m("checkAgentUpdates"), m("restartServerTraefik"), m("restartServerWorkloads"), m("restartDeploPanel"), m("retryNetworkIsolation")],
+        ops: [m("updateServerAgent"), m("checkAgentUpdates"), q("fleetAgents"), m("setServerAgentCanary"), m("restartServerTraefik"), m("restartServerWorkloads"), m("restartDeploPanel"), m("retryNetworkIsolation")],
       },
       {
         title: "Certificates",
@@ -1357,9 +1357,10 @@ The panel publishes itself through its host's proxy, so the address it answers o
 </Callout>
 `,
     sections: [
-      { title: "Settings", ops: [q("instanceSettings"), m("setGravatarEnabled"), m("setLogMaxDays"), m("welcomeSeen")] },
+      { title: "Settings", ops: [q("instanceSettings"), m("setGravatarEnabled"), m("setLogMaxDays"), m("welcomeSeen"), m("finishSetup")] },
       { title: "Panel address and HTTPS", ops: [q("panelAddressImpact"), m("setPanelUrl"), m("panelDns"), m("panelHttps"), m("setPanelHttps"), m("setPanelFallback")] },
-      { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates"), m("updateDeplo")] },
+      { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates"), m("updateDeplo"), m("setCanaryReleases")] },
+      { title: "Usage reports", ops: [q("usageReport"), m("setUsageReportsEnabled")] },
       {
         title: "Ownership",
         intro: `The instance owner is the tier above instance admin: the one account that can hand the instance over.`,
@@ -1377,7 +1378,7 @@ The panel publishes itself through its host's proxy, so the address it answers o
     title: "Migration and takeover",
     description: "Reading another panel, importing it project by project, moving its data, and taking over the machine it runs on.",
     intro: `
-A migration reads a Dokploy or Coolify panel through its API and recreates what it finds here: environments, apps, compose stacks, databases, variables, domains, config files, volumes, limits, basic-auth users and crons. Nothing is deployed by an import, the source is still answering those hostnames.
+A migration reads a Dokploy or Coolify panel, or another Deplo, through its API and recreates what it finds here: environments, apps, compose stacks, databases, variables, domains, config files, volumes, limits, basic-auth users and crons. Nothing is deployed by an import, the source is still answering those hostnames.
 
 The source's API key rides every call in \`MigrationSourceInput\` and is stored only for the length of a run started with \`startMigration\`. Everything is gated on \`create_projects\` and refused to a narrowed principal, since an import writes across the whole team.
 
@@ -1403,6 +1404,11 @@ The source's API key rides every call in \`MigrationSourceInput\` and is stored 
         ops: [m("setMigrationMachineAddress"), m("handOverMigrationSources")],
       },
       {
+        title: "Being read by another Deplo",
+        intro: `When another Deplo migrates a team from this one, it reads \`migrationExport\` and streams each volume from [\`POST /api/migration/export\`](/api-reference/rest#migration-export). Nothing is installed on this instance's machines.`,
+        ops: [q("migrationExport")],
+      },
+      {
         title: "Takeover",
         intro: `A takeover runs after a migration finished on the same machine: the installer stops the other platform, inherits its certificates, moves the proxy onto 80/443 and removes the other platform. The installer's own endpoint is REST, see [REST endpoints](/api-reference/rest#takeover).`,
         ops: [q("takeover"), q("takeoverPreflight"), m("requestTakeover"), m("cancelTakeover")],
@@ -1411,6 +1417,7 @@ The source's API key rides every call in \`MigrationSourceInput\` and is stored 
     seeAlso: [
       { title: "Move from Dokploy", description: "The dashboard wizard", href: "/migrations/move-from-dokploy" },
       { title: "Move from Coolify", description: "The dashboard wizard", href: "/migrations/move-from-coolify" },
+      { title: "Move from another Deplo", description: "The dashboard wizard", href: "/migrations/move-from-another-deplo" },
       { title: "Migrations", description: "What comes across and what does not", href: "/migrations" },
     ],
   },

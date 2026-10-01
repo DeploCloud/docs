@@ -5,7 +5,7 @@ description: The endpoints that stay outside GraphQL because they carry bytes, r
 
 GraphQL is the wrong transport for a 500 MB archive, a log stream that never ends, or a webhook sender that can only post a URL. Those stay REST. Everything else is on the GraphQL pages.
 
-Two kinds of credential apply. The **deploy hook** takes an [API token](/api-reference/authentication). The byte streams take the **session cookie** only: they are what the dashboard uses, and a bearer token is not accepted there.
+Two kinds of credential apply. The **deploy hook** and the **migration export** take an [API token](/api-reference/authentication). The byte streams take the **session cookie** only: they are what the dashboard uses, and a bearer token is not accepted there.
 
 | Endpoint | Auth | What it is |
 | --- | --- | --- |
@@ -17,6 +17,7 @@ Two kinds of credential apply. The **deploy hook** takes an [API token](/api-ref
 | `GET POST DELETE /api/databases/[id]/attach` | Session | Interactive console into a database |
 | `GET /api/backups/[runId]/download` | Session | Download one backup artifact |
 | `POST /api/backups/restore-upload` | Session | Restore from an uploaded file |
+| `POST /api/migration/export` | API token | Another Deplo reading one volume for a migration |
 | `POST /api/git/webhook/[token]` | Signature | Push receiver for GitLab, Gitea, Bitbucket, plain git |
 | `POST /api/github/webhook` | Signature | Push receiver for the GitHub App |
 | `GET /api/github/callback`, `GET /api/github/setup` | Browser | The GitHub App install flow |
@@ -161,6 +162,38 @@ curl -X POST "https://deplo.example.com/api/backups/restore-upload?database=db_9
   -H "X-Recovery-Key: ..." \
   --data-binary @orders-2026-09-01.tar.gz
 ```
+
+---
+
+## Migration export
+
+```
+POST /api/migration/export
+```
+
+What another Deplo calls to copy one volume of this team when it [migrates the team](/migrations/move-from-another-deplo). The token needs `reveal_secrets` over the whole team. The configuration itself comes from the `migrationExport` query on [Migration and takeover](/api-reference/migration).
+
+The body names one app or database, and one volume it mounts:
+
+```bash
+curl -X POST https://deplo.example.com/api/migration/export \
+  -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"kind": "database", "id": "db_9f1c2ab7d3e4f5a6", "volume": "deplo-db-orders_db-orders-data"}' \
+  --output orders-data.tar.gz
+```
+
+Answers `200` with the volume as `application/gzip`. Use `hostPath` instead of `volume` for a directory the app mounts, or `check: ["<volume>"]` to ask which of those volumes exist without reading them:
+
+```json
+{ "reachable": true, "present": ["deplo-db-orders_db-orders-data"] }
+```
+
+| Status | Meaning |
+| --- | --- |
+| `401` | No or invalid API token. |
+| `403` | The token lacks `reveal_secrets` or covers only part of the team, or the host path is outside the app's own files and the caller is not an instance admin with the host-volumes permission. |
+| `404` | No such app or database in this team, one in a folder you cannot open, or a volume it does not mount. |
 
 ---
 

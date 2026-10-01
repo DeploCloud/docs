@@ -87,6 +87,37 @@ mutation {
 }
 ```
 
+### `finishSetup`
+
+Any signed-in principal. Returns [`AuthPayload`](/api-reference/types/objects#authpayload).
+
+Finish an account the installer created with a temporary password: profile, new password, team. Signs in again.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `image` | `String` |  |
+| `name` | `String!` |  |
+| `password` | `String!` |  |
+| `teamImage` | `String` |  |
+| `teamName` | `String!` |  |
+| `username` | `String` |  |
+
+```graphql
+mutation {
+  finishSetup(
+    name: "shop"
+    password: "correct-horse-battery-staple"
+    teamName: "Acme"
+  ) {
+    requiresTwoFactor
+    viewer {
+      id
+      username
+    }
+  }
+}
+```
+
 ## Panel address and HTTPS
 
 ### `panelAddressImpact`
@@ -225,7 +256,7 @@ query {
 
 Instance admin only. Returns [`DeploChangelog`](/api-reference/types/objects#deplochangelog).
 
-Deplo's published releases with their notes, newest first; cached for an hour and refreshed by checkForUpdates.
+Deplo's published releases with their notes, newest first; canaries only while `updateInfo.canary` is on (or the one running). Cached for an hour and refreshed by checkForUpdates.
 
 ```graphql
 query {
@@ -265,6 +296,66 @@ Update this instance to the newest release: the agent on the machine Deplo runs 
 mutation {
   updateDeplo {
     logPath
+    version
+  }
+}
+```
+
+### `setCanaryReleases`
+
+Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
+
+Offer canary (pre-release) versions of Deplo as updates, or go back to stable ones. Installs nothing: a newer version shows up as an update, and turning it off never downgrades a panel already on a canary.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `enabled` | `Boolean!` |  |
+
+```graphql
+mutation {
+  setCanaryReleases(enabled: true) {
+    current
+    latest
+    updateAvailable
+  }
+}
+```
+
+## Usage reports
+
+### `usageReport`
+
+Instance admin only. Returns [`UsageReportPreview`](/api-reference/types/objects#usagereportpreview).
+
+See what would be sent: the anonymous Usage report as it stands this second. A plain database read that dials nothing.
+
+```graphql
+query {
+  usageReport {
+    instanceId
+    json
+    lastSentAt
+  }
+}
+```
+
+### `setUsageReportsEnabled`
+
+Instance admin only. Returns [`InstanceSettings`](/api-reference/types/objects#instancesettings).
+
+Turn anonymous usage statistics on or off for the whole instance. Off takes effect at once - no final report, no goodbye - and clears the instance id, so turning it on again starts a history that cannot be joined to the old one. Recorded in Activity. Has no effect while the install set DO_NOT_TRACK=1.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `enabled` | `Boolean!` |  |
+
+```graphql
+mutation {
+  setUsageReportsEnabled(enabled: true) {
+    panelUrl
+    panelUrlSource
+    gravatarEnabled
+    logMaxDays
     version
   }
 }

@@ -175,6 +175,9 @@
  "Query.environments": {
   "kind": "loggedIn"
  },
+ "Query.fleetAgents": {
+  "kind": "instanceAdmin"
+ },
  "Query.fleetMetrics": {
   "kind": "capability",
   "cap": "view_metrics",
@@ -246,6 +249,11 @@
  },
  "Query.members": {
   "kind": "loggedIn"
+ },
+ "Query.migrationExport": {
+  "kind": "capability",
+  "cap": "reveal_secrets",
+  "orInstanceAdmin": false
  },
  "Query.migrationRun": {
   "kind": "capability",
@@ -354,6 +362,9 @@
   "kind": "loggedIn"
  },
  "Query.updateInfo": {
+  "kind": "instanceAdmin"
+ },
+ "Query.usageReport": {
   "kind": "instanceAdmin"
  },
  "Query.userDetail": {
@@ -698,6 +709,9 @@
   "orInstanceAdmin": false
  },
  "Mutation.finishPasskeyRegistration": {
+  "kind": "loggedIn"
+ },
+ "Mutation.finishSetup": {
   "kind": "loggedIn"
  },
  "Mutation.generateAvailableDbPort": {
@@ -1105,6 +1119,9 @@
   "cap": "configure_apps",
   "orInstanceAdmin": false
  },
+ "Mutation.setCanaryReleases": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.setCertificateEmail": {
   "kind": "instanceAdmin"
  },
@@ -1197,6 +1214,9 @@
   "cap": "manage_monitoring",
   "orInstanceAdmin": false
  },
+ "Mutation.setServerAgentCanary": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.setServerBuildFallback": {
   "kind": "instanceAdmin"
  },
@@ -1219,6 +1239,9 @@
   "kind": "capability",
   "cap": "manage_env",
   "orInstanceAdmin": false
+ },
+ "Mutation.setUsageReportsEnabled": {
+  "kind": "instanceAdmin"
  },
  "Mutation.setUserTeamAccess": {
   "kind": "instanceAdmin"

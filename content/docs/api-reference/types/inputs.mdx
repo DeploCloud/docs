@@ -410,8 +410,8 @@ Map one of the panel's servers onto one of ours. `from` is that server's id, or 
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Never stored. |
-| `kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `dokploy`. |
+| `apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Another Deplo: an API token there, limited to the one team, with Reveal secret values, Start & stop apps and Start & stop databases. Never stored. |
+| `kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `deplo`, `dokploy`. |
 | `url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 
 ### MintRegistrationLinkInput

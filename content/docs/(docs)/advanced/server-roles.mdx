@@ -62,6 +62,11 @@ It is also **the only server Deplo uninstalls itself from**. On the
 servers page it is listed apart, with a single action to take it back out
 again.
 
+A migration from [another Deplo](/migrations/move-from-another-deplo)
+creates none: the old Deplo hands its data over itself. The installer
+refuses to make a migration source of a machine whose agent already belongs
+to another Deplo.
+
 ## Change a role later
 
 There is no in-place role change. Remove the server and install it again

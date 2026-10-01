@@ -1,9 +1,9 @@
 ---
 title: Migrations
-description: Move an existing Dokploy or Coolify installation to Deplo, data included.
+description: Move an existing Dokploy or Coolify installation, or another Deplo, to Deplo, data included.
 ---
 
-import { Layers, Globe, Database, ServerCog } from "lucide-react";
+import { Layers, Globe, Database, ServerCog, ArrowRightLeft } from "lucide-react";
 
 <Callout type="info" title="Beta">
   This feature is currently beta/experimental and subject to change. It is not
@@ -14,6 +14,8 @@ import { Layers, Globe, Database, ServerCog } from "lucide-react";
 Deplo reads an existing Dokploy or Coolify installation through its API and recreates it here:
 projects, apps, databases, domains, variables and volumes, with the data copied across. It does
 not need SSH into the old panel, and it never deletes anything on the source.
+
+It reads [another Deplo](/migrations/move-from-another-deplo) the same way, one team at a time.
 
 ## Two routes
 
@@ -27,10 +29,12 @@ not need SSH into the old panel, and it never deletes anything on the source.
 | The old panel afterwards | Removed from the machine | Still running, still yours |
 
 Both routes use the same wizard. The takeover adds one step at the start (bring data over or start
-clean) and one at the end (move the ports).
+clean) and one at the end (move the ports). Moving from another Deplo always takes the second
+route.
 
 On both routes a Deplo agent on the source machine reads the volumes. The data passes through the
-control plane, also when source and destination are the same machine.
+control plane, also when source and destination are the same machine. From another Deplo nothing
+is installed: the old Deplo hands its volumes over itself.
 
 ## The wizard
 
@@ -40,7 +44,7 @@ Seven steps. A step opens only when the one before it is finished.
 | --- | --- |
 | **Choose** | Takeover only. Bring your data over, or start clean. |
 | **Connect** | The panel's address and a token, one per source team. |
-| **Install** | One shell command to run on each source machine. |
+| **Install** | One shell command to run on each source machine. Skipped for another Deplo. |
 | **Review** | What comes over, where each item lands, then **Start migration**. |
 | **People** | Instance admins only. Single-use registration links for the panel's members. |
 | **Take over** | Takeover only. The confirmation that moves ports 80 and 443. |
@@ -144,6 +148,12 @@ third.
     title="Move from Coolify"
     description="Both routes, against a Coolify panel"
     href="/migrations/move-from-coolify"
+  />
+  <Card
+    icon={<ArrowRightLeft className="text-blue-400" />}
+    title="Move from another Deplo"
+    description="One team at a time, nothing installed on the old one"
+    href="/migrations/move-from-another-deplo"
   />
   <Card
     icon={<ServerCog className="text-blue-400" />}

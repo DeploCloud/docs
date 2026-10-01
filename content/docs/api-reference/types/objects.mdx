@@ -688,6 +688,7 @@ One published release of Deplo, as the changelog renders it.
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `available` | `Boolean` | Newer than the running version, so installing an update brings it in. |
 | `body` | `String` |  |
 | `current` | `Boolean` |  |
 | `name` | `String` |  |
@@ -725,7 +726,7 @@ A single build + release of an app.
 | `deployKey` | `String` | The stack this build owns: the app slug for production, `<slug>__pr-<n>` for a pull request preview. |
 | `environment` | [`DeploymentEnvironment`](/api-reference/types/enums#deploymentenvironment) |  |
 | `id` | `ID` |  |
-| `logs` | [`[LogLine!]`](/api-reference/types/objects#logline) | Build logs for this deployment (most recent lines, capped). |
+| `logs` | [`[LogLine!]`](/api-reference/types/objects#logline) | Build logs for this deployment (most recent lines, capped). With `after`, only the lines after that many, oldest first. Arguments: `after: Int`. |
 | `prNumber` | `Int` | The pull request number, denormalized so it survives the preview itself being reaped. Null for a production build. |
 | `previewId` | `ID` | The pull request preview this build belongs to, or null for production. |
 | `queuePosition` | `Int` | 1-based position in the owning server's build queue while this deployment is `queued` (1 = next to build); null once it starts building or finishes. |
@@ -876,6 +877,27 @@ Output of an exec'd console command.
 | --- | --- | --- |
 | `detach` | `Boolean` |  |
 | `output` | `String` |  |
+
+### FleetAgent
+
+One server whose agent is older than the fleet version.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `ID` |  |
+| `name` | `String` |  |
+| `version` | `String` |  |
+
+### FleetAgents
+
+How far the server agents are from the version this panel expects. They follow a panel update on their own, so `behind` is what that rollout has not carried yet.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `behind` | [`[FleetAgent!]`](/api-reference/types/objects#fleetagent) |  |
+| `expected` | `String` |  |
+| `total` | `Int` |  |
+| `updating` | `Boolean` | A rollout is still owed: Deplo retries every 15 minutes until every server is on `expected`. |
 
 ### FleetServerMetrics
 
@@ -1126,6 +1148,9 @@ Settings that belong to this Deplo instance rather than to a team or a host: the
 | `panelUrl` | `String` | The address Deplo uses for itself right now. Every install command, deploy hook URL and invite link is built from it. |
 | `panelUrlSource` | `String` | `stored` (set here), `environment` (DEPLO_PUBLIC_URL, set at install time) or `request` (derived from the browser's own host, which is a guess). |
 | `storedPanelUrl` | `String` |  |
+| `usageReportLastSentAt` | `String` | When the last Usage report left, or null when none ever has. |
+| `usageReportsEnabled` | `Boolean` | Whether this instance sends Deplo one anonymous Usage report a day: versions, counts and feature switches, keyed by a random instance id, never a hostname, address, name or email. On by default; any instance admin may turn it off, and nothing more is sent from that moment. |
+| `usageReportsForcedOff` | `Boolean` | True when the install set DO_NOT_TRACK=1, which turns reporting off regardless of the switch above. The switch then shows as disabled with that reason rather than hiding. |
 | `version` | `String` |  |
 
 ### LogLine
@@ -1866,6 +1891,7 @@ A connected host running deployments (reached via its agent).
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `agentCanary` | `Boolean` | Whether this server is offered canary (pre-release) agent versions as updates. Nothing installs one on its own: the update stays a click. Set with setServerAgentCanary. |
 | `agentPort` | `Int` |  |
 | `agentVersion` | `String` | The agent binary version last reported by this server on its last Hello. Null until the server's agent has called home and been provisioned. |
 | `allTeams` | `Boolean` | True (the default) when every team may target this server. False restricts it to `teams` (Settings -> Servers -> Team access). |
@@ -1875,7 +1901,7 @@ A connected host running deployments (reached via its agent).
 | `deployConcurrency` | `Int` | How many deployments this server runs at once (default 1 = strict per-server serialization). Deploys on other servers run in parallel; a same-app deploy never overlaps regardless. Editable via setServerDeployConcurrency (instance-admin). With a build server, the lane belongs to the BUILDER - that is where a deploy's cost is. |
 | `diskGb` | `Int` |  |
 | `dockerVersion` | `String` |  |
-| `expectedAgentVersion` | `String` | The agent version this server should be running - the latest GitHub release of the agent (DeploCloud/deplo-agent). Resolved at request time and cached; falls back to a built-in version when GitHub is unreachable. |
+| `expectedAgentVersion` | `String` | The agent version this server should be running - the latest GitHub release of the agent (DeploCloud/deplo-agent), or the newest canary when `agentCanary` is on. Resolved at request time and cached; falls back to a built-in version when GitHub is unreachable. |
 | `host` | `String` |  |
 | `hostArch` | `String` | This host's CPU architecture ("amd64" \| "arm64"), observed from the agent. Empty when the agent is too old to report it. A build server can only build for a host of the SAME architecture. |
 | `id` | `ID` |  |
@@ -2187,6 +2213,7 @@ Result of checking the upstream GitHub repository for a newer Deplo release.
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `canary` | `Boolean` | Whether canary (pre-release) versions count as updates. Off: only stable releases do. |
 | `checkedAt` | `String` |  |
 | `current` | `String` |  |
 | `error` | `String` |  |
@@ -2195,6 +2222,16 @@ Result of checking the upstream GitHub repository for a newer Deplo release.
 | `publishedAt` | `String` |  |
 | `updateAvailable` | `Boolean` |  |
 | `url` | `String` |  |
+
+### UsageReportPreview
+
+The Usage report this instance would send right now, built live from the same code that sends it. Nothing stores a sent payload: what is shown here is what leaves.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `instanceId` | `String` | The random id the reports are keyed by - quote it to ask Deplo to erase them. Null until the first send mints one; turning the switch off clears it and the next on mints a fresh one. |
+| `json` | `String` | The whole document, pretty-printed JSON. |
+| `lastSentAt` | `String` |  |
 
 ### UserDetail
 
