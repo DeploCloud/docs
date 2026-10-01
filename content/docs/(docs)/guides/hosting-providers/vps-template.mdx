@@ -35,14 +35,18 @@ Chain the installer to your provisioning, right after the operating system insta
 `--owner-email` and `--owner-password` create the customer's account during the install:
 
 - **The email** is the customer's, the one on their order.
-- **The password** is a temporary one you already send them, at least 8 characters. Best is a
-  random one generated for each order, like the service password your billing (WHMCS, for
-  example) already creates.
-- **Only the root password available?** Some panels cannot pass anything else (Virtualizor
-  recipes, for example). That works too: it is only used for the first sign-in.
+- **The password** is a temporary one you already send them, at least 8 characters: a random
+  one generated for each order, like the service password your billing (WHMCS, for example)
+  already creates.
 - **At the first sign-in** Deplo makes the customer replace it with a password of their own.
-  Until then the account cannot do anything else, so the temporary password, root or not,
-  gives no access to the panel.
+  Until then the account cannot do anything else, so the temporary password gives no access
+  to the panel.
+
+<Callout type="warn" title="The root password only as a fallback">
+  Some panels can pass nothing but the root password (Virtualizor recipes, for example). It
+  works, but until the customer's first sign-in the panel's sign-in page also accepts the root
+  password, so it can be tried there too. Tell the customer to sign in right away.
+</Callout>
 
 The command depends on the address the customer's panel starts on:
 
@@ -119,8 +123,10 @@ SolusVM 2, Convoy, OpenStack, CloudStack. On VirtFusion, add it as a server prov
 Bash or cloud-init YAML.
 
 <Callout type="info" title="On Virtualizor">
-  In a recipe, `{{username}}` is the customer's email and `{{root_pass}}` their root password,
-  used as the temporary one: `--owner-email '{{username}}' --owner-password '{{root_pass}}'`.
+  In a recipe, `{{username}}` is the customer's email and `{{root_pass}}` their root password.
+  It is the only password a recipe can pass, so it is the
+  [fallback](#run-the-installer-on-first-boot) case:
+  `--owner-email '{{username}}' --owner-password '{{root_pass}}'`.
 </Callout>
 
 </Step>
