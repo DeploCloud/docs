@@ -769,6 +769,11 @@
   "cap": "move_apps",
   "orInstanceAdmin": false
  },
+ "Mutation.moveAppToServer": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
  "Mutation.moveAppsToFolder": {
   "kind": "loggedIn"
  },

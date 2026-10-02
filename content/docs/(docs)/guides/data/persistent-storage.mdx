@@ -184,10 +184,17 @@ appears inside it.
 - **A File is for text config, at most 1 MiB.** A binary or bigger file already on the path stays
   as it is.
 - **Backups of an app include its files.** They do not include its databases.
-- **Moving to another server copies the data first.** The app is offline during the copy. If the
-  copy fails, the app goes back to its old server. If the old server cannot be reached, the app is
-  kept **stopped** on the new one: redeploy when the old server is back, or press **Deploy
-  anyway** to start without the data.
+
+## Move an app to another server
+
+**Settings -> General**, then **Move** on the **Server** card. Pick the new server and confirm. The
+card appears only when you have more than one server.
+
+- **Deplo redeploys the app there and copies its data first.** The app is offline during the copy.
+- **If the copy fails, the app goes back to its old server.** If the old server cannot be reached,
+  the app is kept **stopped** on the new one: redeploy when the old server is back, or press
+  **Deploy anyway** to start without the data.
+- **Apps it reached by name stay behind.** The dialog names them before you confirm.
 - **A volume Deplo cannot find on the old server stays there.** The deploy log names it.
 - **A Bind and an `external:` volume do not move.** They belong to the server.
 

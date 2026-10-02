@@ -343,6 +343,12 @@ export const EXAMPLES: {
     defaultTargets: [production, preview]
   )
 }`,
+    moveAppToServer: `mutation {
+  moveAppToServer(id: "prj_9f1c2ab7d3e4f5a6", serverId: "srv_9f1c2ab7d3e4f5a6") {
+    id
+    status
+  }
+}`,
     cancelAllDeployments: `mutation {
   cancelAllDeployments(appId: "prj_9f1c2ab7d3e4f5a6")
 }`,
@@ -754,6 +760,7 @@ export const EXAMPLES: {
   docs: {
     moveAppToEnvironment:
       "Move an app into a specific environment of a project. Each environment holds its own apps, so the app's project follows the environment.",
+    moveAppToServer: "Move the app to another server: it is redeployed there and its data copied first. Offline during the copy; a failed copy leaves it where it was.",
     app: "One app by its team-scoped slug, or null.",
     database: "One database by id, or null.",
     deployment: "One deployment by id, or null. `logs` carries the build output.",
@@ -1004,7 +1011,7 @@ Every write here changes what the **next** deploy renders. None of them starts a
     sections: [
       {
         title: "Source and build",
-        ops: [m("updateAppSource"), m("updateAppBuild"), q("buildServerChoices"), m("setAppBuildServer"), m("clearAppBuildCache"), m("setAppComposeUpArgs"), m("renderComposeStack"), m("setAppAutoDeploy"), m("setAppRollbackKeep")],
+        ops: [m("updateAppSource"), m("moveAppToServer"), m("updateAppBuild"), q("buildServerChoices"), m("setAppBuildServer"), m("clearAppBuildCache"), m("setAppComposeUpArgs"), m("renderComposeStack"), m("setAppAutoDeploy"), m("setAppRollbackKeep")],
       },
       {
         title: "Runtime",

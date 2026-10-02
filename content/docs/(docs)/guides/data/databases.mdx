@@ -190,15 +190,10 @@ is permanently gone, a `force` option appears.
   className="w-full rounded-lg"
 />
 
-**Settings -> Connection** has the exposure controls, password rotation and the server move. The
-**Server** select appears only when you have more than one server.
+**Settings -> Connection** has the exposure controls and password rotation.
 
 <TypeTable
   type={{
-    Server: {
-      type: "select",
-      description: "Changing it moves the database, see below",
-    },
     "Host port": {
       type: "number",
       description: "Publish it outside the server. Needs canExposePorts",
@@ -239,8 +234,9 @@ Config files are how you set `postgresql.conf`, `my.cnf`, `redis.conf` or an ini
 
 ## Move a database to another server
 
-Change **Server** in **Settings -> Connection**. Deplo stops the database, copies the data to the
-new server, and starts it there.
+**Settings -> General**, then **Move** on the **Server** card. Deplo stops the database, copies the
+data to the new server, and starts it there. The card appears only when you have more than one
+server.
 
 If the copy fails, the database is blocked from starting until you fix it. This protects your
 data from being replaced by an empty database.

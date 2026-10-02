@@ -40,6 +40,26 @@ mutation {
 }
 ```
 
+### `moveAppToServer`
+
+Needs `configure_apps`. Returns [`App`](/api-reference/types/objects#app).
+
+Move the app to another server: it is redeployed there and its data copied first. Offline during the copy; a failed copy leaves it where it was.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `serverId` | `String!` |  |
+
+```graphql
+mutation {
+  moveAppToServer(id: "prj_9f1c2ab7d3e4f5a6", serverId: "srv_9f1c2ab7d3e4f5a6") {
+    id
+    status
+  }
+}
+```
+
 ### `updateAppBuild`
 
 Needs `configure_apps`. Returns [`App`](/api-reference/types/objects#app).
