@@ -21,6 +21,7 @@ const BETA_PAGES = new Set([
   "/migrations/move-from-dokploy",
   "/migrations/move-from-coolify",
   "/migrations/move-from-another-deplo",
+  "/operations/move-deplo",
   "/api-reference/mcp",
 ]);
 

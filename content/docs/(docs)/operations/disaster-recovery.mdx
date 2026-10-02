@@ -52,6 +52,12 @@ That's what [backups](/guides/data/backups-and-restore) are for. Two rules worth
 
 ## If the control-plane machine is lost
 
+<Callout title="Is the old machine still running?">
+Then do not restore by hand: use [Move Deplo](/operations/move-deplo). It needs no shell, never
+copies `DEPLO_SECRET`, and stops the old Deplo from commanding your servers. This section is for
+when the old machine is gone.
+</Callout>
+
 Your apps keep serving. The control plane is not in the request path: Traefik and your containers are on the servers, and they don't need Deplo to keep running. What you lose is deploying, logs, metrics, and the dashboard.
 
 To come back:
@@ -84,6 +90,14 @@ Migrations apply at boot.
 They pin the **old** control plane's certificate authority, which was
 derived from that same secret, so they trust the new one. Where an agent
 does not reconnect, re-run the agent installer on that host to re-enroll it.
+</Step>
+
+<Step>
+### Re-enroll this machine's own server
+Its agent enrolled under the fresh install's secret, so it does not trust the
+restored one, and re-running `install.sh` keeps it as it is. It shows under
+**Settings -> Servers** as **Provisioning**: open it, then **Advanced -> Show
+install command**, and run that command on this machine.
 </Step>
 
 <Step>

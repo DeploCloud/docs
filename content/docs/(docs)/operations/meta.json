@@ -5,6 +5,7 @@
     "upgrade",
     "verify-a-release",
     "disaster-recovery",
+    "move-deplo",
     "break-glass-recovery",
     "instance-administration",
     "anonymous-usage-statistics",
