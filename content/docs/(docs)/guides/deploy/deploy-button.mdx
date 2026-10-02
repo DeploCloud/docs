@@ -3,7 +3,7 @@ title: Deploy button
 description: One link in your README deploys your project on the reader's own Deplo.
 ---
 
-import { Layers, LayoutTemplate } from "lucide-react";
+import { Layers, LayoutTemplate, Palette } from "lucide-react";
 
 The **Deploy on Deplo** button puts your project one click away from anyone who runs Deplo. It
 opens **their** Deplo, on **their** server, with your stack already filled in.
@@ -171,4 +171,5 @@ The file is read when someone clicks, not when you write the link.
 <Cards>
   <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="The catalogue this format comes from" href="/guides/deploy/from-template" />
   <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="What happens after the stack is created" href="/advanced/compose-apps" />
+  <Card icon={<Palette className="text-blue-400" />} title="Brand kit" description="The Deplo logo for your README, in every format" href="https://deplo.build/brand" />
 </Cards>
