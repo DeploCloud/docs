@@ -147,6 +147,53 @@ pair, and is hidden when the hostname has no www or apex counterpart.
 The redirecting hostname is a normal domain row with its own DNS check and its
 own certificate. The primary flag stays on the hostname that serves the app.
 
+## Security headers and CORS
+
+**Advanced settings -> Security**.
+
+<TypeTable
+  type={{
+    "Security headers": {
+      type: "boolean",
+      description: "Adds the three headers below to every response. On for every domain you add",
+      default: "on",
+    },
+    "Allowed origins (optional)": {
+      type: "text",
+      description: "Comma-separated sites whose pages may call this domain from the browser. * allows any. Blank turns CORS off",
+    },
+  }}
+/>
+
+What **Security headers** sends:
+
+| Header | Value | What it stops |
+| --- | --- | --- |
+| `X-Content-Type-Options` | `nosniff` | The browser guessing a file's type, so an upload cannot run as a script |
+| `X-Frame-Options` | `SAMEORIGIN` | Another site showing yours inside a frame |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Full URLs, query string included, leaking to other sites |
+
+- **Turn it off when another site embeds yours in a frame**, for example a widget or a dashboard
+  shown inside another tool.
+- **A domain added before the setting existed keeps it off**, and so does one that came from a
+  move. Turn it on when you are ready.
+- **There is no HSTS.** It would keep browsers on HTTPS for months, even after the certificate is
+  removed.
+
+**Allowed origins**, for an API on `api.acme.com` called by a frontend on `app.acme.com`:
+
+```text
+https://app.acme.com, http://localhost:5173
+```
+
+- **An origin is a scheme and a host, with an optional port.** `https://app.acme.com`, never
+  `https://app.acme.com/login`.
+- **Every method and any request header are allowed**, and the browser caches the answer for 10
+  minutes.
+- **Cookies are not sent across sites.** An app that needs them sets its own CORS headers; leave
+  this blank then.
+- **Up to 20 origins per domain.**
+
 ## Good to know
 
 - **A `deplo.site` hostname can never hold a certificate.**

@@ -207,6 +207,11 @@ not. Past runs stay under **History** with their reports.
 - **A published host port comes across** and needs the publish-ports permission. Without it the
   app still arrives, and the report names the ports it left behind. A port under 1024 cannot be
   published again; use a domain instead.
+- **A middleware label in a compose file comes across** when its kind is supported. Router labels
+  never do. See [Middlewares in a compose file](/advanced/compose-apps#middlewares-in-a-compose-file).
+- **Security headers stay off on a moved app's domains.** The app answered without them before, so
+  nothing that embeds it breaks. Turn them on under
+  [Security](/guides/networking/domains-and-https#security-headers-and-cors).
 - **A network you created yourself does not come across.** Apps in the same Environment share one
   network, so put stacks that talk to each other in the same Environment.
 - **A service name already used by another stack is renamed.** The second `db` in one

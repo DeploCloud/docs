@@ -178,6 +178,36 @@ same hostname and a **Path** of `/api`.
   would read both as numbers; a variable is text by the time a container
   reads it.
 
+## Middlewares in a compose file
+
+Routes come from **Domains**, never from labels. A `traefik.http.routers.*` or
+`traefik.http.services.*` label is dropped, and both the editor and the deploy log name it.
+
+A **middleware** label of a supported kind is kept, and applied to every domain of the service that
+declares it, in the order written:
+
+```yaml
+services:
+  web:
+    image: nginx:1.27
+    labels:
+      - traefik.http.middlewares.cache.headers.customresponseheaders.Cache-Control=public, max-age=3600
+      - traefik.http.middlewares.gz.compress=true
+```
+
+- **No router label is needed.** Deplo attaches the middleware to the service's domains itself.
+- **The name belongs to the stack.** Deplo renames `gz` when it deploys, so another app can neither
+  collide with it nor use it.
+- **Supported kinds:** `headers`, `compress`, `ratelimit`, `inflightreq`, `ipallowlist`,
+  `redirectscheme`, `redirectregex`, `addprefix`, `stripprefix`, `stripprefixregex`, `replacepath`,
+  `replacepathregex`, `buffering`, `retry`, `circuitbreaker`, `contenttype`, `grpcweb`, and
+  `basicauth` / `digestauth` with `users`.
+- **Dropped:** `forwardauth`, `errors`, `chain`, `plugin`, a `usersfile` and a Redis-backed
+  `ratelimit`. Each one makes the proxy reach something outside your app.
+- **The common security headers need no YAML.** A domain's
+  [Security headers](/guides/networking/domains-and-https#security-headers-and-cors) switch sends
+  them.
+
 ## Extra flags
 
 <Image
