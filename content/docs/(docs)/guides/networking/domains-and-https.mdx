@@ -188,8 +188,8 @@ https://app.acme.com, http://localhost:5173
 
 - **An origin is a scheme and a host, with an optional port.** `https://app.acme.com`, never
   `https://app.acme.com/login`.
-- **Every method and any request header are allowed**, and the browser caches the answer for 10
-  minutes.
+- **Every method and any request header are allowed**, `Authorization` included, and the browser
+  caches the answer for 10 minutes.
 - **Cookies are not sent across sites.** An app that needs them sets its own CORS headers; leave
   this blank then.
 - **Up to 20 origins per domain.**
