@@ -101,9 +101,11 @@ targets can be pruned.
 </Accordion>
 <Accordion title="A rollback fails or is not offered">
 
-- **Not offered:** the source is a Docker image or Compose stack, or **Keep**
-  is `0`. Deplo did not build an image to roll back to.
+- **Not offered:** the source is a Docker image or Compose stack, or an
+  uploaded archive past **Keep**. Deplo has no image or commit to go back to.
 - **Missing image:** it was pruned. Raise **Keep** and **Images kept per app**.
+- **Agent too old:** rebuilding an older commit needs a recent server agent.
+  Update it from **Settings -> Servers**.
 
 </Accordion>
 <Accordion title="The deploy succeeded but the app did not change">

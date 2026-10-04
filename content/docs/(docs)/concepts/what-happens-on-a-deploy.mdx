@@ -77,8 +77,8 @@ Every environment variable is available **during** the build too, so build-time 
 the running container gets the app's variables anyway.
 
 <Callout type="info">
-The image stays on that server. Deplo pushes to no registry, so a rollback needs the image to
-still be there.
+The image stays on that server. Deplo pushes to no registry, so an instant rollback needs the
+image to still be there. Once it is gone, an app from a repository rebuilds the commit.
 </Callout>
 
 Build output streams to the dashboard live and survives a page reload or a control plane restart.

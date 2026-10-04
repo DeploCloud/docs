@@ -14,7 +14,8 @@ the app listens on. Most apps never need to change them.
 call to a deploy hook URL.
 [Learn more ->](/guides/releases/automatic-deployments)
 
-**Rollbacks** bring back an image that already worked, in seconds and without a rebuild. A
+**Rollbacks** bring back an image that already worked, in seconds and without a rebuild. Past
+the kept builds, an app from a repository rebuilds the old commit instead. A
 rollback does not stop future deploys, so turn off deploy on push first if the branch itself is
 broken.
 [Learn more ->](/guides/releases/rollbacks)
