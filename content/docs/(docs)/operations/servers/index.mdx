@@ -9,11 +9,19 @@ instance-admin only; container registries are the exception, being team-scoped.
 Each page here talks to that server's agent. Nothing reaches into the host any other way, and the
 control plane never opens a shell.
 
-A server's own page has four tabs. **Overview** carries the CPU, memory, disk and Docker tiles,
-plus an Agent card with its version, an **Update to** button naming the newer one when a newer one
-exists, and **Check readiness**. **Access** decides which teams may use the machine and holds the **Build
-concurrency** card, whose single **Concurrent deployments** field defaults to `1` so deploys to
-one host serialize. **Cleanup** and **Advanced** are the two below.
+A server's own page has these tabs:
+
+- **Overview**: the CPU, memory, disk and Docker tiles, the display name, the **Build concurrency**
+  card and the Agent card. **Concurrent deployments** defaults to `1`, so deploys to one host
+  run one at a time. The Agent card shows its version, an **Update to** button when a newer one
+  exists, and **Check readiness**.
+- **Apps**: every app and database on this server, from every team, refreshed every 5 seconds.
+  Each row shows its team, project, live status, CPU, memory, restarts and domain. Open a row
+  to see its containers. Search and the status and type filters narrow the list.
+- **Access**: which teams may use the machine.
+- **Certificates**, **Maintenance**, **Cleanup** and **Advanced**: see the pages below.
+
+A row links to its app or database only when you are a member of that team.
 
 Raising concurrency past what the machine can take makes every deploy slower, not faster. One is a
 sane default for a small VPS.
