@@ -54,8 +54,8 @@ That's what [backups](/guides/data/backups-and-restore) are for. Two rules worth
 
 <Callout title="Is the old machine still running?">
 Then do not restore by hand: use [Move Deplo](/operations/move-deplo). It needs no shell, never
-copies `DEPLO_SECRET`, and stops the old Deplo from commanding your servers. This section is for
-when the old machine is gone.
+copies `DEPLO_SECRET`, and keeps the old Deplo running until you switch. This section is for when
+the old machine is gone.
 </Callout>
 
 Your apps keep serving. The control plane is not in the request path: Traefik and your containers are on the servers, and they don't need Deplo to keep running. What you lose is deploying, logs, metrics, and the dashboard.

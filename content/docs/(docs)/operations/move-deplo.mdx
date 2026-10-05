@@ -1,6 +1,6 @@
 ---
 title: Move Deplo to another machine
-description: Move a whole Deplo, every team, account and server, to a fresh install on another machine. Your apps keep running.
+description: Copy a whole Deplo, every team, account, app and database, to a fresh install on another machine. The old one keeps running.
 ---
 
 import { ArrowRightLeft, LifeBuoy, Server, Globe } from "lucide-react";
@@ -11,38 +11,34 @@ import { ArrowRightLeft, LifeBuoy, Server, Globe } from "lucide-react";
   GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-**Move Deplo** puts your whole Deplo on another machine: a bigger box, a different provider, or
+**Move Deplo** copies your whole Deplo onto another machine: a bigger box, a different provider, or
 your own machine instead of a hosted one.
 
 Everything comes across exactly as it was:
 
 - every team, account, role, app, database, variable, domain and backup
-- API tokens, deploy hooks and webhook addresses, which keep working
-- backup history and recovery keys, so every old backup still restores
+- each app's data, and the exact version it runs, with no rebuild
+- folders an app mounts from its server, except system and read-only ones, which the progress page
+  lists
+- API tokens and deploy hooks, which keep working
 
-**Your servers are not copied, they are handed over.** Each one switches to the new Deplo where it
-stands. Apps keep running the whole time and no data is copied off any machine. The old Deplo's own
-machine becomes an ordinary server of the new Deplo.
+**The old Deplo keeps running, untouched.** It keeps its servers and its apps keep serving. You
+switch over when you are ready, one domain at a time, and retire the old one whenever you choose.
 
-<Callout title="Moving one team, not a whole Deplo?">
-Use [Move from another Deplo](/migrations/move-from-another-deplo) instead. It brings one team
-into a Deplo that already runs other teams, onto that Deplo's servers.
+<Callout title="Bringing only some teams?">
+Use [Move from another Deplo](/migrations/move-from-another-deplo) instead. It brings teams into a
+Deplo that already runs other teams.
 </Callout>
 
 ## Before you start
 
 | Check | Why |
 | --- | --- |
-| The new Deplo is a **fresh install** | The move replaces everything on it. One account, no apps, no servers of its own. |
+| The new Deplo is a **fresh install** | The copy replaces everything on it. One account, no apps or databases. Servers you added are fine. |
 | Both run the **same version** | Update the older one under **Settings -> Deplo -> Updates**. |
-| The old Deplo has an **https** address | The move carries every secret, so it never runs over plain http. |
-| The new Deplo has an address | Set it under **Settings -> Deplo**. The old Deplo sends people there afterwards. |
-| Every server is **online** | Each one is handed over during the move. |
-| The new machine can reach each server on port **9443** | If a server's provider firewall only lets the old machine in, allow the new one too. |
-| No migration is running on the old Deplo | Finish or stop it first. |
-
-Both Deplos need an instance admin: one creates the move code on the old Deplo, one starts the
-move on the new one.
+| The old Deplo has an **https** address | The copy carries every secret, so it never runs over plain http. |
+| The new Deplo has an address | Set it under **Settings -> Deplo**. |
+| The new Deplo has room | Every app and database runs there too. Add servers to it first if one machine is not enough. |
 
 ## Move it
 
@@ -52,7 +48,7 @@ move on the new one.
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash
 ```
-Sign in, then leave it empty.
+Sign in, then leave it empty. Add servers now if you want the apps spread over several.
 </Step>
 
 <Step>
@@ -65,102 +61,106 @@ The code starts with `dmove_`, is shown once, and works for one hour until the n
 
 <Step>
 ### Connect from the new Deplo
-**Settings -> Migrations**, then **Another Deplo -> Everything**. Enter:
-
-- **Old Deplo address**: `https://deplo.example.com`
-- **Move code**: the `dmove_...` code
-
-Then press **Connect**.
+**Settings -> Migrations**, then **Another Deplo -> Everything**. Enter the old Deplo's address, for
+example `https://deplo.example.com`, and the `dmove_...` code.
 </Step>
 
 <Step>
-### Review what moves
-You see how many teams, people, apps, databases and servers come across, and every server with
-what it runs. The one marked **Old Deplo** is the old Deplo's own machine; it is handed over last.
+### Choose where everything lands
+You see what comes across, and every server of the old Deplo with a server here to land on. Each
+one defaults to this machine; pick another server to spread the load.
 
-A problem next to a server blocks the move until you fix it. Warnings do not.
+Two databases with the same name on different old servers cannot land on the same server here: the
+review says so, and you put one of them elsewhere.
 </Step>
 
 <Step>
 ### Start the move
 Press **Start move** and confirm. You land on the progress page:
 
-1. **Copy everything**: the old Deplo pauses changes and its data is copied here.
-2. **Hand over servers**: one server at a time.
-3. **Finish**: the old Deplo now only shows where it moved to.
+1. **Copy everything**: the old Deplo's data is copied here.
+2. **Deploy and copy data**: each app and database starts here, and its data is copied in.
+3. **Finish**.
 </Step>
 
 <Step>
 ### Sign in again
-The copy signs everyone out. Press **Sign in** and use the account you had on the old Deplo.
-Everyone else does the same.
+The copy signs everyone out of the new Deplo. Press **Sign in** and use the account you had on the
+old one. Everyone else does the same.
 </Step>
 </Steps>
 
 <Callout type="warn" title="Keep the progress page to yourself">
-Its address works without signing in, because the copy signs everyone out. Whoever has it can retry,
-cancel or finish the move.
+Its address works without signing in, because the copy signs everyone out. Whoever has it can
+follow and retry the move. Once the copy is in, cancelling or finishing early needs an instance admin.
 </Callout>
 
-## While it runs
+## What the old Deplo notices
 
-Both Deplos **pause changes**: no deploys, no edits, no scheduled backups or crons. Your apps keep
-serving traffic.
+Almost nothing. It never pauses as a whole, and stays fully usable the whole time.
 
-A banner says so on both sides. Queued deploys run on the new Deplo once the move finishes.
+An app or database **with data** stops on the old Deplo for as long as its own data copies, then
+starts again. One without data never stops. While it is paused, the old Deplo will not deploy or
+restart it. If the new Deplo stops answering mid-copy, the old one starts what it paused on its own
+after a couple of minutes.
 
-## Keep your old address
+Changes made on the old Deplo after the copy started do not come across. Make them on the new one
+once it is done.
 
-Passkeys and webhook addresses are tied to the panel's address, not to the data. To keep them
-working:
+## Switch over
+
+The new Deplo runs a full copy, but your domains still point at the old servers, so the old Deplo
+keeps serving your traffic until you move them.
 
 <Steps>
 <Step>
-### Point the old domain at the new machine
-For example, change the `A` record of `deplo.example.com` to the new machine's IP.
+### Point each domain at its new server
+For example, change the `A` record of `shop.example.com` to the IP of the server it landed on.
+Deplo issues the certificate as soon as the domain answers there.
 </Step>
 
 <Step>
-### Set it as the panel address
-**Settings -> Deplo** on the new Deplo. See [Panel address and certificates](/operations/panel-address-and-certificates).
+### Turn on schedules
+The new Deplo starts with **crons and scheduled backups paused**, so nothing runs twice while both
+Deplos are up. A banner offers **Turn on**: press it once the new Deplo is the one you use.
+</Step>
+
+<Step>
+### Keep the panel's address, if you want
+Point the old panel domain at the new machine and set it under **Settings -> Deplo**. Passkeys and
+webhook addresses are tied to that address: with a new one, people sign in with their password and
+set passkeys up again, and webhooks have to be changed.
 </Step>
 </Steps>
 
-If you use a new address instead, people sign in with their password and set up their passkeys
-again, and any webhook pointing at the old address has to be changed.
+## Two Deplos, from now on
 
-## After the move
+After the move the two live independently. Anything you change on one stays there.
 
-- **The old Deplo stays up, paused.** It shows where it moved to, and refuses every API token.
-- **The old machine is now a server of the new Deplo.** Its apps keep running there. To empty it,
-  move its apps to another server, then remove it under **Settings -> Servers**.
+- **API tokens, deploy hooks and members** exist on both. Revoking a token on one leaves it working on
+  the other, until you retire the old Deplo.
+- **Backups made before the move** show on both. The new Deplo never deletes them, because the old
+  one still lists them. Backups kept on a server's disk stay on the old server.
+- **Pushes** keep deploying on the old Deplo, because your git provider still calls it. Deploy the new
+  one by hand, or point the webhooks at it when you switch.
 
-<Callout type="warn" title="Do not run uninstall.sh on the old machine">
-It removes the server agent too, and that agent now belongs to the new Deplo. Every app on that
-machine would lose its connection to Deplo.
-</Callout>
+When you no longer need the old Deplo, [uninstall it](/operations/remove-a-server-or-uninstall).
 
 ## If something goes wrong
 
 | What you see | What to do |
 | --- | --- |
-| A step failed with a reason | Fix what it names, then press **Try again**. The move resumes where it stopped. |
-| You want to stop before any server was handed over | **Cancel move**. The old Deplo resumes, and anything copied here is deleted. |
-| The old Deplo is gone for good mid-move | **Finish without the old Deplo** on the new one. Servers not handed over stay behind; add them again under **Settings -> Servers**. |
-| The new Deplo is gone for good mid-move | **Resume this Deplo** on the old one. Servers already handed over must be added again. |
-
-Once a server is handed over, a move only goes forward: **Try again**, or finish without the old
-Deplo.
+| Some apps failed with a reason | Fix what it names, then press **Try again**. Only the failed and waiting ones run again. |
+| One app keeps failing | **Skip** it. The move finishes without it; add it again by hand. |
+| You want to stop | **Cancel move**. The old Deplo starts anything it paused, and the new one goes back to setup. |
+| The old Deplo is gone mid-move | **Finish without the old Deplo**. Apps whose data never came across are left out. |
 
 ## Common messages
 
 | Message | Fix |
 | --- | --- |
-| **This Deplo already has apps or databases** | Move into a fresh install. |
+| **Needs an empty Deplo** | Move into a fresh install, or bring only some teams instead. |
 | **The old Deplo runs an older version** | Update it, then connect again. |
-| **This machine cannot reach web-1 at 203.0.113.20:9443** | Let the new machine through that server's firewall. |
-| **web-1 runs an older server agent** | Update it from the old Deplo's **Servers** page, then check again. |
-| **The old Deplo cannot reach web-1 right now** | Bring that server back online, then check again. |
 | **This move code expired** | Create a new one on the old Deplo. |
 | **This move code is already in use by another Deplo** | A code works for one new Deplo only. Create a new one. |
 
@@ -169,6 +169,6 @@ Deplo.
 <Cards>
   <Card icon={<LifeBuoy className="text-blue-400" />} title="Disaster recovery" description="When the old machine is already gone" href="/operations/disaster-recovery" />
   <Card icon={<Globe className="text-blue-400" />} title="Panel address" description="Keep your address after the move" href="/operations/panel-address-and-certificates" />
-  <Card icon={<ArrowRightLeft className="text-blue-400" />} title="Move from another Deplo" description="Move one team into an existing Deplo" href="/migrations/move-from-another-deplo" />
-  <Card icon={<Server className="text-blue-400" />} title="Remove a server" description="Empty and remove the old machine" href="/operations/remove-a-server-or-uninstall" />
+  <Card icon={<ArrowRightLeft className="text-blue-400" />} title="Move from another Deplo" description="Bring only some teams into a Deplo" href="/migrations/move-from-another-deplo" />
+  <Card icon={<Server className="text-blue-400" />} title="Uninstall" description="Retire the old Deplo when you are done" href="/operations/remove-a-server-or-uninstall" />
 </Cards>
