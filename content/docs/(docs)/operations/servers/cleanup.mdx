@@ -31,7 +31,7 @@ you have already saved.
     "Orphaned volumes": {
       type: "scope",
       description:
-        "Anonymous volumes no container references: the data dirs of removed containers and abandoned build caches. A named volume is never touched.",
+        "Anonymous volumes no container references: the data dirs of removed containers and abandoned build caches. A named volume of one of your apps goes only when it is empty on disk; one holding bytes is never touched.",
     },
     "Unused app images": {
       type: "scope",
@@ -62,6 +62,10 @@ and a stopped app keeps everything.
 **Unused app images** and the **build cache** are also swept right after every
 deploy, so a day of builds cannot fill the disk before the schedule fires.
 
+The build cache also has a ceiling: **a tenth of the server's disk**. Past that, the oldest cache
+is evicted even when it is younger than the minimum age. Without it, a host that builds all day
+never has a cache old enough to qualify, and the ceiling is the only thing that still bites.
+
 ## Settings
 
 <TypeTable
@@ -73,7 +77,7 @@ deploy, so a day of builds cannot fill the disk before the schedule fires.
     "Minimum age (hours)": {
       type: "number",
       description:
-        "Caches only: the build cache, dangling images and leaked build volumes. Everything else is count-based or reference-based.",
+        "Caches only: the build cache, dangling images and leaked build volumes. Everything else is count-based or reference-based, and the build-cache ceiling goes past it.",
     },
     "Images kept per app": {
       type: "number",
@@ -92,9 +96,9 @@ deploy, so a day of builds cannot fill the disk before the schedule fires.
 />
 
 What it deliberately never does: `system prune`, container prune, volume prune, network prune. A
-**named** volume, a container, and anything a container still uses are never touched, because on a
-Deplo host a *stopped* app is a live app. Only an anonymous volume nothing can mount again by name
-is a candidate.
+container and anything a container still uses are never touched, because on a Deplo host a
+*stopped* app is a live app. A **named** volume goes only when it is one of your apps' and is
+empty: no bytes, nothing to lose. Anything with data in it stays, whatever its name.
 
 ## What cleanup does not touch
 
@@ -118,7 +122,7 @@ is a candidate.
 
 | Symptom | What to check |
 | --- | --- |
-| Cleanup frees nothing | The minimum age is protecting the caches, or the only large thing on disk is images your apps still use. |
+| Cleanup frees nothing | The build cache is already under its ceiling and the minimum age is protecting the rest, or the only large thing on disk is images your apps still use. |
 | **Reclaim disk now** ran on a host you opted out | It does: the manual run ignores the opt-out list. The schedule honours it. |
 | Rollbacks stopped working after a sweep | **Images kept per app** is too low for an app that cannot roll back. For apps that can, their own **Keep** governs. |
 
