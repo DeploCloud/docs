@@ -33,7 +33,7 @@ const ALIASES: Record<string, string[]> = {
   logout: ["sign out"],
   delete: ["remove"],
   remove: ["delete"],
-  update: ["upgrade"],
+  upgrade: ["update"],
   reset: ["recover"],
   forgot: ["reset", "recover", "lost"],
   telemetry: ["usage statistics"],

@@ -2,7 +2,7 @@
   "title": "Operations",
   "icon": "Server",
   "pages": [
-    "upgrade",
+    "update",
     "verify-a-release",
     "disaster-recovery",
     "move-deplo",

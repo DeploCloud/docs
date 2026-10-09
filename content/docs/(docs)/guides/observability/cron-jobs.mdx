@@ -14,7 +14,7 @@ For example: a nightly cleanup, a report at 6am, a queue worker tick, or
 How it works:
 
 - The panel decides **when** a job runs. The **agent** on the server runs it,
-  so restarting or upgrading the panel does not kill a running job. While the
+  so restarting or updating the panel does not kill a running job. While the
   panel is down, nothing new starts.
 - The command runs in the current container of the Compose service you named,
   so a redeployed app keeps working. With no service named, it runs in the

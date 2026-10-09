@@ -65,7 +65,7 @@ The index and ranking are ours: `source.config.ts` decides what a page contribut
 
 - **Indexed:** title, description, headings, paragraphs, table rows, `TypeTable` rows.
 - **Skipped:** `Accordions`, `Cards`, raw `<a>` links, "Next steps" / "See also", lines that
-  only point elsewhere ("See [Upgrade] for more.") and fragments under two words.
+  only point elsewhere ("See [Update] for more.") and fragments under two words.
 - **Name things the way readers type them.** A page is found by its title, description and
   headings, so use the panel's own words there: "Docker cleanup", not only "Server cleanup".
 - **After touching search or renaming a heading**, run `bun scripts/search-check.ts

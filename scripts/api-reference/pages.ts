@@ -1381,7 +1381,7 @@ The panel publishes itself through its host's proxy, so the address it answers o
     ],
     seeAlso: [
       { title: "Panel address and certificates", description: "The dashboard guide", href: "/operations/panel-address-and-certificates" },
-      { title: "Upgrade", description: "Updating Deplo", href: "/operations/upgrade" },
+      { title: "Update", description: "Updating Deplo", href: "/operations/update" },
       { title: "Instance administration", description: "The dashboard view", href: "/operations/instance-administration" },
     ],
   },

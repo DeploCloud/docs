@@ -79,6 +79,8 @@ const config = {
       { source: "/guides/server/maintenance-and-advanced", destination: "/operations/servers/maintenance-and-advanced", permanent: true },
       { source: "/guides/server/container-registries", destination: "/operations/servers/container-registries", permanent: true },
       { source: "/guides/server", destination: "/operations/servers", permanent: true },
+      // 2026-10: Upgrade became Update, the panel's own word.
+      { source: "/operations/upgrade", destination: "/operations/update", permanent: true },
     ];
   },
 };
