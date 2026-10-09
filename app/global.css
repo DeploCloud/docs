@@ -129,7 +129,7 @@ img {
   width: 0;
   height: 0;
   z-index: -1;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background-color: color-mix(in srgb, var(--color-fd-primary) 10%, transparent);
   opacity: 0;
   pointer-events: none;
@@ -196,6 +196,12 @@ summary,
 #nd-sidebar button.rounded-lg.border {
   border-radius: var(--radius-md);
   font-weight: 400;
+}
+
+/* Sidebar rows (links, folder triggers) */
+#nd-sidebar [data-radix-scroll-area-viewport] .rounded-lg,
+#nd-sidebar-mobile [data-radix-scroll-area-viewport] .rounded-lg {
+  border-radius: var(--radius-md);
 }
 
 .inline-flex.items-center.justify-center.bg-fd-primary {
