@@ -26,7 +26,7 @@ export function SiteFooter() {
                     key={platform}
                     href={href}
                     aria-label={label}
-                    className="interact flex size-10 items-center justify-center rounded-full border border-white/15 bg-black"
+                    className="interact flex size-10 items-center justify-center rounded-md border border-white/15 bg-black"
                   >
                     <Icon className="size-4" />
                   </SiteLink>

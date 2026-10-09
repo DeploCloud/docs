@@ -1,16 +1,7 @@
-// deplo.build's own header and footer, mirrored: the site's copy lives in its CMS, not here.
+// deplo.build's own footer, mirrored: the site's copy lives in its CMS, not here.
 export const SITE = "https://deplo.build";
 
 export type SiteLink = { label: string; href: string };
-
-export const headerNav: SiteLink[] = [
-  { label: "Product", href: `${SITE}/features` },
-  { label: "Pricing", href: `${SITE}/pricing` },
-  { label: "Compare", href: `${SITE}/comparison` },
-  { label: "Community", href: "https://ds.deplo.build" },
-];
-
-export const getStarted: SiteLink = { label: "Get started", href: `${SITE}/get-started` };
 
 export const footerTagline = "Open source deployment for the servers you already own.";
 

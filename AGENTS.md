@@ -113,17 +113,16 @@ committed until the user asks for it explicitly.
   call site.
 - Headings, chips and table headers are free to stay bold. The rule is about
   buttons only.
-- **The docs look like deplo.build, 1:1.** Two shapes only: pills (`rounded-full`)
-  for every control (buttons, the search, the tree picker) and square corners for
-  everything else, because `app/global.css` sets every `--radius-*` to 0. Cards,
+- **The docs look like deplo.build.** Two shapes only: `rounded-md` for every
+  button (and the tree picker) and square corners for everything else, because
+  `app/global.css` sets every `--radius-*` to 0 except `--radius-md`. Cards,
   callouts, code blocks and popovers carry the site's L marks on the corners: a
   new box gets the `tile` class, Fumadocs' own are matched by class signature.
-- **The blueprint is the site's:** dashed guides under the header, along the
-  sidebar and the TOC, a cross where two meet, and the isometric grid behind
+- **The blueprint is the site's:** dashed guides along the sidebar and the TOC, a cross where two meet, and the isometric grid behind
   every page title (`IsoHero`, also used by the home hero in `index.mdx`).
-- **Header and footer mirror the site's** (`SiteHeader`, `SiteFooter`, links in
-  `lib/site.ts`). The site's copy lives in its CMS: when its header or footer
-  changes, update `lib/site.ts` by hand. Buttons come from `lib/button-styles.ts`,
+- **The footer mirrors the site's** (`SiteFooter`, links in `lib/site.ts`). The
+  header stays Fumadocs' own navbar, not the site's. The site's copy lives in its
+  CMS: when its footer changes, update `lib/site.ts` by hand. Buttons come from `lib/button-styles.ts`,
   the primary one with `CtaChevron`, the same GSAP hover as the site.
 
 ## Comments and commits

@@ -6,11 +6,11 @@
   --font-sans: var(--font-funnel-sans);
 }
 
-/* deplo.build has two shapes only: pills (rounded-full) for controls, square corners for everything else. */
+/* Buttons are rounded-md; every other box stays square. */
 @theme {
   --radius-xs: 0px;
   --radius-sm: 0px;
-  --radius-md: 0px;
+  --radius-md: 0.375rem;
   --radius-lg: 0px;
   --radius-xl: 0px;
   --radius-2xl: 0px;
@@ -188,13 +188,13 @@ summary,
   cursor: pointer;
 }
 
-/* Pill buttons at the body weight, like deplo.build. fumadocs bakes the
-   radius and font-medium into buttonVariants, so the class signature is the
-   only hook it leaves. The tree picker is a control too, so a pill. */
+/* Buttons at the body weight, rounded-md. fumadocs bakes the radius and
+   font-medium into buttonVariants, so the class signature is the only hook it
+   leaves. The tree picker is a control too. */
 .inline-flex.items-center.justify-center.rounded-md,
 .inline-flex.items-center.justify-center.rounded-lg,
 #nd-sidebar button.rounded-lg.border {
-  border-radius: calc(infinity * 1px);
+  border-radius: var(--radius-md);
   font-weight: 400;
 }
 
@@ -229,14 +229,6 @@ html {
   --dash-x: repeating-linear-gradient(to right, var(--line) 0 4px, transparent 4px 8px);
   --dash-y: repeating-linear-gradient(to bottom, var(--line) 0 4px, transparent 4px 8px);
   --cross: linear-gradient(#a2a2a2, #a2a2a2);
-  /* SiteHeader's height: Fumadocs starts the sticky sidebar and TOC below it. */
-  --fd-banner-height: 0px;
-}
-
-@media (width >= 48rem) {
-  :root {
-    --fd-banner-height: 5.75rem;
-  }
 }
 
 ::-webkit-scrollbar {
@@ -322,8 +314,7 @@ figure.shiki:not(.bg-fd-secondary)::after,
     linear-gradient(var(--c), var(--c)) right bottom / 1px 10px no-repeat;
 }
 
-/* The guides: under the header, along the sidebar and the TOC, above the footer. */
-.site-header,
+/* The guides: under the mobile bar, along the sidebar and the TOC, above the footer. */
 #nd-subnav {
   border-bottom-color: transparent;
   background-image: var(--dash-x);

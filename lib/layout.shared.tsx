@@ -8,8 +8,6 @@ export function baseOptions(): BaseLayoutProps {
       title: NavTitle,
       children: <SidebarMenu />,
     },
-    // On desktop the search lives in SiteHeader; the mobile bar keeps its icon.
-    searchToggle: { components: { lg: <></> } },
     themeSwitch: { enabled: false },
   };
 }

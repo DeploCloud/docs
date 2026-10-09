@@ -14,7 +14,6 @@ const items = [
   { icon: Heart, label: "Sponsor", href: "https://github.com/sponsors/IdraDev" },
 ];
 
-// Mobile bar only: on desktop the same links sit in SiteHeader and SiteFooter.
 export function SidebarMenu() {
   return (
     <Popover>
@@ -23,7 +22,7 @@ export function SidebarMenu() {
         className={buttonVariants({
           color: "ghost",
           size: "icon-sm",
-          className: "text-fd-muted-foreground md:hidden",
+          className: "text-fd-muted-foreground",
         })}
       >
         <Menu className="size-4.5" />
