@@ -616,3 +616,16 @@ main[data-layout-main] {
   background-color: var(--color-fd-popover);
   backdrop-filter: none;
 }
+
+/* The wordmark's underscore blinks like a terminal cursor while hovered. 733/895 and 210/266 are where it sits in logo.svg. */
+@media (prefers-reduced-motion: no-preference) {
+  .nav-logo:hover img {
+    animation: cursor-blink 1.06s step-end infinite;
+  }
+}
+
+@keyframes cursor-blink {
+  50% {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 78.9%, 81.9% 78.9%, 81.9% 100%, 0% 100%);
+  }
+}
