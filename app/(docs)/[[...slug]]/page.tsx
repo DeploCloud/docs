@@ -5,6 +5,7 @@ import {
   DocsDescription,
   DocsTitle,
   MarkdownCopyButton,
+  PageBreadcrumb,
 } from "fumadocs-ui/layouts/docs/page";
 import { getMDXComponents } from "@/mdx-components";
 import { source } from "@/lib/source";
@@ -37,15 +38,18 @@ export default async function Page(props: PageProps<"/[[...slug]]">) {
   const isBeta = BETA_PAGES.has(page.url);
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage toc={page.data.toc} full={page.data.full} breadcrumb={{ enabled: false }}>
       {!isHome && (
         <IsoHero className="flex flex-col gap-4">
-          <div className="flex items-center justify-end gap-2">
-            <MarkdownCopyButton markdownUrl={markdownUrl} />
-            <ViewOptions
-              markdownUrl={markdownUrl}
-              githubUrl={`https://github.com/DeploCloud/docs/blob/main/content/docs/${page.path}`}
-            />
+          <div className="flex items-center justify-between gap-2">
+            <PageBreadcrumb className="min-w-0" />
+            <div className="flex shrink-0 items-center gap-2">
+              <MarkdownCopyButton markdownUrl={markdownUrl} />
+              <ViewOptions
+                markdownUrl={markdownUrl}
+                githubUrl={`https://github.com/DeploCloud/docs/blob/main/content/docs/${page.path}`}
+              />
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <DocsTitle className="text-4xl leading-[1.15] tracking-tight text-balance md:text-5xl">
