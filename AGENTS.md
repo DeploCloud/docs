@@ -105,12 +105,12 @@ committed until the user asks for it explicitly.
 
 ## Styling
 
-- **Fonts match deplo.build exactly.** Funnel Sans 400/500, Funnel Display
+- **Fonts match deplo.build exactly.** Funnel Sans 400/500/600, Funnel Display
   500/600/700 for headings, `antialiased`, and `font-synthesis-weight: none` so a
   missing cut never renders as a fake bold halo. The site's two buttons
-  (`lib/button-styles.ts`) are 500, as on the site; Fumadocs' own buttons are
-  400 except the primary, set in `app/global.css`. Do not set a weight at a
-  call site.
+  (`lib/button-styles.ts`) are 500, the primary one 600; Fumadocs' own buttons
+  are 400 except the primary (600), set in `app/global.css`. Do not set a weight
+  at a call site.
 - Headings, chips and table headers are free to stay bold. The rule is about
   buttons only.
 - **The docs look like deplo.build.** Two shapes only: `rounded-md` for every

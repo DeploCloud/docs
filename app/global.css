@@ -205,7 +205,7 @@ summary,
 }
 
 .inline-flex.items-center.justify-center.bg-fd-primary {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* Same fonts as deplo.build: Funnel Sans ships 400/500 only, so never let the
