@@ -5,10 +5,10 @@ type Result = { type: string; url: string };
 const BASE = process.argv[2] ?? "http://localhost:3000";
 
 const CASES: [string, ...string[]][] = [
-  ["reset password", "/operations/instance-administration#users", "/guides/team/account-security#change-your-password"],
-  ["how do i reset my password", "/operations/instance-administration#users", "/guides/team/account-security#change-your-password"],
+  ["reset password", "/operations/break-glass-recovery#reset-a-password", "/operations/instance-administration#users"],
+  ["how do i reset my password", "/operations/break-glass-recovery#reset-a-password", "/operations/instance-administration#users"],
   ["change password", "/guides/team/account-security#change-your-password"],
-  ["forgot password", "/operations/instance-administration#users", "/operations/break-glass-recovery#take-the-account-back"],
+  ["forgot password", "/troubleshooting/sign-in-and-access#you-cannot-sign-in", "/operations/break-glass-recovery#reset-a-password"],
   ["two factor", "/guides/team/account-security#two-factor-authentication"],
   ["2fa", "/guides/team/account-security#two-factor-authentication"],
   ["passkey", "/guides/team/account-security#passkeys"],

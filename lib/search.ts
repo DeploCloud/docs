@@ -168,8 +168,8 @@ export async function searchDocs(query: string, tag: string | null): Promise<Sor
   }
 
   // Pages compare on each key in turn: words covered, words in the title and how much of it they
-  // fill, a heading holding every word, the section, a row holding every word close together,
-  // words in headings, then how strongly the page is about them.
+  // fill, a heading holding every word, a row holding them close together, the section, words
+  // in headings, then how strongly the page is about them.
   const ranked = [...groups].map(([url, rows], order) => {
     const page = pages.get(url)!;
     const covered = terms.filter((term) => term.regex.test(page.title) || rows.some((row) => term.regex.test(row.doc.content)));
@@ -191,8 +191,8 @@ export async function searchDocs(query: string, tag: string | null): Promise<Sor
       coverage(page.title),
       titleFit(page.title),
       +headings.some((row) => row.covered === n),
-      page.weight,
       +rows.some((row) => row.near),
+      page.weight,
       terms.filter((term) => headings.some((row) => term.regex.test(row.doc.content))).length,
       strength,
       -order,
