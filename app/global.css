@@ -269,9 +269,6 @@ html {
       opacity: 0.8;
     }
   }
-  .interact:active {
-    opacity: 1;
-  }
 }
 
 @layer components {
