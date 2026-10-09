@@ -8,38 +8,33 @@ export const docs = defineDocs({
   dir: "content/docs",
 });
 
-const SEARCHABLE_MDX_ATTRIBUTES = ["title", "description"];
-const BLOCK_TYPES = ["heading", "paragraph", "blockquote", "mdxJsxFlowElement"];
-
 type Content = StructuredData["contents"][number];
 type Context = { addContent: (...content: Content[]) => void };
 
-const isJsx = (node: Nodes, name: string) =>
-  (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") && node.name === name;
+const toText = defaultStringifier({}) as (this: Processor, node: Nodes, ctx: Context) => string;
 
-// Self-closing components like <Card title="x" description="y" /> would be
-// indexed as raw JSX; render them as plain "title: description" text instead.
-const toText = defaultStringifier({
-  filterMdxAttributes: (_node, attribute) =>
-    attribute.type === "mdxJsxAttribute" && SEARCHABLE_MDX_ATTRIBUTES.includes(attribute.name),
-  stringify(node) {
-    if (node.type !== "mdxJsxFlowElement" && node.type !== "mdxJsxTextElement") return;
-    return node.attributes
-      .flatMap((attribute) =>
-        attribute.type === "mdxJsxAttribute" &&
-        typeof attribute.value === "string" &&
-        SEARCHABLE_MDX_ATTRIBUTES.includes(attribute.name)
-          ? [attribute.value]
-          : [],
-      )
-      .join(": ");
-  },
-}) as (this: Processor, node: Nodes, ctx: Context) => string;
+const BLOCK_TYPES = ["heading", "paragraph", "blockquote", "mdxJsxFlowElement"];
+// Navigation and lookup lists stay out of search: the page they point at is the hit (AGENTS.md).
+const SKIPPED = ["Accordions", "Cards", "Card", "a"];
+const NAV_HEADINGS = ["Next steps", "See also"];
+
+const jsxName = (node: Nodes) =>
+  node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement" ? node.name : undefined;
+
+// Words outside code and links: "See [Deploys and builds] for more." has three.
+function proseWords(node: Nodes): number {
+  if (node.type === "text") return node.value.split(/\s+/).filter((word) => /[a-z]{2}/i.test(word)).length;
+  if (node.type === "link" || !("children" in node)) return 0;
+  return node.children.reduce((sum, child) => sum + proseWords(child), 0);
+}
+
+const hasLink = (node: Nodes): boolean =>
+  node.type === "link" || ("children" in node && node.children.some(hasLink));
 
 const literal = (value: Expression) =>
   value.type === "Literal" && typeof value.value === "string" ? value.value : undefined;
 
-// One search entry per <TypeTable> row: "`key` - type - description".
+// One search entry per <TypeTable> row: "**key** - type - description".
 function typeTableRows(node: Nodes): Content[] {
   if (node.type !== "mdxJsxFlowElement") return [];
   const value = node.attributes.find((a) => a.type === "mdxJsxAttribute" && a.name === "type")?.value;
@@ -55,7 +50,7 @@ function typeTableRows(node: Nodes): Content[] {
           : [],
       ),
     );
-    const content = [key && `\`${key}\``, fields.get("type"), fields.get("description")].filter(Boolean).join(" - ");
+    const content = [key && `**${key}**`, fields.get("type"), fields.get("description")].filter(Boolean).join(" - ");
     return content ? [{ heading: undefined, content }] : [];
   });
 }
@@ -71,14 +66,20 @@ export default defineConfig({
         if (node.type === "tableRow") return !headerRows.has(node);
         return BLOCK_TYPES.includes(node.type);
       },
-      // Accordion content stays out of search: a hit cannot open it (AGENTS.md).
-      mdxTypes: (node) => node.name === "Accordions" || !node.children?.length,
+      mdxTypes: (node) => SKIPPED.includes(node.name ?? "") || !node.children?.length,
       stringify(this: Processor, node: Nodes, ctx: Context) {
-        if (isJsx(node, "Accordions")) return "";
-        if (isJsx(node, "TypeTable")) {
+        const name = jsxName(node);
+        if (name === "TypeTable") {
           ctx.addContent(...typeTableRows(node));
           return "";
         }
+        if (node.type === "heading") {
+          const text = toText.call(this, node, ctx);
+          return NAV_HEADINGS.includes(text.trim()) ? "" : text;
+        }
+        // Fragments ("Save.", a lone `reset_role`) and "See [that page]." lines.
+        const words = proseWords(node);
+        if ((name && SKIPPED.includes(name)) || words < 2 || (words <= 3 && hasLink(node))) return "";
         if (node.type !== "tableRow") return toText.call(this, node, ctx);
         return node.children
           .map((cell) => toText.call(this, { type: "paragraph", children: cell.children }, ctx).trim())
