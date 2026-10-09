@@ -107,13 +107,24 @@ committed until the user asks for it explicitly.
 
 - **Fonts match deplo.build exactly.** Funnel Sans 400/500, Funnel Display
   500/600/700 for headings, `antialiased`, and `font-synthesis-weight: none` so a
-  missing cut never renders as a fake bold halo. Primary buttons are 500 (as on
-  the site), every other button 400, both set in `app/global.css`; do not set a
-  weight at a call site.
+  missing cut never renders as a fake bold halo. The site's two buttons
+  (`lib/button-styles.ts`) are 500, as on the site; Fumadocs' own buttons are
+  400 except the primary, set in `app/global.css`. Do not set a weight at a
+  call site.
 - Headings, chips and table headers are free to stay bold. The rule is about
   buttons only.
-- **Buttons are pills** (`rounded-full`), set in the same rule. Fields keep their
-  radius: the search box and the tree picker are not buttons.
+- **The docs look like deplo.build, 1:1.** Two shapes only: pills (`rounded-full`)
+  for every control (buttons, the search, the tree picker) and square corners for
+  everything else, because `app/global.css` sets every `--radius-*` to 0. Cards,
+  callouts, code blocks and popovers carry the site's L marks on the corners: a
+  new box gets the `tile` class, Fumadocs' own are matched by class signature.
+- **The blueprint is the site's:** dashed guides under the header, along the
+  sidebar and the TOC, a cross where two meet, and the isometric grid behind
+  every page title (`IsoHero`, also used by the home hero in `index.mdx`).
+- **Header and footer mirror the site's** (`SiteHeader`, `SiteFooter`, links in
+  `lib/site.ts`). The site's copy lives in its CMS: when its header or footer
+  changes, update `lib/site.ts` by hand. Buttons come from `lib/button-styles.ts`,
+  the primary one with `CtaChevron`, the same GSAP hover as the site.
 
 ## Comments and commits
 

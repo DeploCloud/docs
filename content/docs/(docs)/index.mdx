@@ -8,10 +8,11 @@ full: true
 import { GitBranch, Globe, Database, Archive, SlidersHorizontal, Users, Server, Coins, UploadCloud, Terminal, LayoutTemplate, Link2, Cpu, Bot, Route } from "lucide-react";
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
+import { primaryButton, secondaryButton } from "@/lib/button-styles";
 
-<div className="not-prose grid grid-cols-1 items-center gap-10 pt-4 pb-16 lg:grid-cols-[2fr_3fr] lg:gap-16">
+<IsoHero className="mb-16 grid grid-cols-1 items-center gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
   <div className="flex flex-col gap-6">
-    <h1 className="font-display text-4xl leading-[1.15] font-bold tracking-tighter sm:text-5xl">
+    <h1 className="font-display text-5xl leading-[1.1] font-bold tracking-tighter sm:text-7xl">
       Deplo
     </h1>
 
@@ -21,40 +22,33 @@ import { basePath } from "@/lib/base-path";
       infrastructure.
     </div>
 
-    <div className="flex flex-wrap items-center gap-3">
-      <a
-        href={`${basePath}/getting-started/install`}
-        className="inline-flex items-center justify-center rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-semibold text-fd-primary-foreground transition-opacity hover:opacity-90"
-      >
-        Install Deplo
+    <div className="flex flex-wrap items-center gap-2">
+      <a href={`${basePath}/getting-started/install`} className={primaryButton}>
+        <CtaChevron>Install Deplo</CtaChevron>
       </a>
       <a
         href="https://github.com/DeploCloud/deplo"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center rounded-lg border border-fd-border px-5 py-2.5 text-sm font-semibold text-fd-foreground transition-colors hover:bg-fd-accent"
+        className={secondaryButton}
       >
         View on GitHub
       </a>
     </div>
   </div>
 
-  <div className="relative">
-    <div
-      aria-hidden="true"
-      className="absolute -inset-x-12 -top-16 -bottom-24 -z-10 bg-gradient-to-b from-purple-600/50 via-blue-600/30 to-transparent blur-3xl"
-    />
+  <div className="tile">
     <Image
       src={`${basePath}/deplo_screenshot.png`}
       alt="The Deplo dashboard"
       width={1920}
       height={1125}
       sizes="(min-width: 1024px) 60vw, 100vw"
-      className="w-full rounded-lg"
+      className="w-full"
       priority
     />
   </div>
-</div>
+</IsoHero>
 
 <div className="mx-auto mb-16 max-w-2xl">
 
@@ -65,39 +59,39 @@ import { basePath } from "@/lib/base-path";
 </div>
 
 <div className="not-prose mx-auto mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
-  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">Why Deplo</h2>
+  <h2 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">Why Deplo</h2>
   <div className="text-fd-muted-foreground">
     Push, and it's live: on hardware you own, a bill you control.
   </div>
 </div>
 
 <div className="not-prose mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+  <div className="tile p-5">
     <Server className="mb-3 size-5 text-fd-muted-foreground" />
     <p className="font-medium text-fd-foreground">A VPS and a domain is enough</p>
     <p className="mt-1 text-sm text-fd-muted-foreground">Builds, routing, TLS, backups, monitoring, rollbacks.</p>
   </div>
-  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+  <div className="tile p-5">
     <Coins className="mb-3 size-5 text-fd-muted-foreground" />
     <p className="font-medium text-fd-foreground">No per-seat pricing, no lock-in</p>
     <p className="mt-1 text-sm text-fd-muted-foreground">You pay your host, not Deplo.</p>
   </div>
-  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+  <div className="tile p-5">
     <UploadCloud className="mb-3 size-5 text-fd-muted-foreground" />
     <p className="font-medium text-fd-foreground">Deploy from anything</p>
     <p className="mt-1 text-sm text-fd-muted-foreground">A Git repo, an image, a Dockerfile, Compose, or a plain upload.</p>
   </div>
-  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+  <div className="tile p-5">
     <Terminal className="mb-3 size-5 text-fd-muted-foreground" />
     <p className="font-medium text-fd-foreground">The shell is optional</p>
     <p className="mt-1 text-sm text-fd-muted-foreground">Useful for experts, never required.</p>
   </div>
-  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+  <div className="tile p-5">
     <LayoutTemplate className="mb-3 size-5 text-fd-muted-foreground" />
     <p className="font-medium text-fd-foreground">Familiar by design</p>
     <p className="mt-1 text-sm text-fd-muted-foreground">Shaped by a dedicated UX/UI team, not reinvented.</p>
   </div>
-  <div className="group rounded-xl border border-fd-border p-5 transition-colors duration-300 hover:border-white/20 hover:bg-gradient-to-b hover:from-white/10 hover:to-black">
+  <div className="tile p-5">
     <Link2 className="mb-3 size-5 text-fd-muted-foreground" />
     <p className="font-medium text-fd-foreground">A free URL from the first deploy</p>
     <p className="mt-1 text-sm text-fd-muted-foreground">Before you even own a domain.</p>
@@ -105,14 +99,14 @@ import { basePath } from "@/lib/base-path";
 </div>
 
 <div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
-  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">Popular features</h2>
+  <h2 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">Popular features</h2>
   <div className="text-fd-muted-foreground">The parts people reach for first.</div>
 </div>
 
 <div className="not-prose mx-auto grid max-w-4xl grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-3">
   <a
     href="/guides/deploy/from-git"
-    className="flex flex-col justify-between gap-8 rounded-xl border border-fd-border p-6 transition-colors hover:bg-fd-accent/50 lg:col-start-1 lg:row-span-3 lg:row-start-1"
+    className="tile interact flex flex-col justify-between gap-8 p-6 lg:col-start-1 lg:row-span-3 lg:row-start-1"
   >
     <GitBranch className="size-6 text-blue-400" />
     <div>
@@ -122,7 +116,7 @@ import { basePath } from "@/lib/base-path";
   </a>
   <a
     href="/guides/networking/domains-and-https"
-    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-start-2 lg:row-start-1"
+    className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-start-2 lg:row-start-1"
   >
     <Globe className="size-5 text-purple-400" />
     <div>
@@ -132,7 +126,7 @@ import { basePath } from "@/lib/base-path";
   </a>
   <a
     href="/guides/data/databases"
-    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-start-3 lg:row-start-1"
+    className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-start-3 lg:row-start-1"
   >
     <Database className="size-5 text-green-400" />
     <div>
@@ -142,7 +136,7 @@ import { basePath } from "@/lib/base-path";
   </a>
   <a
     href="/guides/data/backups-and-restore"
-    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-start-2 lg:row-start-2"
+    className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-start-2 lg:row-start-2"
   >
     <Archive className="size-5 text-amber-400" />
     <div>
@@ -152,7 +146,7 @@ import { basePath } from "@/lib/base-path";
   </a>
   <a
     href="/guides/config/environment-variables"
-    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-start-3 lg:row-start-2"
+    className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-start-3 lg:row-start-2"
   >
     <SlidersHorizontal className="size-5 text-cyan-400" />
     <div>
@@ -162,7 +156,7 @@ import { basePath } from "@/lib/base-path";
   </a>
   <a
     href="/concepts/teams-and-capabilities"
-    className="flex flex-col justify-between gap-6 rounded-xl border border-fd-border p-5 transition-colors hover:bg-fd-accent/50 lg:col-span-2 lg:col-start-2 lg:row-start-3 lg:flex-row lg:items-center"
+    className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-span-2 lg:col-start-2 lg:row-start-3 lg:flex-row lg:items-center"
   >
     <Users className="size-5 text-pink-400" />
     <div>
@@ -173,7 +167,7 @@ import { basePath } from "@/lib/base-path";
 </div>
 
 <div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
-  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">How it works</h2>
+  <h2 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">How it works</h2>
   <div className="text-fd-muted-foreground">
     The control plane decides, the agent executes.
   </div>
@@ -215,7 +209,7 @@ import { basePath } from "@/lib/base-path";
 </div>
 
 <div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
-  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">What Deplo is not</h2>
+  <h2 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">What Deplo is not</h2>
 </div>
 
 <div className="mx-auto max-w-2xl">
@@ -228,7 +222,7 @@ import { basePath } from "@/lib/base-path";
 </div>
 
 <div className="not-prose mx-auto mt-16 mb-6 flex max-w-xl flex-col items-center gap-2 text-center">
-  <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">Explore the rest</h2>
+  <h2 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">Explore the rest</h2>
 </div>
 
 <div className="mx-auto max-w-2xl">

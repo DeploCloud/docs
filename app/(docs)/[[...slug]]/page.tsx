@@ -12,6 +12,7 @@ import { pageUrl } from "@/lib/base-path";
 import { PageFeedback } from "@/components/page-feedback";
 import { ViewOptions } from "@/components/view-options";
 import { BetaChip } from "@/components/beta-chip";
+import { IsoHero } from "@/components/iso-hero";
 
 const BETA_PAGES = new Set([
   "/guides/mcp-server",
@@ -38,26 +39,24 @@ export default async function Page(props: PageProps<"/[[...slug]]">) {
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
       {!isHome && (
-        <div className="flex items-center justify-end gap-2">
-          <MarkdownCopyButton markdownUrl={markdownUrl} />
-          <ViewOptions
-            markdownUrl={markdownUrl}
-            githubUrl={`https://github.com/DeploCloud/docs/blob/main/content/docs/${page.path}`}
-          />
-        </div>
-      )}
-      {!isHome && (
-        <>
-          {isBeta ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <DocsTitle>{page.data.title}</DocsTitle>
-              <BetaChip />
-            </div>
-          ) : (
-            <DocsTitle>{page.data.title}</DocsTitle>
-          )}
-          <DocsDescription>{page.data.description}</DocsDescription>
-        </>
+        <IsoHero className="flex flex-col gap-4">
+          <div className="flex items-center justify-end gap-2">
+            <MarkdownCopyButton markdownUrl={markdownUrl} />
+            <ViewOptions
+              markdownUrl={markdownUrl}
+              githubUrl={`https://github.com/DeploCloud/docs/blob/main/content/docs/${page.path}`}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <DocsTitle className="text-4xl leading-[1.15] tracking-tight text-balance md:text-5xl">
+              {page.data.title}
+            </DocsTitle>
+            {isBeta && <BetaChip />}
+          </div>
+          <DocsDescription className="mb-0 max-w-xl text-base leading-relaxed text-balance">
+            {page.data.description}
+          </DocsDescription>
+        </IsoHero>
       )}
       <DocsBody className={isHome ? "max-w-none" : undefined}>
         <MDXContent components={getMDXComponents()} />

@@ -6,24 +6,38 @@
   --font-sans: var(--font-funnel-sans);
 }
 
+/* deplo.build has two shapes only: pills (rounded-full) for controls, square corners for everything else. */
+@theme {
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+}
+
 /* Deplo e' un brand monocromatico: nero puro, bianco, grigio muto. Niente
    colore accento, quindi primary/ring ricadono sul bianco come su deplo-web. */
 :root,
 .dark {
   --color-fd-background: #000000;
   --color-fd-foreground: #ffffff;
-  --color-fd-muted: #111111;
+  --color-fd-muted: #121212;
   --color-fd-muted-foreground: #a2a2a2;
-  --color-fd-popover: #0a0a0a;
+  --color-fd-popover: #000000;
   --color-fd-popover-foreground: #ffffff;
-  --color-fd-card: #0a0a0a;
+  /* bg-white/5 over black: the site's card */
+  --color-fd-card: #0d0d0d;
   --color-fd-card-foreground: #ffffff;
   --color-fd-border: rgba(255, 255, 255, 0.1);
   --color-fd-primary: #ffffff;
   --color-fd-primary-foreground: #000000;
-  --color-fd-secondary: #111111;
+  --color-fd-secondary: #0d0d0d;
   --color-fd-secondary-foreground: #ffffff;
-  --color-fd-accent: #1a1a1a;
+  /* the site's raised row: a hovered menu item, an open FAQ */
+  --color-fd-accent: #121212;
   --color-fd-accent-foreground: #ffffff;
   --color-fd-ring: rgba(255, 255, 255, 0.4);
 
@@ -89,10 +103,10 @@ img {
   -webkit-user-drag: none;
 }
 
-/* the desktop docs sidebar defaults to bg-fd-card (#0a0a0a); Deplo is pure
-   monochrome so it should sit flush with the #000 page background */
+/* Flush with the #000 page, its edge a dashed rail like the site's guides. */
 #nd-sidebar {
-  background-color: var(--color-fd-background);
+  border-inline-end: 0;
+  background: var(--dash-y) right top / 1px 100% no-repeat var(--color-fd-background);
 }
 
 /* containing block for the active-page indicator below */
@@ -176,10 +190,10 @@ summary,
 
 /* Pill buttons at the body weight, like deplo.build. fumadocs bakes the
    radius and font-medium into buttonVariants, so the class signature is the
-   only hook it leaves. The search box and the tree picker keep theirs: those
-   are fields, not buttons. */
+   only hook it leaves. The tree picker is a control too, so a pill. */
 .inline-flex.items-center.justify-center.rounded-md,
-.inline-flex.items-center.justify-center.rounded-lg {
+.inline-flex.items-center.justify-center.rounded-lg,
+#nd-sidebar button.rounded-lg.border {
   border-radius: calc(infinity * 1px);
   font-weight: 400;
 }
@@ -194,12 +208,233 @@ html {
   font-synthesis-weight: none;
 }
 
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-display);
-  letter-spacing: -0.025em;
+/* In the base layer so a utility (the footer's column titles) can still win. */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* deplo.build's blueprint: dashed guides, crosses where they meet, the
+   isometric grid behind a hero, L marks on the corners of every card. */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --line: #2b2b2b;
+  --dash-x: repeating-linear-gradient(to right, var(--line) 0 4px, transparent 4px 8px);
+  --dash-y: repeating-linear-gradient(to bottom, var(--line) 0 4px, transparent 4px 8px);
+  --cross: linear-gradient(#a2a2a2, #a2a2a2);
+  /* SiteHeader's height: Fumadocs starts the sticky sidebar and TOC below it. */
+  --fd-banner-height: 0px;
+}
+
+@media (width >= 48rem) {
+  :root {
+    --fd-banner-height: 5.75rem;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: #000;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.1);
+  border-radius: 9999px;
+}
+
+@layer utilities {
+  .interact {
+    cursor: pointer;
+  }
+  .interact:focus {
+    outline: none;
+  }
+  .interact:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+  @media (width >= 64rem) {
+    .interact:hover {
+      opacity: 0.8;
+    }
+  }
+  .interact:active {
+    opacity: 1;
+  }
+}
+
+@layer components {
+  .tile {
+    position: relative;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background-color: rgb(255 255 255 / 0.05);
+  }
+}
+
+/* Fumadocs' own boxes, by class signature: they have no hook of their own. */
+[data-card].border,
+.rounded-xl.border.bg-fd-card.p-3.ps-1,
+.flex.flex-col.overflow-hidden.rounded-xl.border.bg-fd-secondary,
+.rounded-2xl.border.bg-fd-card,
+.divide-y.rounded-lg.border.bg-fd-card,
+.flex.flex-col.gap-2.rounded-lg.border.p-4,
+[data-radix-popper-content-wrapper] > .border {
+  position: relative;
+}
+
+.tile::after,
+[data-card].border::after,
+figure.shiki:not(.bg-fd-secondary)::after,
+.rounded-xl.border.bg-fd-card.p-3.ps-1::after,
+.flex.flex-col.overflow-hidden.rounded-xl.border.bg-fd-secondary::after,
+.rounded-2xl.border.bg-fd-card::after,
+.divide-y.rounded-lg.border.bg-fd-card::after,
+.flex.flex-col.gap-2.rounded-lg.border.p-4::after,
+[data-radix-popper-content-wrapper] > .border::after,
+[role="dialog"].fixed.border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  --c: #a2a2a2;
+  background:
+    linear-gradient(var(--c), var(--c)) left top / 10px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) left top / 1px 10px no-repeat,
+    linear-gradient(var(--c), var(--c)) right top / 10px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right top / 1px 10px no-repeat,
+    linear-gradient(var(--c), var(--c)) left bottom / 10px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) left bottom / 1px 10px no-repeat,
+    linear-gradient(var(--c), var(--c)) right bottom / 10px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right bottom / 1px 10px no-repeat;
+}
+
+/* The guides: under the header, along the sidebar and the TOC, above the footer. */
+.site-header,
+#nd-subnav {
+  border-bottom-color: transparent;
+  background-image: var(--dash-x);
+  background-position: left bottom;
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+}
+
+#nd-toc {
+  background: var(--dash-y) left top / 1px 100% no-repeat;
+  padding-inline-start: 1.5rem;
+}
+
+.site-footer {
+  background: var(--dash-x) left top / 100% 1px no-repeat;
+}
+
+/* A cross where a guide meets the sidebar's rail (268px in) and, on xl, the TOC's. */
+.rail-marks {
+  position: absolute;
+  inset-inline: 0;
+  height: 11px;
+  pointer-events: none;
+  background:
+    var(--cross) 262px 5px / 11px 1px no-repeat,
+    var(--cross) 267px 0 / 1px 11px no-repeat;
+}
+
+/* The right one only where a TOC draws its rail: a page without one has no guide there. */
+@media (width >= 80rem) {
+  body:has(#nd-toc) .rail-marks {
+    background:
+      var(--cross) 262px 5px / 11px 1px no-repeat,
+      var(--cross) 267px 0 / 1px 11px no-repeat,
+      var(--cross) right 262px top 5px / 11px 1px no-repeat,
+      var(--cross) right 267px top 0 / 1px 11px no-repeat;
+  }
+}
+
+/* The hero is the page's first section and carries its own top padding, so the grid starts under the header. */
+#nd-page {
+  padding-top: 0;
+}
+
+main[data-layout-main] {
+  container-type: inline-size;
+}
+
+/* As wide as the whole column (100cqw), with the content kept where the article puts it. */
+.iso-hero {
+  position: relative;
+  margin-inline: calc((100% - 100cqw) / 2);
+  padding: 2.5rem calc((100cqw - 100%) / 2);
+  background: var(--dash-x) left bottom / 100% 1px no-repeat;
+}
+
+@media (width >= 80rem) {
+  .iso-hero {
+    padding-block: 3.5rem;
+  }
+}
+
+.iso-hero-grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.iso-hero > :not(.iso-hero-grid) {
+  position: relative;
+}
+
+/* Above the sidebar (z-20), so the left cross is whole. */
+.iso-hero::after {
+  content: "";
+  position: absolute;
+  inset-inline: -6px;
+  bottom: -5px;
+  height: 11px;
+  z-index: 21;
+  pointer-events: none;
+}
+
+@media (width >= 48rem) {
+  .iso-hero::after {
+    background:
+      var(--cross) left 0 top 5px / 11px 1px no-repeat,
+      var(--cross) left 5px top 0 / 1px 11px no-repeat;
+  }
+}
+
+@media (width >= 80rem) {
+  body:has(#nd-toc) .iso-hero::after {
+    background:
+      var(--cross) left 0 top 5px / 11px 1px no-repeat,
+      var(--cross) left 5px top 0 / 1px 11px no-repeat,
+      var(--cross) right 0 top 5px / 11px 1px no-repeat,
+      var(--cross) right 5px top 0 / 1px 11px no-repeat;
+  }
+}
+
+/* The giant wordmark at the bottom of the footer, cropped like the site's. */
+.footer-mark {
+  width: 100%;
+  aspect-ratio: 895 / 170;
+  background-color: #111;
+  mask-position: top center;
+  mask-size: 100% auto;
+  mask-repeat: no-repeat;
 }
 
 /* "Did this page help you" card illustration: a page with a checkmark badge
@@ -373,4 +608,17 @@ h4 {
   width: 24px;
   height: 24px;
   padding: 5px;
+}
+
+/* A rule in the docs is the site's dashed guide, not a solid line. */
+.prose hr {
+  height: 1px;
+  border: 0;
+  background: var(--dash-x);
+}
+
+/* The site's panels are solid black, not frosted. */
+[data-radix-popper-content-wrapper] > .border {
+  background-color: var(--color-fd-popover);
+  backdrop-filter: none;
 }

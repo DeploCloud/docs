@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${funnelDisplay.variable} ${funnelSans.variable} antialiased selection:bg-white/10`}
+      className={`${funnelDisplay.variable} ${funnelSans.variable} antialiased selection:bg-white selection:text-black`}
       suppressHydrationWarning
     >
       <Script

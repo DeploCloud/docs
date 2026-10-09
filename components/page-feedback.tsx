@@ -9,7 +9,7 @@ export function PageFeedback() {
   const [vote, setVote] = useState<"up" | "down" | null>(null);
 
   return (
-    <div className="mt-8 flex items-center gap-3 rounded-xl border bg-fd-card p-3 text-fd-card-foreground">
+    <div className="tile mt-8 flex items-center gap-3 p-3 text-fd-card-foreground">
       <FeedbackIllustration className="size-10 shrink-0" />
       {vote === null ? (
         <div className="flex flex-1 flex-wrap items-center justify-between gap-3">

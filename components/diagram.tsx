@@ -226,8 +226,8 @@ export function Diagram({
   }, [full]);
 
   return (
-    <div className="not-prose diagram group relative my-6">
-      <div className="overflow-x-auto rounded-xl border bg-fd-card">
+    <div className="tile not-prose diagram group my-6">
+      <div className="overflow-x-auto">
         <div className="min-w-[720px]" style={{ aspectRatio: aspectOf(nodes) }}>
           <Flow nodes={nodes} edges={edges} interactive={false} />
         </div>

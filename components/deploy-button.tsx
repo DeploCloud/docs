@@ -5,7 +5,7 @@ const BADGE = "https://deplo.build/api/media/file/button.svg";
 
 export function DeployButton({ compose }: { compose: string }) {
   return (
-    <div className="not-prose my-6 flex justify-center rounded-xl border border-fd-border bg-fd-card px-6 py-10">
+    <div className="tile not-prose my-6 flex justify-center px-6 py-10">
       <a href={`https://deplo.build/deploy?compose=${compose}`} target="_blank" rel="noopener noreferrer">
         <img src={BADGE} alt="Deploy on Deplo" width={179} height={40} />
       </a>
