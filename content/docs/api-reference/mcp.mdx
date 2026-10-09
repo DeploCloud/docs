@@ -16,7 +16,7 @@ The MCP server is a different framing of this same API, not a second one: each t
 An ordinary [API token](/api-reference/authentication), or the OAuth access token a web client obtains. There is no MCP-specific credential.
 
 ```bash
-claude mcp add --transport http deplo https://deplo.example.com/api/mcp \
+claude mcp add --scope user --transport http deplo https://deplo.example.com/api/mcp \
   --header "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxxxxxx" \
   --header "X-Deplo-Team: acme"
 ```
