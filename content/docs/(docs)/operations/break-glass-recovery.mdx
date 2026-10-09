@@ -1,6 +1,6 @@
 ---
 title: Break-glass recovery
-description: Recover an account or panel address from the control-plane host.
+description: Reset a password, or restore an account or the panel address, from the control-plane host.
 ---
 
 import { ShieldCheck, Globe, Server, Users } from "lucide-react";
@@ -23,7 +23,7 @@ deplo
 
 | Command | What it does |
 | --- | --- |
-| `deplo recover` | Break-glass account and address recovery, below |
+| `deplo recover` | Reset a password, restore an account or an address, below |
 | `deplo logs [lines]` | Follow the control plane's logs |
 | `deplo restart` | Restart the control plane |
 | `deplo update` | Re-run the installer to the latest version |
@@ -33,7 +33,7 @@ deplo
   for when the dashboard is what is broken. See [Upgrade](/operations/upgrade).
 </Callout>
 
-## Recovery commands
+## When someone is locked out
 
 ```bash
 deplo recover
@@ -55,7 +55,7 @@ Lists every account with its username, email, and admin, owner, or suspended sta
 
 <Step>
 
-### Take the account back
+### Reset a password
 
 ```bash
 deplo recover password ada
