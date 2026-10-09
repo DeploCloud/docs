@@ -5,8 +5,7 @@ description: Fix failed builds, unreachable apps, missing deploys, and full serv
 
 import { Wrench, GitBranch, Rocket, Server } from "lucide-react";
 
-<Accordions>
-<Accordion title="The build fails">
+## The build fails
 
 **Read the build log first.** Use the last error line to choose the fix.
 
@@ -22,8 +21,7 @@ import { Wrench, GitBranch, Rocket, Server } from "lucide-react";
 Detection runs on every deploy. If it changed after a repository change, set
 the commands explicitly; explicit settings win.
 
-</Accordion>
-<Accordion title="The build passes but the app is unreachable">
+## The build passes but the app is unreachable
 
 Check these in order:
 
@@ -36,8 +34,7 @@ Check these in order:
 Use the generated address (like `https://deplo-cb00710a.deplo.site`) to separate an app
 problem from a DNS or certificate problem.
 
-</Accordion>
-<Accordion title="The app restarts, is unhealthy, or has no container">
+## The app restarts, is unhealthy, or has no container
 
 Open the app's **Logs** tab and look at the runtime notice:
 
@@ -56,8 +53,7 @@ Open the app's **Logs** tab and look at the runtime notice:
 After changing variables, the healthcheck, or storage, **Redeploy**. Use
 **Rebuild container** only when the rendered stack must be recreated.
 
-</Accordion>
-<Accordion title="A push does not start a deploy">
+## A push does not start a deploy
 
 | Check | Where |
 | --- | --- |
@@ -69,8 +65,7 @@ After changing variables, the healthcheck, or storage, **Redeploy**. Use
 
 If the panel address changed, update the webhook or use a new deploy hook.
 
-</Accordion>
-<Accordion title="A deploy is stuck in the queue">
+## A deploy is stuck in the queue
 
 Deploys to one server run one at a time by default. Check the build log and
 the target server:
@@ -80,8 +75,7 @@ the target server:
 - A [build server](/advanced/build-servers) is full. Check that server too.
 - The target server is unreachable. Refresh its health.
 
-</Accordion>
-<Accordion title="No space left on device">
+## No space left on device
 
 Open **Settings -> Servers -> the server -> Cleanup**, then click **Reclaim
 disk now**. If little space is freed, check old app images and the build cache.
@@ -98,8 +92,7 @@ Keep **Images kept per app** at least as high as the app's **Keep**, or rollback
 targets can be pruned.
 </Callout>
 
-</Accordion>
-<Accordion title="A rollback fails or is not offered">
+## A rollback fails or is not offered
 
 - **Not offered:** the source is a Docker image or Compose stack, or an
   uploaded archive past **Keep**. Deplo has no image or commit to go back to.
@@ -107,22 +100,18 @@ targets can be pruned.
 - **Agent too old:** rebuilding an older commit needs a recent server agent.
   Update it from **Settings -> Servers**.
 
-</Accordion>
-<Accordion title="The deploy succeeded but the app did not change">
+## The deploy succeeded but the app did not change
 
 - Variables and storage changes apply on the next deploy; saving alone does
   not deploy.
 - If the rendered Compose stack is unchanged, use **Rebuild container** in
   **Settings -> Advanced**.
 
-</Accordion>
-<Accordion title="A deploy shows an old error after restart">
+## A deploy shows an old error after restart
 
 After a control-plane restart, an in-flight deploy can show `error` even when
 the containers are running. A later telemetry update clears that stale state.
 
-</Accordion>
-</Accordions>
 
 ## Next steps
 

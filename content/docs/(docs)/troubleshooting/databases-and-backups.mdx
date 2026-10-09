@@ -5,8 +5,7 @@ description: Fix database connections, startup, backups, restores, and encryptio
 
 import { Database, DatabaseBackup, ShieldCheck } from "lucide-react";
 
-<Accordions>
-<Accordion title="An app cannot reach its database">
+## An app cannot reach its database
 
 | Check | Why |
 | --- | --- |
@@ -16,8 +15,7 @@ import { Database, DatabaseBackup, ShieldCheck } from "lucide-react";
 | Did the password change? | Rotating it does not update the app's variable. Update it and redeploy |
 | Did you redeploy after setting the variable? | Variables apply on the next deploy |
 
-</Accordion>
-<Accordion title="A database does not start">
+## A database does not start
 
 - **`provisioning`:** the agent could not pull the image, or the server is
   unreachable. Redeploy and Rebuild cannot help until it is ready.
@@ -28,8 +26,7 @@ import { Database, DatabaseBackup, ShieldCheck } from "lucide-react";
 - **After a server move:** resolve the data-copy error before starting the
   engine. An empty volume can initialise a new database over the old data.
 
-</Accordion>
-<Accordion title="A Rebuild removed the data">
+## A Rebuild removed the data
 
 <Callout type="error" title="Rebuild deletes the volume">
 It tears down the stack and provisions a fresh database. The connection string
@@ -39,16 +36,14 @@ can still work even when the old data is gone.
 Use **Redeploy** for a data-preserving change. Restore a backup if data is
 missing.
 
-</Accordion>
-<Accordion title="Deleting a database is refused">
+## Deleting a database is refused
 
 Deletion is refused until the host confirms that both the container and volume
 are gone.
 
 If the host is permanently gone, a `force` option appears after the refusal.
 
-</Accordion>
-<Accordion title="A backup destination test fails">
+## A backup destination test fails
 
 A failed probe is a result, not a platform error. Open **Connection log** in
 the destination's menu for the failed step and the equivalent commands.
@@ -60,27 +55,23 @@ the destination's menu for the failed step and the equivalent commands.
 | A folder fails to resolve | The path does not exist on that server, or the agent cannot write there |
 | Anything on a private address | The outbound guard refuses non-public endpoints unless an instance admin allowed it |
 
-</Accordion>
-<Accordion title="A backup run fails">
+## A backup run fails
 
 - **No space** on the destination server.
 - **The workload is not running.** Backups read from the live target.
 - **The server is unreachable.** Check its health.
 
-</Accordion>
-<Accordion title="The app's data was not in the backup">
+## The app's data was not in the backup
 
 An app schedule does not include its databases. Schedule the databases too.
 
-</Accordion>
-<Accordion title="A restore fails">
+## A restore fails
 
 - **Checksum mismatch:** the artifact is corrupt and was rejected.
 - **Wrong encryption key:** use **Restore from file** and paste the recovery key.
 - **Target name mismatch:** type the target name again. Restore is destructive.
 
-</Accordion>
-<Accordion title="A backup artifact will not decrypt">
+## A backup artifact will not decrypt
 
 Artifacts use `age`, with one key pair per destination.
 
@@ -93,14 +84,11 @@ Download the recovery key from the destination's menu and store it safely. If
 the control plane is gone, that copy is the only way to decrypt the artifact.
 </Callout>
 
-</Accordion>
-<Accordion title="Old backups are disappearing">
+## Old backups are disappearing
 
 **Keep is a count, not a number of days.** `Keep 7` retains the seven most
 recent successful artifacts; older ones are removed after a successful run.
 
-</Accordion>
-</Accordions>
 
 ## Next steps
 

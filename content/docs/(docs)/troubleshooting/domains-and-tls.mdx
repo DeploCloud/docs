@@ -5,8 +5,7 @@ description: Fix DNS, certificate, routing, and panel access problems.
 
 import { Globe, FileLock2, Server } from "lucide-react";
 
-<Accordions>
-<Accordion title="DNS is missing or points to the wrong server">
+## DNS is missing or points to the wrong server
 
 | State | Means | Fix |
 | --- | --- | --- |
@@ -27,8 +26,7 @@ An app running on server B needs its domain pointing at **B**, not at the
 machine the panel runs on.
 </Callout>
 
-</Accordion>
-<Accordion title="The browser shows a certificate warning">
+## The browser shows a certificate warning
 
 Check these first:
 
@@ -39,8 +37,7 @@ Check these first:
 4. **Certificate is set to Let's Encrypt.** Check the domain's **HTTPS** group,
    above **Advanced**.
 
-</Accordion>
-<Accordion title="A custom certificate is not being served">
+## A custom certificate is not being served
 
 - **It never loaded.** Check the intermediate chain and that the key matches.
   Otherwise the proxy serves its default certificate.
@@ -51,8 +48,7 @@ Check these first:
 - **It expired.** Nothing renews a custom certificate. The certificates page
   warns for the last three weeks.
 
-</Accordion>
-<Accordion title="The domain returns 404">
+## The domain returns 404
 
 The request reached the proxy, but no route matched. Check:
 
@@ -64,14 +60,12 @@ The request reached the proxy, but no route matched. Check:
 | Is it the right server? | DNS decides which machine receives the request |
 | For a Compose app, is **Container** set? | The router needs to know which service |
 
-</Accordion>
-<Accordion title="The domain redirects in a loop">
+## The domain redirects in a loop
 
 This is usually **Flexible** mode combined with an HTTPS redirect. Switch to
 **Full** or **Full (strict)** and give the domain a real certificate here.
 
-</Accordion>
-<Accordion title="Two apps share a hostname">
+## Two apps share a hostname
 
 `example.com/` and `example.com/api` may point at different apps. The longest
 matching path wins.
@@ -79,14 +73,12 @@ matching path wins.
 If the wrong app answers, check **Internal path** and **Strip path before
 forwarding** on both rows.
 
-</Accordion>
-<Accordion title="A hostname cannot be added">
+## A hostname cannot be added
 
 **One hostname belongs to one team.** If another team already holds it, it
 cannot be added here. The same applies to a preview base domain.
 
-</Accordion>
-<Accordion title="The panel is unreachable">
+## The panel is unreachable
 
 Try the generated address (like `https://deplo-cb00710a.deplo.site`). If it works, fix the
 address in **Settings -> Deplo**. The browser warns about its certificate once.
@@ -106,8 +98,6 @@ If the proxy is down, tunnel to the panel:
 ssh -L 3000:localhost:3000 root@203.0.113.10   # then open http://localhost:3000
 ```
 
-</Accordion>
-</Accordions>
 
 ## Next steps
 

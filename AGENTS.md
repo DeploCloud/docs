@@ -42,7 +42,9 @@ suggestions, they are the bar every doc page is reviewed against.
   - `Tabs` / `Tab` for alternatives (OS, package manager, plain vs. secret, ...)
   - `TypeTable` for field/type/description reference tables (env vars, capabilities, ports,
     config keys)
-  - `Accordions` / `Accordion` for optional or grouped content, FAQ-style
+  - `Accordions` / `Accordion` only for long lookup lists a reader never searches for (the
+    MCP tool tables). Search skips their content and a hit cannot open one, so a symptom, a
+    FAQ entry or a reference group gets a heading instead
   - `Cards` / `Card` for outbound links at the end of a page ("See also")
     Don't force a component where a plain paragraph or a normal markdown table already reads
     fine.

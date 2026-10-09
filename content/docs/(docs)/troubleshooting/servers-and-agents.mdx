@@ -5,8 +5,7 @@ description: Fix provisioning, health, agent, Docker, and server connectivity pr
 
 import { ServerPlus, Settings2, Network, FolderTree } from "lucide-react";
 
-<Accordions>
-<Accordion title="A server is stuck provisioning">
+## A server is stuck provisioning
 
 `provisioning` means the agent has never called home. On the machine, run:
 
@@ -23,8 +22,7 @@ journalctl -u deplo-agent -f
 | `bootstrap token` errors | The token was used already, or it expired. Issue a new one from the server's menu |
 | `status=216/GROUP` | The unit wants the docker group and Docker is not installed. That is expected on a backups-only host, and its unit is installed without it |
 
-</Accordion>
-<Accordion title="The server is online but every deploy fails">
+## The server is online but every deploy fails
 
 Enrollment uses an outbound connection; deploys also need inbound `9443`. See
 [ports, networks, and files](/reference/ports-networks-and-files).
@@ -40,8 +38,7 @@ nc -vz 203.0.113.10 9443
 
 Open `9443` to the control plane's address and refresh the server.
 
-</Accordion>
-<Accordion title="A server says warning, error, offline, or Unknown">
+## A server says warning, error, offline, or Unknown
 
 | Value | Means | Where to look |
 | --- | --- | --- |
@@ -55,8 +52,7 @@ Health is a stored reading. A deploy performs a live handshake, so a green
 card and a failing deploy can still happen together.
 </Callout>
 
-</Accordion>
-<Accordion title="Check readiness instead of guessing">
+## Check readiness instead of guessing
 
 Use **Check readiness** in the server's menu for one live check of the agent,
 Docker, routing, capacity, build methods, and Deplo configuration.
@@ -64,60 +60,50 @@ Docker, routing, capacity, build methods, and Deplo configuration.
 `fail` blocks a deploy. `warn` means it can deploy but is not fully usable.
 `skip` means the check could not be evaluated, not that it passed.
 
-</Accordion>
-<Accordion title="Metrics show dashes">
+## Metrics show dashes
 
 The telemetry stream is not connected. Refresh the server health first.
 History is held in memory and starts empty after a panel restart.
 
-</Accordion>
-<Accordion title="A deploy says Docker cannot create a network">
+## A deploy says Docker cannot create a network
 
 Deplo uses one Docker network per **Environment**. If the installer could not
 restart Docker because containers were running, the configured address pool is
 not active yet. Restart Docker in a maintenance window; the file is already
 correct.
 
-</Accordion>
-<Accordion title="A deploy fails with No chain DOCKER-FORWARD">
+## A deploy fails with No chain DOCKER-FORWARD
 
 Docker's forwarding chains were removed underneath it. Restart Docker to
 recreate them.
 
-</Accordion>
-<Accordion title="A removed container still appears">
+## A removed container still appears
 
 Deplo retries an unconfirmed teardown and raises an alert if it gives up.
 Removing the server drops its pending teardowns.
 
-</Accordion>
-<Accordion title="The install command returns 503 or cannot resolve a release">
+## The install command returns 503 or cannot resolve a release
 
 The panel cannot reach `github.com` to resolve or checksum the agent release.
 Restore outbound access from the panel's machine, then run the command again.
 
-</Accordion>
-<Accordion title="The install command contains 127.0.0.1">
+## The install command contains 127.0.0.1
 
 That address is for the machine running the panel. Paste it there only;
 another server needs the panel's public address.
 
-</Accordion>
-<Accordion title="An agent needs to be reinstalled">
+## An agent needs to be reinstalled
 
 Run a fresh install command from the server's **Advanced** tab. It clears the
 old certificates, so an expired or already-used token leaves the agent with
 `unknown-token`. Issue a new token from the server's menu first.
 
-</Accordion>
-<Accordion title="A server is permanently gone">
+## A server is permanently gone
 
 Remove it in Deplo. This revokes trust and does not require the machine to
 answer. See
 [Remove or uninstall](/operations/remove-a-server-or-uninstall).
 
-</Accordion>
-</Accordions>
 
 ## Next steps
 

@@ -28,260 +28,273 @@ Capabilities marked **Sensitive** below are flagged the same way in the role edi
 
 ## Find a capability
 
-Open the category that matches the action you need. Each row is a separate
-capability; there is no category-level grant.
+Each row is a separate capability; there is no category-level grant.
 
-<Accordions>
-  <Accordion title="Apps - creating, shipping and running the team's apps">
-    <TypeTable
-      type={{
-        create_apps: {
-          type: "Create apps",
-          description: "Add a new app from a repository, image, template or upload.",
-        },
-        deploy_apps: {
-          type: "Deploy apps",
-          description: "Deploy, redeploy and cancel a running deploy.",
-        },
-        rollback_apps: {
-          type: "Roll back apps",
-          description: "Put an app back on a previous deployment, with no rebuild.",
-        },
-        control_apps: {
-          type: "Start & stop apps",
-          description: "Start, stop, restart and reload a running app.",
-        },
-        configure_apps: {
-          type: "Configure apps",
-          description:
-            "Change an app's name, logo, deploy source, build settings, volumes and the config files they mount, resource limits and auto-deploy.",
-        },
-        delete_apps: {
-          type: "Delete apps",
-          description:
-            "Sensitive. Permanently delete apps and their deployment history.",
-        },
-        move_apps: {
-          type: "Move & reorder apps",
-          description: "Move an app into a folder, project or another team.",
-        },
-        open_app_console: {
-          type: "Open an app's console",
-          description:
-            "Sensitive. Run a shell inside a running app's container and attach to its process.",
-        },
-        manage_previews: {
-          type: "Manage pull request previews",
-          description:
-            "Turn pull request previews on, change their settings, and deploy, redeploy or destroy one.",
-        },
-        manage_crons: {
-          type: "Manage cron jobs",
-          description:
-            "Sensitive. Create, edit and run scheduled commands inside an app or database container.",
-        },
-      }}
-    />
-  </Accordion>
+### Apps
 
-  <Accordion title="App configuration - what an app is reachable at, configured with and made of">
-    <TypeTable
-      type={{
-        manage_domains: {
-          type: "Manage domains",
-          description:
-            "Add, verify, route and remove custom domains, and pick their certificates.",
-        },
-        manage_basic_auth: {
-          type: "Manage HTTP basic auth",
-          description: "Put an app behind a username and password at the edge.",
-        },
-        manage_env: {
-          type: "Manage environment variables",
-          description:
-            "Add, edit, import and delete an app's variables and the team's shared ones.",
-        },
-        reveal_secrets: {
-          type: "Reveal secret values",
-          description:
-            "Sensitive. Read back the value of a masked variable, connection string or password.",
-        },
-      }}
-    />
-  </Accordion>
+Creating, shipping and running the team's apps.
 
-  <Accordion title="Folders & projects - how the overview is organised">
-    <TypeTable
-      type={{
-        create_folders: {
-          type: "Create folders",
-          description: "Add folders to group apps on the overview.",
-        },
-        organize_folders: {
-          type: "Organize folders",
-          description: "Rename folders, nest them and share them with members.",
-        },
-        delete_folders: {
-          type: "Delete folders",
-          description: "Remove a folder (its apps move back out, they aren't deleted).",
-        },
-        create_projects: {
-          type: "Create projects",
-          description: "Add a project, which is a folder with environments of its own.",
-        },
-        organize_projects: {
-          type: "Organize projects",
-          description: "Rename projects and change their colour.",
-        },
-        delete_projects: {
-          type: "Delete projects",
-          description:
-            "Sensitive. Remove a project and everything scoped to its environments.",
-        },
-        manage_environments: {
-          type: "Manage environments",
-          description:
-            "Add, rename, reorder and remove a project's environments (production, preview, and any you add).",
-        },
-      }}
-    />
-  </Accordion>
+<TypeTable
+  type={{
+    create_apps: {
+      type: "Create apps",
+      description: "Add a new app from a repository, image, template or upload.",
+    },
+    deploy_apps: {
+      type: "Deploy apps",
+      description: "Deploy, redeploy and cancel a running deploy.",
+    },
+    rollback_apps: {
+      type: "Roll back apps",
+      description: "Put an app back on a previous deployment, with no rebuild.",
+    },
+    control_apps: {
+      type: "Start & stop apps",
+      description: "Start, stop, restart and reload a running app.",
+    },
+    configure_apps: {
+      type: "Configure apps",
+      description:
+        "Change an app's name, logo, deploy source, build settings, volumes and the config files they mount, resource limits and auto-deploy.",
+    },
+    delete_apps: {
+      type: "Delete apps",
+      description:
+        "Sensitive. Permanently delete apps and their deployment history.",
+    },
+    move_apps: {
+      type: "Move & reorder apps",
+      description: "Move an app into a folder, project or another team.",
+    },
+    open_app_console: {
+      type: "Open an app's console",
+      description:
+        "Sensitive. Run a shell inside a running app's container and attach to its process.",
+    },
+    manage_previews: {
+      type: "Manage pull request previews",
+      description:
+        "Turn pull request previews on, change their settings, and deploy, redeploy or destroy one.",
+    },
+    manage_crons: {
+      type: "Manage cron jobs",
+      description:
+        "Sensitive. Create, edit and run scheduled commands inside an app or database container.",
+    },
+  }}
+/>
 
-  <Accordion title="Databases - managed databases on the team's servers">
-    <TypeTable
-      type={{
-        create_databases: {
-          type: "Create databases",
-          description: "Provision a new managed database on one of the servers.",
-        },
-        configure_databases: {
-          type: "Configure databases",
-          description:
-            "Change a database's name, logo, image, exposure, resource limits and password.",
-        },
-        control_databases: {
-          type: "Start & stop databases",
-          description: "Start, stop, restart and redeploy a database.",
-        },
-        delete_databases: {
-          type: "Delete databases",
-          description: "Sensitive. Permanently delete a database and its data volume.",
-        },
-        move_databases: {
-          type: "Move databases",
-          description: "Sensitive. Transfer a database, with its data, to another team.",
-        },
-        open_database_console: {
-          type: "Open a database console",
-          description:
-            "Sensitive. Run a database shell (psql, mysql, redis-cli) on the server.",
-        },
-      }}
-    />
-  </Accordion>
+### App configuration
 
-  <Accordion title="Backups & storage - backup schedules and where they are stored">
-    <TypeTable
-      type={{
-        manage_backups: {
-          type: "Manage backups",
-          description: "Create, edit, disable and run backup schedules on demand.",
-        },
-        restore_backups: {
-          type: "Restore backups",
-          description:
-            "Sensitive. Restore a backup over a live app or database, replacing its current data.",
-        },
-        delete_backups: {
-          type: "Delete backups",
-          description:
-            "Sensitive. Permanently delete a single backup, removing the file it was restored from.",
-        },
-        manage_backup_destinations: {
-          type: "Manage backup destinations",
-          description:
-            "Sensitive. Connect, test and remove the places backups are stored, and download the key that decrypts them.",
-        },
-      }}
-    />
-  </Accordion>
+What an app is reachable at, configured with and made of.
 
-  <Accordion title="Integrations & API - everything Deplo talks to on the team's behalf">
-    <TypeTable
-      type={{
-        manage_registries: {
-          type: "Manage container registries",
-          description: "Connect and remove private image registries.",
-        },
-        manage_git: {
-          type: "Manage Git connections",
-          description: "Connect and disconnect the team's GitHub apps.",
-        },
-        manage_tokens: {
-          type: "Use API tokens",
-          description:
-            "Sensitive. Let their own API tokens act in this team, from scripts, CI and other clients.",
-        },
-        manage_mcp: {
-          type: "Connect AI agents",
-          description:
-            "Sensitive. Let their own AI agents drive this team over MCP. Turning MCP off for the whole team is a team setting.",
-        },
-        manage_notifications: {
-          type: "Manage notifications",
-          description: "Choose which events are announced and where they are sent.",
-        },
-      }}
-    />
-  </Accordion>
+<TypeTable
+  type={{
+    manage_domains: {
+      type: "Manage domains",
+      description:
+        "Add, verify, route and remove custom domains, and pick their certificates.",
+    },
+    manage_basic_auth: {
+      type: "Manage HTTP basic auth",
+      description: "Put an app behind a username and password at the edge.",
+    },
+    manage_env: {
+      type: "Manage environment variables",
+      description:
+        "Add, edit, import and delete an app's variables and the team's shared ones.",
+    },
+    reveal_secrets: {
+      type: "Reveal secret values",
+      description:
+        "Sensitive. Read back the value of a masked variable, connection string or password.",
+    },
+  }}
+/>
 
-  <Accordion title="Logs & monitoring - seeing what the team's workloads are doing">
-    <TypeTable
-      type={{
-        view_logs: {
-          type: "View logs",
-          description: "Read runtime and build logs for apps and databases.",
-        },
-        view_metrics: {
-          type: "View monitoring",
-          description: "See live and historical CPU, memory, disk and network usage.",
-        },
-        manage_monitoring: {
-          type: "Change monitoring settings",
-          description: "Turn metrics history on or off for servers, apps and databases.",
-        },
-        view_activity: {
-          type: "View the activity log",
-          description: "Read the audit trail of what everyone in the team has done.",
-        },
-      }}
-    />
-  </Accordion>
+### Folders & projects
 
-  <Accordion title="Team administration - the team itself, its people and their access">
-    <TypeTable
-      type={{
-        manage_members: {
-          type: "Manage members",
-          description: "Add and remove members, and assign each of them a role.",
-        },
-        manage_roles: {
-          type: "Manage roles",
-          description:
-            "Sensitive. Create, edit, reset and delete the roles on this page, including what they grant.",
-        },
-        manage_team: {
-          type: "Manage team settings",
-          description: "Rename the team, change its settings and order the overview.",
-        },
-        delete_team: {
-          type: "Delete the team",
-          description: "Sensitive. Permanently delete the whole team and everything in it.",
-        },
-      }}
-    />
-  </Accordion>
-</Accordions>
+How the overview is organised.
+
+<TypeTable
+  type={{
+    create_folders: {
+      type: "Create folders",
+      description: "Add folders to group apps on the overview.",
+    },
+    organize_folders: {
+      type: "Organize folders",
+      description: "Rename folders, nest them and share them with members.",
+    },
+    delete_folders: {
+      type: "Delete folders",
+      description: "Remove a folder (its apps move back out, they aren't deleted).",
+    },
+    create_projects: {
+      type: "Create projects",
+      description: "Add a project, which is a folder with environments of its own.",
+    },
+    organize_projects: {
+      type: "Organize projects",
+      description: "Rename projects and change their colour.",
+    },
+    delete_projects: {
+      type: "Delete projects",
+      description:
+        "Sensitive. Remove a project and everything scoped to its environments.",
+    },
+    manage_environments: {
+      type: "Manage environments",
+      description:
+        "Add, rename, reorder and remove a project's environments (production, preview, and any you add).",
+    },
+  }}
+/>
+
+### Databases
+
+Managed databases on the team's servers.
+
+<TypeTable
+  type={{
+    create_databases: {
+      type: "Create databases",
+      description: "Provision a new managed database on one of the servers.",
+    },
+    configure_databases: {
+      type: "Configure databases",
+      description:
+        "Change a database's name, logo, image, exposure, resource limits and password.",
+    },
+    control_databases: {
+      type: "Start & stop databases",
+      description: "Start, stop, restart and redeploy a database.",
+    },
+    delete_databases: {
+      type: "Delete databases",
+      description: "Sensitive. Permanently delete a database and its data volume.",
+    },
+    move_databases: {
+      type: "Move databases",
+      description: "Sensitive. Transfer a database, with its data, to another team.",
+    },
+    open_database_console: {
+      type: "Open a database console",
+      description:
+        "Sensitive. Run a database shell (psql, mysql, redis-cli) on the server.",
+    },
+  }}
+/>
+
+### Backups & storage
+
+Backup schedules and where they are stored.
+
+<TypeTable
+  type={{
+    manage_backups: {
+      type: "Manage backups",
+      description: "Create, edit, disable and run backup schedules on demand.",
+    },
+    restore_backups: {
+      type: "Restore backups",
+      description:
+        "Sensitive. Restore a backup over a live app or database, replacing its current data.",
+    },
+    delete_backups: {
+      type: "Delete backups",
+      description:
+        "Sensitive. Permanently delete a single backup, removing the file it was restored from.",
+    },
+    manage_backup_destinations: {
+      type: "Manage backup destinations",
+      description:
+        "Sensitive. Connect, test and remove the places backups are stored, and download the key that decrypts them.",
+    },
+  }}
+/>
+
+### Integrations & API
+
+Everything Deplo talks to on the team's behalf.
+
+<TypeTable
+  type={{
+    manage_registries: {
+      type: "Manage container registries",
+      description: "Connect and remove private image registries.",
+    },
+    manage_git: {
+      type: "Manage Git connections",
+      description: "Connect and disconnect the team's GitHub apps.",
+    },
+    manage_tokens: {
+      type: "Use API tokens",
+      description:
+        "Sensitive. Let their own API tokens act in this team, from scripts, CI and other clients.",
+    },
+    manage_mcp: {
+      type: "Connect AI agents",
+      description:
+        "Sensitive. Let their own AI agents drive this team over MCP. Turning MCP off for the whole team is a team setting.",
+    },
+    manage_notifications: {
+      type: "Manage notifications",
+      description: "Choose which events are announced and where they are sent.",
+    },
+  }}
+/>
+
+### Logs & monitoring
+
+Seeing what the team's workloads are doing.
+
+<TypeTable
+  type={{
+    view_logs: {
+      type: "View logs",
+      description: "Read runtime and build logs for apps and databases.",
+    },
+    view_metrics: {
+      type: "View monitoring",
+      description: "See live and historical CPU, memory, disk and network usage.",
+    },
+    manage_monitoring: {
+      type: "Change monitoring settings",
+      description: "Turn metrics history on or off for servers, apps and databases.",
+    },
+    view_activity: {
+      type: "View the activity log",
+      description: "Read the audit trail of what everyone in the team has done.",
+    },
+  }}
+/>
+
+### Team administration
+
+The team itself, its people and their access.
+
+<TypeTable
+  type={{
+    manage_members: {
+      type: "Manage members",
+      description: "Add and remove members, and assign each of them a role.",
+    },
+    manage_roles: {
+      type: "Manage roles",
+      description:
+        "Sensitive. Create, edit, reset and delete the roles on this page, including what they grant.",
+    },
+    manage_team: {
+      type: "Manage team settings",
+      description: "Rename the team, change its settings and order the overview.",
+    },
+    delete_team: {
+      type: "Delete the team",
+      description: "Sensitive. Permanently delete the whole team and everything in it.",
+    },
+  }}
+/>
 
 ## Not capabilities
 

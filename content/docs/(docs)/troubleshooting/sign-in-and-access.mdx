@@ -5,8 +5,7 @@ description: Fix sign-in, passkey, token, team access, and permission problems.
 
 import { ShieldCheck, Users, Lock, Fingerprint } from "lucide-react";
 
-<Accordions>
-<Accordion title="You cannot sign in">
+## You cannot sign in
 
 | Symptom | Cause |
 | --- | --- |
@@ -14,11 +13,10 @@ import { ShieldCheck, Users, Lock, Fingerprint } from "lucide-react";
 | No identifier accepted | The field accepts an email or username; check which one exists |
 | Six-digit code rejected | Correct the phone's clock; TOTP is time-based |
 | Code and recovery code rejected | Recovery codes are single-use; an instance admin must reset two-factor |
-| Passkey says **Not usable here** | The panel hostname changed; see "Passkeys stopped working" |
+| Passkey says **Not usable here** | The panel hostname changed; see [Passkeys stopped working](#passkeys-stopped-working) |
 | Page will not load | Try `https://deplo-cb00710a.deplo.site`; if disabled, see [the panel's own address](/operations/panel-address-and-certificates#turn-the-backup-address-off) |
 
-</Accordion>
-<Accordion title="Passkeys stopped working">
+## Passkeys stopped working
 
 Passkeys are bound to the hostname where they were registered. Moving the
 panel invalidates them on the new address.
@@ -28,8 +26,7 @@ Sign in with the password and register a new passkey on the new address.
 Everybody on the instance must do this once.
 </Callout>
 
-</Accordion>
-<Accordion title="A team is locked until you enroll two-factor">
+## A team is locked until you enroll two-factor
 
 That team requires two-factor authentication and your account has not
 enrolled. Until you enroll, you cannot access that team in the dashboard or
@@ -37,8 +34,7 @@ API.
 
 The screen offers to turn it on, switch to another team, or sign out.
 
-</Accordion>
-<Accordion title="A button is missing or greyed out">
+## A button is missing or greyed out
 
 Check these in order:
 
@@ -51,14 +47,12 @@ Check these in order:
 5. **Feature switch:** Console needs acknowledgement; cron jobs and previews
    need their switch enabled.
 
-</Accordion>
-<Accordion title="An API token returns 401">
+## An API token returns 401
 
 The token is missing, revoked, or **expired**. Create or rotate it in
 **Settings -> Tokens**.
 
-</Accordion>
-<Accordion title="An API token returns 403">
+## An API token returns 403
 
 | Cause | Fix |
 | --- | --- |
@@ -67,31 +61,26 @@ The token is missing, revoked, or **expired**. Create or rotate it in
 | The scope excludes the resource | Naming a project or an app drops every team-wide capability in that team |
 | The team requires two-factor and its creator has not enrolled | The token resolves nothing |
 
-</Accordion>
-<Accordion title="An API resource returns 404">
+## An API resource returns 404
 
 It belongs to another team, or it is outside the token's scope. Deplo resolves
 out-of-scope resources to nothing rather than revealing that they exist.
 
 A deleted app behaves the same way from the moment deletion starts.
 
-</Accordion>
-<Accordion title="You are the owner and locked out">
+## You are the owner and locked out
 
 The instance owner cannot be reset by another admin. If that account is lost,
 run `deplo recover owner <username>` on the control-plane host. See
 [Break-glass recovery](/operations/break-glass-recovery).
 
-</Accordion>
-<Accordion title="Somebody left the company">
+## Somebody left the company
 
 1. In **Settings -> Members**, open them, choose **Advanced**, and remove them.
 2. Their tokens immediately lose access from their membership.
 3. Transfer primary ownership first if they are the owner.
 4. Check **Activity** for recent actions.
 
-</Accordion>
-</Accordions>
 
 ## Next steps
 
