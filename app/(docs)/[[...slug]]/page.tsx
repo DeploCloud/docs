@@ -40,26 +40,26 @@ export default async function Page(props: PageProps<"/[[...slug]]">) {
   return (
     <DocsPage toc={page.data.toc} full={page.data.full} breadcrumb={{ enabled: false }}>
       {!isHome && (
-        <IsoHero className="flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-2">
+        <IsoHero className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 flex-col gap-4">
             <PageBreadcrumb className="min-w-0" />
-            <div className="flex shrink-0 items-center gap-2">
-              <MarkdownCopyButton markdownUrl={markdownUrl} />
-              <ViewOptions
-                markdownUrl={markdownUrl}
-                githubUrl={`https://github.com/DeploCloud/docs/blob/main/content/docs/${page.path}`}
-              />
+            <div className="flex flex-wrap items-center gap-3">
+              <DocsTitle className="text-4xl leading-[1.15] tracking-tight text-balance md:text-5xl">
+                {page.data.title}
+              </DocsTitle>
+              {isBeta && <BetaChip />}
             </div>
+            <DocsDescription className="mb-0 max-w-xl text-base leading-relaxed text-balance">
+              {page.data.description}
+            </DocsDescription>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <DocsTitle className="text-4xl leading-[1.15] tracking-tight text-balance md:text-5xl">
-              {page.data.title}
-            </DocsTitle>
-            {isBeta && <BetaChip />}
+          <div className="flex shrink-0 items-center gap-2">
+            <MarkdownCopyButton markdownUrl={markdownUrl} />
+            <ViewOptions
+              markdownUrl={markdownUrl}
+              githubUrl={`https://github.com/DeploCloud/docs/blob/main/content/docs/${page.path}`}
+            />
           </div>
-          <DocsDescription className="mb-0 max-w-xl text-base leading-relaxed text-balance">
-            {page.data.description}
-          </DocsDescription>
         </IsoHero>
       )}
       <DocsBody className={isHome ? "max-w-none" : undefined}>
