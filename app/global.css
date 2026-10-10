@@ -256,6 +256,8 @@ html {
 @layer utilities {
   .interact {
     cursor: pointer;
+    transition: 300ms;
+    transition-property: color, background-color, border-color, opacity, transform;
   }
   .interact:focus {
     outline: none;
