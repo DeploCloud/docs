@@ -1,6 +1,6 @@
 ---
 title: Container registries
-description: Credentials for pulling private images, from GitHub Container Registry, Docker Hub, GitLab or anything self-hosted.
+description: Credentials for pulling private images, from GitHub Container Registry, Docker Hub, GitLab or any registry you run yourself.
 ---
 
 import { Container, Hammer, ShieldCheck } from "lucide-react";
@@ -122,7 +122,7 @@ for the exact steps.
 </Tab>
 <Tab value="gitlab">
 
-- **Registry host**: `registry.gitlab.com`, or your self-hosted
+- **Registry host**: `registry.gitlab.com`, or your own
   instance's registry host.
 - **Username**: the deploy token's username, shown by GitLab when the
   token is created, not your account name.
@@ -137,10 +137,10 @@ for the exact steps.
 </Tab>
 <Tab value="generic">
 
-For anything else, self-hosted Harbor, a cloud provider's container
-registry, or another self-hosted registry, use whatever credential that
+For anything else, such as Harbor, a cloud provider's container
+registry, or a registry you run yourself, use whatever credential that
 registry issues for read-only pulls, for example a robot account or an
-IAM-generated token. There is no common format across self-hosted
+IAM-generated token. There is no common format across
 registries, check that provider's own documentation for how to create
 one.
 

@@ -15,7 +15,7 @@ There are two ways to connect:
 - **Everything else** connects as a **git connection**: one stored token per
   host, reused by every app. This covers
   [GitLab, Bitbucket and Gitea or Forgejo](/guides/git-providers/git-connections),
-  self-hosted included, and is marked **Beta**. A plain **Git** connection works
+  your own instance included, and is marked **Beta**. A plain **Git** connection works
   for any other server, but has no repository picker, branch list or webhook.
 
 Tokens are encrypted and never returned by the API.
@@ -60,7 +60,7 @@ Bitbucket and Gitea are in a dropdown **inside** the Git source.
 - **Pushes do not deploy**: check the webhook status in the app's
   **Settings -> Deployments**. The provider must be able to reach this
   instance.
-- **Saving a self-hosted address is refused**: it resolves to a private
+- **Saving the address is refused**: it resolves to a private
   address. Only an instance admin can allow that.
 
 See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.

@@ -1,6 +1,6 @@
 ---
 title: Git connections
-description: Connect a GitLab, Bitbucket or Gitea host, cloud or self-hosted.
+description: Connect a GitLab, Bitbucket or Gitea host, on their cloud or on your own instance.
 ---
 
 import Image from "next/image";
@@ -8,7 +8,7 @@ import { basePath } from "@/lib/base-path";
 
 A git connection is one stored token per host, reused by every app that deploys
 from it. GitLab, Bitbucket and Gitea (Forgejo included) connect this way,
-self-hosted or not, and are marked **Beta**. GitHub is different, see
+on their cloud or on your own instance, and are marked **Beta**. GitHub is different, see
 [GitHub](/guides/git-providers/github).
 
 ## Connect it
@@ -47,7 +47,7 @@ token:
 <Tabs items={['GitLab', 'Bitbucket', 'Gitea']}>
 <Tab value="GitLab">
 
-- **Address**: leave the default for gitlab.com, or set your self-hosted
+- **Address**: leave the default for gitlab.com, or set your own
   instance's base URL.
 - **Username**: **`oauth2`**, exactly. Not your account name.
 - **Token**: a GitLab personal or project access token with repository read
@@ -89,7 +89,7 @@ Later, **Replace the token** swaps it without recreating anything.
 **This connection stopped working** appears when a background check finds the
 connection broken.
 
-For a self-hosted address on a private network, an instance admin can tick
+For an address on a private network, an instance admin can tick
 **This git server is on my own network**. Only an admin can do this, for
 security reasons.
 
@@ -119,7 +119,7 @@ this list only when the host refuses something.
 - **"Deplo could not add the push webhook"**: usually the same cause. The
   notice lists what the token needs, and shows the webhook address to paste by
   hand in the meantime.
-- **Saving a self-hosted address is refused**: it resolves to a private
+- **Saving the address is refused**: it resolves to a private
   address. Only an instance admin can allow that.
 
 ## Next steps

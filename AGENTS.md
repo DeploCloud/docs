@@ -29,7 +29,7 @@ suggestions, they are the bar every doc page is reviewed against.
   `deplo-<hex>.deplo.site`. Placeholders stay only for secrets (`<token>`) and command synopses.
 - **Diagrams: at most 3 nodes per row.** Built with `<Diagram>` (`components/diagram.tsx`, one
   file per page under `components/diagrams/`). Four nodes in a flow become two rows of two.
-- **Stay inside Deplo's mission.** Self-hosted, no SSH required on the happy path, no Docker
+- **Stay inside Deplo's mission.** Your own servers, no SSH required on the happy path, no Docker
   socket exposed, the control plane never touches a host directly. Never invent a feature
   that doesn't exist in the product. If you're unsure whether something is real, check the
   `DeploCloud/deplo` repo before writing about it - `CONTEXT.md` for the vocabulary,
