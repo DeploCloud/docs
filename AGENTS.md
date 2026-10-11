@@ -113,8 +113,9 @@ committed until the user asks for it explicitly.
   at a call site.
 - Headings, chips and table headers are free to stay bold. The rule is about
   buttons only.
-- **The docs look like deplo.build.** Two shapes only: `rounded-md` for every
-  button (and the tree picker) and square corners for everything else, because
+- **The docs look like deplo.build.** Three shapes only: `rounded-full` for the
+  site's two buttons (`lib/button-styles.ts`, primary and secondary, plus the
+  404 one), `rounded-md` for every other button (and the tree picker) and square corners for everything else, because
   `app/global.css` sets every `--radius-*` to 0 except `--radius-md`. Cards,
   callouts, code blocks and popovers carry the site's L marks on the corners: a
   new box gets the `tile` class, Fumadocs' own are matched by class signature.
