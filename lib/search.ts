@@ -5,6 +5,9 @@ import { source } from "@/lib/source";
 
 const MAX_PAGES = 10;
 const ROWS_PER_PAGE = 3;
+// Every term becomes regexes run over the whole index, so a query is bounded before parsing.
+const MAX_QUERY_LENGTH = 200;
+const MAX_TERMS = 10;
 
 // Words that never narrow a search: "how do i ..." phrasing, and "deplo", which is on every page.
 const STOP_WORDS = new Set(
@@ -106,7 +109,8 @@ const finished = (part: string) => `(?:${escape(part)}|${escape(stem(part))})${I
 const alias = (part: string) =>
   (/[^aeiou]y$/.test(part) ? `${escape(part.slice(0, -1))}(?:y|ies)` : `${escape(part)}(?:s|es|d|ed|ing|'s)?`) + WORD_END;
 
-function parse(query: string) {
+function parse(input: string) {
+  const query = input.slice(0, MAX_QUERY_LENGTH);
   const words = query
     .toLowerCase()
     .split(/[^\p{L}\p{N}_.\-]+/u)
@@ -115,7 +119,7 @@ function parse(query: string) {
   const meaningful = words.filter((word) => !STOP_WORDS.has(word));
   const unique = [...new Set(meaningful.length ? meaningful : words)];
   const last = /\s$/.test(query) ? undefined : unique.at(-1);
-  const terms = unique.map((word) => {
+  const terms = unique.slice(0, MAX_TERMS).map((word) => {
     const aliases = ALIASES[word] ?? [];
     const source = [phrase(word, word === last ? typing : finished), ...aliases.map((text) => phrase(text, alias))].join("|");
     return {
