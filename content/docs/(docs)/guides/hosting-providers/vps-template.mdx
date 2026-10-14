@@ -42,6 +42,13 @@ Chain the installer to your provisioning, right after the operating system insta
   Until then the account cannot do anything else, so the temporary password gives no access
   to the panel.
 
+<Callout type="warn" title="Treat the temporary password as seen">
+  The install transcript hides it, but on the command line it is readable in the server's
+  process list while the install runs, and cloud-init keeps it in the user data your provider
+  stores. Use a new one for every order and tell the customer to sign in right away: the first
+  sign-in replaces it.
+</Callout>
+
 <Callout type="warn" title="The root password only as a fallback">
   Some panels can pass nothing but the root password (Virtualizor recipes, for example). It
   works, but until the customer's first sign-in the panel's sign-in page also accepts the root
