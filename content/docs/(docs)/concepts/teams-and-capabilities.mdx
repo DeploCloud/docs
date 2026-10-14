@@ -52,7 +52,7 @@ to a member of the same team, with their password and second factor. An API toke
 ## Capability
 
 **One capability is one action.** `create_apps`, `deploy_apps`, `delete_apps`,
-`open_app_console`, `restore_backups`, `manage_tokens`, and so on. There are 44 of them.
+`open_app_console`, `restore_backups`, `manage_tokens`, and so on. There are 45 of them, `view` included.
 
 They are fine-grained on purpose: deleting an app is `delete_apps`, not `deploy_apps`. `view` is
 the base level everybody has.
@@ -148,7 +148,7 @@ owner can only be recovered with a command run on the host.
   <Card
     icon={<Lock className="text-blue-400" />}
     title="Capabilities"
-    description="All 44, by category"
+    description="All 45, by category"
     href="/reference/capabilities"
   />
   <Card
