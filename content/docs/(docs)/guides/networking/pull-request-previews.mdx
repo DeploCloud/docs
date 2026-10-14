@@ -80,7 +80,7 @@ A **Pull requests** tab appears on the app.
     "Fork pull requests": {
       type: "select",
       description:
-        "Wait for approval, Ignore them, or Build them automatically. A fork inherits none of the app's variables either way.",
+        "Wait for approval, Ignore them, or Build them automatically. A fork inherits none of the app's variables and no secret, either way.",
     },
     Server: {
       type: "select",
@@ -142,9 +142,10 @@ The list updates on its own:
 ## The two rules about forks
 
 - **A fork preview inherits no variables at all.** Not the app's own, not a
-  shared variable, not an instance-wide one. It gets only its preview
-  overrides. This is for security reasons: the code comes from outside your
-  team. An app that needs a database URL to start needs one set as a
+  shared variable, not an instance-wide one. It gets only its plain preview
+  overrides and the `DEPLO_PREVIEW` variables; a secret override is dropped
+  too. This is for security reasons: the code comes from outside your team.
+  An app that needs a database URL to start needs one set as a plain
   [preview override](/guides/config/environment-variables).
 - **A fork preview waits for a human**, unless **Fork pull requests** is set
   to build them automatically.

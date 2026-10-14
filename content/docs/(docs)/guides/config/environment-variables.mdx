@@ -113,8 +113,8 @@ Once [pull request previews](/guides/networking/pull-request-previews) are enabl
 only, and wins over every other layer. Typical use: point previews at a test database.
 
 <Callout type="warn" title="A preview built from a fork inherits nothing">
-For security reasons, a fork preview gets only the preview overrides. If your app needs
-`DATABASE_URL` to start, set it there.
+For security reasons, a fork preview gets only the plain preview overrides, never a secret. If
+your app needs `DATABASE_URL` to start, set it there as plain.
 </Callout>
 
 ## Good to know
