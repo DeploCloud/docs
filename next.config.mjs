@@ -10,6 +10,19 @@ const basePath = process.env.NEXT_BASE_PATH || "";
 const config = {
   reactStrictMode: true,
   ...(basePath ? { basePath } : {}),
+  // No CSP yet: the analytics script and the fonts need a check on the deployed site first.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       // :path* doesn't cleanly match the empty (root page) case when glued
