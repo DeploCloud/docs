@@ -714,6 +714,141 @@ Deplo's published releases, newest first.
 | `error` | `String` |  |
 | `releases` | [`[DeploRelease!]`](/api-reference/types/objects#deplorelease) |  |
 
+### DeploMoveCounts
+
+What the old Deplo holds, and so what a move brings over.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `apps` | `Int` |  |
+| `databases` | `Int` |  |
+| `servers` | `Int` |  |
+| `teams` | `Int` |  |
+| `users` | `Int` |  |
+
+### DeploMoveDatabaseHost
+
+A database on one of the old Deplo's servers, by the address it answers at there.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `host` | `String` | Unique per server only: two databases with the same one cannot land on one server here. |
+| `id` | `String` |  |
+| `name` | `String` |  |
+
+### DeploMovePreview
+
+What a Deplo move would bring here, read from the old Deplo. Nothing has changed on either side yet.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `canStart` | `Boolean` |  |
+| `counts` | [`DeploMoveCounts`](/api-reference/types/objects#deplomovecounts) |  |
+| `id` | `String` | The move's id. It is also the key to its public progress page, /moving/&lt;id>. |
+| `peerUrl` | `String` |  |
+| `problems` | `[String!]` | Everything that blocks the move with each server's `target`, each naming its server. startDeploMove refuses while any remains; a database clash goes with a map that separates them. |
+| `servers` | [`[DeploMovePreviewServer!]`](/api-reference/types/objects#deplomovepreviewserver) |  |
+| `targets` | [`[DeploMoveTargetServer!]`](/api-reference/types/objects#deplomovetargetserver) | This Deplo's servers an old server can land on. One the old Deplo also uses is never offered. |
+| `version` | `String` | The old Deplo's version. |
+| `warnings` | `[String!]` | Worth knowing, never blocking. |
+
+### DeploMovePreviewServer
+
+One of the old Deplo's servers, as a move would take it. It stays with the old Deplo: only what it holds is copied.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `address` | `String` |  |
+| `agentVersion` | `String` |  |
+| `apps` | `Int` |  |
+| `choices` | `[String!]` | The servers here it may land on: one that runs apps for a workload server, one that builds for a build server, any for a storage one. Empty for a migration source. |
+| `databaseHosts` | [`[DeploMoveDatabaseHost!]`](/api-reference/types/objects#deplomovedatabasehost) | Its databases. A map that lands two with the same `host` on one server here is refused. |
+| `databases` | `Int` |  |
+| `enrolled` | `Boolean` | False for a server that never finished connecting. |
+| `id` | `String` |  |
+| `isPanelHost` | `Boolean` | The machine the old Deplo itself runs on. |
+| `name` | `String` |  |
+| `port` | `Int` |  |
+| `problem` | `String` | What keeps the move from starting because of this server, in one sentence. |
+| `reachable` | `Boolean` | The old Deplo reached it just now. Its apps' data can only be copied while it does. |
+| `role` | [`DeploMoveServerRole`](/api-reference/types/enums#deplomoveserverrole) |  |
+| `target` | `String` | The server here it lands on unless startDeploMove's map says otherwise. Null for a migration source, which is never copied. |
+
+### DeploMoveReadiness
+
+Whether this Deplo can receive a Deplo move right now.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `ready` | `Boolean` |  |
+| `reason` | `String` | Why not, in one sentence: a move only goes into a fresh Deplo, one at a time. |
+
+### DeploMoveServer
+
+Where one of the old Deplo's servers landed here.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `String` | The old Deplo's server id. |
+| `name` | `String` |  |
+| `targetId` | `String` | The server here that takes its place. Null: not copied. |
+| `targetName` | `String` |  |
+
+### DeploMoveStatus
+
+A Deplo move into this Deplo, as its progress page shows it. Read by its id alone: the copy signs everyone out.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `canCancel` | `Boolean` | Until the move is done, even while it runs: the old Deplo starts what it paused, and this Deplo goes back to setup. Once the copy landed, only for an instance admin. |
+| `canFinishWithoutSource` | `Boolean` | The copy landed and the move stopped, and the viewer is an instance admin, so it can finish without the old Deplo. finishDeploMoveWithoutSource still refuses while the old Deplo answers. |
+| `canRetry` | `Boolean` |  |
+| `canSkip` | `Boolean` | An app or database failed and the viewer is an instance admin: skipDeploMoveWorkload leaves it out so the rest finishes. |
+| `createdAt` | `String` |  |
+| `error` | `String` | Why the move stopped, or a note left by a cancel or by finishing without the old Deplo. Empty otherwise. |
+| `finishedAt` | `String` |  |
+| `id` | `String` |  |
+| `needsAdminSignIn` | `Boolean` | The copy landed, so cancelling, finishing or skipping needs an instance admin signed in here, and the viewer is not one. |
+| `peerUrl` | `String` | The old Deplo's address. |
+| `rowsCopied` | `Int` |  |
+| `servers` | [`[DeploMoveServer!]`](/api-reference/types/objects#deplomoveserver) | The server map the move was started with. |
+| `setupPath` | `String` | After a cancel that left this Deplo without an account: the link that sets it up again. |
+| `state` | [`DeploMoveState`](/api-reference/types/enums#deplomovestate) |  |
+| `steps` | [`[DeploMoveStep!]`](/api-reference/types/objects#deplomovestep) |  |
+| `unreadable` | `Int` | Saved secrets the old Deplo could not open. They came across as they were and have to be entered again. |
+| `workloads` | [`[DeploMoveWorkload!]`](/api-reference/types/objects#deplomoveworkload) | Listed once the database copy lands. |
+
+### DeploMoveStep
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `key` | [`DeploMoveStepKey`](/api-reference/types/enums#deplomovestepkey) |  |
+| `state` | [`DeploMoveStepState`](/api-reference/types/enums#deplomovestepstate) |  |
+
+### DeploMoveTargetServer
+
+One of this Deplo's own servers, as a place an old server can land.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `address` | `String` |  |
+| `canHostWorkloads` | `Boolean` | It runs apps and databases: not a storage, build or migration-source server. |
+| `id` | `String` |  |
+| `isThisMachine` | `Boolean` | The machine this Deplo itself runs on. |
+| `name` | `String` |  |
+
+### DeploMoveWorkload
+
+One app or database the move deploys here and fills with its data, databases first.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `error` | `String` | Why it failed or was left out, or for a copied one what was not copied. Empty otherwise. |
+| `id` | `String` |  |
+| `kind` | [`DeploMoveWorkloadKind`](/api-reference/types/enums#deplomoveworkloadkind) |  |
+| `name` | `String` |  |
+| `state` | [`DeploMoveWorkloadState`](/api-reference/types/enums#deplomoveworkloadstate) |  |
+
 ### DeploRelease
 
 One published release of Deplo, as the changelog renders it.
@@ -747,7 +882,7 @@ A single build + release of an app.
 | `appId` | `ID` |  |
 | `branch` | `String` |  |
 | `buildDurationMs` | `Int` |  |
-| `canRollback` | `Boolean` | This app can be put back on this deployment: it succeeded, it built an image, that image is still on the app's current server, and it is not the one already running. |
+| `canRollback` | `Boolean` | This app can be put back on this deployment: it succeeded, it is not the one already running, and either its image is still on the app's current server or its commit can be rebuilt (see `rollbackRebuilds`). |
 | `commitAuthor` | `String` |  |
 | `commitMessage` | `String` |  |
 | `commitSha` | `String` |  |
@@ -763,7 +898,8 @@ A single build + release of an app.
 | `previewId` | `ID` | The pull request preview this build belongs to, or null for production. |
 | `queuePosition` | `Int` | 1-based position in the owning server's build queue while this deployment is `queued` (1 = next to build); null once it starts building or finishes. |
 | `readyAt` | `String` |  |
-| `rollbackOf` | `ID` | Set when this deploy was a rollback: the deployment whose image it re-ran. Null when it built its own. |
+| `rollbackOf` | `ID` | Set when this deploy was a rollback: the deployment it went back to, whose image it re-ran or whose commit it rebuilt. Null otherwise. |
+| `rollbackRebuilds` | `Boolean` | Rolling back to this deployment rebuilds its commit, because its image is no longer kept on the server. Takes minutes instead of seconds. |
 | `startedAt` | `String` | When the build was claimed off the queue and started running - the origin `buildDurationMs` is measured from, and what a live build timer counts up from. Null while still queued. |
 | `status` | [`DeploymentStatus`](/api-reference/types/enums#deploymentstatus) |  |
 | `url` | `String` |  |
@@ -840,6 +976,7 @@ A routable hostname attached to an app (Traefik router).
 | `appId` | `ID` |  |
 | `appSlug` | `String` |  |
 | `certProvider` | [`CertProvider`](/api-reference/types/enums#certprovider) | How this domain's TLS certificate is issued. Set to `cloudflare` automatically when a DNS check finds the host proxied and it still had no certificate - Cloudflare already serves it over HTTPS. `custom` serves it over HTTPS from a certificate installed on the owning server (see `addServerCertificate`) and asks no ACME provider for one. Null on rows written before the field existed (they route as `letsencrypt`). |
+| `corsOrigins` | `[String!]` | Browser origins allowed to call this domain (CORS). Empty means CORS is off; `*` allows any. |
 | `createdAt` | `String` |  |
 | `entrypoint` | [`DomainEntrypoint`](/api-reference/types/enums#domainentrypoint) |  |
 | `id` | `ID` |  |
@@ -851,6 +988,7 @@ A routable hostname attached to an app (Traefik router).
 | `primary` | `Boolean` |  |
 | `proxied` | `Boolean` | The owner's declaration that a proxy (a CDN, a reverse proxy, a load balancer) answers for this hostname. Its A records then name the proxy, never this server, so the DNS check can only ever settle `misconfigured` - this is what keeps the host routed anyway, and makes its URL https (the proxy terminates TLS). The declared twin of the `cloudflare` status, which is detected from Cloudflare's published ranges. |
 | `redirectTo` | `String` | Hostname this domain answers a permanent 301 to (the canonical half of its www / non-www pair), or null when it serves the app itself. |
+| `securityHeaders` | `Boolean` | Adds nosniff, same-origin framing and a strict referrer policy to every response. On for a domain added since the setting existed. |
 | `service` | `String` |  |
 | `serviceName` | `String` |  |
 | `source` | `String` |  |
@@ -918,18 +1056,22 @@ One server whose agent is older than the fleet version.
 | --- | --- | --- |
 | `id` | `ID` |  |
 | `name` | `String` |  |
+| `update` | [`ServerAgentUpdate`](/api-reference/types/objects#serveragentupdate) |  |
+| `usable` | `Boolean` | False when the agent is older than `FleetAgents.minimum`: the server refuses everything until it updates. |
 | `version` | `String` |  |
 
 ### FleetAgents
 
-How far the server agents are from the version this panel expects. They follow a panel update on their own, so `behind` is what that rollout has not carried yet.
+How far the server agents are from the agent this Deplo is pinned to. Deplo updates every server that is behind on its own, so `behind` is what it has not carried yet.
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `behind` | [`[FleetAgent!]`](/api-reference/types/objects#fleetagent) |  |
-| `expected` | `String` |  |
+| `expected` | `String` | The agent version this Deplo installs everywhere. |
+| `minimum` | `String` | The oldest agent this Deplo still talks to. Older is unusable until it updates. |
+| `pausedBy` | `String` | The server that took a new agent and did not come back on it. Every other update waits until it recovers. |
 | `total` | `Int` |  |
-| `updating` | `Boolean` | A rollout is still owed: Deplo retries every 15 minutes until every server is on `expected`. |
+| `updating` | `Boolean` | Deplo is still working on it: some server behind `expected` has not used up its 24 hours of retries. |
 
 ### FleetServerMetrics
 
@@ -1128,6 +1270,7 @@ A registered user in the instance-wide Users list (no email exposed).
 | --- | --- | --- |
 | `avatarColor` | `String` |  |
 | `avatarUrl` | `String` | Resolved profile picture: uploaded image, else Gravatar, else null for the monogram. |
+| `canConfigureTraefik` | `Boolean` |  |
 | `canExposePorts` | `Boolean` |  |
 | `canMountHostVolumes` | `Boolean` |  |
 | `createdAt` | `String` |  |
@@ -1419,7 +1562,7 @@ What a revert took back out of Deplo, and what is still here because it could no
 
 ### MigrationRun
 
-One import, kept after the tab that started it is gone. The API key is never stored.
+One import, kept after the tab that started it is gone. The API key is stored encrypted only for as long as the run needs it, then wiped.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -1484,6 +1627,15 @@ Instance-wide monitoring settings (a fleet-scoped singleton, like the Docker cle
 | `saveMetrics` | `Boolean` |  |
 | `updatedAt` | `String` |  |
 
+### MoveCode
+
+A fresh move code. This is the only time it is returned: Deplo keeps only its hash.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `code` | `String` | The `dmove_...` code to paste on the new Deplo. It lets that Deplo read every secret and every app's data, so treat it like the keys to the whole instance. |
+| `expiresAt` | `String` | When the code stops working if no new Deplo has used it. Once used, it lives until the copy finishes or is cancelled. |
+
 ### OverviewAppState
 
 | Field | Type | Description |
@@ -1536,6 +1688,7 @@ What DNS says about the address the panel answers on.
 | Field | Type | Description |
 | --- | --- | --- |
 | `host` | `String` |  |
+| `ipv6` | `String` | This host's public IPv6, when its server agent reports one: what an AAAA record should point at. |
 | `resolved` | `[String!]` |  |
 | `status` | `String` |  |
 
@@ -1923,8 +2076,9 @@ A connected host running deployments (reached via its agent).
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `agentCanary` | `Boolean` | Whether this server is offered canary (pre-release) agent versions as updates. Nothing installs one on its own: the update stays a click. Set with setServerAgentCanary. |
 | `agentPort` | `Int` |  |
+| `agentUpdate` | [`ServerAgentUpdate`](/api-reference/types/objects#serveragentupdate) | Deplo's update of this server's agent, while one is in flight or has failed. Null otherwise. Requires instanceAdmin. |
+| `agentUsable` | `Boolean` | Whether this Deplo talks to the server's agent at all. False when the agent is older than the minimum this version of Deplo supports: everything on the server is refused until the agent updates, though its apps keep running. True while it is not provisioned yet. |
 | `agentVersion` | `String` | The agent binary version last reported by this server on its last Hello. Null until the server's agent has called home and been provisioned. |
 | `allTeams` | `Boolean` | True (the default) when every team may target this server. False restricts it to `teams` (Settings -> Servers -> Team access). |
 | `buildFallback` | `Boolean` | Whether this host compiles for an app whose own build server could not be reached. On by default for the Deplo host and off for every other server, until setServerBuildFallback says otherwise. An app opts out of the whole chain with setAppBuildServer's buildFallback. |
@@ -1933,7 +2087,7 @@ A connected host running deployments (reached via its agent).
 | `deployConcurrency` | `Int` | How many deployments this server runs at once (default 1 = strict per-server serialization). Deploys on other servers run in parallel; a same-app deploy never overlaps regardless. Editable via setServerDeployConcurrency (instance-admin). With a build server, the lane belongs to the BUILDER - that is where a deploy's cost is. |
 | `diskGb` | `Int` |  |
 | `dockerVersion` | `String` |  |
-| `expectedAgentVersion` | `String` | The agent version this server should be running - the latest GitHub release of the agent (DeploCloud/deplo-agent), or the newest canary when `agentCanary` is on. Resolved at request time and cached; falls back to a built-in version when GitHub is unreachable. |
+| `expectedAgentVersion` | `String` | The agent version this server should be running: the one release of DeploCloud/deplo-agent this Deplo is pinned to. A newer agent is left alone, never downgraded. |
 | `host` | `String` |  |
 | `hostArch` | `String` | This host's CPU architecture ("amd64" \| "arm64"), observed from the agent. Empty when the agent is too old to report it. A build server can only build for a host of the SAME architecture. |
 | `id` | `ID` |  |
@@ -1947,11 +2101,26 @@ A connected host running deployments (reached via its agent).
 | `status` | [`ServerStatus`](/api-reference/types/enums#serverstatus) |  |
 | `statusCheckedAt` | `String` | When `status` was last OBSERVED by a live agent Hello probe (ISO), or null if it never has been. Read it WITH `status`: the pair is a timestamped observation, not a standing claim, and a client that shows the status without qualifying its age is showing a value that may be hours old. Never fabricated - a probe that times out or is throttled writes nothing. |
 | `statusMessage` | `String` | Why `status` is not `online` - e.g. "The agent is up but Docker is unreachable". Null when online or never probed. Requires instanceAdmin. |
-| `teams` | [`[Team!]`](/api-reference/types/objects#team) | Teams explicitly granted access when `allTeams` is false (empty otherwise - every team has access). Requires manage_infra. |
+| `teams` | [`[Team!]`](/api-reference/types/objects#team) | Teams explicitly granted access when `allTeams` is false (empty otherwise - every team has access). Only an instance admin sees every team; anyone else sees the active team at most. |
 | `traefikEnabled` | `Boolean` |  |
 | `type` | [`ServerType`](/api-reference/types/enums#servertype) |  |
 | `uninstallError` | `String` | Why Deplo could not take its agent off this migration source, after it stopped trying (three attempts over several minutes). Empty otherwise. This is the only state that needs a person: surface it verbatim next to the host-side uninstall command. |
 | `uninstallPending` | `Boolean` | Deplo is still trying to take its agent off this migration source, and will try again on its own. Nothing is asked of anyone while this is true. False for every other server. |
+
+### ServerAgentUpdate
+
+Where Deplo's update of one server's agent stands. Deplo retries a failed update on its own (1, 2, 4 ... up to 60 minutes apart) for 24 hours from the first failure; `retryServerAgentUpdate` tries again now.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `attempts` | `Int` |  |
+| `failed` | `Boolean` | At least one attempt failed. Only then can an instance admin retry by hand. |
+| `failure` | `String` | Why the last attempt failed: "busy" (a deploy was running), "unreachable", "error", or "no_return" (it took the new agent and did not come back, which pauses every other server). Empty before the first failure. |
+| `firstFailedAt` | `String` |  |
+| `gaveUp` | `Boolean` | 24 hours passed since the first failure: no automatic retry is scheduled. |
+| `lastError` | `String` |  |
+| `nextRetryAt` | `String` |  |
+| `running` | `Boolean` | An attempt is in progress; a retry is refused until it ends. |
 
 ### ServerCertificate
 
@@ -2077,6 +2246,30 @@ The result of uninstalling the agent from a MIGRATION SOURCE. Unlike ServerRemov
 | `uninstallCommand` | `String` | The host-side command, returned in both cases: on success so the operator can verify, on failure because it is then the only way through. |
 | `warning` | `String` | A non-blocking hazard, same meaning as on ServerRemoval, or null. |
 
+### ServerWorkload
+
+An app or database placed on a server, with its live status and usage.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `containers` | [`[WorkloadContainer!]`](/api-reference/types/objects#workloadcontainer) |  |
+| `cpu` | `Float` |  |
+| `engine` | `String` | A database's engine ("postgres"); null for an app. |
+| `environment` | `String` |  |
+| `href` | `String` | Its page, or null when the viewer is not in the owning team. |
+| `id` | `ID` |  |
+| `kind` | `String` | "app" or "database". |
+| `logo` | `String` |  |
+| `logoTone` | `String` |  |
+| `memUsed` | `Float` |  |
+| `name` | `String` |  |
+| `project` | `String` |  |
+| `restarts` | `Int` |  |
+| `status` | `String` | The live status shown on its badge: active, restarting, unhealthy, down, idle, error, ... |
+| `teamAvatarUrl` | `String` |  |
+| `teamName` | `String` |  |
+| `teamSlug` | `String` |  |
+
 ### SharedVar
 
 A shared environment variable (ADR-0010/0012/0027). Secret values are masked. Team / environment / project scopes say who it is AVAILABLE to, and it injects only through explicit per-app links (opt-in) - UNLESS `autoInject`, which is what reaching more than one team means.
@@ -2136,6 +2329,30 @@ A shared environment variable (ADR-0010/0012/0027). Secret values are masked. Te
 | --- | --- | --- |
 | `id` | `ID` |  |
 | `name` | `String` |  |
+
+### SourceMove
+
+This Deplo's side of a Deplo move, as the old Deplo.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `createdAt` | `String` |  |
+| `expiresAt` | `String` | Set only while the code is armed: a bound code lives until the copy finishes or is cancelled. |
+| `finishedAt` | `String` | When the copy finished, once it is done. |
+| `id` | `String` |  |
+| `peerUrl` | `String` | The new Deplo's address, once one has connected with the code. |
+| `startedBy` | `String` |  |
+| `state` | [`SourceMoveState`](/api-reference/types/enums#sourcemovestate) |  |
+
+### StrandedServer
+
+An offline server whose agent the offered Deplo version would refuse.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `ID` |  |
+| `name` | `String` |  |
+| `version` | `String` |  |
 
 ### Takeover
 
@@ -2252,6 +2469,7 @@ Result of checking the upstream GitHub repository for a newer Deplo release.
 | `latest` | `String` |  |
 | `name` | `String` |  |
 | `publishedAt` | `String` |  |
+| `strandedServers` | [`[StrandedServer!]`](/api-reference/types/objects#strandedserver) | Offline servers whose agent is older than the minimum the `latest` Deplo supports. They cannot update while offline, so they stay unusable until they come back and their agent updates. Empty when there is no update or the release does not say. |
 | `updateAvailable` | `Boolean` |  |
 | `url` | `String` |  |
 
@@ -2273,6 +2491,7 @@ Full per-user detail for the admin editor - the email IS included here.
 | --- | --- | --- |
 | `avatarColor` | `String` |  |
 | `avatarUrl` | `String` | Resolved profile picture: uploaded image, else Gravatar, else null for the monogram. |
+| `canConfigureTraefik` | `Boolean` |  |
 | `canExposePorts` | `Boolean` |  |
 | `canMountHostVolumes` | `Boolean` |  |
 | `createdAt` | `String` |  |
@@ -2387,3 +2606,16 @@ A persistent volume mounted into an app - a docker named volume, an app-files bi
 | `readOnly` | `Boolean` |  |
 | `service` | `String` |  |
 | `type` | `String` |  |
+
+### WorkloadContainer
+
+One container of an app or database, from the live stream.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `cpu` | `Float` | Percent, like docker stats. |
+| `health` | `String` | "healthy", "unhealthy" or "starting"; empty when the image has no healthcheck. |
+| `memUsed` | `Float` | Bytes. |
+| `name` | `String` |  |
+| `restartCount` | `Int` |  |
+| `state` | `String` | Docker's state: "running", "restarting", "exited", ... |

@@ -1106,6 +1106,11 @@ input CreateTokenInput {
   expiresAt: String
   folderIds: [String!]
   instanceAdmin: Boolean
+
+  """
+  The agent this token is for, as the connect wizard names it ("claude-code", "cursor", ...).
+  """
+  mcpAgent: String
   name: String!
   projectIds: [String!]
   teamIds: [String!]
@@ -1518,6 +1523,281 @@ type DeploChangelog {
   releases: [DeploRelease!]
 }
 
+"""What the old Deplo holds, and so what a move brings over."""
+type DeploMoveCounts {
+  apps: Int
+  databases: Int
+  servers: Int
+  teams: Int
+  users: Int
+}
+
+"""
+A database on one of the old Deplo's servers, by the address it answers at there.
+"""
+type DeploMoveDatabaseHost {
+  """
+  Unique per server only: two databases with the same one cannot land on one server here.
+  """
+  host: String
+  id: String
+  name: String
+}
+
+"""
+What a Deplo move would bring here, read from the old Deplo. Nothing has changed on either side yet.
+"""
+type DeploMovePreview {
+  canStart: Boolean
+  counts: DeploMoveCounts
+
+  """
+  The move's id. It is also the key to its public progress page, /moving/<id>.
+  """
+  id: String
+  peerUrl: String
+
+  """
+  Everything that blocks the move with each server's `target`, each naming its server. startDeploMove refuses while any remains; a database clash goes with a map that separates them.
+  """
+  problems: [String!]
+  servers: [DeploMovePreviewServer!]
+
+  """
+  This Deplo's servers an old server can land on. One the old Deplo also uses is never offered.
+  """
+  targets: [DeploMoveTargetServer!]
+
+  """The old Deplo's version."""
+  version: String
+
+  """Worth knowing, never blocking."""
+  warnings: [String!]
+}
+
+"""
+One of the old Deplo's servers, as a move would take it. It stays with the old Deplo: only what it holds is copied.
+"""
+type DeploMovePreviewServer {
+  address: String
+  agentVersion: String
+  apps: Int
+
+  """
+  The servers here it may land on: one that runs apps for a workload server, one that builds for a build server, any for a storage one. Empty for a migration source.
+  """
+  choices: [String!]
+
+  """
+  Its databases. A map that lands two with the same `host` on one server here is refused.
+  """
+  databaseHosts: [DeploMoveDatabaseHost!]
+  databases: Int
+
+  """False for a server that never finished connecting."""
+  enrolled: Boolean
+  id: String
+
+  """The machine the old Deplo itself runs on."""
+  isPanelHost: Boolean
+  name: String
+  port: Int
+
+  """
+  What keeps the move from starting because of this server, in one sentence.
+  """
+  problem: String
+
+  """
+  The old Deplo reached it just now. Its apps' data can only be copied while it does.
+  """
+  reachable: Boolean
+  role: DeploMoveServerRole
+
+  """
+  The server here it lands on unless startDeploMove's map says otherwise. Null for a migration source, which is never copied.
+  """
+  target: String
+}
+
+"""Whether this Deplo can receive a Deplo move right now."""
+type DeploMoveReadiness {
+  ready: Boolean
+
+  """
+  Why not, in one sentence: a move only goes into a fresh Deplo, one at a time.
+  """
+  reason: String
+}
+
+"""Where one of the old Deplo's servers landed here."""
+type DeploMoveServer {
+  """The old Deplo's server id."""
+  id: String
+  name: String
+
+  """The server here that takes its place. Null: not copied."""
+  targetId: String
+  targetName: String
+}
+
+"""
+Where one of the old Deplo's servers lands here. A server left out of the map takes its preview `target`.
+"""
+input DeploMoveServerMapInput {
+  """The old Deplo's server id."""
+  from: String!
+
+  """
+  A server id here, from the preview's `choices`. Ignored for a migration source.
+  """
+  to: String
+}
+
+"""
+What the server is for on the old Deplo: workloads (runs and builds apps), storage (backups only), build (builds only) or import (a migration source).
+"""
+enum DeploMoveServerRole {
+  build
+  import
+  storage
+  workloads
+}
+
+"""
+connected = the old Deplo answered and the preview is ready. copying = its database is being copied here; changes are paused. deploying = each app and database is deployed here and filled with its data. done = finished. failed = stopped, with `error` saying why; retry resumes. cancelled = abandoned; anything copied here was removed.
+"""
+enum DeploMoveState {
+  cancelled
+  connected
+  copying
+  deploying
+  done
+  failed
+}
+
+"""
+A Deplo move into this Deplo, as its progress page shows it. Read by its id alone: the copy signs everyone out.
+"""
+type DeploMoveStatus {
+  """
+  Until the move is done, even while it runs: the old Deplo starts what it paused, and this Deplo goes back to setup. Once the copy landed, only for an instance admin.
+  """
+  canCancel: Boolean
+
+  """
+  The copy landed and the move stopped, and the viewer is an instance admin, so it can finish without the old Deplo. finishDeploMoveWithoutSource still refuses while the old Deplo answers.
+  """
+  canFinishWithoutSource: Boolean
+  canRetry: Boolean
+
+  """
+  An app or database failed and the viewer is an instance admin: skipDeploMoveWorkload leaves it out so the rest finishes.
+  """
+  canSkip: Boolean
+  createdAt: String
+
+  """
+  Why the move stopped, or a note left by a cancel or by finishing without the old Deplo. Empty otherwise.
+  """
+  error: String
+  finishedAt: String
+  id: String
+
+  """
+  The copy landed, so cancelling, finishing or skipping needs an instance admin signed in here, and the viewer is not one.
+  """
+  needsAdminSignIn: Boolean
+
+  """The old Deplo's address."""
+  peerUrl: String
+  rowsCopied: Int
+
+  """The server map the move was started with."""
+  servers: [DeploMoveServer!]
+
+  """
+  After a cancel that left this Deplo without an account: the link that sets it up again.
+  """
+  setupPath: String
+  state: DeploMoveState
+  steps: [DeploMoveStep!]
+
+  """
+  Saved secrets the old Deplo could not open. They came across as they were and have to be entered again.
+  """
+  unreadable: Int
+
+  """Listed once the database copy lands."""
+  workloads: [DeploMoveWorkload!]
+}
+
+type DeploMoveStep {
+  key: DeploMoveStepKey
+  state: DeploMoveStepState
+}
+
+"""
+copy = every team, account, app and setting. deploy = each app and database is deployed here and its data copied in. finish = the old Deplo is told the copy is done.
+"""
+enum DeploMoveStepKey {
+  copy
+  deploy
+  finish
+}
+
+enum DeploMoveStepState {
+  done
+  failed
+  running
+  waiting
+}
+
+"""One of this Deplo's own servers, as a place an old server can land."""
+type DeploMoveTargetServer {
+  address: String
+
+  """
+  It runs apps and databases: not a storage, build or migration-source server.
+  """
+  canHostWorkloads: Boolean
+  id: String
+
+  """The machine this Deplo itself runs on."""
+  isThisMachine: Boolean
+  name: String
+}
+
+"""
+One app or database the move deploys here and fills with its data, databases first.
+"""
+type DeploMoveWorkload {
+  """
+  Why it failed or was left out, or for a copied one what was not copied. Empty otherwise.
+  """
+  error: String
+  id: String
+  kind: DeploMoveWorkloadKind
+  name: String
+  state: DeploMoveWorkloadState
+}
+
+enum DeploMoveWorkloadKind {
+  app
+  database
+}
+
+"""
+skipped = left out: an instance admin skipped it after it failed, or the move finished without the old Deplo before its data came across.
+"""
+enum DeploMoveWorkloadState {
+  copying
+  done
+  failed
+  skipped
+  waiting
+}
+
 """One published release of Deplo, as the changelog renders it."""
 type DeploRelease {
   """Newer than the running version, so installing an update brings it in."""
@@ -1554,7 +1834,7 @@ type Deployment {
   buildDurationMs: Int
 
   """
-  This app can be put back on this deployment: it succeeded, it built an image, that image is still on the app's current server, and it is not the one already running.
+  This app can be put back on this deployment: it succeeded, it is not the one already running, and either its image is still on the app's current server or its commit can be rebuilt (see `rollbackRebuilds`).
   """
   canRollback: Boolean
   commitAuthor: String
@@ -1598,9 +1878,14 @@ type Deployment {
   readyAt: String
 
   """
-  Set when this deploy was a rollback: the deployment whose image it re-ran. Null when it built its own.
+  Set when this deploy was a rollback: the deployment it went back to, whose image it re-ran or whose commit it rebuilt. Null otherwise.
   """
   rollbackOf: ID
+
+  """
+  Rolling back to this deployment rebuilds its commit, because its image is no longer kept on the server. Takes minutes instead of seconds.
+  """
+  rollbackRebuilds: Boolean
 
   """
   When the build was claimed off the queue and started running - the origin `buildDurationMs` is measured from, and what a live build timer counts up from. Null while still queued.
@@ -1759,6 +2044,11 @@ type Domain {
   How this domain's TLS certificate is issued. Set to `cloudflare` automatically when a DNS check finds the host proxied and it still had no certificate - Cloudflare already serves it over HTTPS. `custom` serves it over HTTPS from a certificate installed on the owning server (see `addServerCertificate`) and asks no ACME provider for one. Null on rows written before the field existed (they route as `letsencrypt`).
   """
   certProvider: CertProvider
+
+  """
+  Browser origins allowed to call this domain (CORS). Empty means CORS is off; `*` allows any.
+  """
+  corsOrigins: [String!]
   createdAt: String
   entrypoint: DomainEntrypoint
   id: ID
@@ -1782,6 +2072,11 @@ type Domain {
   Hostname this domain answers a permanent 301 to (the canonical half of its www / non-www pair), or null when it serves the app itself.
   """
   redirectTo: String
+
+  """
+  Adds nosniff, same-origin framing and a strict referrer policy to every response. On for a domain added since the setting existed.
+  """
+  securityHeaders: Boolean
   service: String
   serviceName: String
   source: String
@@ -1799,11 +2094,15 @@ Per-domain routing config; an omitted certProvider means no certificate (plain H
 """
 input DomainConfigInput {
   certProvider: CertProvider
+  corsOrigins: [String!]
   entrypoint: DomainEntrypoint
   middlewares: [String!]
   pathPrefix: String
   port: Int
   proxied: Boolean
+
+  """Omitted means on."""
+  securityHeaders: Boolean
   service: String
   stripPrefix: Boolean
   www: DomainWwwRedirect
@@ -1819,12 +2118,14 @@ Partial domain edit; only the provided fields are changed. Null clears an overri
 """
 input DomainPatchInput {
   certProvider: CertProvider
+  corsOrigins: [String!]
   entrypoint: DomainEntrypoint
   middlewares: [String!]
   name: String
   pathPrefix: String
   port: Int
   proxied: Boolean
+  securityHeaders: Boolean
   service: String
   stripPrefix: Boolean
   www: DomainWwwRedirect
@@ -1954,19 +2255,37 @@ input ExtraDomainInput {
 type FleetAgent {
   id: ID
   name: String
+  update: ServerAgentUpdate
+
+  """
+  False when the agent is older than `FleetAgents.minimum`: the server refuses everything until it updates.
+  """
+  usable: Boolean
   version: String
 }
 
 """
-How far the server agents are from the version this panel expects. They follow a panel update on their own, so `behind` is what that rollout has not carried yet.
+How far the server agents are from the agent this Deplo is pinned to. Deplo updates every server that is behind on its own, so `behind` is what it has not carried yet.
 """
 type FleetAgents {
   behind: [FleetAgent!]
+
+  """The agent version this Deplo installs everywhere."""
   expected: String
+
+  """
+  The oldest agent this Deplo still talks to. Older is unusable until it updates.
+  """
+  minimum: String
+
+  """
+  The server that took a new agent and did not come back on it. Every other update waits until it recovers.
+  """
+  pausedBy: String
   total: Int
 
   """
-  A rollout is still owed: Deplo retries every 15 minutes until every server is on `expected`.
+  Deplo is still working on it: some server behind `expected` has not used up its 24 hours of retries.
   """
   updating: Boolean
 }
@@ -2209,6 +2528,7 @@ type GlobalUser {
   Resolved profile picture: uploaded image, else Gravatar, else null for the monogram.
   """
   avatarUrl: String
+  canConfigureTraefik: Boolean
   canExposePorts: Boolean
   canMountHostVolumes: Boolean
   createdAt: String
@@ -2720,7 +3040,7 @@ type MigrationRevertResult {
 }
 
 """
-One import, kept after the tab that started it is gone. The API key is never stored.
+One import, kept after the tab that started it is gone. The API key is stored encrypted only for as long as the run needs it, then wiped.
 """
 type MigrationRun {
   actor: String
@@ -2829,7 +3149,7 @@ input MigrationServerChoiceInput {
 
 input MigrationSourceInput {
   """
-  The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Another Deplo: an API token there, limited to the one team, with Reveal secret values, Start & stop apps and Start & stop databases. Never stored.
+  The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Another Deplo: an API token there, limited to the one team, with Reveal secret values, Start & stop apps and Start & stop databases. Stored encrypted only for as long as the migration needs it, then wiped.
   """
   apiKey: String!
 
@@ -2886,6 +3206,21 @@ How mounts appearing UNDER a host bind mount cross between the server and the co
 enum MountPropagation {
   rshared
   rslave
+}
+
+"""
+A fresh move code. This is the only time it is returned: Deplo keeps only its hash.
+"""
+type MoveCode {
+  """
+  The `dmove_…` code to paste on the new Deplo. It lets that Deplo read every secret and every app's data, so treat it like the keys to the whole instance.
+  """
+  code: String
+
+  """
+  When the code stops working if no new Deplo has used it. Once used, it lives until the copy finishes or is cancelled.
+  """
+  expiresAt: String
 }
 
 type Mutation {
@@ -2964,7 +3299,17 @@ type Mutation {
 
   """Stop a run that is in flight."""
   cancelCronRun(id: ID!): Boolean
+
+  """
+  Abandon a move any time before it is done, even while it runs: the old Deplo starts what it paused, what the move deployed here is removed and this Deplo goes back to setup. Public by the move's id until the copy lands; after that, for an instance admin only.
+  """
+  cancelDeploMove(id: String!): DeploMoveStatus
   cancelDeployment(id: String!): Boolean
+
+  """
+  Withdraw the move code, or stop a copy in progress: every app paused for it starts again here. A finished copy has nothing to cancel.
+  """
+  cancelMoveCode: Boolean
 
   """
   Back out. Starts again everything the migration stopped on the other platform, undoes what it created here, and tells the installer to uninstall Deplo. The panel's API token is wiped when a run ends, so one has to be handed over again.
@@ -2975,11 +3320,6 @@ type Mutation {
   Change the current user's password after verifying the current one. Returns true.
   """
   changePassword(currentPassword: String!, newPassword: String!): Boolean
-
-  """
-  Force an immediate re-resolution of the latest agent release from GitHub, bypassing the in-process cache. Returns the resolved expected agent version so the dashboard re-renders with fresh outdated badges. Use after publishing a new agent release rather than waiting out the cache TTL.
-  """
-  checkAgentUpdates: String
 
   """
   Probe every provisioned server's agent and persist each outcome; returns every server (unprovisioned ones pass through untouched). This is what the Servers page runs on load, so a reload always reflects reality rather than the status a server had when it first called home.
@@ -3029,6 +3369,16 @@ type Mutation {
   confirmTwoFactorEnrolment(code: String!): Boolean
 
   """
+  Reach the old Deplo with its move code and preview the move. Changes nothing on either side; only a fresh Deplo can receive one.
+  """
+  connectDeploMove(
+    code: String!
+
+    """The old Deplo's https address."""
+    url: String!
+  ): DeploMovePreview
+
+  """
   Store credentials for a git host, after proving the token works against it.
   """
   connectGitProvider(input: ConnectGitProviderInput!): GitConnection
@@ -3056,6 +3406,11 @@ type Mutation {
   createFolder(color: String, name: String!, parentId: ID): Folder
 
   """
+  Mint the code that lets a new Deplo copy this one onto its machine. Replaces an unused or finished code; refused while a copy runs.
+  """
+  createMoveCode: MoveCode
+
+  """
   Create a Project container in the active team. Requires `deploy`; the creator becomes its owner.
   """
   createProject(color: String, name: String!): Project
@@ -3077,7 +3432,7 @@ type Mutation {
   deleteAllDeployments(appId: ID, environment: String, serverId: ID, status: String): Int
 
   """
-  Delete the app. Returns as soon as the deletion is RECORDED - from that moment the app is refused by every gate and gone from the product, and the stack teardown finishes on the host behind the response.
+  Delete the app. Returns as soon as the deletion is RECORDED - from that moment the app is refused by every gate and gone from the product, and the stack teardown finishes on the host behind the response. Its stored backups are deleted first; if one cannot be, nothing is deleted.
   """
   deleteApp(id: String!): Boolean
 
@@ -3090,7 +3445,7 @@ type Mutation {
   deleteBackup(id: String!): Boolean
 
   """
-  Delete ALL of a target's backup artifacts (across every destination it ran to) plus their run records. The 'also delete backups' branch of deleting a database or an app. Returns the number removed. Throws if any destination's sweep failed, so the caller can abort the target deletion rather than orphan the files.
+  Delete ALL of a live target's backup artifacts (across every destination it ran to) plus their run records; needs delete_backups. deleteApp and deleteDatabase already take a target's backups with it. Returns the number removed. Throws if any destination's sweep failed.
   """
   deleteBackupArtifacts(targetId: String!, targetKind: BackupTargetKind!): Int
 
@@ -3103,7 +3458,7 @@ type Mutation {
   deleteCronJob(id: ID!): Boolean
 
   """
-  Stop and destroy the database's container + data volume on its server, then delete it (dependent backup schedules cascade). The teardown must verifiably succeed: if the server can't be reached, or something of the stack survives it, nothing is deleted and the mutation errors, so a live database is never silently forgotten. `force` deletes the record anyway (for a host that is never coming back) and queues the teardown, which Deplo retries until the host confirms it. Returns true.
+  Delete its stored backups, then stop and destroy the database's container + data volume on its server, then delete it (dependent backup schedules cascade). A backup that cannot be deleted stops it all unless `force`, which leaves it to the orphan sweep. The teardown must verifiably succeed: if the server can't be reached, or something of the stack survives it, nothing is deleted and the mutation errors, so a live database is never silently forgotten. `force` deletes the record anyway (for a host that is never coming back) and queues the teardown, which Deplo retries until the host confirms it. Returns true.
   """
   deleteDatabase(force: Boolean, id: String!): Boolean
 
@@ -3208,6 +3563,11 @@ type Mutation {
   dismissMigrationReport(runId: String!): Boolean
 
   """
+  Put the Overview's network-isolation notice away for good. It reports how many stacks the one-time move could not reach; the stacks themselves are untouched and each one still moves on its next deploy. `retryNetworkIsolation` brings the notice back if a stack still cannot be reached.
+  """
+  dismissNetworkIsolationNotice: Boolean
+
+  """
   Clear this app's "changes not deployed yet" notice without deploying - the change was undone, or it was never one a deploy has to carry. The next config change stamps it again.
   """
   dismissPendingChanges(appId: String!): Boolean
@@ -3221,6 +3581,11 @@ type Mutation {
   Run a command in the database's live container (docker exec). Gated on manage_infra - arbitrary code execution inside infrastructure.
   """
   execDatabaseConsole(input: ExecDatabaseConsoleInput!): ExecResult
+
+  """
+  Finish a stopped move when the old Deplo is gone for good: every app or database whose data never came across is left out, not deployed. Refused while the old Deplo answers. For an instance admin only: it runs after the copy landed.
+  """
+  finishDeploMoveWithoutSource(id: String!): DeploMoveStatus
 
   """
   Close the run and settle its totals. Idempotent - a finished run is left alone.
@@ -3290,6 +3655,12 @@ type Mutation {
   """Clear the session + active-team cookies."""
   logout: Boolean
 
+  """Make a variable Secret without changing its stored value or scope."""
+  makeEnvSecret(id: String!): Boolean
+
+  """Make a variable Secret without changing its stored value or scope."""
+  makeSharedVarSecret(id: String!): Boolean
+
   """
   Mint a single-use registration link. Returns the absolute /register URL.
   """
@@ -3336,7 +3707,7 @@ type Mutation {
   moveMigrationServiceData(input: MigrationSourceInput!, runId: String!, sourceId: String!, sourceKind: String!): MigrationDataMoveResult
 
   """
-  Resolve the panel's own hostname and classify it the way a custom domain is classified: `valid` when its A records include this host's public IPv4, `cloudflare` when they are Cloudflare's anycast addresses and the origin cannot be read from DNS, `misconfigured` when it answers with something else, `pending` when it does not resolve, and `unknown` when there is nothing to check (a bare IP, or no host address on record). A mutation despite writing nothing, for the same reason panelHttps is one: it leaves the process.
+  Resolve the panel's own hostname and classify it the way a custom domain is classified: `valid` when its A or AAAA records point at this host and none points elsewhere, `cloudflare` when they are Cloudflare's anycast addresses and the origin cannot be read from DNS, `misconfigured` when it answers with something else, `pending` when it does not resolve, and `unknown` when there is nothing to check (a bare IP, or no host address on record). A mutation despite writing nothing, for the same reason panelHttps is one: it leaves the process.
   """
   panelDns: PanelDns
 
@@ -3552,9 +3923,24 @@ type Mutation {
   restoreBackup(runId: String!): Boolean
 
   """
+  Turn on the cron jobs and backup schedules a Deplo move left paused here, so they never run on both Deplos at once.
+  """
+  resumeMoveSchedules: Boolean
+
+  """
+  Resume a failed move: the copy again if it never landed, else every app or database not copied yet. Public by the move's unguessable id, like its progress page.
+  """
+  retryDeploMove(id: String!): DeploMoveStatus
+
+  """
   Run the network-isolation move again for every stack it could not reach the first time. Each app and database is brought up on the network its environment owns, one host at a time; one that still cannot be reached stays where it is and is reported in Activity. Safe to run more than once - a stack already on the right network is a no-op.
   """
   retryNetworkIsolation: Boolean
+
+  """
+  Try again, now, to update this server's agent to the version this Deplo is pinned to. Only after Deplo's own attempt failed: it cancels the scheduled retry, keeps the 24-hour window running, and is refused while another attempt is in progress. Returns the attempt as it starts; poll `server(id).agentUpdate` for the outcome.
+  """
+  retryServerAgentUpdate(id: String!): ServerAgentUpdate
 
   """
   The app's full deploy hook URL, minting it on first read. Calling it still requires an API token as `Authorization: Bearer deplo_…`.
@@ -3601,7 +3987,7 @@ type Mutation {
   revokeToken(id: String!): Boolean
 
   """
-  Put an app back on a previous deployment by re-running the image that build left on the server - no clone, no rebuild, no pull. Only a successful production deployment of an app Deplo builds (a repository or an uploaded archive), still inside the app's rollback retention and on the app's current server, can be rolled back to; ask for `canRollback` on the deployment to know. The code goes back and NOTHING ELSE does: the stack is rendered from the app's current variables, domains, volumes and resource limits. Returns the new deployment.
+  Put an app back on a previous deployment by re-running the image that build left on the server - no clone, no rebuild, no pull. When that image is no longer kept, an app deployed from a repository rebuilds the deployment's commit instead, which takes minutes. Only a successful production deployment of an app Deplo builds can be rolled back to; ask for `canRollback` and `rollbackRebuilds` on the deployment to know. The code goes back and NOTHING ELSE does: the stack is rendered from the app's current variables, domains, volumes, build settings and resource limits. Returns the new deployment.
   """
   rollbackDeployment(deploymentId: String!): Deployment
 
@@ -3707,6 +4093,7 @@ type Mutation {
   How many previous deployments this app can be rolled back to (0-20, default 3). It is retention: the app's server keeps this many of its images behind the running one. Takes effect on the next sweep - lowering it removes nothing now, and raising it cannot bring back images already removed.
   """
   setAppRollbackKeep(count: Int!, id: String!): App
+  setAppTraefikLabels(id: String!, labels: [TraefikLabelInput!]!): App
 
   """
   Replace an app's volumes (named, app-files, and host bind mounts). Compose-stack apps included - each volume names the service it mounts into.
@@ -3714,7 +4101,7 @@ type Mutation {
   setAppVolumes(id: String!, volumes: [VolumeInput!]!): App
 
   """
-  Offer canary (pre-release) versions of Deplo as updates, or go back to stable ones. Installs nothing: a newer version shows up as an update, and turning it off never downgrades a panel already on a canary.
+  Offer canary (pre-release) versions of Deplo as updates, or go back to stable ones. Server agents follow the agent version the installed Deplo is pinned to, never this switch. Installs nothing: a newer version shows up as an update, and turning it off never downgrades anything already on a canary.
   """
   setCanaryReleases(enabled: Boolean!): UpdateInfo
 
@@ -3836,11 +4223,6 @@ type Mutation {
   setSaveMetrics(enabled: Boolean!): MonitoringSettings
 
   """
-  Offer this server's agent canary (pre-release) versions as updates, or go back to stable ones. Nothing is installed by the switch: a newer version shows up as an update, and turning it off never downgrades an agent already on a canary.
-  """
-  setServerAgentCanary(agentCanary: Boolean!, id: String!): Server
-
-  """
   Whether this host may compile for an app whose own build server could not be reached (the app's own server stays the last resort). Omit the flag to go back to automatic: the Deplo host builds as a fallback, no other server does. Refused on a host with no Docker of ours to build with.
   """
   setServerBuildFallback(buildFallback: Boolean, id: String!): Server
@@ -3882,7 +4264,24 @@ type Mutation {
   Set one person's role and per-node overrides in one team. Whole-set replace: node grants not sent are removed.
   """
   setUserTeamAccess(input: SetUserTeamAccessInput!): [UserTeamAccess!]
+
+  """
+  Leave out an app or database that failed to copy, so the move can finish without it. It stays in this Deplo, stopped and without its data; once nothing else is left, the move finishes.
+  """
+  skipDeploMoveWorkload(id: String!, kind: DeploMoveWorkloadKind!, workloadId: String!): DeploMoveStatus
   startApp(id: String!): App
+
+  """
+  Start a connected move: everything here is replaced by a copy of the old Deplo, then each app and database is deployed on its mapped server and filled with its data. The old Deplo keeps running.
+  """
+  startDeploMove(
+    id: String!
+
+    """
+    Where each old server lands here. Every one but a migration source needs a server here, and one holding apps or databases needs one that runs apps.
+    """
+    map: [DeploMoveServerMapInput!]
+  ): DeploMoveStatus
 
   """
   Begin the GitHub App manifest flow; returns the form's POST target, manifest and signed state.
@@ -4091,11 +4490,6 @@ type Mutation {
     """
     keepHost: Boolean
   ): String
-
-  """
-  Update this server's agent binary in place to the latest released version WITHOUT reissuing its certificates - the agent self-updates over its existing pinned-mTLS channel and re-execs keeping the same on-disk trust materials, so the server stays online with the same identity. Returns the version the agent is now running. Errors clearly when the server is unreachable/unprovisioned, or, until the agent ships the self-update RPC, when its agent is too old to update itself remotely (re-run the installer to upgrade it for now).
-  """
-  updateServerAgent(id: String!): String
   updateTeam(input: UpdateTeamInput!): Team
 
   """
@@ -4203,6 +4597,11 @@ type PanelAddressImpact {
 """What DNS says about the address the panel answers on."""
 type PanelDns {
   host: String
+
+  """
+  This host's public IPv6, when its server agent reports one: what an AAAA record should point at.
+  """
+  ipv6: String
   resolved: [String!]
   status: String
 }
@@ -4478,6 +4877,12 @@ type Query {
   Deplo's published releases with their notes, newest first; canaries only while `updateInfo.canary` is on (or the one running). Cached for an hour and refreshed by checkForUpdates.
   """
   deploChangelog: DeploChangelog
+  deploMoveReadiness: DeploMoveReadiness
+
+  """
+  Public on purpose: the id is unguessable and the copy signs everyone out, so the progress page cannot lean on a session. Null for an unknown id.
+  """
+  deploMoveStatus(id: String!): DeploMoveStatus
   deployment(id: String!): Deployment
   deployments(appId: String, environment: DeploymentEnvironment, status: DeploymentStatus): [Deployment!]
 
@@ -4613,7 +5018,7 @@ type Query {
   logsInfo(appId: String!): LogsInfo
 
   """
-  How many AI agents can act in this team over MCP, every member's counted. A number only: tokens are personal and never listed to anyone but their owner.
+  How many of the caller's own AI agents can act in this team over MCP. Tokens are personal, so nobody else's are counted.
   """
   mcpAgentCount: Int
 
@@ -4674,7 +5079,7 @@ type Query {
   myTeams: [TeamMembership!]
 
   """
-  The active team's configured channels, each with its own subscribed alerts. Needs `manage_notifications`: a channel carries the webhook URL, which is the credential for the room it posts in.
+  The active team's configured channels, each with its own subscribed alerts. Needs `manage_notifications`: a channel carries the webhook URL, which is the credential for the room it posts in, so an API token reads it masked. Saving the mask back keeps the stored URL.
   """
   notificationChannels: JSON
 
@@ -4738,6 +5143,11 @@ type Query {
   """
   serverMetricsHistory(serverId: String!): [ServerMetrics!]
 
+  """
+  Every team's apps and databases on one server, with live status and usage. Instance admins only.
+  """
+  serverWorkloads(id: String!): [ServerWorkload!]
+
   """All servers, by creation order."""
   servers: [Server!]
 
@@ -4755,6 +5165,11 @@ type Query {
   shellLabel(input: ShellLabelInput!): String
 
   """
+  This Deplo's move to another machine, or null when there is none (an unused code that expired counts as none).
+  """
+  sourceMove: SourceMove
+
+  """
   The takeover in progress, or null. The screen that replaces the dashboard reads its own state server-side; this is the poll behind the buttons, and only an instance admin has any.
   """
   takeover: Takeover
@@ -4763,6 +5178,11 @@ type Query {
   Null when this panel's own machine is not a server Deplo knows about, which is the one case where none of it can be measured.
   """
   takeoverPreflight: TakeoverPreflight
+
+  """
+  The id of the move into this Deplo that is still open, or null. deploMoveStatus reads it.
+  """
+  targetMove: String
 
   """Every role of the active team - defaults first, then the team's own."""
   teamRoles: [TeamRole!]
@@ -5228,11 +5648,17 @@ type SearchTemplate {
 
 """A connected host running deployments (reached via its agent)."""
 type Server {
-  """
-  Whether this server is offered canary (pre-release) agent versions as updates. Nothing installs one on its own: the update stays a click. Set with setServerAgentCanary.
-  """
-  agentCanary: Boolean
   agentPort: Int
+
+  """
+  Deplo's update of this server's agent, while one is in flight or has failed. Null otherwise. Requires instanceAdmin.
+  """
+  agentUpdate: ServerAgentUpdate
+
+  """
+  Whether this Deplo talks to the server's agent at all. False when the agent is older than the minimum this version of Deplo supports: everything on the server is refused until the agent updates, though its apps keep running. True while it is not provisioned yet.
+  """
+  agentUsable: Boolean
 
   """
   The agent binary version last reported by this server on its last Hello. Null until the server's agent has called home and been provisioned.
@@ -5259,7 +5685,7 @@ type Server {
   dockerVersion: String
 
   """
-  The agent version this server should be running - the latest GitHub release of the agent (DeploCloud/deplo-agent), or the newest canary when `agentCanary` is on. Resolved at request time and cached; falls back to a built-in version when GitHub is unreachable.
+  The agent version this server should be running: the one release of DeploCloud/deplo-agent this Deplo is pinned to. A newer agent is left alone, never downgraded.
   """
   expectedAgentVersion: String
   host: String
@@ -5301,7 +5727,7 @@ type Server {
   statusMessage: String
 
   """
-  Teams explicitly granted access when `allTeams` is false (empty otherwise - every team has access). Requires manage_infra.
+  Teams explicitly granted access when `allTeams` is false (empty otherwise - every team has access). Only an instance admin sees every team; anyone else sees the active team at most.
   """
   teams: [Team!]
   traefikEnabled: Boolean
@@ -5316,6 +5742,34 @@ type Server {
   Deplo is still trying to take its agent off this migration source, and will try again on its own. Nothing is asked of anyone while this is true. False for every other server.
   """
   uninstallPending: Boolean
+}
+
+"""
+Where Deplo's update of one server's agent stands. Deplo retries a failed update on its own (1, 2, 4 … up to 60 minutes apart) for 24 hours from the first failure; `retryServerAgentUpdate` tries again now.
+"""
+type ServerAgentUpdate {
+  attempts: Int
+
+  """
+  At least one attempt failed. Only then can an instance admin retry by hand.
+  """
+  failed: Boolean
+
+  """
+  Why the last attempt failed: "busy" (a deploy was running), "unreachable", "error", or "no_return" (it took the new agent and did not come back, which pauses every other server). Empty before the first failure.
+  """
+  failure: String
+  firstFailedAt: String
+
+  """
+  24 hours passed since the first failure: no automatic retry is scheduled.
+  """
+  gaveUp: Boolean
+  lastError: String
+  nextRetryAt: String
+
+  """An attempt is in progress; a retry is refused until it ends."""
+  running: Boolean
 }
 
 """
@@ -5605,6 +6059,37 @@ type ServerUninstall {
   warning: String
 }
 
+"""An app or database placed on a server, with its live status and usage."""
+type ServerWorkload {
+  containers: [WorkloadContainer!]
+  cpu: Float
+
+  """A database's engine ("postgres"); null for an app."""
+  engine: String
+  environment: String
+
+  """Its page, or null when the viewer is not in the owning team."""
+  href: String
+  id: ID
+
+  """"app" or "database"."""
+  kind: String
+  logo: String
+  logoTone: String
+  memUsed: Float
+  name: String
+  project: String
+  restarts: Int
+
+  """
+  The live status shown on its badge: active, restarting, unhealthy, down, idle, error, ...
+  """
+  status: String
+  teamAvatarUrl: String
+  teamName: String
+  teamSlug: String
+}
+
 """
 Deliberately carries no teamId: the active team is the caller's, and an id here would be a way to write another team's memberships.
 """
@@ -5701,6 +6186,42 @@ type SharedVarTeam {
 input ShellLabelInput {
   appId: String!
   containerName: String
+}
+
+"""This Deplo's side of a Deplo move, as the old Deplo."""
+type SourceMove {
+  createdAt: String
+
+  """
+  Set only while the code is armed: a bound code lives until the copy finishes or is cancelled.
+  """
+  expiresAt: String
+
+  """When the copy finished, once it is done."""
+  finishedAt: String
+  id: String
+
+  """The new Deplo's address, once one has connected with the code."""
+  peerUrl: String
+  startedBy: String
+  state: SourceMoveState
+}
+
+"""
+armed = a move code waits for the new Deplo. bound = a new Deplo connected with it. copying = the new Deplo is copying this one; each app with data pauses here only while its own data copies. done = the copy finished; this Deplo keeps running as it was.
+"""
+enum SourceMoveState {
+  armed
+  bound
+  copying
+  done
+}
+
+"""An offline server whose agent the offered Deplo version would refuse."""
+type StrandedServer {
+  id: ID
+  name: String
+  version: String
 }
 
 type Subscription {
@@ -5881,6 +6402,11 @@ type TemplateVariantSummary {
   variantSlug: String
 }
 
+input TraefikLabelInput {
+  key: String!
+  value: String!
+}
+
 """
 A pending enrolment: the secret to scan and the codes to save. Two-factor is not on until `confirmTwoFactorEnrolment` succeeds.
 """
@@ -5946,6 +6472,11 @@ type UpdateInfo {
   latest: String
   name: String
   publishedAt: String
+
+  """
+  Offline servers whose agent is older than the minimum the `latest` Deplo supports. They cannot update while offline, so they stay unusable until they come back and their agent updates. Empty when there is no update or the release does not say.
+  """
+  strandedServers: [StrandedServer!]
   updateAvailable: Boolean
   url: String
 }
@@ -5993,6 +6524,7 @@ input UpdateTokenInput {
 }
 
 input UpdateUserAdminInput {
+  canConfigureTraefik: Boolean
   canExposePorts: Boolean
   canMountHostVolumes: Boolean
   isInstanceAdmin: Boolean!
@@ -6033,6 +6565,7 @@ type UserDetail {
   Resolved profile picture: uploaded image, else Gravatar, else null for the monogram.
   """
   avatarUrl: String
+  canConfigureTraefik: Boolean
   canExposePorts: Boolean
   canMountHostVolumes: Boolean
   createdAt: String
@@ -6220,4 +6753,23 @@ enum VolumeKind {
   host
   named
   service
+}
+
+"""One container of an app or database, from the live stream."""
+type WorkloadContainer {
+  """Percent, like docker stats."""
+  cpu: Float
+
+  """
+  "healthy", "unhealthy" or "starting"; empty when the image has no healthcheck.
+  """
+  health: String
+
+  """Bytes."""
+  memUsed: Float
+  name: String
+  restartCount: Int
+
+  """Docker's state: "running", "restarting", "exited", ..."""
+  state: String
 }

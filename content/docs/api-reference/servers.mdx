@@ -74,6 +74,27 @@ query {
 }
 ```
 
+### `serverWorkloads`
+
+Instance admin only. Returns [`[ServerWorkload!]`](/api-reference/types/objects#serverworkload).
+
+Every team's apps and databases on one server, with live status and usage. Instance admins only.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+query {
+  serverWorkloads(id: "srv_9f1c2ab7d3e4f5a6") {
+    id
+    name
+    status
+    cpu
+  }
+}
+```
+
 ## Enrolling and removing
 
 ### `addServer`
@@ -429,11 +450,11 @@ mutation {
 
 ## Maintenance
 
-### `updateServerAgent`
+### `retryServerAgentUpdate`
 
-Instance admin only. Returns `String`.
+Instance admin only. Returns [`ServerAgentUpdate`](/api-reference/types/objects#serveragentupdate).
 
-Update this server's agent binary in place to the latest released version WITHOUT reissuing its certificates - the agent self-updates over its existing pinned-mTLS channel and re-execs keeping the same on-disk trust materials, so the server stays online with the same identity. Returns the version the agent is now running. Errors clearly when the server is unreachable/unprovisioned, or, until the agent ships the self-update RPC, when its agent is too old to update itself remotely (re-run the installer to upgrade it for now).
+Try again, now, to update this server's agent to the version this Deplo is pinned to. Only after Deplo's own attempt failed: it cancels the scheduled retry, keeps the 24-hour window running, and is refused while another attempt is in progress. Returns the attempt as it starts; poll `server(id).agentUpdate` for the outcome.
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -441,19 +462,12 @@ Update this server's agent binary in place to the latest released version WITHOU
 
 ```graphql
 mutation {
-  updateServerAgent(id: "srv_9f1c2ab7d3e4f5a6")
-}
-```
-
-### `checkAgentUpdates`
-
-Instance admin only. Returns `String`.
-
-Force an immediate re-resolution of the latest agent release from GitHub, bypassing the in-process cache. Returns the resolved expected agent version so the dashboard re-renders with fresh outdated badges. Use after publishing a new agent release rather than waiting out the cache TTL.
-
-```graphql
-mutation {
-  checkAgentUpdates
+  retryServerAgentUpdate(id: "srv_9f1c2ab7d3e4f5a6") {
+    attempts
+    failed
+    failure
+    firstFailedAt
+  }
 }
 ```
 
@@ -467,32 +481,9 @@ The fleet's agent versions, and whether Deplo is still rolling an update out to 
 query {
   fleetAgents {
     expected
+    minimum
+    pausedBy
     total
-    updating
-  }
-}
-```
-
-### `setServerAgentCanary`
-
-Instance admin only. Returns [`Server`](/api-reference/types/objects#server).
-
-Offer this server's agent canary (pre-release) versions as updates, or go back to stable ones. Nothing is installed by the switch: a newer version shows up as an update, and turning it off never downgrades an agent already on a canary.
-
-| Argument | Type | Description |
-| --- | --- | --- |
-| `agentCanary` | `Boolean!` |  |
-| `id` | `String!` |  |
-
-```graphql
-mutation {
-  setServerAgentCanary(agentCanary: true, id: "srv_9f1c2ab7d3e4f5a6") {
-    id
-    name
-    host
-    role
-    status
-    agentVersion
   }
 }
 ```
@@ -561,6 +552,18 @@ Run the network-isolation move again for every stack it could not reach the firs
 ```graphql
 mutation {
   retryNetworkIsolation
+}
+```
+
+### `dismissNetworkIsolationNotice`
+
+Instance admin only. Returns `Boolean`.
+
+Put the Overview's network-isolation notice away for good. It reports how many stacks the one-time move could not reach; the stacks themselves are untouched and each one still moves on its next deploy. `retryNetworkIsolation` brings the notice back if a stack still cannot be reached.
+
+```graphql
+mutation {
+  dismissNetworkIsolationNotice
 }
 ```
 

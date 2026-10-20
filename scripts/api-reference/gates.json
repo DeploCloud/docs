@@ -146,6 +146,12 @@
  "Query.deploChangelog": {
   "kind": "instanceAdmin"
  },
+ "Query.deploMoveReadiness": {
+  "kind": "instanceAdmin"
+ },
+ "Query.deploMoveStatus": {
+  "kind": "none"
+ },
  "Query.deployment": {
   "kind": "loggedIn"
  },
@@ -338,6 +344,9 @@
   "cap": "view_metrics",
   "orInstanceAdmin": false
  },
+ "Query.serverWorkloads": {
+  "kind": "instanceAdmin"
+ },
  "Query.servers": {
   "kind": "loggedIn"
  },
@@ -354,10 +363,16 @@
  "Query.shellLabel": {
   "kind": "loggedIn"
  },
+ "Query.sourceMove": {
+  "kind": "instanceAdmin"
+ },
  "Query.takeover": {
   "kind": "instanceAdmin"
  },
  "Query.takeoverPreflight": {
+  "kind": "instanceAdmin"
+ },
+ "Query.targetMove": {
   "kind": "instanceAdmin"
  },
  "Query.teamRoles": {
@@ -456,19 +471,22 @@
   "cap": "manage_crons",
   "orInstanceAdmin": false
  },
+ "Mutation.cancelDeploMove": {
+  "kind": "none"
+ },
  "Mutation.cancelDeployment": {
   "kind": "capability",
   "cap": "deploy_apps",
   "orInstanceAdmin": false
+ },
+ "Mutation.cancelMoveCode": {
+  "kind": "instanceAdmin"
  },
  "Mutation.cancelTakeover": {
   "kind": "instanceAdmin"
  },
  "Mutation.changePassword": {
   "kind": "loggedIn"
- },
- "Mutation.checkAgentUpdates": {
-  "kind": "instanceAdmin"
  },
  "Mutation.checkAllServerHealth": {
   "kind": "instanceAdmin"
@@ -495,6 +513,9 @@
  },
  "Mutation.confirmTwoFactorEnrolment": {
   "kind": "loggedIn"
+ },
+ "Mutation.connectDeploMove": {
+  "kind": "instanceAdmin"
  },
  "Mutation.connectGitProvider": {
   "kind": "capability",
@@ -540,6 +561,9 @@
   "kind": "capability",
   "cap": "create_folders",
   "orInstanceAdmin": false
+ },
+ "Mutation.createMoveCode": {
+  "kind": "instanceAdmin"
  },
  "Mutation.createProject": {
   "kind": "capability",
@@ -693,6 +717,9 @@
   "cap": "create_projects",
   "orInstanceAdmin": false
  },
+ "Mutation.dismissNetworkIsolationNotice": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.dismissPendingChanges": {
   "kind": "capability",
   "cap": "manage_env",
@@ -707,6 +734,9 @@
   "kind": "capability",
   "cap": "open_database_console",
   "orInstanceAdmin": false
+ },
+ "Mutation.finishDeploMoveWithoutSource": {
+  "kind": "none"
  },
  "Mutation.finishMigration": {
   "kind": "capability",
@@ -752,6 +782,16 @@
  },
  "Mutation.logout": {
   "kind": "none"
+ },
+ "Mutation.makeEnvSecret": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
+ "Mutation.makeSharedVarSecret": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
  },
  "Mutation.mintRegistrationLink": {
   "kind": "instanceAdmin"
@@ -976,7 +1016,16 @@
   "cap": "restore_backups",
   "orInstanceAdmin": false
  },
+ "Mutation.resumeMoveSchedules": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.retryDeploMove": {
+  "kind": "none"
+ },
  "Mutation.retryNetworkIsolation": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.retryServerAgentUpdate": {
   "kind": "instanceAdmin"
  },
  "Mutation.revealAppDeployHook": {
@@ -1124,6 +1173,11 @@
   "cap": "configure_apps",
   "orInstanceAdmin": false
  },
+ "Mutation.setAppTraefikLabels": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
  "Mutation.setAppVolumes": {
   "kind": "capability",
   "cap": "configure_apps",
@@ -1224,9 +1278,6 @@
   "cap": "manage_monitoring",
   "orInstanceAdmin": false
  },
- "Mutation.setServerAgentCanary": {
-  "kind": "instanceAdmin"
- },
  "Mutation.setServerBuildFallback": {
   "kind": "instanceAdmin"
  },
@@ -1256,10 +1307,16 @@
  "Mutation.setUserTeamAccess": {
   "kind": "instanceAdmin"
  },
+ "Mutation.skipDeploMoveWorkload": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.startApp": {
   "kind": "capability",
   "cap": "control_apps",
   "orInstanceAdmin": false
+ },
+ "Mutation.startDeploMove": {
+  "kind": "instanceAdmin"
  },
  "Mutation.startGithubConnect": {
   "kind": "capability",
@@ -1441,9 +1498,6 @@
   "orInstanceAdmin": false
  },
  "Mutation.updateServerAddress": {
-  "kind": "instanceAdmin"
- },
- "Mutation.updateServerAgent": {
   "kind": "instanceAdmin"
  },
  "Mutation.updateTeam": {

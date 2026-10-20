@@ -165,7 +165,7 @@ mutation {
 
 Instance admin only. Returns [`PanelDns`](/api-reference/types/objects#paneldns).
 
-Resolve the panel's own hostname and classify it the way a custom domain is classified: `valid` when its A records include this host's public IPv4, `cloudflare` when they are Cloudflare's anycast addresses and the origin cannot be read from DNS, `misconfigured` when it answers with something else, `pending` when it does not resolve, and `unknown` when there is nothing to check (a bare IP, or no host address on record). A mutation despite writing nothing, for the same reason panelHttps is one: it leaves the process.
+Resolve the panel's own hostname and classify it the way a custom domain is classified: `valid` when its A or AAAA records point at this host and none points elsewhere, `cloudflare` when they are Cloudflare's anycast addresses and the origin cannot be read from DNS, `misconfigured` when it answers with something else, `pending` when it does not resolve, and `unknown` when there is nothing to check (a bare IP, or no host address on record). A mutation despite writing nothing, for the same reason panelHttps is one: it leaves the process.
 
 ```graphql
 mutation {
@@ -305,7 +305,7 @@ mutation {
 
 Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
 
-Offer canary (pre-release) versions of Deplo as updates, or go back to stable ones. Installs nothing: a newer version shows up as an update, and turning it off never downgrades a panel already on a canary.
+Offer canary (pre-release) versions of Deplo as updates, or go back to stable ones. Server agents follow the agent version the installed Deplo is pinned to, never this switch. Installs nothing: a newer version shows up as an update, and turning it off never downgrades anything already on a canary.
 
 | Argument | Type | Description |
 | --- | --- | --- |
@@ -361,6 +361,248 @@ mutation {
 }
 ```
 
+## Moving Deplo to another machine
+
+The old Deplo mints a move code with `createMoveCode`; a fresh Deplo on the new machine connects with it and starts the copy. The calls keyed by the move's `id` are public on purpose: the copy signs everyone out, so the progress page cannot lean on a session.
+
+### `deploMoveReadiness`
+
+Instance admin only. Returns [`DeploMoveReadiness`](/api-reference/types/objects#deplomovereadiness).
+
+```graphql
+query {
+  deploMoveReadiness {
+    ready
+    reason
+  }
+}
+```
+
+### `sourceMove`
+
+Instance admin only. Returns [`SourceMove`](/api-reference/types/objects#sourcemove).
+
+This Deplo's move to another machine, or null when there is none (an unused code that expired counts as none).
+
+```graphql
+query {
+  sourceMove {
+    id
+    createdAt
+    expiresAt
+    finishedAt
+  }
+}
+```
+
+### `createMoveCode`
+
+Instance admin only. Returns [`MoveCode`](/api-reference/types/objects#movecode).
+
+Mint the code that lets a new Deplo copy this one onto its machine. Replaces an unused or finished code; refused while a copy runs.
+
+```graphql
+mutation {
+  createMoveCode {
+    code
+    expiresAt
+  }
+}
+```
+
+### `cancelMoveCode`
+
+Instance admin only. Returns `Boolean`.
+
+Withdraw the move code, or stop a copy in progress: every app paused for it starts again here. A finished copy has nothing to cancel.
+
+```graphql
+mutation {
+  cancelMoveCode
+}
+```
+
+### `resumeMoveSchedules`
+
+Instance admin only. Returns `Boolean`.
+
+Turn on the cron jobs and backup schedules a Deplo move left paused here, so they never run on both Deplos at once.
+
+```graphql
+mutation {
+  resumeMoveSchedules
+}
+```
+
+### `targetMove`
+
+Instance admin only. Returns `String`.
+
+The id of the move into this Deplo that is still open, or null. deploMoveStatus reads it.
+
+```graphql
+query {
+  targetMove
+}
+```
+
+### `deploMoveStatus`
+
+Public, no authentication. Returns [`DeploMoveStatus`](/api-reference/types/objects#deplomovestatus).
+
+Public on purpose: the id is unguessable and the copy signs everyone out, so the progress page cannot lean on a session. Null for an unknown id.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+query {
+  deploMoveStatus(id: "id_9f1c2ab7d3e4f5a6") {
+    id
+    createdAt
+    canCancel
+    canFinishWithoutSource
+  }
+}
+```
+
+### `connectDeploMove`
+
+Instance admin only. Returns [`DeploMovePreview`](/api-reference/types/objects#deplomovepreview).
+
+Reach the old Deplo with its move code and preview the move. Changes nothing on either side; only a fresh Deplo can receive one.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `code` | `String!` |  |
+| `url` | `String!` | The old Deplo's https address. |
+
+```graphql
+mutation {
+  connectDeploMove(code: "123456", url: "https://panel.example.com") {
+    id
+    canStart
+    peerUrl
+    problems
+  }
+}
+```
+
+### `startDeploMove`
+
+Instance admin only. Returns [`DeploMoveStatus`](/api-reference/types/objects#deplomovestatus).
+
+Start a connected move: everything here is replaced by a copy of the old Deplo, then each app and database is deployed on its mapped server and filled with its data. The old Deplo keeps running.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `map` | [`[DeploMoveServerMapInput!]`](/api-reference/types/inputs#deplomoveservermapinput) | Where each old server lands here. Every one but a migration source needs a server here, and one holding apps or databases needs one that runs apps. |
+| `map.from` | `String!` | The old Deplo's server id. |
+| `map.to` | `String` | A server id here, from the preview's `choices`. Ignored for a migration source. |
+
+```graphql
+mutation {
+  startDeploMove(id: "id_9f1c2ab7d3e4f5a6") {
+    id
+    createdAt
+    canCancel
+    canFinishWithoutSource
+  }
+}
+```
+
+### `retryDeploMove`
+
+Public, no authentication. Returns [`DeploMoveStatus`](/api-reference/types/objects#deplomovestatus).
+
+Resume a failed move: the copy again if it never landed, else every app or database not copied yet. Public by the move's unguessable id, like its progress page.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  retryDeploMove(id: "id_9f1c2ab7d3e4f5a6") {
+    id
+    createdAt
+    canCancel
+    canFinishWithoutSource
+  }
+}
+```
+
+### `skipDeploMoveWorkload`
+
+Instance admin only. Returns [`DeploMoveStatus`](/api-reference/types/objects#deplomovestatus).
+
+Leave out an app or database that failed to copy, so the move can finish without it. It stays in this Deplo, stopped and without its data; once nothing else is left, the move finishes.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `kind` | [`DeploMoveWorkloadKind!`](/api-reference/types/enums#deplomoveworkloadkind) | One of `app`, `database`. |
+| `workloadId` | `String!` |  |
+
+```graphql
+mutation {
+  skipDeploMoveWorkload(
+    id: "id_9f1c2ab7d3e4f5a6"
+    kind: "app"
+    workloadId: "id_9f1c2ab7d3e4f5a6"
+  ) {
+    id
+    createdAt
+    canCancel
+    canFinishWithoutSource
+  }
+}
+```
+
+### `finishDeploMoveWithoutSource`
+
+Public, no authentication. Returns [`DeploMoveStatus`](/api-reference/types/objects#deplomovestatus).
+
+Finish a stopped move when the old Deplo is gone for good: every app or database whose data never came across is left out, not deployed. Refused while the old Deplo answers. For an instance admin only: it runs after the copy landed.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  finishDeploMoveWithoutSource(id: "id_9f1c2ab7d3e4f5a6") {
+    id
+    createdAt
+    canCancel
+    canFinishWithoutSource
+  }
+}
+```
+
+### `cancelDeploMove`
+
+Public, no authentication. Returns [`DeploMoveStatus`](/api-reference/types/objects#deplomovestatus).
+
+Abandon a move any time before it is done, even while it runs: the old Deplo starts what it paused, what the move deployed here is removed and this Deplo goes back to setup. Public by the move's id until the copy lands; after that, for an instance admin only.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  cancelDeploMove(id: "id_9f1c2ab7d3e4f5a6") {
+    id
+    createdAt
+    canCancel
+    canFinishWithoutSource
+  }
+}
+```
+
 ## Ownership
 
 The instance owner is the tier above instance admin: the one account that can hand the instance over.
@@ -403,5 +645,6 @@ mutation {
 <Cards>
   <Card title="Panel address and certificates" description="The dashboard guide" href="/operations/panel-address-and-certificates" />
   <Card title="Update" description="Updating Deplo" href="/operations/update" />
+  <Card title="Move Deplo to another machine" description="The dashboard flow" href="/operations/move-deplo" />
   <Card title="Instance administration" description="The dashboard view" href="/operations/instance-administration" />
 </Cards>

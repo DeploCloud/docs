@@ -168,6 +168,22 @@ mutation {
 }
 ```
 
+### `makeEnvSecret`
+
+Needs `manage_env`. Returns `Boolean`.
+
+Make a variable Secret without changing its stored value or scope.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  makeEnvSecret(id: "env_9f1c2ab7d3e4f5a6")
+}
+```
+
 ## Shared variables
 
 ### `sharedVars`
@@ -271,6 +287,22 @@ Delete a shared variable. Returns true.
 ```graphql
 mutation {
   deleteSharedVar(id: "svar_9f1c2ab7d3e4f5a6")
+}
+```
+
+### `makeSharedVarSecret`
+
+Needs `manage_env`. Returns `Boolean`.
+
+Make a variable Secret without changing its stored value or scope.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  makeSharedVarSecret(id: "svar_9f1c2ab7d3e4f5a6")
 }
 ```
 

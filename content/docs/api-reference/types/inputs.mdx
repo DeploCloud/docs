@@ -214,6 +214,7 @@ Partial build configuration; only the provided fields are changed.
 | `expiresAt` | `String` |  |
 | `folderIds` | `[String!]` |  |
 | `instanceAdmin` | `Boolean` |  |
+| `mcpAgent` | `String` | The agent this token is for, as the connect wizard names it ("claude-code", "cursor", ...). |
 | `name` | `String!` |  |
 | `projectIds` | `[String!]` |  |
 | `teamIds` | `[String!]` |  |
@@ -268,6 +269,15 @@ One config file to write next to the database's stack and bind-mount into its co
 | `deleteOwnedWorkspaces` | `Boolean` |  |
 | `userId` | `String!` |  |
 
+### DeploMoveServerMapInput
+
+Where one of the old Deplo's servers lands here. A server left out of the map takes its preview `target`.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `from` | `String!` | The old Deplo's server id. |
+| `to` | `String` | A server id here, from the preview's `choices`. Ignored for a migration source. |
+
 ### DomainConfigInput
 
 Per-domain routing config; an omitted certProvider means no certificate (plain HTTP), unless the add-time DNS check finds the host proxied through Cloudflare, then it is stored as `cloudflare`.
@@ -275,11 +285,13 @@ Per-domain routing config; an omitted certProvider means no certificate (plain H
 | Field | Type | Description |
 | --- | --- | --- |
 | `certProvider` | [`CertProvider`](/api-reference/types/enums#certprovider) | One of `cloudflare`, `custom`, `letsencrypt`, `none`. |
+| `corsOrigins` | `[String!]` |  |
 | `entrypoint` | [`DomainEntrypoint`](/api-reference/types/enums#domainentrypoint) | One of `web`, `websecure`. |
 | `middlewares` | `[String!]` |  |
 | `pathPrefix` | `String` |  |
 | `port` | `Int` |  |
 | `proxied` | `Boolean` |  |
+| `securityHeaders` | `Boolean` | Omitted means on. |
 | `service` | `String` |  |
 | `stripPrefix` | `Boolean` |  |
 | `www` | [`DomainWwwRedirect`](/api-reference/types/enums#domainwwwredirect) | One of `none`, `toCounterpart`, `toThis`. |
@@ -291,12 +303,14 @@ Partial domain edit; only the provided fields are changed. Null clears an overri
 | Field | Type | Description |
 | --- | --- | --- |
 | `certProvider` | [`CertProvider`](/api-reference/types/enums#certprovider) | One of `cloudflare`, `custom`, `letsencrypt`, `none`. |
+| `corsOrigins` | `[String!]` |  |
 | `entrypoint` | [`DomainEntrypoint`](/api-reference/types/enums#domainentrypoint) | One of `web`, `websecure`. |
 | `middlewares` | `[String!]` |  |
 | `name` | `String` |  |
 | `pathPrefix` | `String` |  |
 | `port` | `Int` |  |
 | `proxied` | `Boolean` |  |
+| `securityHeaders` | `Boolean` |  |
 | `service` | `String` |  |
 | `stripPrefix` | `Boolean` |  |
 | `www` | [`DomainWwwRedirect`](/api-reference/types/enums#domainwwwredirect) | One of `none`, `toCounterpart`, `toThis`. |
@@ -410,7 +424,7 @@ Map one of the panel's servers onto one of ours. `from` is that server's id, or 
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Another Deplo: an API token there, limited to the one team, with Reveal secret values, Start & stop apps and Start & stop databases. Never stored. |
+| `apiKey` | `String!` | The panel's API key or token. Dokploy: Settings -> Profile -> API/CLI. Coolify: Keys & Tokens -> API tokens, with `root` ticked - a narrower token cannot read values or stop a service, and Deplo refuses it at Connect. Use an owner's or admin's either way: a plain member's is refused. Another Deplo: an API token there, limited to the one team, with Reveal secret values, Start & stop apps and Start & stop databases. Stored encrypted only for as long as the migration needs it, then wiped. |
 | `kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `deplo`, `dokploy`. |
 | `url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 
@@ -554,6 +568,13 @@ Set which teams may target a server. allTeams: true opens it to every team (clea
 | `appId` | `String!` |  |
 | `containerName` | `String` |  |
 
+### TraefikLabelInput
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `key` | `String!` |  |
+| `value` | `String!` |  |
+
 ### UpdateBackupInput
 
 | Field | Type | Description |
@@ -657,6 +678,7 @@ Save the instance-wide cleanup policy. The scopes are a whole-set replace, so a 
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `canConfigureTraefik` | `Boolean` |  |
 | `canExposePorts` | `Boolean` |  |
 | `canMountHostVolumes` | `Boolean` |  |
 | `isInstanceAdmin` | `Boolean!` |  |

@@ -13,7 +13,7 @@ A channel is a webhook (Slack, Discord, a generic URL) with its own set of subsc
 
 Any signed-in principal. Returns `JSON`.
 
-The active team's configured channels, each with its own subscribed alerts. Needs `manage_notifications`: a channel carries the webhook URL, which is the credential for the room it posts in.
+The active team's configured channels, each with its own subscribed alerts. Needs `manage_notifications`: a channel carries the webhook URL, which is the credential for the room it posts in, so an API token reads it masked. Saving the mask back keeps the stored URL.
 
 ```graphql
 query {

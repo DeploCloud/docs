@@ -1015,7 +1015,7 @@ Every write here changes what the **next** deploy renders. None of them starts a
       },
       {
         title: "Runtime",
-        ops: [m("updateAppResources"), m("updateAppHealthCheck"), m("setAppRestartLoopGuard"), q("hostPortsInUse"), m("setAppPorts"), m("setAppVolumes")],
+        ops: [m("updateAppResources"), m("updateAppHealthCheck"), m("setAppRestartLoopGuard"), q("hostPortsInUse"), m("setAppPorts"), m("setAppVolumes"), m("setAppTraefikLabels")],
       },
       {
         title: "Config files",
@@ -1090,10 +1090,10 @@ A variable is \`plain\` or \`secret\` and applies to one or more \`targets\` (\`
 </Callout>
 `,
     sections: [
-      { title: "App variables", ops: [q("env"), q("allAppEnv"), m("upsertEnv"), m("renameEnv"), m("deleteEnv"), m("setAppEnv"), m("importEnv")] },
+      { title: "App variables", ops: [q("env"), q("allAppEnv"), m("upsertEnv"), m("renameEnv"), m("deleteEnv"), m("setAppEnv"), m("importEnv"), m("makeEnvSecret")] },
       {
         title: "Shared variables",
-        ops: [q("sharedVars"), q("sharedVarsForApp"), m("saveSharedVar"), m("setSharedVarAppLink"), m("deleteSharedVar")],
+        ops: [q("sharedVars"), q("sharedVarsForApp"), m("saveSharedVar"), m("setSharedVarAppLink"), m("deleteSharedVar"), m("makeSharedVarSecret")],
       },
     ],
     seeAlso: [
@@ -1277,7 +1277,7 @@ Enrolling an ordinary server is a two-step flow: \`addServer\` returns an instal
 A server's \`role\` is \`everything\`, \`build\`, \`storage\` or \`import\`. The install command is the only way into or out of \`import\`.
 `,
     sections: [
-      { title: "Reading", ops: [q("servers"), q("server"), q("primaryServer")] },
+      { title: "Reading", ops: [q("servers"), q("server"), q("primaryServer"), q("serverWorkloads")] },
       {
         title: "Enrolling and removing",
         ops: [m("addServer"), m("reissueServerBootstrap"), m("removeServer"), m("uninstallServerAgent"), q("agentUninstallCommand")],
@@ -1292,7 +1292,7 @@ A server's \`role\` is \`everything\`, \`build\`, \`storage\` or \`import\`. The
       },
       {
         title: "Maintenance",
-        ops: [m("updateServerAgent"), m("checkAgentUpdates"), q("fleetAgents"), m("setServerAgentCanary"), m("restartServerTraefik"), m("restartServerWorkloads"), m("restartDeploPanel"), m("retryNetworkIsolation")],
+        ops: [m("retryServerAgentUpdate"), q("fleetAgents"), m("restartServerTraefik"), m("restartServerWorkloads"), m("restartDeploPanel"), m("retryNetworkIsolation"), m("dismissNetworkIsolationNotice")],
       },
       {
         title: "Certificates",
@@ -1374,6 +1374,11 @@ The panel publishes itself through its host's proxy, so the address it answers o
       { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates"), m("updateDeplo"), m("setCanaryReleases")] },
       { title: "Usage reports", ops: [q("usageReport"), m("setUsageReportsEnabled")] },
       {
+        title: "Moving Deplo to another machine",
+        intro: `The old Deplo mints a move code with \`createMoveCode\`; a fresh Deplo on the new machine connects with it and starts the copy. The calls keyed by the move's \`id\` are public on purpose: the copy signs everyone out, so the progress page cannot lean on a session.`,
+        ops: [q("deploMoveReadiness"), q("sourceMove"), m("createMoveCode"), m("cancelMoveCode"), m("resumeMoveSchedules"), q("targetMove"), q("deploMoveStatus"), m("connectDeploMove"), m("startDeploMove"), m("retryDeploMove"), m("skipDeploMoveWorkload"), m("finishDeploMoveWithoutSource"), m("cancelDeploMove")],
+      },
+      {
         title: "Ownership",
         intro: `The instance owner is the tier above instance admin: the one account that can hand the instance over.`,
         ops: [q("viewerIsInstanceOwner"), m("transferInstanceOwner")],
@@ -1382,6 +1387,7 @@ The panel publishes itself through its host's proxy, so the address it answers o
     seeAlso: [
       { title: "Panel address and certificates", description: "The dashboard guide", href: "/operations/panel-address-and-certificates" },
       { title: "Update", description: "Updating Deplo", href: "/operations/update" },
+      { title: "Move Deplo to another machine", description: "The dashboard flow", href: "/operations/move-deplo" },
       { title: "Instance administration", description: "The dashboard view", href: "/operations/instance-administration" },
     ],
   },

@@ -171,6 +171,68 @@ The 44 capabilities, one action each. What each one grants is on [Capabilities](
 | `postgres` |  |
 | `redis` |  |
 
+### DeploMoveServerRole
+
+What the server is for on the old Deplo: workloads (runs and builds apps), storage (backups only), build (builds only) or import (a migration source).
+
+| Value | Description |
+| --- | --- |
+| `build` |  |
+| `import` |  |
+| `storage` |  |
+| `workloads` |  |
+
+### DeploMoveState
+
+connected = the old Deplo answered and the preview is ready. copying = its database is being copied here; changes are paused. deploying = each app and database is deployed here and filled with its data. done = finished. failed = stopped, with `error` saying why; retry resumes. cancelled = abandoned; anything copied here was removed.
+
+| Value | Description |
+| --- | --- |
+| `cancelled` |  |
+| `connected` |  |
+| `copying` |  |
+| `deploying` |  |
+| `done` |  |
+| `failed` |  |
+
+### DeploMoveStepKey
+
+copy = every team, account, app and setting. deploy = each app and database is deployed here and its data copied in. finish = the old Deplo is told the copy is done.
+
+| Value | Description |
+| --- | --- |
+| `copy` |  |
+| `deploy` |  |
+| `finish` |  |
+
+### DeploMoveStepState
+
+| Value | Description |
+| --- | --- |
+| `done` |  |
+| `failed` |  |
+| `running` |  |
+| `waiting` |  |
+
+### DeploMoveWorkloadKind
+
+| Value | Description |
+| --- | --- |
+| `app` |  |
+| `database` |  |
+
+### DeploMoveWorkloadState
+
+skipped = left out: an instance admin skipped it after it failed, or the move finished without the old Deplo before its data came across.
+
+| Value | Description |
+| --- | --- |
+| `copying` |  |
+| `done` |  |
+| `failed` |  |
+| `skipped` |  |
+| `waiting` |  |
+
 ### DeploymentEnvironment
 
 | Value | Description |
@@ -474,6 +536,17 @@ The report's overall answer. provisioning = no agent has called home yet (never 
 | Value | Description |
 | --- | --- |
 | `remote` |  |
+
+### SourceMoveState
+
+armed = a move code waits for the new Deplo. bound = a new Deplo connected with it. copying = the new Deplo is copying this one; each app with data pauses here only while its own data copies. done = the copy finished; this Deplo keeps running as it was.
+
+| Value | Description |
+| --- | --- |
+| `armed` |  |
+| `bound` |  |
+| `copying` |  |
+| `done` |  |
 
 ### TakeoverPlatform
 

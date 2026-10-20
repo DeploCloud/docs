@@ -44,11 +44,13 @@ Attach a hostname to an app. `config` sets the routing (port, service, path pref
 | `appId` | `String!` |  |
 | `config` | [`DomainConfigInput`](/api-reference/types/inputs#domainconfiginput) |  |
 | `config.certProvider` | [`CertProvider`](/api-reference/types/enums#certprovider) | One of `cloudflare`, `custom`, `letsencrypt`, `none`. |
+| `config.corsOrigins` | `[String!]` |  |
 | `config.entrypoint` | [`DomainEntrypoint`](/api-reference/types/enums#domainentrypoint) | One of `web`, `websecure`. |
 | `config.middlewares` | `[String!]` |  |
 | `config.pathPrefix` | `String` |  |
 | `config.port` | `Int` |  |
 | `config.proxied` | `Boolean` |  |
+| `config.securityHeaders` | `Boolean` | Omitted means on. |
 | `config.service` | `String` |  |
 | `config.stripPrefix` | `Boolean` |  |
 | `config.www` | [`DomainWwwRedirect`](/api-reference/types/enums#domainwwwredirect) | One of `none`, `toCounterpart`, `toThis`. |
@@ -76,12 +78,14 @@ Apply a full edit to a domain and return the updated domain (reloaded).
 | `id` | `String!` |  |
 | `patch` | [`DomainPatchInput!`](/api-reference/types/inputs#domainpatchinput) |  |
 | `patch.certProvider` | [`CertProvider`](/api-reference/types/enums#certprovider) | One of `cloudflare`, `custom`, `letsencrypt`, `none`. |
+| `patch.corsOrigins` | `[String!]` |  |
 | `patch.entrypoint` | [`DomainEntrypoint`](/api-reference/types/enums#domainentrypoint) | One of `web`, `websecure`. |
 | `patch.middlewares` | `[String!]` |  |
 | `patch.name` | `String` |  |
 | `patch.pathPrefix` | `String` |  |
 | `patch.port` | `Int` |  |
 | `patch.proxied` | `Boolean` |  |
+| `patch.securityHeaders` | `Boolean` |  |
 | `patch.service` | `String` |  |
 | `patch.stripPrefix` | `Boolean` |  |
 | `patch.www` | [`DomainWwwRedirect`](/api-reference/types/enums#domainwwwredirect) | One of `none`, `toCounterpart`, `toThis`. |

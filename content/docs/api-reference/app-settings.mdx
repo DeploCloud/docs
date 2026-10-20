@@ -415,6 +415,32 @@ mutation {
 }
 ```
 
+### `setAppTraefikLabels`
+
+Needs `configure_apps`. Returns [`App`](/api-reference/types/objects#app).
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `labels` | [`[TraefikLabelInput!]!`](/api-reference/types/inputs#traefiklabelinput) |  |
+| `labels.key` | `String!` |  |
+| `labels.value` | `String!` |  |
+
+```graphql
+mutation {
+  setAppTraefikLabels(
+    id: "prj_9f1c2ab7d3e4f5a6"
+    labels: [{ key: "DATABASE_URL", value: "postgres://shop:secret@db-orders:5432/orders" }]
+  ) {
+    id
+    slug
+    name
+    status
+    productionUrl
+  }
+}
+```
+
 ## Config files
 
 A **File** storage entry mounts a file Deplo keeps for the app. These two read and write its content.
