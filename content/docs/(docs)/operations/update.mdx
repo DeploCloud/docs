@@ -6,23 +6,28 @@ description: Update the control plane and server agents safely, with rollback gu
 import { Download, Server, ShieldAlert, ShieldCheck, Settings } from "lucide-react";
 
 **One update, one click.** From **Settings -> Deplo -> Updates**, Deplo updates the panel,
-restarts it, and then brings every connected server to the same version on its own, one
-server at a time.
+restarts it, and then brings every connected server to the agent that version is paired with,
+on its own, one server at a time.
 
 - The **control plane** (this panel) goes first.
 - The **server agents** - one per host - follow once the panel is back.
 - Database migrations run automatically at startup.
 
-**Agent updates only ever move forward.** There is no downgrade path.
+**Every Deplo version is paired with one agent version.** You never pick an agent version, and
+agents only ever move forward: there is no downgrade path.
 
 ## Release history
 
 **Settings -> Deplo -> Updates** shows the installed version, available
 releases, release notes, and agent versions across the fleet.
 
-- **Check now** refreshes the release list.
+- **Check now** refreshes the release list. It is always there.
 - The installed release is marked **Installed**.
-- The page shows which agents are behind.
+- The page shows which agents are behind, and where each update stands.
+
+When the panel and every agent are current, the page says **Everything is up to date** and shows
+no update button at all. A button only appears when there is something to install, or a failed
+update to retry.
 
 ## Update the control plane
 
@@ -35,6 +40,9 @@ releases, release notes, and agent versions across the fleet.
 ### Click the **Update** button
 It names the version it will install. Confirm, and the machine Deplo runs on pulls the
 new image and restarts the panel.
+
+If an **offline** server runs an agent the new version no longer supports, the confirmation
+names it: `edge-2 is offline on v0.3.0 and will be unusable until its agent updates`.
 </Step>
 
 <Step>
@@ -63,7 +71,17 @@ sites are down.
 
 ## If the panel cannot update itself
 
-Run the installer on the control-plane host instead:
+On the machine Deplo runs on:
+
+```bash
+deplo update
+```
+
+It follows the **Canary releases** switch (**Settings -> Deplo -> Advanced**): on, it takes the
+newest release, canary or not; off, only stable ones. It never installs a version older than the
+one running, so turning canaries off does not move a canary panel back to stable.
+
+Without the `deplo` command, run the installer instead:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash
@@ -84,29 +102,47 @@ Once the panel is back, Deplo walks the fleet by itself: remote servers first, t
 Deplo runs on last, one at a time. The **Server agents** card on the Updates tab counts
 them down, and every agent it updates is recorded in **Activity** under your name.
 
-A server is skipped when Deplo cannot touch it safely, and **it is named on that card** with
-a link to it:
+An update can fail for a server without holding up the others:
 
 - **A deploy is running on it.** An update restarts the agent, which would drop the build.
 - **It is unreachable** right now.
-- **Its agent is too old to update itself.** Re-run the install command from the server's
-  **Advanced** tab.
+- **Its agent is too old to update itself.**
 
-Deplo retries a skipped server every 15 minutes until it is up to date, so a busy host
-catches up on its own.
+Deplo retries a failed server on its own: after 1 minute, then 2, 4, 8, up to once an hour,
+for **24 hours** from the first failure. The card shows each one, for example
+`Update failed, retrying in 4 min`.
 
-### Update one server by hand
+If a server takes the new agent and **does not come back**, Deplo stops updating the rest
+until that one recovers. A broken agent release reaches one server, not all of them.
 
-You never have to, but you can - open **Settings -> Servers**, open the server, and click
-the **Update to** button on its **Overview** tab. It only appears when that host is behind.
+### Retry an update by hand
 
-<Callout type="info" title="Don't update an agent mid-deploy">
-The button does not check for you. If a build is running on that host, let it finish.
-</Callout>
+The **Retry now** button appears only once an update has failed, on the server's page and on
+its row in the **Server agents** card. It is for instance admins.
+
+- It runs an attempt at once and cancels the retry that was scheduled.
+- It is disabled while an attempt is running, so two never run on one server.
+- If it fails too, the automatic retries carry on. The 24 hours do not start again.
+- After the 24 hours, Deplo stops retrying and the button is the way to try again. A server
+  that was offline gets one more automatic attempt when it comes back.
+
+## When a server is unusable
+
+Each Deplo version supports agents down to a minimum. A server whose agent is older than that
+is **unusable** until its agent updates:
+
+- Deploys, logs, the console, backups and every other action on it are refused with
+  `This server is being updated. Deplo retries on its own; an instance admin can retry it now.`
+- **The apps on it keep running.** Nothing is stopped.
+- Instance admins see a banner across the dashboard, and the **Server unusable until it
+  updates** alert goes to your notification channels.
+
+The fix is the agent update itself: automatic, or **Retry now**. An agent newer than the one
+Deplo is paired with is fine and left alone.
 
 ## Before you update again
 
-- **Agents cannot be downgraded.** Test on a canary.
+- **Agents cannot be downgraded.** An agent newer than the panel's own is left as it is.
 - **Some features need a newer agent.** When one is missing, Deplo says so rather than silently doing something else.
 - **Re-running the installer is safe.** It is what the button does, so running it by hand is never a workaround.
 - **Read the release notes for a minor bump.** During `0.x`, minor means something you notice: a feature, changed behavior, a database migration, or a newer agent required.
