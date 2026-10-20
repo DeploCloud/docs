@@ -27,7 +27,16 @@ app's generated `deplo.site` URL.
 
 ### Create an A record
 
-At your DNS provider, create an **A record** for the hostname
+At your DNS provider, create an **A record** for the hostname, for example
+`app.example.com` -> `203.0.113.10`.
+
+If the server has IPv6, also create an **AAAA record** for the same hostname. Once the domain is
+added, its row prints the address, for example `2001:db8::10`.
+
+<Callout type="warn" title="No AAAA unless the server has IPv6">
+An AAAA record that points anywhere but this server makes the domain `misconfigured`, even next
+to a correct A record. If the row prints no AAAA address, create only the A record.
+</Callout>
 
 </Step>
 </Steps>
@@ -105,6 +114,7 @@ and on a compose app pick the container the address routes to
 | Symptom | What to check |
 | --- | --- |
 | Stuck on **Waiting for DNS** | The record has not propagated, or it points at a different machine. Check with `dig +short app.example.com`. |
+| `misconfigured` with a correct A record | An AAAA record points elsewhere. Check with `dig +short AAAA app.example.com`, then remove it or point it at the server's IPv6. |
 | The browser shows a certificate warning | The certificate has not issued, the port 80 is closed, or the domain resolves elsewhere. If the hostname is new it needs to propagate or your browser is using the old certificate from cache |
 | 404 from the proxy | The domain resolves and the certificate is fine, but no router matches. Usually the app is stopped, or the domain sits on an app running on a different server. |
 

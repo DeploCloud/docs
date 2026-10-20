@@ -45,12 +45,22 @@ notifications, and everywhere Deplo names the app's address.
 | --- | --- | --- |
 | `valid` | The hostname resolves to this app's server | yes |
 | `cloudflare` | Proxied through Cloudflare, so the real origin cannot be checked. The row gets a **Cloudflare DNS** badge | yes |
-| `pending` | No record found yet. The row shows the exact A record to create | no |
-| `misconfigured` | It resolves, but to a different address. The row shows the address it should point at | no |
+| `pending` | No record found yet. The row shows the exact A record to create, and the AAAA when the server has IPv6 | no |
+| `misconfigured` | It resolves, but to a different address, or an AAAA record points elsewhere. The row shows the record that is wrong | no |
 | `error` | The lookup itself failed | no |
 
 For a CDN or proxy Deplo does not recognise, turn on **Behind a proxy** under
 **Advanced settings -> Proxy**.
+
+### IPv6 and AAAA records
+
+- **An A record alone is enough.** The AAAA record is optional.
+- **When the server has a public IPv6, the row prints the AAAA to create**, for example
+  `app.example.com` -> `2001:db8::10`.
+- **An AAAA that points elsewhere makes the domain `misconfigured`**, even next to a correct A
+  record. Let's Encrypt tries IPv6 first, so the certificate would fail too.
+- **Behind Cloudflare's proxy, the A record is enough.** Cloudflare answers visitors over IPv6 on
+  its own. An AAAA alone needs a server with IPv6, or Cloudflare shows error 522.
 
 ## Certificates
 
@@ -212,7 +222,8 @@ https://app.acme.com, http://localhost:5173
 | Symptom | What to check |
 | --- | --- |
 | Stuck on `pending` | No A record yet. The row shows the exact record to create. |
-| `misconfigured` | It resolves somewhere else. An old record, or a proxy in front. |
+| `misconfigured` | It resolves somewhere else. An old record, an AAAA pointing at another machine, or a proxy in front. |
+| Cloudflare error 522 | Cloudflare cannot reach the server. Often an AAAA record alone on a server without IPv6: add the A record. |
 | Certificate warning in the browser | The certificate never issued. Port 80 closed, or DNS pointing elsewhere. |
 | 404 from the proxy | Nothing matches the rule: the app is stopped, or the domain belongs to an app on a different server. |
 | A redirect loop | Cloudflare Flexible mode plus an HTTPS redirect on this side. Switch Cloudflare to Full. |

@@ -9,22 +9,38 @@ import { Globe, FileLock2, Server } from "lucide-react";
 
 | State | Means | Fix |
 | --- | --- | --- |
-| `pending` | No record found at all | Create the A record the row prints |
-| `misconfigured` | It resolves, but somewhere else | Point it at this app's server. The row prints the address |
+| `pending` | No record found at all | Create the records the row prints: the A, and the AAAA when the server has IPv6 |
+| `misconfigured` | It resolves, but somewhere else | Point it at this app's server. The row prints the record that is wrong |
 
 Check it yourself:
 
 ```bash
-dig +short app.example.com
+dig +short app.example.com        # A records (IPv4)
+dig +short AAAA app.example.com   # AAAA records (IPv6)
 ```
 
 No output means propagation or a typo. A different address means the record
 still points to another host, proxy, or wildcard.
 
+**A wrong AAAA breaks a correct A.** If the A record is right and the domain is
+still `misconfigured`, an AAAA points at another machine. Remove it, or point
+it at the server's IPv6. A server with no IPv6 needs no AAAA at all.
+
 <Callout type="warn" title="The server matters">
 An app running on server B needs its domain pointing at **B**, not at the
 machine the panel runs on.
 </Callout>
+
+## Cloudflare shows error 522
+
+Cloudflare cannot reach the server. The usual cause is a hostname with **only
+an AAAA record** on a server that has no IPv6: Cloudflare can only dial it over
+IPv6, and nothing answers.
+
+- **Add an A record** pointing at the server, proxied like the AAAA.
+- **Or give the server an IPv6 first**, then keep the AAAA.
+
+Ports 80 and 443 closed on the server give the same error.
 
 ## The browser shows a certificate warning
 
