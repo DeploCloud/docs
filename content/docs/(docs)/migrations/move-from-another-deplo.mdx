@@ -120,13 +120,13 @@ the new server, open each app, check it, and press **Deploy**.
 | App from a Docker image | The same image |
 | Compose stack | The same compose file and its files |
 | Database | The same engine, version, user and password, with its data |
-| Volumes and the app's own files | Copied across |
-| Variables | The same values. A secret stays a secret |
+| Volumes and the app's own files | Copied across. A read-only mount stays read-only |
+| Variables | The same values. A secret stays a secret, and a production-only variable stays production-only |
 | Preview-only variables | The app's preview variables |
-| Shared variables | Shared at the same level (team, project, environment), linked to the same apps |
-| Domains | The same hostnames, with their path and port |
-| Basic auth | The same users and passwords |
-| Health check and resources | The same settings |
+| Shared variables | Shared at the same level (team, project, environment), linked to the same apps. Two with the same name at different levels stay two |
+| Domains | The same hostnames, with their path and port. The same one is primary |
+| Basic auth | The same users and passwords. See [Basic auth that does not come across](#basic-auth-that-does-not-come-across) |
+| Health check and resources | The same settings, for apps and databases |
 | Published host ports | The same ports, with the publish-ports permission |
 | An app's cron jobs | The same schedule and command |
 | Backup schedules to a bucket | The same schedules, on the bucket that came with them |
@@ -160,12 +160,27 @@ the new server, open each app, check it, and press **Deploy**.
 - **API tokens, deploy hooks and notification channels.** They are tied to the old instance.
   Create them again here.
 
+### Basic auth that does not come across
+
+An app that had a password over there never lands open here.
+
+- **Some users do not come across**, for example a user name Deplo does not accept. The report names
+  them. The app stays protected by the others. Add the missing ones under **Access**.
+- **None come across.** The app is locked behind a user called `migration-lock`, whose password
+  nobody knows. Add the real users under **Access**, then remove `migration-lock`.
+
 ## Backing out
 
 - **While the run is going, in any step.** **Stop and undo** removes everything the run created
   here with its data, and starts again what it stopped on the old Deplo.
 - **A run that fails on its own during the data step.** Nothing is rolled back. A service whose
   data did not arrive refuses to deploy until you copy the data again or press **Deploy anyway**.
+- **A service that cannot be stopped on either side is not copied.** If the app here would not
+  stop, or this Deplo loses its server mid-step, the copy is refused and the service is started
+  again on the old Deplo. Run the copy again once the server answers.
+- **A run started with an API token stops when the token stops working.** It acts with that
+  token's capabilities only, never with everything its owner holds. Revoke the token, or let it
+  expire, and the run stops at its next step.
 - **Nothing on the old Deplo is deleted.** Remove the team there yourself once the new one works.
 
 ## Troubleshooting
