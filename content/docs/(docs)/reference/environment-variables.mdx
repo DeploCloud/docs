@@ -32,10 +32,15 @@ These configure the dashboard, API, database and control-plane defaults.
         "The fallback public URL. The panel address stored in Settings -> Deplo wins where one is set; this is what git webhook URLs are built from either way. Sets the cookie secure flag, the auth layer's https mode, and the install command printed for new servers. Effectively required in production.",
     },
     DEPLO_SERVER_IP: {
-      type: "IPv4 dotted quad",
-      default: "the IPv4 in DEPLO_PUBLIC_URL when it carries one, else the first non-internal NIC IPv4, else 127.0.0.1",
+      type: "IPv4 or IPv6 address",
+      default: "the address in DEPLO_PUBLIC_URL when it carries one, else the first non-internal NIC IPv4, else 127.0.0.1",
       description:
-        "The literal public IPv4 baked into generated deplo.site hostnames and their Traefik rules. Must be a dotted quad, never a hostname.",
+        "The literal public address baked into generated deplo.site hostnames and their Traefik rules: an IPv4 like 203.0.113.10, or an IPv6 like 2001:db8::10 on an install made with --ipv6. Never a hostname.",
+    },
+    "DEPLO_SERVER_IPV4 / DEPLO_SERVER_IPV6": {
+      type: "address",
+      description:
+        "This server's address of each kind, written by the installer, so its generated addresses can move between IPv4 and IPv6 from Settings -> Servers.",
     },
     DEPLO_HOST_BOOTSTRAP_TOKEN: {
       type: "string",
@@ -131,6 +136,18 @@ them before the install command.
       default: "generated, openssl rand -base64 24",
       description: "The Postgres password. Feeds both the database and the connection string.",
     },
+    DEPLO_IP_FAMILY: {
+      type: "ipv4 | ipv6",
+      default: "ipv4 when the server has an IPv4, else ipv6",
+      description:
+        "The kind of address the dashboard is served on. Same as --ipv4 / --ipv6, and kept in .env so an update keeps it. See [IPv6](/reference/installers/install#ipv6).",
+    },
+    DEPLO_NAT64_DNS: {
+      type: "addresses",
+      default: "2a00:1098:2b::1 2a01:4f8:c2c:123f::1 2001:67c:2960::64",
+      description:
+        "IPv6-only servers: the DNS64 resolvers used to reach ghcr.io and github.com, which have no IPv6 address. Space separated. Read by both installers.",
+    },
     DEPLO_VERSION: {
       type: "image tag",
       default: "latest",
@@ -190,9 +207,9 @@ for what each role changes on the host.
   Back up `/opt/deplo/.env`. See [Disaster recovery](/operations/disaster-recovery).
 </Callout>
 
-- **`DEPLO_SERVER_IP` must be a real, internet-reachable IPv4.** Generated
-  hostnames encode it in hexadecimal, so a private or loopback address
-  produces URLs that only work from that machine.
+- **`DEPLO_SERVER_IP` must be a real, internet-reachable address.** Generated
+  hostnames encode an IPv4 in hexadecimal and an IPv6 after `v6-`, so a
+  private or loopback address produces URLs that only work from that machine.
 - **A hostname in `DEPLO_PUBLIC_URL` cannot seed a `deplo.site` name**, so
   Deplo falls through to interface detection for the IP. Set
   `DEPLO_SERVER_IP` explicitly on a multi-homed box.

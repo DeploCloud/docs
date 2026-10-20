@@ -37,6 +37,12 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
       type: "read-only",
       description: "The role the machine was enrolled with. Beta, and it cannot be changed in place",
     },
+    "Generated addresses": {
+      type: "select",
+      default: "Automatic",
+      description:
+        "Whether the free .deplo.site addresses of apps on this server point at its IPv4 or its IPv6. See below. Beta",
+    },
     "Host details": {
       type: "read-only",
       description: "What the agent reports about the machine, including where Docker keeps its data",
@@ -66,6 +72,29 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
     },
   }}
 />
+
+## Generated addresses
+
+Every app gets a free address that needs no DNS, built from its server's
+address:
+
+| Choice    | App address                                   | Points at       |
+| --------- | --------------------------------------------- | --------------- |
+| IPv4      | `web-calm-fox-cb00710a.deplo.site`            | `203.0.113.10`  |
+| IPv6      | `web-calm-fox-v6-2001-db8--10.deplo.site`     | `2001:db8::10`  |
+| Automatic | IPv4 when the server has one, IPv6 otherwise  |                 |
+
+On the server Deplo itself runs on, **Automatic** follows the kind the
+installer was run with (`--ipv4` or `--ipv6`).
+
+Pick IPv6 when visitors reach the server over IPv6 only. Changing it renames
+every generated address already on the server, keeping its words, so
+`web-calm-fox-cb00710a.deplo.site` becomes
+`web-calm-fox-v6-2001-db8--10.deplo.site`. Each app answers on its new name
+after its next deploy. Domains of your own are not touched.
+
+A kind the server has no address for is greyed out. Only an instance admin
+can change it.
 
 ## Removing a server
 

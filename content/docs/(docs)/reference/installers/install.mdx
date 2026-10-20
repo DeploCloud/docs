@@ -40,6 +40,16 @@ dashboard. `--domain` is how you put it on a hostname of your own.
       default: "latest",
       description: "Install this Deplo version instead of the newest one.",
     },
+    "--ipv4": {
+      type: "flag",
+      description:
+        "Serve the dashboard on the server's IPv4 address. The default whenever the server has one.",
+    },
+    "--ipv6": {
+      type: "flag",
+      description:
+        "Serve the dashboard on the server's IPv6 address, and give Docker IPv6. Automatic on an IPv6-only server. See [IPv6](#ipv6).",
+    },
     "--owner-email <e>": {
       type: "email",
       description:
@@ -117,6 +127,43 @@ finish says so in ten seconds. **These stop the run**, unless you pass
   a secret. The last step failing is a warning, not a fatal error: the
   panel stays up and a re-run retries it.
 </Callout>
+
+## IPv6
+
+The installer picks the kind of address the dashboard is served on:
+
+| Server has     | Default | Generated address                                       |
+| -------------- | ------- | ------------------------------------------------------- |
+| IPv4 and IPv6  | IPv4    | `deplo-cb00710a.deplo.site` (`203.0.113.10`)            |
+| IPv4 and IPv6, with `--ipv6` | IPv6 | `deplo-v6-2001-db8--10.deplo.site` (`2001:db8::10`) |
+| IPv6 only      | IPv6    | `deplo-v6-2001-db8--10.deplo.site` (`2001:db8::10`)     |
+
+```bash
+curl -fsSL https://deplo.build/install.sh | bash -s -- --ipv6
+```
+
+The choice is kept in `/opt/deplo/.env` as `DEPLO_IP_FAMILY`, so an update
+keeps it. Pass the other flag on a re-run to switch. If the server lost the
+kind it was installed on (its IPv4 was removed), an update moves to the
+kind it still has.
+
+When the dashboard is served on IPv6, the installer also:
+
+- Gives every Docker network an IPv6 range, so apps reach the internet over
+  IPv6. Networks Deplo created before are moved across without restarting
+  their apps.
+- On an IPv6-only server, routes `ghcr.io` and `github.com`, which have no
+  IPv6 address, through public NAT64 resolvers. Set `DEPLO_NAT64_DNS` to
+  your provider's DNS64 resolvers to use those instead. A server whose
+  network already translates is left alone.
+
+Docker is restarted for this only when no app is running. Otherwise the
+installer writes the setting and tells you to restart Docker in a
+maintenance window, then re-run it.
+
+Apps get their generated addresses from the server they run on. Move them
+between IPv4 and IPv6 under
+[Generated addresses](/operations/servers/maintenance-and-advanced#generated-addresses).
 
 ## See also
 

@@ -32,6 +32,11 @@ curl -fsSL https://deplo.build/install.sh | bash
 
 The dashboard will be automatically deployed on a generated address like `https://deplo-cb00710a.deplo.site` (check the output of the installer for the correct url)
 
+An IPv6-only server needs nothing extra: the installer sees it and sets
+Docker up for IPv6 on its own. On a server with both, IPv4 is the default and
+`bash -s -- --ipv6` picks IPv6 instead. See
+[IPv6](/reference/installers/install#ipv6).
+
 </Tab>
 <Tab value="With your own domain">
 

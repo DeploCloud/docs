@@ -83,6 +83,12 @@ The installer never changes the firewall. If `ufw` or `firewalld` blocks
 Flags: `--check` runs the preflight and exits, `--force` overrides the disk floor, and `--plain`,
 `--no-color`, `--quiet` and `--help` do what they say.
 
+`--ipv6` gives Docker IPv6, which an IPv6-only server gets on its own, along
+with public NAT64 for `ghcr.io` and `github.com`. The same as the
+[panel installer](/reference/installers/install#ipv6). Which kind of address
+the server's apps get is set in the dashboard, under
+[Generated addresses](/operations/servers/maintenance-and-advanced#generated-addresses).
+
 The agent then calls home, sends a certificate signing request, and
 receives a signed certificate. **The control plane never connects to your
 machine to set this up.**
