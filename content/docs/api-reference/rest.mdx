@@ -244,7 +244,7 @@ These exist for the installer, the agent and the dashboard's own inputs. They ar
 | `GET POST /api/takeover` | The installer during a [takeover](/api-reference/migration#takeover), with the host bootstrap token: `GET` polls the state, `POST` reports `done`, `removing`, `removed` or `failed`. |
 | `GET /api/avatar/[style]/[preset]/[seed]` | The browser, for generated profile pictures. Public. |
 | `GET /api/database-versions?engine=` | The database version picker. Live engine tags from Docker Hub. |
-| `GET /api/node-versions`, `GET /api/railpack-versions` | The build settings pickers. |
+| `GET /api/node-versions` | The Node.js version picker in the build settings. |
 | `GET /api/registry/images?action=search&q=` | The image inputs. `action=tags&image=&filter=` lists tags. |
 
 ## See also

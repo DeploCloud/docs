@@ -360,6 +360,23 @@ mutation {
 }
 ```
 
+### `setServerAddressFamily`
+
+Instance admin only. Returns `Int`.
+
+Choose which kind of address (ipv4 | ipv6) the generated .deplo.site names of apps on this server carry; omit the family to go back to automatic. Every generated name already on the server is renamed at once, and the count of apps whose names moved is returned: each answers on its new name after its next deploy. Refused when the server has no address of that kind.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `family` | [`AddressFamily`](/api-reference/types/enums#addressfamily) | One of `ipv4`, `ipv6`. |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  setServerAddressFamily(id: "srv_9f1c2ab7d3e4f5a6")
+}
+```
+
 ## Health and readiness
 
 ### `checkServerHealth`

@@ -64,14 +64,14 @@ mutation {
 
 Needs `configure_apps`. Returns [`App`](/api-reference/types/objects#app).
 
-Save the app's build settings: method, commands, port, root directory, runtime version. Applied on the next deploy.
+Save the app's build settings: method, commands, port, root directory, runtime version. Applied on the next deploy. `buildMethod` is `auto`, `railpack`, `dockerfile` or `compose`. A retired name such as `nixpacks` or `static` is read as `railpack`, and any other name is refused. `settings` takes `dockerfilePath`, `dockerContextPath`, `dockerBuildStage`, `composeFile` and `staticSinglePageApp`, and drops any other key.
 
 | Argument | Type | Description |
 | --- | --- | --- |
 | `build` | [`BuildConfigInput!`](/api-reference/types/inputs#buildconfiginput) |  |
 | `build.buildCache` | `Boolean` | Reuse the owning server's Docker layer cache between builds of this app (default true). False rebuilds every layer from scratch each time. |
 | `build.buildCommand` | `String` |  |
-| `build.buildMethod` | `String` |  |
+| `build.buildMethod` | `String` | auto (Deplo picks: the Dockerfile, else the compose file, else Railpack, on every deploy), railpack, dockerfile or compose. |
 | `build.includeFilesOutsideRoot` | `Boolean` |  |
 | `build.installCommand` | `String` |  |
 | `build.outputDir` | `String` |  |
@@ -86,7 +86,7 @@ Save the app's build settings: method, commands, port, root directory, runtime v
 ```graphql
 mutation {
   updateAppBuild(
-    build: { buildMethod: "nixpacks", buildCommand: "npm run build", startCommand: "npm start", port: 3000 }
+    build: { buildMethod: "railpack", buildCommand: "npm run build", startCommand: "npm start", port: 3000 }
     id: "prj_9f1c2ab7d3e4f5a6"
   ) {
     id

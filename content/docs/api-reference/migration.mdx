@@ -87,6 +87,7 @@ Start a migration and hand it to the control plane. Returns the run id as soon a
 | `input.kind` | [`MigrationPlatform`](/api-reference/types/enums#migrationplatform) | Read the panel as this product. Omit it and Deplo works out which it is from the address and the token. One of `coolify`, `deplo`, `dokploy`. |
 | `input.url` | `String!` | The panel's address. Deplo appends the API path itself, so paste the address you open in a browser. |
 | `keepSources` | `Boolean` | Another team of the SAME panel is still to come, so this run must leave Deplo's agents on the source machines - the next team reads the same disks, and an uninstall scheduled here would race the install that follows it. The last run of a series leaves this false, and it is that one that clears them. It also holds the takeover: the ports cannot be taken while a run says more teams are owed. Ignored when `queued` is given: the queue itself says which run is the last. |
+| `liveCopy` | `Boolean` | Copy without stopping anything on the source (another Deplo only). Databases arrive as a snapshot their engine takes while they keep running, app files are copied while the app keeps writing, and crons, backup schedules and deploy on push land switched off so the two copies do not both run them. The switch-over is left to the user. |
 | `orgName` | `String` |  |
 | `queued` | [`[MigrationQueuedTeamInput!]`](/api-reference/types/inputs#migrationqueuedteaminput) | The other teams of this panel, in the order they should be brought over. Each is written down with its own token, its own targets and the team it lands in, and the control plane starts each one as the turn before it ends - so the browser tab is not what walks the list any more. Every token is proved before anything is created, and a team that is to be made here is made now. |
 | `queued.apiKey` | `String!` | That team's own token - a key reads exactly one team. |
@@ -105,7 +106,7 @@ Start a migration and hand it to the control plane. Returns the run id as soon a
 | `targets.projectId` | `String!` |  |
 | `targets.projectName` | `String!` | Shown while the run works through it, so the runner needs no second read of the API for a name. |
 | `targets.serverId` | `String` |  |
-| `targets.serviceId` | `String!` |  |
+| `targets.serviceId` | `String!` | Empty picks the project itself, so a project with nothing in it still comes across. |
 
 ```graphql
 mutation {

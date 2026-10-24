@@ -92,6 +92,11 @@ type AddServerPayload {
   server: Server
 }
 
+enum AddressFamily {
+  ipv4
+  ipv6
+}
+
 """
 A PERSONAL API token: it belongs to the person who minted it, and nobody else can list, edit or revoke it. Only the prefix is ever exposed - the raw token is shown once at creation and only its hash is persisted.
 """
@@ -197,7 +202,7 @@ type App {
   folderId: ID
 
   """
-  The JavaScript framework backing this app ("nextjs", "astro", "nestjs", …), or null when none was found or the app doesn't build with one of the auto-detecting builders (Nixpacks / Railpack). Detected on every deploy, unless setAppFramework has corrected it - in which case that choice is what this returns.
+  The JavaScript framework backing this app ("nextjs", "astro", "nestjs", …), or null when none was found or the app doesn't build with Railpack. Detected on every deploy, unless setAppFramework has corrected it - in which case that choice is what this returns.
   """
   framework: String
 
@@ -691,6 +696,10 @@ input BuildConfigInput {
   """
   buildCache: Boolean
   buildCommand: String
+
+  """
+  auto (Deplo picks: the Dockerfile, else the compose file, else Railpack, on every deploy), railpack, dockerfile or compose.
+  """
   buildMethod: String
   includeFilesOutsideRoot: Boolean
   installCommand: String
@@ -1005,6 +1014,10 @@ input CreateAppFromTemplateInput {
 
 input CreateAppInput {
   autoDeploy: Boolean
+
+  """
+  The hostname for the generated address. Empty string: no generated address at all.
+  """
   autoDomain: String
   autoDomainPath: String
   build: BuildConfigInput
@@ -2374,6 +2387,18 @@ type FolderShareCandidate {
 }
 
 """
+The addresses this server's generated (.deplo.site) names can carry, read live from its agent and DNS.
+"""
+type GeneratedAddresses {
+  """
+  The address a name generated here right now embeds. Null when Deplo knows none.
+  """
+  inUse: String
+  ipv4: String
+  ipv6: String
+}
+
+"""
 A team's stored credentials for one git host that is not GitHub. The token is never exposed.
 """
 type GitConnection {
@@ -2988,6 +3013,7 @@ enum MigrationPlatform {
 }
 
 type MigrationProjectResult {
+  blocking: Int
   created: Int
   failed: Int
   items: [MigrationRunItem!]
@@ -3044,6 +3070,9 @@ One import, kept after the tab that started it is gone. The API key is stored en
 """
 type MigrationRun {
   actor: String
+
+  """Lines that keep an app from running until they are done."""
+  blocking: Int
   created: Int
   doneSteps: Int
   error: String
@@ -3063,6 +3092,10 @@ type MigrationRun {
   The last thing this run touched, as `Project / Environment / service`. Filled in only by the live `activeMigration` feed - the history list leaves it null, because a finished run says where it got to with its whole report. It is the only record of a run's POSITION that survives the tab: the loop lives in the browser, and so does the plan that knew how many projects there were.
   """
   lastPath: String
+
+  """
+  Lines for your information. What keeps an app from running is counted in `blocking` instead.
+  """
   manual: Int
 
   """
@@ -3111,6 +3144,11 @@ type MigrationRunItem {
   When this line happened. Null on rows written before the report became something you can watch. A report read afterwards is a list; read while it runs it is a log, and a log with no times is not one.
   """
   at: String
+
+  """
+  The app will not run until somebody does what this line says. Every other note is information.
+  """
+  blocking: Boolean
   message: String
   outcome: MigrationOutcome
 
@@ -3136,6 +3174,10 @@ input MigrationRunTargetInput {
   """
   projectName: String!
   serverId: String
+
+  """
+  Empty picks the project itself, so a project with nothing in it still comes across.
+  """
   serviceId: String!
 }
 
@@ -3735,7 +3777,11 @@ type Mutation {
   DESTRUCTIVE factory reset: tear down the database container AND its data volume, then re-provision a fresh, empty stack from the current settings - same engine, version and credentials, so the connection string is unchanged. ALL DATA IS ERASED. Use redeployDatabase for the data-preserving recreate.
   """
   rebuildDatabase(id: String!): Database
-  redeploy(appId: String!): Deployment
+
+  """
+  Deploy the app again from the latest commit of its branch. With `deploymentId`, the latest commit of that deployment's branch or tag instead. A preview deployment is rebuilt with `redeployPreview`.
+  """
+  redeploy(appId: String!, deploymentId: String): Deployment
 
   """
   Re-render the database's compose from its current settings (resource limits, image/command overrides, exposure) and reroute it on its server. The container is recreated only when its config actually changed; the data volume is always preserved.
@@ -4223,6 +4269,11 @@ type Mutation {
   setSaveMetrics(enabled: Boolean!): MonitoringSettings
 
   """
+  Choose which kind of address (ipv4 | ipv6) the generated .deplo.site names of apps on this server carry; omit the family to go back to automatic. Every generated name already on the server is renamed at once, and the count of apps whose names moved is returned: each answers on its new name after its next deploy. Refused when the server has no address of that kind.
+  """
+  setServerAddressFamily(family: AddressFamily, id: String!): Int
+
+  """
   Whether this host may compile for an app whose own build server could not be reached (the app's own server stays the last resort). Omit the flag to go back to automatic: the Deplo host builds as a fallback, no other server does. Refused on a host with no Docker of ours to build with.
   """
   setServerBuildFallback(buildFallback: Boolean, id: String!): Server
@@ -4305,6 +4356,11 @@ type Mutation {
     Another team of the SAME panel is still to come, so this run must leave Deplo's agents on the source machines - the next team reads the same disks, and an uninstall scheduled here would race the install that follows it. The last run of a series leaves this false, and it is that one that clears them. It also holds the takeover: the ports cannot be taken while a run says more teams are owed. Ignored when `queued` is given: the queue itself says which run is the last.
     """
     keepSources: Boolean
+
+    """
+    Copy without stopping anything on the source (another Deplo only). Databases arrive as a snapshot their engine takes while they keep running, app files are copied while the app keeps writing, and crons, backup schedules and deploy on push land switched off so the two copies do not both run them. The switch-over is left to the user.
+    """
+    liveCopy: Boolean
     orgName: String
 
     """
@@ -4897,13 +4953,15 @@ type Query {
   destinationTestReport(id: String!): S3TestReport
 
   """
-  Read a GitHub repository before an app exists for it - the framework and the build command the new-app wizard prefills while you pick a repo. Null when there is nothing to read at all: a build method other than Nixpacks / Railpack (the only ones this applies to), a repository Deplo can't read, or one with neither a framework nor a script. Reads only; the app's first deploy re-derives and stores the framework.
+  Read a GitHub repository before an app exists for it - the framework and the build command the new-app wizard prefills while you pick a repo. Null when there is nothing to read at all: a build method other than Railpack or auto (the only ones this applies to), a repository Deplo can't read, or one with neither a framework nor a script. Reads only; the app's first deploy re-derives and stores the framework.
   """
   detectRepoFramework(
     """Branch to read; empty ⇒ the repository's default branch."""
     branch: String
 
-    """The build method the app will use, e.g. "nixpacks"."""
+    """
+    The build method the app will use: "auto", "railpack", "dockerfile" or "compose".
+    """
     buildMethod: String!
 
     """
@@ -5688,6 +5746,16 @@ type Server {
   The agent version this server should be running: the one release of DeploCloud/deplo-agent this Deplo is pinned to. A newer agent is left alone, never downgraded.
   """
   expectedAgentVersion: String
+
+  """
+  Which kind of address the generated (.deplo.site) names of apps on this server carry. Null is automatic: IPv4 when the host has one, IPv6 otherwise - and on the Deplo host, whichever the installer chose. setServerAddressFamily changes it.
+  """
+  generatedAddressFamily: AddressFamily
+
+  """
+  Live: asks the server's agent and DNS, so select it on one server at a time. Requires instanceAdmin.
+  """
+  generatedAddresses: GeneratedAddresses
   host: String
 
   """
@@ -5947,7 +6015,7 @@ type ServerReadinessCheck {
   """What to do about it. Null on a `pass` row."""
   hint: String
 
-  """Stable row id, e.g. "docker.available" or "build.nixpacks"."""
+  """Stable row id, e.g. "docker.available" or "build.railpack"."""
   id: String
   label: String
   severity: ServerReadinessSeverity

@@ -41,7 +41,7 @@ export const VALUES: Record<string, string> = {
   repo: '"acme/shop"',
   fullName: '"acme/shop"',
   rootDirectory: '"apps/web"',
-  buildMethod: '"nixpacks"',
+  buildMethod: '"auto"',
   path: '"config/app.yml"',
   content: '"port: 3000\\n"',
   blob: '"API_URL=https://api.example.com\\nLOG_LEVEL=info"',
@@ -99,7 +99,7 @@ export const EXAMPLES: {
       name: "shop"
       source: GITHUB
       repo: { provider: "github", repo: "acme/shop", branch: "main", url: "https://github.com/acme/shop", installationId: "ghi_9f1c2ab7d3e4f5a6" }
-      build: { buildMethod: "nixpacks", port: 3000 }
+      build: { buildMethod: "auto", port: 3000 }
       env: [{ key: "NODE_ENV", value: "production" }]
       autoDeploy: true
     }`,
@@ -124,7 +124,7 @@ export const EXAMPLES: {
     DomainConfigInput: `{ port: 3000, www: toThis }`,
     DomainPatchInput: `{ pathPrefix: "/api", stripPrefix: true }`,
     UpdateSourceInput: `{ source: DOCKER_IMAGE, dockerImage: "ghcr.io/acme/shop:1.4.0" }`,
-    BuildConfigInput: `{ buildMethod: "nixpacks", buildCommand: "npm run build", startCommand: "npm start", port: 3000 }`,
+    BuildConfigInput: `{ buildMethod: "railpack", buildCommand: "npm run build", startCommand: "npm start", port: 3000 }`,
     ResourceLimitsInput: `{ memoryMb: 512, cpuMilli: 500 }`,
     HealthCheckInput: `{ type: http, path: "/healthz", port: 3000, intervalS: 10, timeoutS: 5, retries: 3, startPeriodS: 15 }`,
     PublishedPortInput: `{ published: 8080, target: 3000, protocol: "tcp" }`,
@@ -535,7 +535,7 @@ export const EXAMPLES: {
   }
 }`,
     detectRepoFramework: `query {
-  detectRepoFramework(repo: "acme/shop", buildMethod: "nixpacks", installationId: "ghi_9f1c2ab7d3e4f5a6") {
+  detectRepoFramework(repo: "acme/shop", buildMethod: "auto", installationId: "ghi_9f1c2ab7d3e4f5a6") {
     id
     name
     buildCommand
@@ -769,7 +769,7 @@ export const EXAMPLES: {
     addDomain: "Attach a hostname to an app. `config` sets the routing (port, service, path prefix, www redirect) and the certificate provider; omit it for the defaults.",
     addServer: "Enrol a machine. Returns the install command to paste on the host; the row stays `provisioning` until the agent calls home. `importOnly` registers a migration source instead (instance admin).",
     cancelDeployment: "Stop a queued or building deployment. Returns true.",
-    createApp: "Create an app from a repository, an uploaded archive, a Docker image or a compose stack, with its first build settings, variables, domains and mounts. Deploys immediately unless the source needs an upload first.",
+    createApp: "Create an app from a repository, an uploaded archive, a Docker image or a compose stack, with its first build settings, variables, domains and mounts. Deploys immediately unless the source needs an upload first. A repository or an upload sent with no `build.buildMethod` gets `auto`. `autoDomain: \"\"` creates no generated address.",
     createAppFromTemplate: "Create an app from the public template catalog. `deploy: true` builds it right away.",
     createCronJob: "Add a job to an app or a database. `targetKind` is `app` or `database`.",
     createDatabase: "Provision a managed database. `username`, `password` and `dbName` are generated when omitted; `environmentId` files it into an environment, or omit it for the team's top level.",
@@ -780,7 +780,7 @@ export const EXAMPLES: {
     setDatabaseRunning: "Start (`running: true`) or stop the database container.",
     startApp: "Start a stopped app from its last deployment.",
     stopApp: "Stop the app's containers without deleting anything.",
-    updateAppBuild: "Save the app's build settings: method, commands, port, root directory, runtime version. Applied on the next deploy.",
+    updateAppBuild: "Save the app's build settings: method, commands, port, root directory, runtime version. Applied on the next deploy. `buildMethod` is `auto`, `railpack`, `dockerfile` or `compose`. A retired name such as `nixpacks` or `static` is read as `railpack`, and any other name is refused. `settings` takes `dockerfilePath`, `dockerContextPath`, `dockerBuildStage`, `composeFile` and `staticSinglePageApp`, and drops any other key.",
     updateAppLogo: "Set the app's logo (an image data-URI), or clear it with null.",
     updateAppSource: "Change where the app is built from: another repository or branch, a different image, or a new compose file. Applied on the next deploy.",
     updateCronJob: "Edit a job. Every omitted field is left as it is.",
@@ -1284,7 +1284,7 @@ A server's \`role\` is \`everything\`, \`build\`, \`storage\` or \`import\`. The
       },
       {
         title: "Settings",
-        ops: [m("renameServer"), m("setServerRole"), m("setServerTeams"), m("setServerBuildFallback"), m("setServerDeployConcurrency"), m("setServerTimezone"), m("updateServerAddress")],
+        ops: [m("renameServer"), m("setServerRole"), m("setServerTeams"), m("setServerBuildFallback"), m("setServerDeployConcurrency"), m("setServerTimezone"), m("updateServerAddress"), m("setServerAddressFamily")],
       },
       {
         title: "Health and readiness",

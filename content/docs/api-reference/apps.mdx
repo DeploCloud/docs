@@ -150,13 +150,13 @@ query {
 
 Needs `create_apps`. Returns [`App`](/api-reference/types/objects#app).
 
-Create an app from a repository, an uploaded archive, a Docker image or a compose stack, with its first build settings, variables, domains and mounts. Deploys immediately unless the source needs an upload first.
+Create an app from a repository, an uploaded archive, a Docker image or a compose stack, with its first build settings, variables, domains and mounts. Deploys immediately unless the source needs an upload first. A repository or an upload sent with no `build.buildMethod` gets `auto`. `autoDomain: ""` creates no generated address.
 
 | Argument | Type | Description |
 | --- | --- | --- |
 | `input` | [`CreateAppInput!`](/api-reference/types/inputs#createappinput) |  |
 | `input.autoDeploy` | `Boolean` |  |
-| `input.autoDomain` | `String` |  |
+| `input.autoDomain` | `String` | The hostname for the generated address. Empty string: no generated address at all. |
 | `input.autoDomainPath` | `String` |  |
 | `input.build` | [`BuildConfigInput`](/api-reference/types/inputs#buildconfiginput) |  |
 | `input.buildServerId` | `String` | Where the app COMPILES, when that is not where it runs. Omitted is Automatic - a build-only server if the fleet has one. |
@@ -188,7 +188,7 @@ mutation {
       name: "shop"
       source: GITHUB
       repo: { provider: "github", repo: "acme/shop", branch: "main", url: "https://github.com/acme/shop", installationId: "ghi_9f1c2ab7d3e4f5a6" }
-      build: { buildMethod: "nixpacks", port: 3000 }
+      build: { buildMethod: "auto", port: 3000 }
       env: [{ key: "NODE_ENV", value: "production" }]
       autoDeploy: true
     }
@@ -299,12 +299,12 @@ query {
 
 Needs `create_apps`. Returns [`RecognizedFramework`](/api-reference/types/objects#recognizedframework).
 
-Read a GitHub repository before an app exists for it - the framework and the build command the new-app wizard prefills while you pick a repo. Null when there is nothing to read at all: a build method other than Nixpacks / Railpack (the only ones this applies to), a repository Deplo can't read, or one with neither a framework nor a script. Reads only; the app's first deploy re-derives and stores the framework.
+Read a GitHub repository before an app exists for it - the framework and the build command the new-app wizard prefills while you pick a repo. Null when there is nothing to read at all: a build method other than Railpack or auto (the only ones this applies to), a repository Deplo can't read, or one with neither a framework nor a script. Reads only; the app's first deploy re-derives and stores the framework.
 
 | Argument | Type | Description |
 | --- | --- | --- |
 | `branch` | `String` | Branch to read; empty => the repository's default branch. |
-| `buildMethod` | `String!` | The build method the app will use, e.g. "nixpacks". |
+| `buildMethod` | `String!` | The build method the app will use: "auto", "railpack", "dockerfile" or "compose". |
 | `installationId` | `String` | GitHub App installation to read a private repo through. Ignored unless it belongs to the active team. |
 | `repo` | `String!` | The repository as "owner/name". |
 | `rootDirectory` | `String` | Build sub-directory, for a monorepo. |
@@ -312,7 +312,7 @@ Read a GitHub repository before an app exists for it - the framework and the bui
 
 ```graphql
 query {
-  detectRepoFramework(repo: "acme/shop", buildMethod: "nixpacks", installationId: "ghi_9f1c2ab7d3e4f5a6") {
+  detectRepoFramework(repo: "acme/shop", buildMethod: "auto", installationId: "ghi_9f1c2ab7d3e4f5a6") {
     id
     name
     buildCommand

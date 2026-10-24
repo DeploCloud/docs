@@ -75,7 +75,7 @@ Partial build configuration; only the provided fields are changed.
 | --- | --- | --- |
 | `buildCache` | `Boolean` | Reuse the owning server's Docker layer cache between builds of this app (default true). False rebuilds every layer from scratch each time. |
 | `buildCommand` | `String` |  |
-| `buildMethod` | `String` |  |
+| `buildMethod` | `String` | auto (Deplo picks: the Dockerfile, else the compose file, else Railpack, on every deploy), railpack, dockerfile or compose. |
 | `includeFilesOutsideRoot` | `Boolean` |  |
 | `installCommand` | `String` |  |
 | `outputDir` | `String` |  |
@@ -125,7 +125,7 @@ Partial build configuration; only the provided fields are changed.
 | Field | Type | Description |
 | --- | --- | --- |
 | `autoDeploy` | `Boolean` |  |
-| `autoDomain` | `String` |  |
+| `autoDomain` | `String` | The hostname for the generated address. Empty string: no generated address at all. |
 | `autoDomainPath` | `String` |  |
 | `build` | [`BuildConfigInput`](/api-reference/types/inputs#buildconfiginput) |  |
 | `buildServerId` | `String` | Where the app COMPILES, when that is not where it runs. Omitted is Automatic - a build-only server if the fleet has one. |
@@ -409,7 +409,7 @@ Where one service lands. `serviceId` is the `sourceId` a scan reports. Omit `bui
 | `projectId` | `String!` |  |
 | `projectName` | `String!` | Shown while the run works through it, so the runner needs no second read of the API for a name. |
 | `serverId` | `String` |  |
-| `serviceId` | `String!` |  |
+| `serviceId` | `String!` | Empty picks the project itself, so a project with nothing in it still comes across. |
 
 ### MigrationServerChoiceInput
 

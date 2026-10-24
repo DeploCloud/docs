@@ -87,7 +87,7 @@ A deployable application owned by a team.
 | `dockerImage` | `String` |  |
 | `domainCount` | `Int` |  |
 | `folderId` | `ID` |  |
-| `framework` | `String` | The JavaScript framework backing this app ("nextjs", "astro", "nestjs", ...), or null when none was found or the app doesn't build with one of the auto-detecting builders (Nixpacks / Railpack). Detected on every deploy, unless setAppFramework has corrected it - in which case that choice is what this returns. |
+| `framework` | `String` | The JavaScript framework backing this app ("nextjs", "astro", "nestjs", ...), or null when none was found or the app doesn't build with Railpack. Detected on every deploy, unless setAppFramework has corrected it - in which case that choice is what this returns. |
 | `frameworkDetected` | `String` | What the LAST DEPLOY actually read from the source, ignoring any correction. Equals `framework` unless the user overrode it. |
 | `healthCheck` | [`HealthCheck`](/api-reference/types/objects#healthcheck) | The health check baked into this app's compose, or null when it has none. |
 | `id` | `ID` |  |
@@ -1147,6 +1147,16 @@ A team member who could be granted access to a folder (used to populate the Shar
 | `userId` | `ID` |  |
 | `username` | `String` |  |
 
+### GeneratedAddresses
+
+The addresses this server's generated (.deplo.site) names can carry, read live from its agent and DNS.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `inUse` | `String` | The address a name generated here right now embeds. Null when Deplo knows none. |
+| `ipv4` | `String` |  |
+| `ipv6` | `String` |  |
+
 ### GitConnection
 
 A team's stored credentials for one git host that is not GitHub. The token is never exposed.
@@ -1527,6 +1537,7 @@ One service on the panel (an application, a compose stack, or a database) as it 
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `blocking` | `Int` |  |
 | `created` | `Int` |  |
 | `failed` | `Int` |  |
 | `items` | [`[MigrationRunItem!]`](/api-reference/types/objects#migrationrunitem) |  |
@@ -1567,6 +1578,7 @@ One import, kept after the tab that started it is gone. The API key is stored en
 | Field | Type | Description |
 | --- | --- | --- |
 | `actor` | `String` |  |
+| `blocking` | `Int` | Lines that keep an app from running until they are done. |
 | `created` | `Int` |  |
 | `doneSteps` | `Int` |  |
 | `error` | `String` |  |
@@ -1576,7 +1588,7 @@ One import, kept after the tab that started it is gone. The API key is stored en
 | `id` | `String` |  |
 | `items` | [`[MigrationRunItem!]`](/api-reference/types/objects#migrationrunitem) | The report. Only loaded by the single-run query. |
 | `lastPath` | `String` | The last thing this run touched, as `Project / Environment / service`. Filled in only by the live `activeMigration` feed - the history list leaves it null, because a finished run says where it got to with its whole report. It is the only record of a run's POSITION that survives the tab: the loop lives in the browser, and so does the plan that knew how many projects there were. |
-| `manual` | `Int` |  |
+| `manual` | `Int` | Lines for your information. What keeps an app from running is counted in `blocking` instead. |
 | `members` | [`[MigrationInvite!]`](/api-reference/types/objects#migrationinvite) | The people the panel listed on this team, as the run recorded them - who was added, and who was handed a link. Only the session query loads them. |
 | `orgName` | `String` |  |
 | `phase` | `String` | `config` \| `data` \| `done`. Which half the run is in - the two count different things, so their step numbers are not one scale. |
@@ -1599,6 +1611,7 @@ One import, kept after the tab that started it is gone. The API key is stored en
 | Field | Type | Description |
 | --- | --- | --- |
 | `at` | `String` | When this line happened. Null on rows written before the report became something you can watch. A report read afterwards is a list; read while it runs it is a log, and a log with no times is not one. |
+| `blocking` | `Boolean` | The app will not run until somebody does what this line says. Every other note is information. |
 | `message` | `String` |  |
 | `outcome` | [`MigrationOutcome`](/api-reference/types/enums#migrationoutcome) |  |
 | `path` | `String` | Where it was over there: `Project / Environment / service`. |
@@ -2088,6 +2101,8 @@ A connected host running deployments (reached via its agent).
 | `diskGb` | `Int` |  |
 | `dockerVersion` | `String` |  |
 | `expectedAgentVersion` | `String` | The agent version this server should be running: the one release of DeploCloud/deplo-agent this Deplo is pinned to. A newer agent is left alone, never downgraded. |
+| `generatedAddressFamily` | [`AddressFamily`](/api-reference/types/enums#addressfamily) | Which kind of address the generated (.deplo.site) names of apps on this server carry. Null is automatic: IPv4 when the host has one, IPv6 otherwise - and on the Deplo host, whichever the installer chose. setServerAddressFamily changes it. |
+| `generatedAddresses` | [`GeneratedAddresses`](/api-reference/types/objects#generatedaddresses) | Live: asks the server's agent and DNS, so select it on one server at a time. Requires instanceAdmin. |
 | `host` | `String` |  |
 | `hostArch` | `String` | This host's CPU architecture ("amd64" \| "arm64"), observed from the agent. Empty when the agent is too old to report it. A build server can only build for a host of the SAME architecture. |
 | `id` | `ID` |  |
@@ -2199,7 +2214,7 @@ One row of a server readiness report: a single thing Deplo could verify about th
 | `detail` | `String` | What we found. Drawn from a closed, curated set whenever it describes a failure, never a raw agent error (which would leak the pinned certificate fingerprint and the dial address). |
 | `group` | [`ServerReadinessGroup`](/api-reference/types/enums#serverreadinessgroup) |  |
 | `hint` | `String` | What to do about it. Null on a `pass` row. |
-| `id` | `String` | Stable row id, e.g. "docker.available" or "build.nixpacks". |
+| `id` | `String` | Stable row id, e.g. "docker.available" or "build.railpack". |
 | `label` | `String` |  |
 | `severity` | [`ServerReadinessSeverity`](/api-reference/types/enums#serverreadinessseverity) |  |
 

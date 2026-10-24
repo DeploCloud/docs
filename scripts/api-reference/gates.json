@@ -1278,6 +1278,9 @@
   "cap": "manage_monitoring",
   "orInstanceAdmin": false
  },
+ "Mutation.setServerAddressFamily": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.setServerBuildFallback": {
   "kind": "instanceAdmin"
  },
