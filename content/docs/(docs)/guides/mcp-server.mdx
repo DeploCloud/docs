@@ -61,8 +61,10 @@ Click **Turn on MCP for this team** if it is still off. This is a team setting a
 ### Create a token
 
 Click **Create token**. Start from a **Template** or pick capabilities yourself, and set an
-expiry. By default the agent reaches **every team you can connect agents to**. Narrow it under
-**Access** if it should see only one.
+expiry. **MCP & AI agents** reads the team and redeploys; **Agent setup** also creates projects,
+apps and databases and uses your Git connections, which is what an agent
+[setting up Deplo](/getting-started/agent-setup) needs. By default the agent reaches **every
+team you can connect agents to**. Narrow it under **Access** if it should see only one.
 
 <Image
   src={`${basePath}/screenshots/mcp-server/02-permissions.png`}
@@ -101,12 +103,27 @@ A web agent such as claude.ai or chatgpt.com does not take a pasted token. It go
 [OAuth consent screen](/advanced/api-tokens-and-oauth) instead, which creates a token after
 you approve it.
 
+### Link to a step
+
+A link can open the wizard on one agent and one template. The
+[agent setup](/getting-started/agent-setup) sends you this way:
+
+```
+https://deplo.example.com/settings/mcp?agent=claude-code&step=permissions&preset=agent
+```
+
+| Parameter | Values |
+| --- | --- |
+| `agent` | `claude-code`, `codex-cli`, `gemini-cli`, `cursor`, `vscode`, `windsurf`, `antigravity`, `other` |
+| `step` | `permissions` opens the token step for that agent |
+| `preset` | The template to start from: `readonly`, `ci`, `mcp`, `automation` or `agent`. A link never preselects **Root access** |
+
 The endpoint is `/api/mcp` on your own instance. It exposes one tool per action, and every tool
 goes through **the same permission checks a person goes through**.
 
 Three things control access:
 
-- **A team switch**, off by default for a new team. It decides whether agents may work in this
+- **A team switch**, on by default for a new team. It decides whether agents may work in this
   team at all. Changing it needs **Manage team settings**.
 - **A capability**, **Connect AI agents** (`manage_mcp`). A token works in a team only if its
   owner has it there. Remove it and every agent of theirs is refused in that team, immediately.

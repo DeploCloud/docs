@@ -1,0 +1,112 @@
+---
+title: Set up with an agent
+description: Let your AI coding agent size the server, install Deplo and connect itself.
+icon: Bot
+---
+
+import { Rocket, Bot, Download } from "lucide-react";
+
+Give your coding agent one prompt and it walks you to a working Deplo: the right server, Deplo
+installed, the agent connected, GitHub linked. It works with Claude Code, Codex CLI, Gemini CLI,
+Cursor, VS Code, Windsurf and Antigravity.
+
+## The prompt
+
+Paste this in your agent, with your projects on the second line:
+
+```
+Read https://deplo.build/agent-setup.md and follow it.
+My projects: https://github.com/acme/shop, ./api
+```
+
+It is the same prompt the **Deploy with your agent** button on deplo.build copies.
+
+## What the agent does
+
+<Steps>
+<Step>
+
+### Sizes the server
+
+It reads each project (framework, databases, cache, workers, cron jobs) and adds them up: 1 GB
+for Deplo, the apps on top, then 50% headroom. Never below **2 vCPU, 4 GB of RAM, 30 GB of
+disk**. It asks at most one question: how many visits a month, and where your users are.
+
+A service on a cloud provider gets one line on how it moves to Deplo: a Supabase database becomes
+Postgres on Deplo, a Vercel cron job becomes a Deplo cron job.
+
+</Step>
+<Step>
+
+### Finds you a server
+
+<Tabs items={['No server yet', 'Your own server']}>
+<Tab value="No server yet">
+
+It picks **one plan** from a partner hosting provider: the cheapest that fits, in the region of
+your users, with its price in your currency and its checkout link. Ask for options and you get
+two more at most. Deplo earns a commission from the partner, and your price stays the same.
+
+Then it tells you that partner's three steps after checkout. Where the partner installs Deplo for
+you, it waits for the address you receive. Where you install it yourself, it asks for the
+server's IP and goes on as with your own server.
+
+</Tab>
+<Tab value="Your own server">
+
+It asks for the IP, the user you log in with, and whether you want a domain such as
+`deplo.example.com` (optional: you get `https://deplo-cb00710a.deplo.site` for IP
+`203.0.113.10` without one).
+
+If it can log in to the server with your key, it runs the [installer](/getting-started/install)
+itself and hands you the setup link once. If it cannot, it gives you the one command to run and
+asks only for the line that starts with `Dashboard`.
+
+</Tab>
+</Tabs>
+
+</Step>
+<Step>
+
+### Connects itself
+
+It sends a link to **Settings -> MCP Server** with your agent and the **Agent setup** template
+already picked. Click **Create token**, copy what the page shows and paste it back to the agent:
+it installs the connection and tells you how to restart it.
+
+| Agent | Restart with |
+| --- | --- |
+| Claude Code | `claude --continue` |
+| Codex CLI | `codex resume --last` |
+| Gemini CLI | `gemini --resume` |
+| Cursor | Quit Cursor fully, then reopen the chat |
+| VS Code | Start Deplo from **MCP: List Servers** |
+| Windsurf, Antigravity | Refresh the MCP servers panel |
+
+After the restart write `continue Deplo setup`. The agent checks the connection, offers to link
+GitHub from **Settings -> Git**, and welcomes you.
+
+</Step>
+</Steps>
+
+## What it never does
+
+- **It deploys nothing.** No app, database or project is created and your code is not touched.
+  The setup ends with Deplo ready; ask for your first deploy next.
+- **It never asks for a password.** Your account, the server's root password and your sudo
+  password stay yours. The setup link goes to you once and is never asked back.
+- **It never repeats your token** in the chat after you paste it.
+- **It does not keep you on a cloud provider.** Every service goes on Deplo first; the current
+  provider is only ever the second option.
+
+<Callout type="warn" title="Never reinstall the server from the hosting panel">
+  A reinstall erases the disk: Deplo and every app and database on it go with it.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card icon={<Rocket className="text-blue-400" />} title="Deploy your first app" description="From a repository to a running site" href="/getting-started/first-app" />
+  <Card icon={<Bot className="text-purple-400" />} title="MCP server" description="What a connected agent can do" href="/guides/mcp-server" />
+  <Card icon={<Download className="text-green-400" />} title="Installation" description="Install Deplo by hand" href="/getting-started/install" />
+</Cards>
