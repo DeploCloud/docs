@@ -31,7 +31,7 @@ const CASES: [string, ...string[]][] = [
   ["update deplo", "/operations/update"],
   ["upgrade", "/operations/update"],
   ["docker compose", "/advanced/compose-apps"],
-  ["dockerfile", "/guides/releases/build-settings#the-four-build-methods"],
+  ["dockerfile", "/guides/releases/build-settings#dockerfile", "/guides/releases/build-settings#build-methods"],
   ["github", "/guides/git-providers/github"],
   ["pull request preview", "/guides/networking/pull-request-previews"],
   ["api token", "/advanced/api-tokens-and-oauth"],

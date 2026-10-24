@@ -6,8 +6,8 @@ description: How your code becomes an image, what starts a new build, and how to
 Every deploy goes through three steps. They apply only to sources Deplo builds: a Docker image
 app has no build settings, and neither a Docker image nor a Compose app can roll back.
 
-**Build settings** decide how your code becomes an image: the builder, its commands, and the port
-the app listens on. Most apps never need to change them.
+**Build settings** decide how your code becomes an image: the build method, its commands, and the
+port the app listens on. Most apps never need to change them.
 [Learn more ->](/guides/releases/build-settings)
 
 **Automatic deployments** decide what starts a new build: a push to the branch, a new tag, or a

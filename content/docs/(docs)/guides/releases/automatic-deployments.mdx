@@ -60,7 +60,9 @@ In the **Trigger** drawer, set **Deploy trigger**:
 
 ### Optional: submodules and watch paths
 
-**Include submodules** also clones nested repositories. **Watch paths (optional)** takes one
+**Include submodules** also clones the repository's submodules, nested ones included, from the
+same git server as the repository. A submodule hosted anywhere else stops the build and names it, so
+the repository's access never reaches another server. **Watch paths (optional)** takes one
 pattern per line and deploys only when the push changed a matching file:
 
 ```

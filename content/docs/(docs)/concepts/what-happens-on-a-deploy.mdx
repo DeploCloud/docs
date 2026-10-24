@@ -47,19 +47,22 @@ The control plane contacts the agent on the target server over an encrypted conn
 over the job, including the decrypted credentials. The agent never holds the encryption key.
 
 - **Git sources** are cloned by the agent with the token from the git connection. Submodules are
-  included if the app asks for it.
+  included if the app asks for it, from the repository's own git server only.
 - **Upload sources** use the archive you uploaded.
 - **Docker image** and **Compose** sources skip this step.
 </Step>
 
 <Step>
-### The framework is detected
+### The build method is picked
 
-For Nixpacks and Railpack builds, Deplo detects the framework from `package.json` and the root
-configuration **on every deploy**. It is never stored.
+With **Detect automatically**, the default, Deplo looks in the root directory on every deploy: a
+`Dockerfile` is built, otherwise a Compose file is deployed as a stack, otherwise Railpack builds
+the app. The log says which one ran. A method you picked yourself is used as it is.
 
-Detection gives the install, build and start commands and the default container port. Anything
-you typed by hand always wins. Dockerfile and Static builds skip detection.
+For a Railpack build, Deplo also detects the framework from `package.json` and the root
+configuration, **on every deploy**. Detection gives the install, build and start commands and the
+default container port. Anything you typed by hand always wins. Dockerfile and Docker Compose
+builds skip detection.
 </Step>
 
 <Step>
@@ -67,10 +70,13 @@ you typed by hand always wins. Dockerfile and Static builds skip detection.
 
 | Method | What happens |
 | --- | --- |
-| **Railpack** (default) | Creates a build plan from the detected language and framework |
-| **Nixpacks** | The same idea, a different builder |
+| **Railpack** | Creates a build plan from the detected language and framework |
 | **Dockerfile** | Your `Dockerfile`, with your build context and optionally a `--target` stage |
-| **Static** | Builds, then serves the output directory, with an optional single-page fallback |
+| **Docker Compose** | Builds the services of the Compose file in your repository |
+
+One build step may use about 75% of the server's memory. Past that, the build stops with a
+message that says so, and the apps already running on that server keep theirs. When Railpack
+cannot build the app, the last line of the log says what to change.
 
 Every environment variable is available **during** the build too, so build-time values such as
 `NEXT_PUBLIC_*` work. Each one becomes a build `ARG`. Only `NODE_ENV` also becomes an `ENV`, and
@@ -124,6 +130,24 @@ requests the certificate on the first HTTPS request.
 </Step>
 
 <Step>
+### It checks that the app runs
+
+A deploy is ready only when the app really runs:
+
+- **It stays up** for 10 seconds after it starts: no exit, no restart.
+- **An app with a domain answers on its port.** An app with no domain only has to stay up, so a
+  background worker deploys fine.
+- **A slow starter gets up to 3 minutes.**
+
+A crash, a restart loop, an app that never listens, or one that listens only on `127.0.0.1` inside
+its container fails the deploy. The log says why and shows the app's last log lines.
+
+If the app listens on another port than the one set, for example `8080` instead of `3000`,
+Deplo sends the traffic to `8080`, saves it as the app's port, and says so in the log. See
+[The port is the one people get wrong](/guides/releases/build-settings#the-port-is-the-one-people-get-wrong).
+</Step>
+
+<Step>
 ### The result is recorded
 
 The deployment gets its final status, its image reference, its duration and its logs. The app's
@@ -146,7 +170,9 @@ server's disk cleanup. Deplo pushes to no registry, so a removed image is gone.
 
 - **It does not touch your data.** Volumes are reattached, never recreated.
 - **It does not change the slug**, the volume names or the app's identity.
-- **It does not roll back on failure.** A failed deploy leaves the previous version running. See
+- **It does not roll back on failure.** A failed build leaves the previous version running. An
+  app that fails the start check has already replaced it, so
+  [roll back](/guides/releases/rollbacks) to the last version that worked. See
   [App status](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
 
 ## A rollback is much shorter

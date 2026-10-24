@@ -120,8 +120,8 @@ like a Git clone, with framework detection. This card has the **Deploy** button.
 ### Deploy
 
 Click **Deploy**, bottom right. The server, the URL and the build method are already set. For a
-repository or an upload, the agent detects the framework and builds an image with **Railpack**
-by default, so you need no Dockerfile.
+repository or an upload, Deplo builds your `Dockerfile` if there is one, else your Docker Compose
+file, else it detects the framework and builds with **Railpack**, so you need neither.
 
 You land on the live build log. Closing the tab or reloading the page does not cancel anything.
 
@@ -137,7 +137,7 @@ its label.
 | --- | --- |
 | Deploy to | Which server runs it. A single-machine install has one, already picked. |
 | Environment variables | Type them, or tick the team's [shared variables](/guides/config/shared-variables). Both reach the first build. |
-| Build method | Railpack, Nixpacks, a Dockerfile, or a static site, with its version and the container port. |
+| Build method | **Detect automatically** (the default), Railpack, Dockerfile or Docker Compose, with the Node.js version and the container port. |
 | Port | Docker images only: the port routing uses, read from the image and editable here. |
 | Build path | The sub-folder to build from, for a monorepo. |
 | Build on | Another server to build on. Automatic uses a [build server](/advanced/build-servers) if you have one. |
@@ -193,7 +193,7 @@ show.
 | Symptom | What to check |
 | --- | --- |
 | The build fails on a missing command | Your repository has no `build` or `start` script, so the builder guessed. Set both in **Settings -> Deployments**. Applies to GitHub, Git and Upload. |
-| The app starts and the URL times out | The container listens on a different port than the one Deplo routes to. Fix the port in **Settings -> Deployments**, or per hostname in **Domains**. |
+| The deploy fails after the build | The app did not start and stay up. The log says why and shows its last lines. An app that listens only on `127.0.0.1` must listen on `0.0.0.0`. A wrong [port](/guides/releases/build-settings#the-port-is-the-one-people-get-wrong) is fixed for you. |
 | The repository picker is empty | The GitHub App has no access to it. Click **Manage connected apps** and grant the repository on GitHub. |
 | `pull access denied` on a Docker Image app | The image is private and no registry credential matches. Add one in **Settings -> Registries**. |
 

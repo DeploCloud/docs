@@ -96,8 +96,8 @@ or on any server you marked as a fallback.
 - **Both machines need the same CPU architecture.** An `arm64` builder
   cannot produce an `amd64` image. Mismatched choices are shown but
   disabled.
-- **A Compose app cannot use one.** There is no single image to build and
-  move.
+- **A Compose app cannot use one**, pasted or built from its repository with
+  **Docker Compose**. There is no single image to build and move.
 - **The image crosses the network twice**, once to the control plane and
   once out again. Cheap on a fast local network, can cost more than it
   saves over a slow link.

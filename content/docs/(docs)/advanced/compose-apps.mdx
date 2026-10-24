@@ -13,6 +13,8 @@ routing, TLS, variables, volumes and backups on top.
 
 Use it for software that ships as a Compose stack or for your own
 multi-service setup. For a single image, [Deploy a Docker image](/guides/deploy/docker-image) is simpler.
+Is the Compose file in your own repository? Deploy the repository and Deplo reads the file on every
+deploy: see the [Docker Compose build method](/guides/releases/build-settings#docker-compose).
 
 Your YAML is treated as **authored input, not a trusted document**. Deplo
 parses it, checks it, folds in what it must, and ships the result to the

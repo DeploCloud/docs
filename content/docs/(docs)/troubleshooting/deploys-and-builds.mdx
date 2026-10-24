@@ -7,29 +7,51 @@ import { Wrench, GitBranch, Rocket, Server } from "lucide-react";
 
 ## The build fails
 
-**Read the build log first.** Use the last error line to choose the fix.
+**Read the build log first.** Use the last error line to choose the fix. For a Railpack build,
+that line usually says what to change.
 
 | In the log | Cause | Fix |
 | --- | --- | --- |
+| `No start command detected` | Railpack found nothing to start | Set **Start command** on the **Build & output** card in **Settings -> Deployments** |
+| `Railpack does not recognise this folder` | The app is not in the folder the build looks at | Set **Root Directory**, or add a `Dockerfile` |
+| `is not available` | Your project asks for a language version that does not exist | Pin a released one: **Node.js version** for Node, a variable such as `RAILPACK_PYTHON_VERSION` for the others |
+| `A native module failed to compile under Node 24` | A dependency does not build on Node 24 yet | Set **Node.js version** to `22` |
+| `The build needed more than 2.9 GB of memory` | One build step went past 75% of the server's memory | Build on a server with more memory, for example a [build server](/advanced/build-servers) |
+| `GitHub refused a download with its rate limit` | Railpack's tool downloads hit GitHub's limit for anonymous requests | Connect the [GitHub App](/guides/git-providers/github) to the team, or deploy again in an hour |
 | `command not found` | Detection chose the wrong command, or a dependency is missing | Set **Build command** in **Settings -> Deployments**, or add the dependency |
 | `Cannot find module` | The build ran in the wrong directory | Set **Root Directory** |
 | `pull access denied` | A private image with no matching credential | Add the registry in **Settings -> Registries** |
 | `Authentication failed` while cloning | The Git credential expired or was revoked | **Settings -> Git**, then **Test connection** |
 | `no space left on device` | The server's disk is full | See "No space left on device" below |
-| The log ends with nothing | The builder was killed, usually for lack of memory | Raise the memory limit, or use a bigger build server |
 
 Detection runs on every deploy. If it changed after a repository change, set
 the commands explicitly; explicit settings win.
+
+## The build passes but the deploy fails
+
+After the build, Deplo waits up to 3 minutes for the app to start and stay up. The log names what
+went wrong and shows the app's last lines.
+
+| In the log | Fix |
+| --- | --- |
+| `keeps restarting` or `stopped right after it started` | The app crashes on start. Read its last lines: a missing variable or a database it cannot reach are the usual causes |
+| `The start command runs a program that is not in the image` | Fix **Start command** in **Settings -> Deployments** |
+| `listens only on 127.0.0.1` | Make the app listen on `0.0.0.0` |
+| `never listened on port 3000` | The app opened no port. Check that it starts a web server. A background worker needs no domain, and without one it only has to stay up |
+| `was stopped: out of memory` | Give it more memory in [Resource limits](/advanced/resource-limits) |
+| `health check fails` | Check the [health check](/guides/observability/health-checks) path and port |
+
+A wrong port is not on this list: Deplo moves the traffic to the port the app listens on and says
+so in the log. See [the port](/guides/releases/build-settings#the-port-is-the-one-people-get-wrong).
 
 ## The build passes but the app is unreachable
 
 Check these in order:
 
-1. **Container port:** it must match the port your process listens on.
-2. **Bind address:** listen on `0.0.0.0`, not `127.0.0.1`.
-3. **Container status:** read the app's **Logs** if it exited.
-4. **Domain state:** only a routable domain can reach the app. See
+1. **Domain state:** only a routable domain can reach the app. See
    [Domains and TLS](/troubleshooting/domains-and-tls).
+2. **Container status:** read the app's **Logs** if it stopped after the deploy.
+3. **A port set on one hostname** in **Domains** must be one the app listens on.
 
 Use the generated address (like `https://deplo-cb00710a.deplo.site`) to separate an app
 problem from a DNS or certificate problem.

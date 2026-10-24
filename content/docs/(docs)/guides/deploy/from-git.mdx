@@ -111,7 +111,7 @@ and even the source type. The app keeps its domains, variables and volumes.
     },
     "Build method": {
       type: "select",
-      description: "Railpack, Nixpacks, Dockerfile or Static. On the Build and output card",
+      description: "Detect automatically, Railpack, Dockerfile or Docker Compose. On the Build & output card",
     },
     "Deploy trigger": {
       type: "select",
@@ -137,6 +137,9 @@ Credentials live on the connection, and every app using that host reuses them. S
 
 ## Good to know
 
+- **A `Dockerfile` or a Compose file in the repository is used.** That is what Detect
+  automatically, the default build method, does. See
+  [Build methods](/guides/releases/build-settings#build-methods).
 - **Only a GitHub App can have pull request previews.**
 - **A bare Git URL cannot register a webhook.** Use the
   [deploy hook](/guides/releases/automatic-deployments) instead.
