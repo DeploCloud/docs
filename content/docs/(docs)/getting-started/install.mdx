@@ -149,8 +149,10 @@ docker compose up -d
 ```
 
 Going this way, you enroll the host as a server yourself from **Settings -> Servers**, exactly
-like any other machine. Four things are worth knowing before you do:
+like any other machine. Five things are worth knowing before you do:
 
+- **It publishes one port, on `127.0.0.1` only.** `3101`, where a server agent on this
+  machine connects to Deplo. Set `DEPLO_LINK_PORT` before `docker compose up` to use another.
 - **`DEPLO_SETUP_KEY` is yours to set.** The installer generates one; Compose does not. Leave it
   unset and Deplo derives one from `DEPLO_SECRET` and prints the setup link in its log at boot:
   `docker compose logs deplo | grep setup`.

@@ -94,7 +94,8 @@ finish says so in ten seconds. **These stop the run**, unless you pass
 - Architecture other than `x86-64` or `arm64`, Bash older than 4, or a
   missing `curl` or `openssl`.
 - **Less than 8 GB free on `/`.** 30 GB is the recommended minimum.
-- Ports `80`, `443` or `3000` already held by something that is not Deplo.
+- Ports `80`, `443` or `3000` already held by something that is not Deplo, or
+  none of `3101` to `3104` free on `127.0.0.1`.
 - No outbound HTTPS to `ghcr.io`, or to `get.docker.com` when Docker has
   to be installed. `DEPLO_SKIP_NET_CHECKS=1` skips the network checks on a
   host that reaches its registry another way.
@@ -120,6 +121,8 @@ finish says so in ten seconds. **These stop the run**, unless you pass
 - Generates `/opt/deplo/.env` once, with mode `0600`.
 - Starts Postgres, the control plane, and Traefik. The panel stays on
   `127.0.0.1:3000`; Traefik serves it over HTTPS.
+- Keeps the first free of `3101` to `3104` on `127.0.0.1`, where this machine's
+  own server agent connects to Deplo. An update keeps the same one.
 - Enrolls the local machine as a server after the panel health check passes.
 
 <Callout type="info" title="Re-running it is the update path">
