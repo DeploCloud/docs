@@ -44,8 +44,8 @@ Each update says how you get the fix:
 | What Details says | What to do |
 | --- | --- |
 | Update minimist to 1.2.6 in your code | Bump the dependency in your repository and push |
-| Fixed in a newer base image: rebuild the app to get it | Rebuild the app so it starts from a fresh base image |
-| A newer build of this image may have it: update to get it | Press **Update** on the banner: it redeploys and pulls the image again |
+| Fixed in a newer base image: rebuild the app to get it | Press **Rebuild** on the banner: Deplo builds again on a freshly fetched base image |
+| A newer build of this image may have it: update to get it | Press **Update** on the banner. An app redeploys and pulls its image again; a database asks first, then restarts on the new build with its data |
 | Version 1.60.2 is available and may fix it | Change the image version in **Settings -> Deployments** |
 | Deplo will fix this in an update | Nothing: it comes with a Deplo update |
 
