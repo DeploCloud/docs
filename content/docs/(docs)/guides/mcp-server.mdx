@@ -243,7 +243,7 @@ destructive, so your agent asks before using it.
 
 ## Every tool
 
-Deplo exposes **184 tools** today, plus the two above. The number changes with the product.
+Deplo exposes **186 tools** today, plus the two above. The number changes with the product.
 While creating a token, **See which** lists them all, marks the ones the token would reach and
 flags the destructive ones. An agent only sees the tools its token can use.
 
@@ -547,6 +547,14 @@ before running the tool: a **destructive** one is where a good client asks you f
 | `set_panel_https` | Turn HTTPS for the panel on or off | instance admin | write |
 | `set_log_retention` | Set how many days of logs are kept | instance admin | write |
 | `restart_panel` | Restart the Deplo panel | instance admin | **destructive** |
+
+</Accordion>
+<Accordion title="Security (2)">
+
+| Tool | What it does | Needs | Kind |
+| --- | --- | --- | --- |
+| `list_security_updates` | List security updates | `view` | read |
+| `ignore_security_update` | Ignore a security update | `ignore_security_updates` | write |
 
 </Accordion>
 <Accordion title="Generic GraphQL (2)">

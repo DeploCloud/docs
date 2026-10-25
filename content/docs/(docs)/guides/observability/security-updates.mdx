@@ -95,6 +95,20 @@ Two more downloads happen, both read-only:
 Package names from a private registry, such as an internal npm scope, are sent like any
 other name.
 
+## Ignore an update
+
+Sometimes a team decides not to apply one: the flaw is not reachable, or the fix comes with the
+next release. In **Details**, press **Ignore** on the update, write why, and pick 30, 90 or 180
+days.
+
+- It moves to **Ignored**, stops counting and never alerts until then.
+- **Activity** records who ignored it, until when, and why.
+- When the time is up it counts again. A **new** flaw in the same package shows right away.
+- **Stop ignoring** brings it back at once.
+
+Ignoring needs the **Ignore security updates** capability. Team owners have it; give it to a role
+in **Settings -> Roles**.
+
 ## When an image cannot be checked
 
 Details says why:

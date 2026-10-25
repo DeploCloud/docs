@@ -37,6 +37,7 @@ What a per-node capability set is attached to.
 | `project` |  |
 | `s3` |  |
 | `security` |  |
+| `security_update` |  |
 | `server` |  |
 
 ### AddressFamily
@@ -116,6 +117,7 @@ The 44 capabilities, one action each. What each one grants is on [Capabilities](
 | `delete_team` |  |
 | `deploy` | Deprecated. Split into finer permissions. Still accepted on input, where it means: create_apps, deploy_apps, rollback_apps, control_apps, configure_apps, delete_apps, move_apps, open_app_console, manage_previews, manage_crons, create_folders, organize_folders, delete_folders, create_projects, organize_projects, delete_projects, manage_environments. |
 | `deploy_apps` |  |
+| `ignore_security_updates` |  |
 | `manage_backup_destinations` |  |
 | `manage_backups` |  |
 | `manage_basic_auth` |  |
@@ -493,6 +495,29 @@ One kind of thing a search can return.
 | `role` |  |
 | `server` |  |
 | `template` |  |
+
+### SecurityFix
+
+How the team gets the fix. `code`: update the dependency in the app's own code. `rebuild`: rebuild on a fresh base image. `update`: redeploy to pull a newer build of the image. `newer_tag`: move to a newer version of the image. `deplo`: comes with a Deplo update. `none`: nobody has shipped a fix yet.
+
+| Value | Description |
+| --- | --- |
+| `code` |  |
+| `deplo` |  |
+| `newer_tag` |  |
+| `none` |  |
+| `rebuild` |  |
+| `update` |  |
+
+### SecurityLevel
+
+How serious a security update is: `exploited` is on CISA's known-exploited list, `critical` and `high` come from its CVSS score or advisory.
+
+| Value | Description |
+| --- | --- |
+| `critical` |  |
+| `exploited` |  |
+| `high` |  |
 
 ### ServerReadinessGroup
 

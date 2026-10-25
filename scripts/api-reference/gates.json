@@ -331,6 +331,15 @@
  "Query.searchUsers": {
   "kind": "loggedIn"
  },
+ "Query.securityUpdates": {
+  "kind": "loggedIn"
+ },
+ "Query.securityUpdatesOverview": {
+  "kind": "loggedIn"
+ },
+ "Query.securityUpdatesStatus": {
+  "kind": "instanceAdmin"
+ },
  "Query.server": {
   "kind": "loggedIn"
  },
@@ -763,6 +772,11 @@
   "kind": "capability",
   "cap": "create_projects",
   "orInstanceAdmin": true
+ },
+ "Mutation.ignoreSecurityUpdate": {
+  "kind": "capability",
+  "cap": "ignore_security_updates",
+  "orInstanceAdmin": false
  },
  "Mutation.importEnv": {
   "kind": "capability",
@@ -1278,6 +1292,9 @@
   "cap": "manage_monitoring",
   "orInstanceAdmin": false
  },
+ "Mutation.setSecurityUpdatesEnabled": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.setServerAddressFamily": {
   "kind": "instanceAdmin"
  },
@@ -1397,6 +1414,11 @@
  "Mutation.transferTeamOwnership": {
   "kind": "capability",
   "cap": "manage_team",
+  "orInstanceAdmin": false
+ },
+ "Mutation.unignoreSecurityUpdate": {
+  "kind": "capability",
+  "cap": "ignore_security_updates",
   "orInstanceAdmin": false
  },
  "Mutation.uninstallServerAgent": {

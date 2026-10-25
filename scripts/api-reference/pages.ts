@@ -58,6 +58,8 @@ export const VALUES: Record<string, string> = {
   p256dh: '"BNc…"',
   auth: '"k8s…"',
   kind: '"app"',
+  reason: '"Only reachable from the internal network"',
+  vulnIds: '"GHSA-xvch-5gv4-984h"',
   sourceKind: '"application"',
   sourceId: '"<service id from the scan>"',
   environment: '"production"',
@@ -1197,6 +1199,20 @@ A job runs a command inside a running container on a cron schedule. Every job be
       { title: "Runs", ops: [m("runCronJobNow"), m("cancelCronRun")] },
     ],
     seeAlso: [{ title: "Cron jobs", description: "The dashboard guide", href: "/guides/observability/cron-jobs" }],
+  },
+  {
+    slug: "security-updates",
+    title: "Security updates",
+    description: "Known security flaws in what the team's apps and databases run, how each is fixed, and setting one aside.",
+    intro: `
+Deplo reads the packages of every image it runs and matches them against OSV.dev every 6 hours. One security update is one package to move; \`updates\` lists every advisory behind it, so group them by \`packageName\` and \`installedVersion\` to count the way the dashboard does. \`fix\` says how the team gets the fix, and \`actionable\` whether it counts at all. Every call on one app or database names exactly one \`appId\` or \`databaseId\`.
+`,
+    sections: [
+      { title: "Reading", ops: [q("securityUpdates"), q("securityUpdatesOverview")] },
+      { title: "Ignoring", ops: [m("ignoreSecurityUpdate"), m("unignoreSecurityUpdate")] },
+      { title: "The instance switch", ops: [q("securityUpdatesStatus"), m("setSecurityUpdatesEnabled")] },
+    ],
+    seeAlso: [{ title: "Security updates", description: "The dashboard guide", href: "/guides/observability/security-updates" }],
   },
   {
     slug: "backups",

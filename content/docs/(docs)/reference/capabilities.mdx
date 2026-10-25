@@ -1,6 +1,6 @@
 ---
 title: Capabilities
-description: The full list of the 45 capabilities, one action each, grouped by what they touch.
+description: The full list of the 46 capabilities, one action each, grouped by what they touch.
 ---
 
 import { ShieldCheck as ShieldCheckIcon, Users, KeyRound } from "lucide-react";
@@ -80,6 +80,11 @@ Creating, shipping and running the team's apps.
       type: "Manage cron jobs",
       description:
         "Sensitive. Create, edit and run scheduled commands inside an app or database container.",
+    },
+    ignore_security_updates: {
+      type: "Ignore security updates",
+      description:
+        "Sensitive. Hide a security update the team decided not to apply, for a while, with a reason.",
     },
   }}
 />

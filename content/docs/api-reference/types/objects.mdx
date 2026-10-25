@@ -2083,6 +2083,65 @@ A catalogue template a search matched. Public, so it names no team.
 | `name` | `String` |  |
 | `slug` | `String` |  |
 
+### SecuritySubject
+
+An app or database with security updates to apply.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `count` | `Int` |  |
+| `exploited` | `Int` |  |
+| `id` | `ID` |  |
+| `kind` | `String` | `app` or `database`. |
+| `name` | `String` |  |
+
+### SecurityUpdate
+
+One known vulnerability in a package an app or database runs.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `actionable` | `Boolean` | True when the team can act on it now, or it is already used in attacks. Only these are counted and alerted. |
+| `cve` | `String` |  |
+| `cvss` | `Float` |  |
+| `ecosystem` | `String` |  |
+| `fix` | [`SecurityFix`](/api-reference/types/enums#securityfix) |  |
+| `fixedVersion` | `String` |  |
+| `ignoreReason` | `String` |  |
+| `ignored` | `Boolean` | Set aside by the team until `ignoredUntil`: still listed, never counted or alerted. |
+| `ignoredBy` | `String` |  |
+| `ignoredUntil` | `String` |  |
+| `installedVersion` | `String` |  |
+| `level` | [`SecurityLevel`](/api-reference/types/enums#securitylevel) |  |
+| `osvUrl` | `String` |  |
+| `packageName` | `String` |  |
+| `service` | `String` | The compose service it was found in; empty for a single-container app. |
+| `summary` | `String` |  |
+| `vulnId` | `String` | The OSV id, for example GHSA-xvch-5gv4-984h or DEBIAN-CVE-2024-5535. |
+
+### SecurityUpdates
+
+The security updates of one app or database, from the package lists of the images it runs. https://deplo.build/docs/guides/observability/security-updates
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `checkedAt` | `String` | The oldest check behind this answer; null until every image was checked once. |
+| `count` | `Int` | Updates the team can act on, or already used in attacks. |
+| `exploited` | `Int` |  |
+| `newerTag` | `String` | A newer version of the image on the same line, when the registry lists one. |
+| `unreadable` | `[String!]` | Why some of its images could not be read: too_large, low_disk, low_memory, timed_out, unsupported or failed. |
+| `updates` | [`[SecurityUpdate!]`](/api-reference/types/objects#securityupdate) |  |
+
+### SecurityUpdatesStatus
+
+The instance-wide switch and the health of the last checks.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `enabled` | `Boolean` |  |
+| `failingSince` | `String` | Since when OSV.dev could not be reached; null while checks succeed. |
+| `lastCheckedAt` | `String` |  |
+
 ### Server
 
 A connected host running deployments (reached via its agent).
