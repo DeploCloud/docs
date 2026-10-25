@@ -98,6 +98,9 @@ registry. The password is encrypted and never returned. See
   for you.
 - **The mount path is not guessed.** For a prebuilt image you type the full path, like
   `/app/uploads`.
+- **Names under `deplo/` are refused.** That is where Deplo tags the apps it builds, so
+  `deplo/shop:dpl_0a1b2c3d` would be another app's image. The same goes for a database's custom
+  image.
 - **Multi-container software needs Compose.** If the vendor ships a `docker-compose.yml`, use
   [Compose apps](/advanced/compose-apps) or look in [Templates](/guides/deploy/from-template).
 

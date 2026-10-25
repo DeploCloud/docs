@@ -68,6 +68,10 @@ agent.
   A database answers to `db-<name>`, so a service of that name would collect
   its connections. One in another environment is not a clash - your stack never
   joins its network.
+- **Images under `deplo/` are Deplo's.** Every app Deplo builds is tagged
+  `deplo/<app>:<deployment>` on its server, so `image: deplo/shop:dpl_0a1b2c3d` would run another
+  app's build and is refused. So is an image whose name comes from a variable (`image: ${IMAGE}`),
+  because Deplo cannot see where it points; a variable in the tag (`image: nginx:${TAG}`) is fine.
 - **Two of your own stacks CAN claim one name, and the deploy warns.** Inside
   one environment nothing refuses a second `web` or `api`; Docker would split
   the lookups between them, so the deploy log names the other stack and you
