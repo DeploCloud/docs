@@ -5,6 +5,7 @@
     "monitoring",
     "health-checks",
     "notifications-and-alerts",
+    "security-updates",
     "console",
     "cron-jobs"
   ]

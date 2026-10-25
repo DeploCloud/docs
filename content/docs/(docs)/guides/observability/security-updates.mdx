@@ -1,0 +1,156 @@
+---
+title: Security updates
+description: Deplo checks what your apps and databases run for known security flaws, and tells you how to fix them.
+---
+
+import { Bell, Rocket, ShieldCheck } from "lucide-react";
+
+Deplo reads the packages inside every image it runs for your team and checks them
+against public lists of known security flaws. When there is something you can fix,
+the app says so, and tells you what to do.
+
+Nothing to set up: it is on for every team.
+
+## What you see
+
+- **A banner on the app's Overview**: "2 security updates available". It appears only
+  when there is something to apply, and disappears once it is fixed.
+- **A shield on the app's card**, next to its status dot. Hover it for the count.
+- **Needs security update** above the Overview grid: one click shows only the apps that
+  need one.
+- **Details**: every update, with what to do. Also in the app's menu (the three dots at the top right ->
+  **Security updates**), where it says "Up to date" when there is nothing.
+
+Managed databases get the same banner and shield on **Storage**. Pull request previews
+get the shield on their row.
+
+One security update is one package to move. If a package has 25 known flaws and one new
+version fixes them all, that is one update.
+
+## How serious it is
+
+| Level | What it means |
+| --- | --- |
+| **Used in attacks** | The flaw is on CISA's list of flaws already exploited in real attacks |
+| **Critical** | A critical flaw (score 9.0 or more) |
+| **Important** | A high-severity flaw (score 7.0 to 8.9) |
+
+Lower levels are not shown.
+
+## How to fix it
+
+Each update says how you get the fix:
+
+| What Details says | What to do |
+| --- | --- |
+| Update minimist to 1.2.6 in your code | Bump the dependency in your repository and push |
+| Fixed in a newer base image: rebuild the app to get it | Rebuild the app so it starts from a fresh base image |
+| A newer build of this image may have it: update to get it | Press **Update** on the banner: it redeploys and pulls the image again |
+| Version 1.60.2 is available and may fix it | Change the image version in **Settings -> Deployments** |
+| Deplo will fix this in an update | Nothing: it comes with a Deplo update |
+
+**No fix yet** lists flaws nobody has shipped a fix for. They are not counted and never
+alert. A vendor image (Postgres, a template, an image you deploy as it is) is fixed only
+when its maintainers publish a new build.
+
+## What is checked
+
+- Apps of every source: from git, an upload, a Docker image, a Compose file or a template.
+- Managed databases.
+- Stopped apps and databases, from the image they will start with.
+- Pull request previews.
+
+Deplo's own components are not listed here: their fixes come with Deplo updates.
+Images based on Red Hat, Rocky, Alma or Amazon Linux are not checked yet; their code
+dependencies still are.
+
+## When it is checked
+
+- **After a deploy**: a new image is checked within about 5 minutes.
+- **Every 6 hours**: every image is matched again against the latest lists, because new
+  flaws are found in software that has not changed.
+- **Every day**: Deplo refreshes CISA's list of flaws used in attacks.
+
+## Alerts
+
+**Security update available** is on by default in every channel. It fires:
+
+- once per update, never again for the same one;
+- only for running apps and databases, never for a stopped app or a preview;
+- only when the flaw is used in attacks, or critical with a fix you can apply.
+
+## What Deplo sends
+
+To match an image, Deplo sends [OSV.dev](https://osv.dev) the name and version of each
+package it found, for example `npm minimist 1.2.5` or `Debian:12 openssl
+3.0.11-1~deb12u2`. Nothing else: no app name, no server, no domain, nothing that names
+this Deplo.
+
+Two more downloads happen, both read-only:
+
+- CISA's public list of exploited flaws, once a day, by the Deplo panel.
+- The package reader the servers use, once per server, from its official release, with
+  its checksum verified.
+
+Package names from a private registry, such as an internal npm scope, are sent like any
+other name.
+
+## When an image cannot be checked
+
+Details says why:
+
+| Message | What happened |
+| --- | --- |
+| An image is too large to check on its server | Reading it needed more memory than Deplo allows itself on that server |
+| Its server is too low on disk space | Deplo needs about twice the image size free to read it |
+| Its server is too low on memory | Deplo waits until enough memory is free |
+| Its server cannot check images yet | The server cannot cap the reader's memory, so Deplo does not run it there |
+
+Your apps are never at risk: Deplo reads one image at a time per server, never during a
+deploy, at the lowest priority.
+
+## Turn it off
+
+An instance admin can turn checks off for the whole instance:
+
+<Steps>
+<Step>
+
+### Open Deplo settings
+
+Go to **Settings -> Deplo -> Advanced**.
+
+</Step>
+<Step>
+
+### Flip Security updates
+
+Under **Privacy**, turn **Security updates** off. Nothing is checked and nothing is sent
+from that moment. The line under the switch shows when the last check ran, or since when
+OSV.dev could not be reached.
+
+</Step>
+</Steps>
+
+## Next steps
+
+<Cards>
+  <Card
+    icon={<Bell className="text-blue-400" />}
+    title="Notifications and alerts"
+    description="Choose where security alerts go"
+    href="/guides/observability/notifications-and-alerts"
+  />
+  <Card
+    icon={<Rocket className="text-blue-400" />}
+    title="Build settings"
+    description="How an app is built, and its base image"
+    href="/guides/releases/build-settings"
+  />
+  <Card
+    icon={<ShieldCheck className="text-blue-400" />}
+    title="Anonymous usage statistics"
+    description="The other thing a Deplo instance can send"
+    href="/operations/anonymous-usage-statistics"
+  />
+</Cards>
