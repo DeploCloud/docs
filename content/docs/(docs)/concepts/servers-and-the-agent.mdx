@@ -51,8 +51,22 @@ The server turns online.
 </Step>
 </Steps>
 
-The token works once and expires after about an hour. From then on the two sides talk over an
-encrypted connection (mutual TLS) on port **9443**.
+The token works once and expires after about an hour.
+
+## How Deplo reaches a server
+
+The agent keeps one encrypted connection (mutual TLS) open to the panel's address. Every deploy,
+log, console session and backup goes over it.
+
+- **There is no port to open on the server.** It works behind a home or office router, on a
+  company network, or on a cloud server whose firewall is closed.
+- **A server is connected or offline.** When the connection drops, the agent reconnects by
+  itself within seconds.
+- **Servers follow the panel's address.** Change the panel's domain and every connected server
+  learns it on its own.
+
+A server with an older agent keeps working as before until its agent updates itself. It then
+switches over on its own, with nothing to do.
 
 ## What a server can be used for
 
@@ -84,7 +98,7 @@ contact and has five values:
       type: "string",
     },
     offline: {
-      description: "Nothing answered, confirmed by a retry",
+      description: "Not connected to Deplo for about 10 seconds: the machine is off or has lost its internet connection",
       type: "string",
     },
   }}
@@ -104,6 +118,8 @@ methods and Deplo configuration, and each row is `pass`, `info`, `warn`, `fail` 
 
 The machine running the control plane adds itself during installation and appears in the list
 like any other server. Deploying to it uses the same path and the same code as any remote server.
+Its agent connects to Deplo on the machine itself, so it keeps working even when the panel's
+public address does not.
 
 The only difference: it cannot remove itself from the list.
 

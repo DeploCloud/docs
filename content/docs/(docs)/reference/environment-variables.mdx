@@ -94,6 +94,12 @@ These configure the dashboard, API, database and control-plane defaults.
       description:
         "The port the panel container publishes on 127.0.0.1. A takeover install walks it to the first free of 3000 to 3003.",
     },
+    DEPLO_LINK_PORT: {
+      type: "number",
+      default: "3101, set by the installer",
+      description:
+        "The port on 127.0.0.1 where this machine's own server agent connects to Deplo. The installer takes the first free of 3101 to 3104 and keeps it across updates.",
+    },
     DEPLO_TAKEOVER: {
       type: "dokploy | coolify",
       description:
@@ -172,11 +178,6 @@ for what each role changes on the host.
 
 <TypeTable
   type={{
-    DEPLO_AGENT_PORT: {
-      type: "port",
-      default: "9443",
-      description: "The gRPC and mutual TLS listen port.",
-    },
     DEPLO_STORAGE_ONLY: {
       type: "0 | 1",
       default: "0",

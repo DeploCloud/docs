@@ -38,8 +38,7 @@ you can close the page and come back later.
 ### On every source machine
 
 - **One shell command, as root, on each machine.** It installs the Deplo agent that reads the
-  disks. It works behind any firewall.
-- **Inbound TCP 9443 on each machine.** Deplo connects back to read the volumes.
+  disks. The agent connects to Deplo by itself, so there is no port to open.
 - **A snapshot of every machine, taken first.** It is the only way back.
 - **Free space on the destination disk.** Deplo warns under 10% free or under 5 GiB.
 
@@ -272,7 +271,7 @@ when you tick it.
 | A 502, or a Cloudflare 521 | It comes from the proxy or CDN in front of the panel. Start it, or point Deplo at the panel's own address. |
 | Stuck on **Waiting for the agent** | The install command has not run on that machine, or the machine cannot reach this one. |
 | **The server agent did not install** during a takeover | Re-run `/opt/deplo/install.sh` on the machine, or use the command under **Settings -> Servers**. |
-| One source machine does not answer | Its services are named in the report and blocked from deploying. The other machines are still copied. Check inbound 9443 with `nc -vz <source-ip> 9443`. |
+| One source machine does not answer | Its services are named in the report and blocked from deploying. The other machines are still copied. Check that the machine is on and connected to the internet. |
 | A volume arrives empty | The app refuses to deploy until you decide. One volume has six hours to copy, so a very big volume over a slow link is better copied by hand. |
 | A single-file bind is refused by name | The **destination** server's agent is too old. Update that agent and copy the data again. |
 | The data step fails half way | Nothing is rolled back. Only **Stop and undo** does that. A second run skips what is already here and copies the data again, or use **Copy the data again** on the app. |

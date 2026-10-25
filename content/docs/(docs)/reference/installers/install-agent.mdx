@@ -43,11 +43,6 @@ The three role flags below pick what the server is for, see
 
 <TypeTable
   type={{
-    DEPLO_AGENT_PORT: {
-      type: "port",
-      default: "9443",
-      description: "Listen port.",
-    },
     "DEPLO_STORAGE_ONLY=1": {
       type: "flag",
       description:
@@ -74,11 +69,11 @@ The three role flags below pick what the server is for, see
 - Downloads the `amd64` or `arm64` agent and verifies its SHA-256 checksum.
 - Installs the agent and systemd unit, then starts the service.
 - Enrolls over mTLS. It stores bootstrap credentials in
-  `/var/lib/deplo-agent/bootstrap.env` with mode `0600` and clears old
-  certificates on reinstall.
+  `/var/lib/deplo-agent/bootstrap.env` with mode `0600`, and clears old
+  certificates and saved panel addresses on reinstall.
 
-The installer never changes the firewall. If `ufw` or `firewalld` blocks
-`9443`, it prints the command needed to open it.
+The installer never changes the firewall, and the agent needs nothing from
+it: it opens no port.
 
 Flags: `--check` runs the preflight and exits, `--force` overrides the disk floor, and `--plain`,
 `--no-color`, `--quiet` and `--help` do what they say.
@@ -90,8 +85,9 @@ the server's apps get is set in the dashboard, under
 [Generated addresses](/operations/servers/maintenance-and-advanced#generated-addresses).
 
 The agent then calls home, sends a certificate signing request, and
-receives a signed certificate. **The control plane never connects to your
-machine to set this up.**
+receives a signed certificate. From then on it stays connected to the control
+plane, which sends every deploy over that connection. **The control plane
+never connects to your machine.**
 
 Logs: `journalctl -u deplo-agent -f`.
 

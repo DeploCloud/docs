@@ -18,25 +18,36 @@ journalctl -u deplo-agent -f
 | --- | --- |
 | The unit does not exist | The install command never ran, or failed early |
 | `Refusing to run an unverified binary` | The download did not match its checksum. Retry; if it persists, something is intercepting it |
-| The unit runs but nothing happens | It cannot reach the control plane URL; check outbound access and the URL |
+| The unit runs but nothing happens | It cannot reach the panel. Check that the machine is connected to the internet, and the address in the command |
 | `bootstrap token` errors | The token was used already, or it expired. Issue a new one from the server's menu |
 | `status=216/GROUP` | The unit wants the docker group and Docker is not installed. That is expected on a backups-only host, and its unit is installed without it |
 
-## The server is online but every deploy fails
+## A server is offline
 
-Enrollment uses an outbound connection; deploys also need inbound `9443`. See
-[ports, networks, and files](/reference/ports-networks-and-files).
+`offline` means the server has not been connected to Deplo for about 10
+seconds. Its card says `Check that the machine is on and connected to the internet.`
 
-Refresh **Settings -> Servers** to run a new health check. A stored green
-reading can be stale. The same check applies to the host running Deplo.
+There is no port to open. The server connects to Deplo by itself, and is
+back online within seconds of reaching the internet again.
 
-From the control-plane machine:
+| What you see | What to do |
+| --- | --- |
+| The machine is off, or has no internet | Start it or reconnect it. Nothing else to do |
+| The machine is on and online | Check the agent on it: `systemctl status deplo-agent`, then `journalctl -u deplo-agent -f` for why it cannot reach the panel |
+| It was already offline before Deplo's last update | Its agent is too old to connect by itself, and Deplo cannot update an agent it cannot reach. [Reinstall the agent](#an-agent-needs-to-be-reinstalled) and it connects on its own |
+| The panel's address changed while it was off | See [below](#a-server-was-off-while-the-panels-address-changed) |
 
-```bash
-nc -vz 203.0.113.10 9443
-```
+## A server was off while the panel's address changed
 
-Open `9443` to the control plane's address and refresh the server.
+A connected server learns a new panel address at once. One that was off at
+the time still knows the panel's backup address, the generated one like
+`deplo-cb00710a.deplo.site`, and connects there.
+
+It cannot find the panel when neither address it knows works any more: the
+domain changed while the backup address was off, or the panel has no domain
+of its own and its generated address changed. Then [reinstall the agent](#an-agent-needs-to-be-reinstalled)
+with a fresh install command. A panel domain, with the backup address left
+on, avoids this.
 
 ## A server says warning, error, offline, or Unknown
 
@@ -44,7 +55,7 @@ Open `9443` to the control plane's address and refresh the server.
 | --- | --- | --- |
 | `warning` | The agent is up and trusted, Docker is not answering | `systemctl status docker` on the host |
 | `error` | Something answered, but its agent is wrong: untrusted certificate, unsupported contract, or an application error | Re-run the install command to re-enroll |
-| `offline` | Nothing answered, confirmed by a retry | The machine, the network, or the port |
+| `offline` | Not connected to Deplo for about 10 seconds | [A server is offline](#a-server-is-offline) |
 | `Unknown` | The stored reading is stale | Click **Refresh** |
 
 <Callout type="info">

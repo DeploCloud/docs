@@ -57,14 +57,9 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
       description:
         "The command to re-run on the host, for reinstalling or repairing the agent. This is also where a fresh bootstrap token is issued",
     },
-    "Agent port": {
-      type: "number",
-      default: "9443",
-      description: "The port the control plane dials",
-    },
     "Change address": {
       type: "text",
-      description: "In the Danger zone. The address the control plane dials, for when the IP changes. Beta",
+      description: "In the Danger zone. The address your apps on this server are reached at, for when the IP changes. Beta",
     },
     "Remove server": {
       type: "danger",
@@ -116,7 +111,9 @@ The machine running the control plane cannot remove itself.
   handshake.
 - **Restarting Traefik drops connections** for a moment on every app on
   that host.
-- **Changing the address does not move anything.** It only changes how Deplo dials.
+- **Changing the address does not move anything.** Generated addresses
+  follow it at once. A domain of your own keeps pointing at the old IP until
+  you change its DNS record.
 
 ## Troubleshooting
 
