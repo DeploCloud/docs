@@ -335,6 +335,29 @@ mutation {
 }
 ```
 
+### `setAppScreenshots`
+
+Needs `configure_apps`. Returns [`App`](/api-reference/types/objects#app).
+
+Turn deployment screenshots on or off for one app. Off stops taking them and deletes every saved one; on takes the next at the next deploy.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+| `value` | `Boolean!` |  |
+
+```graphql
+mutation {
+  setAppScreenshots(id: "prj_9f1c2ab7d3e4f5a6", value: true) {
+    id
+    slug
+    name
+    status
+    productionUrl
+  }
+}
+```
+
 ### `hostPortsInUse`
 
 Needs `create_databases`. Returns [`HostPortCheck`](/api-reference/types/objects#hostportcheck).

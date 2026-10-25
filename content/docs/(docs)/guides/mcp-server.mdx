@@ -243,7 +243,7 @@ destructive, so your agent asks before using it.
 
 ## Every tool
 
-Deplo exposes **186 tools** today, plus the two above. The number changes with the product.
+Deplo exposes **189 tools** today, plus the two above. The number changes with the product.
 While creating a token, **See which** lists them all, marks the ones the token would reach and
 flags the destructive ones. An agent only sees the tools its token can use.
 
@@ -273,6 +273,7 @@ before running the tool: a **destructive** one is where a good client asks you f
 | `deploy_app` | Deploy an app | `deploy_apps` | write |
 | `rebuild_app` | Rebuild an app | `deploy_apps` | **destructive** |
 | `rollback_deployment` | Roll back to a deployment | `rollback_apps` | **destructive** |
+| `retake_deployment_screenshot` | Retake a deployment's screenshot | `configure_apps` | write |
 | `cancel_deployment` | Cancel a deployment | `deploy_apps` | write |
 | `control_app` | Start or reload an app | `control_apps` | write |
 | `stop_app` | Stop an app | `control_apps` | **destructive** |

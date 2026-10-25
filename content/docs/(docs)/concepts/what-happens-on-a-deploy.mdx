@@ -164,6 +164,26 @@ status becomes `active`, or `error` if the build or the start failed.
 Images older than the app's **rollbacks kept** setting (default `3`) can be removed by the
 server's disk cleanup. Deplo pushes to no registry, so a removed image is gone.
 </Step>
+
+<Step>
+### A picture is taken
+
+Once the deployment is live, the app's server opens it in a private browser and takes a picture
+in light and in dark. It becomes the cover of the **Production Deployment** card and of the
+deployment's page, matching your theme.
+
+- **Cookie banners** are dismissed with **Reject** for the consent tools Deplo knows. A banner a
+  site built itself can still show; hover the cover and use **Retake screenshot**.
+- **Basic auth**: the picture shows the real site, because Deplo signs in with the app's own
+  username and password. A pull request from a fork is never signed in.
+- **No picture** when the page answers with an error, stays blank, or the app has no domain: the
+  card simply looks the way it always did. Deplo tries once more a minute later, then waits for
+  the next deploy.
+
+The browser has no network of its own: it reaches the internet only through the server, which
+refuses every private address. Turn pictures off in the app's **Settings** > **Advanced** >
+**Deployment screenshots**; that also deletes the saved ones.
+</Step>
 </Steps>
 
 ## What a deploy does not do

@@ -1017,7 +1017,7 @@ Every write here changes what the **next** deploy renders. None of them starts a
       },
       {
         title: "Runtime",
-        ops: [m("updateAppResources"), m("updateAppHealthCheck"), m("setAppRestartLoopGuard"), q("hostPortsInUse"), m("setAppPorts"), m("setAppVolumes"), m("setAppTraefikLabels")],
+        ops: [m("updateAppResources"), m("updateAppHealthCheck"), m("setAppRestartLoopGuard"), m("setAppScreenshots"), q("hostPortsInUse"), m("setAppPorts"), m("setAppVolumes"), m("setAppTraefikLabels")],
       },
       {
         title: "Config files",
@@ -1044,6 +1044,11 @@ A rollback re-runs the image an earlier build already produced, no rebuild. Only
       { title: "Reading", ops: [q("deployments"), q("deployment")] },
       { title: "Deploying and cancelling", ops: [m("redeploy"), m("cancelDeployment"), m("cancelAllDeployments"), m("dismissPendingChanges")] },
       { title: "Rolling back", ops: [m("rollbackDeployment")] },
+      {
+        title: "Screenshots",
+        intro: `Deplo takes a light and a dark picture of a deployment once it is live. See [what happens on a deploy](/concepts/what-happens-on-a-deploy#a-picture-is-taken).`,
+        ops: [m("retakeDeploymentScreenshot")],
+      },
       { title: "Pruning history", ops: [m("deleteDeployments"), m("deleteAllDeployments")] },
       {
         title: "Deploy hook",

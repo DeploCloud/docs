@@ -102,6 +102,7 @@ A deployable application owned by a team.
 | `restartLoopGuard` | `Boolean` | Whether Deplo stops this app's container once it has restarted 10 times in half an hour. On by default; off lets it keep crashing. |
 | `restartLoopStoppedAt` | `String` | When restart loop protection last stopped this app, or null. Cleared by a start or a successful deploy. |
 | `rollbackKeep` | `Int` | How many previous deployments this app can be rolled back to (0-20, default 3). Retention: its server keeps this many of the app's images behind the running one. 0 means there is nothing to go back to. |
+| `screenshotsEnabled` | `Boolean` | Whether Deplo takes a light and a dark picture of the site after each deploy. On by default; off deletes the saved pictures. |
 | `serverId` | `ID` |  |
 | `slug` | `String` |  |
 | `source` | [`DeploySource`](/api-reference/types/enums#deploysource) |  |
@@ -900,6 +901,7 @@ A single build + release of an app.
 | `readyAt` | `String` |  |
 | `rollbackOf` | `ID` | Set when this deploy was a rollback: the deployment it went back to, whose image it re-ran or whose commit it rebuilt. Null otherwise. |
 | `rollbackRebuilds` | `Boolean` | Rolling back to this deployment rebuilds its commit, because its image is no longer kept on the server. Takes minutes instead of seconds. |
+| `screenshotAt` | `String` | When Deplo last took this deployment's picture, or null when it has none (still building, the site failed to load, or screenshots are off). |
 | `startedAt` | `String` | When the build was claimed off the queue and started running - the origin `buildDurationMs` is measured from, and what a live build timer counts up from. Null while still queued. |
 | `status` | [`DeploymentStatus`](/api-reference/types/enums#deploymentstatus) |  |
 | `url` | `String` |  |

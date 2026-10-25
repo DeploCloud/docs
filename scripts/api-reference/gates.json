@@ -1033,6 +1033,11 @@
  "Mutation.resumeMoveSchedules": {
   "kind": "instanceAdmin"
  },
+ "Mutation.retakeDeploymentScreenshot": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
  "Mutation.retryDeploMove": {
   "kind": "none"
  },
@@ -1183,6 +1188,11 @@
   "orInstanceAdmin": false
  },
  "Mutation.setAppRollbackKeep": {
+  "kind": "capability",
+  "cap": "configure_apps",
+  "orInstanceAdmin": false
+ },
+ "Mutation.setAppScreenshots": {
   "kind": "capability",
   "cap": "configure_apps",
   "orInstanceAdmin": false

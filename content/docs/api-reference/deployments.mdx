@@ -159,6 +159,32 @@ mutation {
 }
 ```
 
+## Screenshots
+
+Deplo takes a light and a dark picture of a deployment once it is live. See [what happens on a deploy](/concepts/what-happens-on-a-deploy#a-picture-is-taken).
+
+### `retakeDeploymentScreenshot`
+
+Needs `configure_apps`. Returns [`Deployment`](/api-reference/types/objects#deployment).
+
+Take the deployment's light and dark picture again, and wait for it. Only the deployment its address serves today can be taken again. Fails with the reason when the site answers with an error, comes out blank or cannot be reached; the previous picture then stays.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `deploymentId` | `String!` |  |
+
+```graphql
+mutation {
+  retakeDeploymentScreenshot(deploymentId: "dpl_9f1c2ab7d3e4f5a6") {
+    id
+    status
+    createdAt
+    commitMessage
+    url
+  }
+}
+```
+
 ## Pruning history
 
 ### `deleteDeployments`
