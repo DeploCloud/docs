@@ -18,6 +18,8 @@ files. It is removed when the pull request closes.
   [the two rules about forks](#the-two-rules-about-forks).
 - The URL never changes for the same pull request, so the link posted on it
   keeps working after a rebuild.
+- An app that runs the [Compose file in its repository](/guides/releases/build-settings#docker-compose)
+  previews the pull request's own version of that file, as a stack of its own.
 
 | | Hostname | TLS |
 | --- | --- | --- |
@@ -144,7 +146,8 @@ The list updates on its own:
 - **A fork preview inherits no variables at all.** Not the app's own, not a
   shared variable, not an instance-wide one. It gets only its plain preview
   overrides and the `DEPLO_PREVIEW` variables; a secret override is dropped
-  too. This is for security reasons: the code comes from outside your team.
+  too, and images are pulled without your team's registry credentials. This
+  is for security reasons: the code comes from outside your team.
   An app that needs a database URL to start needs one set as a plain
   [preview override](/guides/config/environment-variables).
 - **A fork preview waits for a human**, unless **Fork pull requests** is set

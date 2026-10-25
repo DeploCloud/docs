@@ -91,8 +91,9 @@ them as one stack.
 - **Your variables reach the stack.**
 - **The domain goes to the service that declares a port**, under `ports:` or `expose:`. If none
   does, the deploy log says to add `expose`.
-- **It builds on the app's own server**, never on a [build server](/advanced/build-servers), and
-  has no pull request previews yet.
+- **It builds on the app's own server**, never on a [build server](/advanced/build-servers).
+- **A pull request gets a [preview](/guides/networking/pull-request-previews)** built from its own
+  Compose file, with the same rules.
 
 Anyone who can push to the repository writes this file, so Deplo always applies these rules:
 
