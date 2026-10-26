@@ -22,14 +22,18 @@ Nothing to set up: it is on for every team.
 - **A notice at the top right**, next to your avatar, on every page. Click it for the list, or
   **Dismiss** it: it comes back only when something new needs updating.
 - **Details**: every update, with what to do. Also in the app's menu (the three dots at the top right ->
-  **Security updates**), where it says "Up to date" when there is nothing.
+  **Security updates**), where it says "Up to date" when there is nothing. Each advisory shows its
+  scores and the advisory's own summary, which often names the condition it needs; click it to read
+  it on OSV.dev.
+- **Checking the new deploy**: right after a deploy, Details says so while the new image is read,
+  and the previous image's updates are left out. It takes about a minute.
 
 Managed databases get the same banner and shield on **Storage**. Pull request previews
 get the shield on their row.
 
 One security update is one package of your app's to move, or one image to update. If a package
 has 25 known flaws and one new version fixes them all, that is one update. An image with ten
-flawed packages and a newer build is one update too.
+flawed packages and a newer build that fixes them is one update too.
 
 ## How serious it is
 
@@ -42,6 +46,9 @@ flawed packages and a newer build is one update too.
 Only **Used in attacks** and **Critical** count in the badge, the notices and the alerts.
 **Important** ones are listed in **Details** under **Less urgent**. Lower levels are not shown.
 
+Next to each advisory, **EPSS** is the chance it is exploited in the next 30 days, as
+[FIRST](https://www.first.org/epss/) estimates it: a high score is worth looking at first.
+
 ## How to fix it
 
 Each update says how you get the fix:
@@ -49,8 +56,13 @@ Each update says how you get the fix:
 | What Details says | What to do |
 | --- | --- |
 | Update minimist to 1.2.6 in your code | Bump the dependency in your repository and push |
-| A newer build of this image may fix 3 known flaws: update to get it | Press **Update** on the banner. An app redeploys and pulls its image again; a database asks first, then restarts on the new build with its data |
-| Version 1.60.2 is available and may fix 2 known flaws | Change the image version in **Settings -> Deployments** |
+| A newer build of this image fixes 3 known flaws: update to get it | Press **Update** on the banner. An app redeploys and pulls its image again; a database asks first, then restarts on the new build with its data |
+| Version 1.60.2 is available and fixes 2 known flaws | Change the image version in **Settings -> Deployments** |
+
+Deplo offers **Update** only after reading the newer build: the image's server downloads it,
+reads its packages like any other image, and removes it again. A newer build that still has the
+flaw is listed under **Waiting on the image's maintainers**, never counted; while it is being
+read, Details says Deplo is checking it.
 
 ## What is checked
 
@@ -76,7 +88,8 @@ Deplo's own components are not listed here: their fixes come with Deplo updates.
 
 ## When it is checked
 
-- **After a deploy**: a new image is checked within about 5 minutes.
+- **After a deploy**: the new image is checked as soon as the deploy is live, usually within a
+  minute.
 - **Every 6 hours**: every image is matched again against the latest lists, because new
   flaws are found in software that has not changed.
 - **Every day**: Deplo refreshes CISA's list of flaws used in attacks.
@@ -92,15 +105,19 @@ Deplo's own components are not listed here: their fixes come with Deplo updates.
 ## What Deplo sends
 
 To match an image, Deplo sends [OSV.dev](https://osv.dev) the name and version of each
-package it found, for example `npm minimist 1.2.5` or `Debian:12 openssl
-3.0.11-1~deb12u2`. Nothing else: no app name, no server, no domain, nothing that names
-this Deplo.
+package it checks, for example `npm minimist 1.2.5`. System packages are never sent, since they
+are never shown. Nothing else: no app name, no server, no domain, nothing that names this Deplo.
 
-Two more downloads happen, both read-only:
+Once a day it also sends [FIRST](https://www.first.org/epss/) the CVE ids behind your updates
+(for example `CVE-2021-44906`), to read their EPSS scores, and nothing more.
+
+Three more downloads happen, all read-only:
 
 - CISA's public list of exploited flaws, once a day, by the Deplo panel.
 - The package reader the servers use, once per server, from its official release, with
   its checksum verified.
+- A newer build of an image you run, by its own server from the image's registry, to see
+  whether it has the fix before Update is offered. It is removed again afterwards.
 
 Package names from a private registry, such as an internal npm scope, are sent like any
 other name.

@@ -1210,7 +1210,7 @@ A job runs a command inside a running container on a cron schedule. Every job be
     title: "Security updates",
     description: "Known security flaws in what the team's apps and databases run, how each is fixed, and setting one aside.",
     intro: `
-Deplo reads the packages of every image it runs and matches them against OSV.dev every 6 hours. Only the app's own dependencies and the software an image ships are returned. One security update is one package of the app's, or one image: \`updates\` lists every advisory behind it, so group them by \`packageName\` and \`installedVersion\`, or by \`imageRef\` when \`fix\` is \`update\` or \`newer_tag\`, and count the groups with an \`actionable\` advisory to match the dashboard. Every call on one app or database names exactly one \`appId\` or \`databaseId\`.
+Deplo reads the packages of every image it runs and matches them against OSV.dev every 6 hours and right after a deploy. Only the app's own dependencies and the software an image ships are returned. Read \`groups\`: one entry per package of the app's, or per image, the way the dashboard counts them, with \`counted\` saying whether it is in \`count\` and every advisory inside. \`updates\` keeps one row per advisory. An image's \`update\` appears only once its newer build was read and found to have the fix. Every call on one app or database names exactly one \`appId\` or \`databaseId\`.
 `,
     sections: [
       { title: "Reading", ops: [q("securityUpdates"), q("securityUpdatesOverview")] },
