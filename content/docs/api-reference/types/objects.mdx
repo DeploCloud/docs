@@ -2092,10 +2092,14 @@ An app or database with security updates to apply.
 | Field | Type | Description |
 | --- | --- | --- |
 | `count` | `Int` |  |
+| `databaseType` | [`DatabaseType`](/api-reference/types/enums#databasetype) |  |
 | `exploited` | `Int` |  |
 | `id` | `ID` |  |
 | `kind` | `String` | `app` or `database`. |
+| `logo` | `String` |  |
+| `logoTone` | `String` |  |
 | `name` | `String` |  |
+| `slug` | `String` | The app's slug, for its address; null for a database. |
 
 ### SecurityUpdate
 
@@ -2103,7 +2107,7 @@ One known vulnerability in a package an app or database runs.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `actionable` | `Boolean` | True when the team can act on it now, or it is already used in attacks. Only these are counted and alerted. |
+| `actionable` | `Boolean` | True when it is critical or already used in attacks, in the app's own dependencies or the software its image ships. Only these are counted and alerted. |
 | `cve` | `String` |  |
 | `cvss` | `Float` |  |
 | `ecosystem` | `String` |  |
@@ -2113,13 +2117,14 @@ One known vulnerability in a package an app or database runs.
 | `ignored` | `Boolean` | Set aside by the team until `ignoredUntil`: still listed, never counted or alerted. |
 | `ignoredBy` | `String` |  |
 | `ignoredUntil` | `String` |  |
+| `imageRef` | `String` | The image it was found in. An image's update moves the image as a whole. |
 | `installedVersion` | `String` |  |
 | `level` | [`SecurityLevel`](/api-reference/types/enums#securitylevel) |  |
 | `osvUrl` | `String` |  |
 | `packageName` | `String` |  |
 | `service` | `String` | The compose service it was found in; empty for a single-container app. |
 | `summary` | `String` |  |
-| `vulnId` | `String` | The OSV id, for example GHSA-xvch-5gv4-984h or DEBIAN-CVE-2024-5535. |
+| `vulnId` | `String` | The OSV id, for example GHSA-xvch-5gv4-984h or GO-2024-2687. |
 
 ### SecurityUpdates
 
@@ -2128,7 +2133,7 @@ The security updates of one app or database, from the package lists of the image
 | Field | Type | Description |
 | --- | --- | --- |
 | `checkedAt` | `String` | The oldest check behind this answer; null until every image was checked once. |
-| `count` | `Int` | Updates the team can act on, or already used in attacks. |
+| `count` | `Int` | Critical updates and ones already used in attacks: one per package of the app's own, one per image. Important ones are listed, not counted. |
 | `exploited` | `Int` |  |
 | `newerTag` | `String` | A newer version of the image on the same line, when the registry lists one. |
 | `unreadable` | `[String!]` | Why some of its images could not be read: too_large, low_disk, low_memory, timed_out, unsupported or failed. |

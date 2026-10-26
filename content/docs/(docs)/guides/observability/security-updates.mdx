@@ -14,7 +14,7 @@ Nothing to set up: it is on for every team.
 ## What you see
 
 - **A banner on the app's Overview**: "2 security updates available". It appears only
-  when there is something to apply, and disappears once it is fixed.
+  when there is something critical to apply, and disappears once it is fixed.
 - **A shield on the app's card**, next to its status dot. Hover it for the count.
 - **A notice at the top of the Overview** naming every app and database that needs updates, red
   when one of them runs something already used in attacks. **Show these apps** filters the grid
@@ -27,8 +27,9 @@ Nothing to set up: it is on for every team.
 Managed databases get the same banner and shield on **Storage**. Pull request previews
 get the shield on their row.
 
-One security update is one package to move. If a package has 25 known flaws and one new
-version fixes them all, that is one update.
+One security update is one package of your app's to move, or one image to update. If a package
+has 25 known flaws and one new version fixes them all, that is one update. An image with ten
+flawed packages and a newer build is one update too.
 
 ## How serious it is
 
@@ -38,7 +39,8 @@ version fixes them all, that is one update.
 | **Critical** | A critical flaw (score 9.0 or more) |
 | **Important** | A high-severity flaw (score 7.0 to 8.9) |
 
-Lower levels are not shown.
+Only **Used in attacks** and **Critical** count in the badge, the notices and the alerts.
+**Important** ones are listed in **Details** under **Less urgent**. Lower levels are not shown.
 
 ## How to fix it
 
@@ -47,16 +49,23 @@ Each update says how you get the fix:
 | What Details says | What to do |
 | --- | --- |
 | Update minimist to 1.2.6 in your code | Bump the dependency in your repository and push |
-| Fixed in a newer base image: rebuild the app to get it | Press **Rebuild** on the banner: Deplo builds again on a freshly fetched base image |
-| A newer build of this image may have it: update to get it | Press **Update** on the banner. An app redeploys and pulls its image again; a database asks first, then restarts on the new build with its data |
-| Version 1.60.2 is available and may fix it | Change the image version in **Settings -> Deployments** |
-| Deplo will fix this in an update | Nothing: it comes with a Deplo update |
-
-**No fix yet** lists flaws nobody has shipped a fix for. They are not counted and never
-alert. A vendor image (Postgres, a template, an image you deploy as it is) is fixed only
-when its maintainers publish a new build.
+| A newer build of this image may fix 3 known flaws: update to get it | Press **Update** on the banner. An app redeploys and pulls its image again; a database asks first, then restarts on the new build with its data |
+| Version 1.60.2 is available and may fix 2 known flaws | Change the image version in **Settings -> Deployments** |
 
 ## What is checked
+
+Deplo shows only what you chose:
+
+- **An app Deplo builds from your code**: the dependencies your code installs, such as the
+  packages in `package.json` or `requirements.txt`.
+- **An image you deploy as it is** (a database, a template, a Compose service with `image:`):
+  the software the image ships, when a newer build or version of that image exists.
+
+It leaves out what you never picked: the system packages under your app (glibc, openssl), the
+runtime Deplo builds with, tools a dependency carries inside it, and flaws nobody has fixed yet.
+Those come up to date with Deplo updates and new builds of the images.
+
+Every kind of app is checked:
 
 - Apps of every source: from git, an upload, a Docker image, a Compose file or a template.
 - Managed databases.
@@ -64,8 +73,6 @@ when its maintainers publish a new build.
 - Pull request previews.
 
 Deplo's own components are not listed here: their fixes come with Deplo updates.
-Images based on Red Hat, Rocky, Alma or Amazon Linux are not checked yet; their code
-dependencies still are.
 
 ## When it is checked
 
@@ -80,7 +87,7 @@ dependencies still are.
 
 - once per update, never again for the same one;
 - only for running apps and databases, never for a stopped app or a preview;
-- only when the flaw is used in attacks, or critical with a fix you can apply.
+- only for **Used in attacks** and **Critical** updates.
 
 ## What Deplo sends
 
