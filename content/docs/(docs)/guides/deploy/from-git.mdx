@@ -82,6 +82,34 @@ Leave **Automatic deployments** on unless you want to release by hand. Click **D
 </Step>
 </Steps>
 
+## New repositories on the Overview
+
+Create a repository on a connected host, push a first commit, and it shows up on the Overview
+as a dashed card, after your apps. One click on it deploys it.
+
+- **What is shown:** up to 3 repositories created in the last 7 days, newest first, that no app
+  of the team deploys yet. A repository with no commit stays hidden until its first push.
+- **When:** Deplo checks each host at most every 5 minutes, so a card can take that long to
+  appear.
+- **Where:** only on the top level of the Overview, not inside a folder or a project.
+- **Who sees it:** members who can both create and deploy apps for the whole team.
+
+On the card:
+
+| Action | What happens |
+| --- | --- |
+| Click the card | The app is created with the defaults (first server, build method detected, a domain) and its first deploy starts |
+| **Configure** | The new app wizard opens with the repository already picked, to change the name, server or build first |
+| **X**, then **Hide this repository** | That card goes away, in this browser only |
+| **X**, then **Stop suggesting repositories** | No more cards for you in this team. Your teammates keep theirs |
+
+Turn the cards back on in **Settings -> Git**, under **Suggest new repositories**.
+
+<Callout type="info">
+  A GitHub App installed on **Only select repositories** cannot see a new repository until you add
+  it to the installation. Use **Manage connected apps**, add it, and the card appears.
+</Callout>
+
 ## Change the source later
 
 <Image
