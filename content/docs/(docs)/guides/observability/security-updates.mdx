@@ -69,12 +69,22 @@ read, Details says Deplo is checking it.
 Deplo shows only what you chose:
 
 - **An app Deplo builds from your code**: the dependencies your code installs, such as the
-  packages in `package.json` or `requirements.txt`.
+  packages in `package.json`, `requirements.txt`, `Gemfile` or `go.mod`. A `RUN pip install`
+  in your `Dockerfile` counts too.
 - **An image you deploy as it is** (a database, a template, a Compose service with `image:`):
-  the software the image ships, when a newer build or version of that image exists.
+  the software the image ships, when a newer build or version of that image exists. An image
+  pinned to an old version, like `grafana/grafana:8.3.0`, is compared with the newest release on
+  its line.
 
-It leaves out what you never picked: the system packages under your app (glibc, openssl), the
-runtime Deplo builds with, tools a dependency carries inside it, and flaws nobody has fixed yet.
+It leaves out what you never picked:
+
+- the system packages under your app (glibc, openssl), including the Python packages the system
+  installs for itself;
+- the language toolchain: Go's standard library, pip, setuptools, wheel and npm itself;
+- tools a dependency carries inside it;
+- the client tools a database image bundles, such as MySQL Shell;
+- flaws nobody has fixed yet.
+
 Those come up to date with Deplo updates and new builds of the images.
 
 Every kind of app is checked:
