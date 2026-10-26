@@ -8,8 +8,9 @@ import { SlidersHorizontal, Terminal, Server, Network } from "lucide-react";
 Use this page to check firewall rules, Docker networks, and host paths.
 
 <Callout type="info" title="At a glance">
-  Open **80 and 443** to the internet. Allow **9443** from the control plane
-  to every server. Never publish **3000**, **5432** or **2375**.
+  Open **80 and 443** to the internet, on the panel's server and on every
+  server that runs apps. Nothing else: servers connect to Deplo by
+  themselves. Never publish **3000**, **3101**, **5432** or **2375**.
 </Callout>
 
 ## Ports
@@ -21,6 +22,11 @@ Use this page to check firewall rules, Docker networks, and host paths.
       default: "bound to 127.0.0.1, never the server's address",
       description: "Nothing outside the machine reaches it. Traefik serves the dashboard over HTTPS on 443 instead.",
     },
+    "3101": {
+      type: "The control plane, for its own server",
+      default: "bound to 127.0.0.1, the first free of 3101 to 3104",
+      description: "Only the agent on the same machine connects here. Every other server connects to the panel's address, like a browser.",
+    },
     "80": {
       type: "Traefik, entry point web",
       default: "published on every server that routes",
@@ -30,11 +36,6 @@ Use this page to check firewall rules, Docker networks, and host paths.
       type: "Traefik, entry point websecure",
       default: "published on every server that routes",
       description: "Must be reachable from the internet.",
-    },
-    "9443": {
-      type: "deplo-agent, gRPC over mutual TLS",
-      default: "published on every server",
-      description: "Must be reachable from the control plane.",
     },
     "5432": {
       type: "Postgres",
@@ -57,13 +58,10 @@ Use this page to check firewall rules, Docker networks, and host paths.
     `http://localhost:3000`. The generated address (like `deplo-cb00710a.deplo.site`)
     covers everything short of that: it answers over HTTPS whatever your
     domain is doing.
-  - **A green server card does not prove port 9443 is open.** The call
-    home is outbound over 443, and that is what turns it green at
-    enrolment. Opening the servers page re-dials every agent, so a
-    blocked port shows up there as `offline` - but a card painted from
-    an older reading still says online. No installer opens a firewall:
-    the agent installer only tells you when `ufw` or `firewalld` is the
-    one holding the port.
+  - **No server listens for Deplo.** An older agent still listens on
+    9443 until it updates itself, then stops on its own. Once
+    **Settings -> Deplo -> Updates** says **Everything is up to date**, a
+    firewall rule kept for 9443 can go.
 </Callout>
 
 ## Networks
@@ -138,6 +136,7 @@ pool with `size: 24` in `/etc/docker/daemon.json`.
 /var/lib/deplo-agent/               chmod 700
   agent.crt, agent.key, ca.crt      its mutual TLS identity
   bootstrap.env                     first-run enrollment, chmod 600
+  link-addresses.json               the panel's addresses, chmod 600
   traefik/                          that host's proxy stack
 /etc/systemd/system/deplo-agent.service
 /data/backups/                      the agent's managed backup store, chmod 700

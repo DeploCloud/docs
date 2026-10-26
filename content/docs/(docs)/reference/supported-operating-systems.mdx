@@ -35,7 +35,7 @@ The installer can set Docker up on these, but they are not tested choices.
 | --- | --- | --- |
 | <Os name="ubuntu">Ubuntu 22.04 LTS</Os> | Compatible | Older Docker, everything else identical. |
 | <Os name="fedora">Fedora 43 and 44</Os> | Compatible | A Fedora release goes end of life in about 13 months, so plan the upgrade. |
-| <Os name="rocky">Rocky Linux 9 and 10</Os> | Compatible | `firewalld` holds `9443` shut; the installer prints the command to open it. |
+| <Os name="rocky">Rocky Linux 9 and 10</Os> | Compatible | `firewalld` needs nothing for Deplo: the agent opens no port. |
 | <Os name="centos">CentOS Stream 9 and 10</Os> | Compatible | Same firewall note. |
 | <Os name="rhel">RHEL 9 and 10</Os> | Compatible | Same firewall note. |
 | <Os name="raspberrypi">Raspberry Pi OS 64-bit</Os> | Compatible | The 32-bit image will not work, see below. |

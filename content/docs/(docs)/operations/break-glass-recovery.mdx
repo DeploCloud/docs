@@ -101,15 +101,14 @@ plane afterwards so install commands and links use the restored address:
 deplo restart
 ```
 
-To correct a server address that was mistyped:
+To correct a mistyped server address, the one its apps' generated addresses
+are built from:
 
 ```bash
 deplo recover server-address eu-main-1 10.0.0.7
-deplo recover server-address eu-main-1 10.0.0.7 9443
 ```
 
-This skips the normal reachability check, so it also works when the panel
-cannot currently reach the server.
+It saves the address as given and checks nothing.
 
 ## From a source checkout
 

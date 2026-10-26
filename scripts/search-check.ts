@@ -26,6 +26,7 @@ const CASES: [string, ...string[]][] = [
   ["cron job", "/guides/observability/cron-jobs"],
   ["logs", "/guides/observability/logs"],
   ["add a server", "/operations/servers/add-a-server"],
+  ["server offline", "/troubleshooting/servers-and-agents#a-server-is-offline"],
   ["install", "/getting-started/install"],
   ["uninstall", "/operations/remove-a-server-or-uninstall", "/reference/installers/uninstall"],
   ["update deplo", "/operations/update"],

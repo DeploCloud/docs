@@ -20,6 +20,8 @@ The panel has two addresses:
 Changing the address also changes:
 
 - The **install command** printed for new servers.
+- The address **every server** connects to Deplo on. Connected servers learn it by
+  themselves; one that was off finds the panel again through the backup address.
 - The URL where **Git provider webhooks** deliver.
 - The hostname **passkeys are bound to**.
 - The cookie's security mode.
@@ -68,8 +70,10 @@ network in clear, and passkeys stop working entirely, so the confirm says so.
 In **Settings -> Deplo -> Advanced**, turn off **Backup address** only if you do
 not want the generated public hostname.
 
-With it off, your custom domain is the only route to the panel. If it breaks,
-restore the address from the control-plane host:
+With it off, your custom domain is the only route to the panel. Your servers forget the
+backup address by themselves, and learn it again when you turn it back on.
+
+If the domain breaks, restore the address from the control-plane host:
 
 ```bash
 # Put the panel back on the generated address (and turn the backup address on)
@@ -108,8 +112,8 @@ instance's ACME account and expiry warnings. The installer seeds it from
 
 - **Changing the address invalidates passkeys and ends sessions.** Everyone must
   register a new passkey on the new address.
-- **Re-point webhooks.** Existing servers remain enrolled; new install commands
-  use the new address.
+- **Re-point webhooks.** Existing servers remain enrolled and follow the new address
+  by themselves; new install commands use it too.
 - **An IP address is refused.** Use a hostname, or keep the generated address.
 
 ## Troubleshooting
