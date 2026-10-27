@@ -78,8 +78,12 @@ The instance sets how far back the time range can go: **Settings -> Deplo ->
 Advanced**, the **Logs** card, field **Maximum range**. Default **7** days,
 minimum 1, maximum 90. Instance admins only.
 
-Raising it does not make the host keep more. Docker rotates log files **by
-size**, not by age. For long retention, send logs to a tool built for it.
+Raising it does not make the server keep more. Each container keeps its most
+recent **100 MB** of output, stored compressed, and the oldest lines make room
+for new ones. For long retention, send logs to a tool built for it.
+
+A Compose service that sets its own `logging:` keeps it, so an expert can raise
+or lower the limit for that service.
 
 ## Restart loop protection
 
