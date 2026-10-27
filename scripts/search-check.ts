@@ -27,6 +27,7 @@ const CASES: [string, ...string[]][] = [
   ["logs", "/guides/observability/logs"],
   ["add a server", "/operations/servers/add-a-server"],
   ["server offline", "/troubleshooting/servers-and-agents#a-server-is-offline"],
+  ["reinstall its agent", "/troubleshooting/servers-and-agents#an-agent-needs-to-be-reinstalled"],
   ["install", "/getting-started/install"],
   ["uninstall", "/operations/remove-a-server-or-uninstall", "/reference/installers/uninstall"],
   ["update deplo", "/operations/update"],

@@ -65,8 +65,10 @@ log, console session and backup goes over it.
 - **Servers follow the panel's address.** Change the panel's domain and every connected server
   learns it on its own.
 
-A server with an older agent keeps working as before until its agent updates itself. It then
-switches over on its own, with nothing to do.
+**Every server needs agent `0.5.1-canary.10` or later**, the first that connects this way.
+Deplo never reaches out to a server, so it cannot update an older agent, or one that has never
+connected to Deplo by itself. That server needs its agent
+[reinstalled](/troubleshooting/servers-and-agents#an-agent-needs-to-be-reinstalled).
 
 ## What a server can be used for
 
