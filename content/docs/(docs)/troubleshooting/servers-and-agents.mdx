@@ -67,7 +67,7 @@ Find the server under **Settings -> Servers**:
 | --- | --- |
 | **Offline** | The machine is off or has no internet. Start it or reconnect it. Deplo updates its server agent once it is back, and it connects by itself |
 | **Degraded**, with `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.` | Deplo reaches the server, but the server can't reach Deplo back. Check that the machine is connected to the internet and that its network lets it reach `deplo.example.com`. The **Server cannot run apps** alert says the same |
-| `Update failed, retrying in 4 min` on its line in the **Server agents** card | Its server agent has not updated yet. Wait for the retry, or [retry it by hand](/operations/update#retry-an-update-by-hand) |
+| `Unusable - Update failed, retrying in 4 min` under its name on the Updates tab | Its server agent has not updated yet. Wait for the retry, or [retry it by hand](/operations/update#retry-an-update-by-hand) |
 | A machine you no longer use | [Remove it](/operations/remove-a-server-or-uninstall), or [leave it behind](/operations/update#leave-a-server-behind) so the update stops waiting for it |
 
 ## A server was left behind
@@ -82,8 +82,13 @@ says:
 - **After the update,** it won't work until its server agent is reinstalled. Its apps keep
   running, and its apps and settings stay in Deplo.
 
-To bring it back, [reinstall its server agent](#an-agent-needs-to-be-reinstalled) from the
-server's **Advanced** tab. It connects by itself and comes back as it was, with its apps. A
+To bring it back, reinstall its server agent:
+
+1. Open the server under **Settings -> Servers**, then **Advanced -> Install command**.
+2. Click **Reissue install command**, and run the command it shows on the server.
+
+It connects by itself and comes back as it was, with its apps. See
+[An agent needs to be reinstalled](#an-agent-needs-to-be-reinstalled) if the command fails. A
 server you no longer need can be [removed](/operations/remove-a-server-or-uninstall) instead.
 
 ## A server says warning, error, offline, or Unknown

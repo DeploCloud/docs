@@ -83,33 +83,35 @@ For example, v0.7.0 has to come after v0.6.0, and you are on v0.5.0. The Updates
 - **Deplo v0.6.0 is available**
 - `Deplo v0.7.0 has to come after v0.6.0, so Update installs v0.6.0 first.`
 
-Click **Update** as usual. Once v0.6.0 has finished getting your instance ready, the tab offers
-v0.7.0 on its own.
+Click **Update** as usual. Once v0.6.0 has finished getting ready, the tab offers v0.7.0 on its
+own.
 
 - A new install is past every update stop already.
 - Canary releases follow the same rules, so the **Canary releases** switch never skips a stop.
 
 ### Servers the update is waiting on
 
-On the update stop, Update offers nothing until every server has connected to Deplo by itself
-at least once. The tab says:
+On the update stop, Update offers nothing newer until every server has connected to Deplo by
+itself at least once. The tab says **Getting ready for the next update**, with one of:
 
-- **Getting ready for Deplo v0.7.0**
-- `Deplo v0.7.0 becomes available once v0.6.0 has finished getting this instance ready.`
+- `Deplo v0.7.0 becomes available once v0.6.0 has finished getting ready.`
+- `The next update waits until every server has connected to Deplo.`, while no newer release is
+  out yet.
 
 Below it, the tab names each server it is still waiting on:
 
 `edge-2 hasn't connected to Deplo yet. Check that it's turned on and connected to the internet.`
 
 Usually there is nothing to do. Deplo updates each server agent on its own, and the server
-connects moments later. The tab offers v0.7.0 as soon as the last server has connected.
+connects moments later. The newer release is offered as soon as the last server has connected.
 
 When a server stays on the list:
 
 - **Check that it's turned on and connected to the internet.** Once it is back, Deplo updates
   its server agent and it connects by itself.
-- **Check the Server agents card.** `Update failed, retrying in 4 min` means its server agent has
-  not updated yet. Wait for the retry, or click **Retry now**.
+- **Check its line on the Updates tab.** `Unusable - Update failed, retrying in 4 min` under
+  `edge-2 is on v0.4.0` means its server agent has not updated yet. Wait for the retry, or click
+  **Retry now**.
 - **Check Settings -> Servers.** A server that shows **Degraded** with
   `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.`
   answers Deplo but can't reach it back.
@@ -129,7 +131,7 @@ An instance admin can leave it behind:
 3. Click **Leave behind**.
 
 The row then reads `edge-2 was left behind: it needs its server agent reinstalled after the update.`,
-with **Manage** to open the server. Once no server is left waiting, the tab offers v0.7.0.
+with **Manage** to open the server. Once no server is left waiting, the newer release is offered.
 
 - **Until you update, nothing changes for it.** If it connects after all, it drops off the list
   and works normally.
@@ -156,7 +158,7 @@ A release that has to come after an update stop refuses to start on an instance 
 been through the stop. Update installs the stop first, so this is rare: it means the newer
 version was installed some other way. The reason then names the release to install first:
 
-`Deplo v0.7.0 has to come after v0.6.0. Update to v0.6.0 first and let it finish getting this instance ready.`
+`Deplo v0.7.0 has to come after v0.6.0. Update to v0.6.0 first and let it finish getting ready.`
 
 - **Nothing was changed.** A refused release stops before it touches your data.
 - **Follow what the tab offers.** It installs v0.6.0 first, or shows what v0.6.0 is still
@@ -181,13 +183,13 @@ it installs the stop and prints:
 
 ```text
 Deplo v0.7.0 has to come after v0.6.0, so this update installs v0.6.0 first.
-Update again once v0.6.0 has finished getting this instance ready.
+Update again once v0.6.0 has finished getting ready.
 ```
 
 On the stop, before it has finished, it installs nothing and prints:
 
 ```text
-Deplo v0.7.0 becomes available once v0.6.0 has finished getting this instance ready.
+Deplo v0.7.0 becomes available once v0.6.0 has finished getting ready.
 Settings > Deplo > Updates shows what it is still waiting on.
 ```
 
