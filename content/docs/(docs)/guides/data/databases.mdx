@@ -132,11 +132,18 @@ on the next deploy, and the confirmation offers **Redeploy**.
 DATABASE_URL = postgres://appuser:••••••@db-orders:5432/orders
 ```
 
-In the app's variables the row shows the engine's logo, which opens the database. The value is a
-secret, only its name can change, and **Disconnect** removes it.
+In the app's variables the row shows the engine's logo, which opens the database. Only its name
+can change. **Unlink** keeps today's value and stops following the database; **Delete** removes
+the variable.
 
-A variable written by hand that already points at a database shows the logo too. **Connect to
-orders** next to it turns it into a connected one.
+**Pasting the string connects it too.** A variable whose value is exactly the database's
+connection string, private or public, is connected when you save it, and keeps its type and its
+environments. Variables that were already there connect on their own; one saved before its
+database existed connects at the next maintenance pass, at most 12 hours later. The confirmation
+and **Activity** both say `DATABASE_URL now follows orders`.
+
+A value with anything more or less, such as `?sslmode=disable` or just the host `db-orders`, stays
+as written. It shows the logo, but it does not follow the database.
 
 In a Compose app **every service reaches it**. Exceptions: a service with `internal: true`, one
 using `network_mode:`, and one named after Deplo's own infrastructure. See
@@ -149,8 +156,9 @@ that is neither shows dimmed and cannot be connected. See
 [Network isolation](/advanced/network-isolation).
 </Callout>
 
-- **Production only.** A pull request preview does not get the variable. Point a preview at its
-  own database with a [preview override](/guides/config/environment-variables#preview-overrides).
+- **Connect is production only.** A pull request preview does not get the variable. Point a
+  preview at its own database with a
+  [preview override](/guides/config/environment-variables#preview-overrides).
 - **When the app can no longer reach the database** (one of them moved, or the public address was
   turned off), its next deploy stops and names the variable. Both sides show **Unreachable**.
 - **Deleting the database deletes the variables** that came from it. The delete dialog names the
