@@ -49,11 +49,54 @@ of its own and its generated address changed. Then [reinstall the agent](#an-age
 with a fresh install command. A panel domain, with the backup address left
 on, avoids this.
 
+## A server hasn't connected to Deplo yet
+
+While an update waits on a server, **Settings -> Deplo -> Updates** names it:
+
+`edge-2 hasn't connected to Deplo yet. Check that it's turned on and connected to the internet.`
+
+A server connects to Deplo by itself once Deplo has updated its server agent, usually moments
+after the update. Its apps keep running. Until it connects, a deploy, logs or the console on it
+are refused with:
+
+`This server can't connect to Deplo yet. Its server agent connects on its own once it is up to date: if it still can't in a few minutes, check that the server is connected to the internet.`
+
+Find the server under **Settings -> Servers**:
+
+| What you see | What to do |
+| --- | --- |
+| **Offline** | The machine is off or has no internet. Start it or reconnect it. Deplo updates its server agent once it is back, and it connects by itself |
+| **Degraded**, with `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.` | Deplo reaches the server, but the server can't reach Deplo back. Check that the machine is connected to the internet and that its network lets it reach `deplo.example.com`. The **Server cannot run apps** alert says the same |
+| `Unusable - Update failed, retrying in 4 min` under its name on the Updates tab | Its server agent has not updated yet. Wait for the retry, or [retry it by hand](/operations/update#retry-an-update-by-hand) |
+| A machine you no longer use | [Remove it](/operations/remove-a-server-or-uninstall), or [leave it behind](/operations/update#leave-a-server-behind) so the update stops waiting for it |
+
+## A server was left behind
+
+An instance admin left this server behind, so Deplo could update without it. The Updates tab
+says:
+
+`edge-2 was left behind: it needs its server agent reinstalled after the update.`
+
+- **Before the update,** nothing changes for it. If it connects by itself, it drops off the
+  list and works normally.
+- **After the update,** it won't work until its server agent is reinstalled. Its apps keep
+  running, and its apps and settings stay in Deplo.
+
+To bring it back, reinstall its server agent:
+
+1. Open the server under **Settings -> Servers**, then **Advanced -> Install command**.
+2. Click **Reissue install command**, and run the command it shows on the server.
+
+It connects by itself and comes back as it was, with its apps. See
+[An agent needs to be reinstalled](#an-agent-needs-to-be-reinstalled) if the command fails. A
+server you no longer need can be [removed](/operations/remove-a-server-or-uninstall) instead.
+
 ## A server says warning, error, offline, or Unknown
 
 | Value | Means | Where to look |
 | --- | --- | --- |
 | `warning` | The agent is up and trusted, Docker is not answering | `systemctl status docker` on the host |
+| `warning` that says it can't reach Deplo | The server answers Deplo, but can't reach Deplo back | [A server hasn't connected to Deplo yet](#a-server-hasnt-connected-to-deplo-yet) |
 | `error` | Something answered, but its agent is wrong: untrusted certificate, unsupported contract, or an application error | Re-run the install command to re-enroll |
 | `offline` | Not connected to Deplo for about 10 seconds | [A server is offline](#a-server-is-offline) |
 | `Unknown` | The stored reading is stale | Click **Refresh** |

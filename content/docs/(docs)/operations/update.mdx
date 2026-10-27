@@ -38,11 +38,12 @@ update to retry.
 
 <Step>
 ### Click the **Update** button
-It names the version it will install. Confirm, and the machine Deplo runs on pulls the
-new image and restarts the panel.
+It names the version it will install. That is not always the newest one: see
+[When Update offers an older release](#when-update-offers-an-older-release). Confirm, and
+the machine Deplo runs on pulls the new image and restarts the panel.
 
-If an **offline** server runs an agent the new version no longer supports, the confirmation
-names it: `edge-2 is offline on v0.3.0 and will be unusable until its agent updates`.
+If an **offline** server runs a server agent the new version no longer supports, the confirmation
+names it: `edge-2 is offline on server agent v0.3.0 and will be unusable until its server agent updates.`
 </Step>
 
 <Step>
@@ -61,13 +62,109 @@ Three things happen around it that are worth knowing:
 - A `pg_dump` of the panel's database lands in `/opt/deplo/backups` first, and the newest three are kept.
 - **Secrets are never rotated**, and no setting is reset.
 - If the new version does not come up, the previous one is put back automatically. The panel says
-  so instead of leaving you on a spinner.
+  so instead of leaving you on a spinner: see [An update was rolled back](#an-update-was-rolled-back).
 
 <Callout type="info" title="Your apps keep running throughout">
 They are containers on hosts, not part of the control plane. A panel that's
 down means you can't deploy or read logs for a minute, it does not mean your
 sites are down.
 </Callout>
+
+## When Update offers an older release
+
+Update can offer an older version than the newest. Some releases have to come after an earlier
+one, which gets your instance ready first: for example, it moves every server over to connecting
+to Deplo by itself. Skipping it could leave servers Deplo can no longer reach.
+
+So **Update installs the earlier release first**. That release is an **update stop**.
+
+For example, v0.7.0 has to come after v0.6.0, and you are on v0.5.0. The Updates tab says:
+
+- **Deplo v0.6.0 is available**
+- `Deplo v0.7.0 has to come after v0.6.0, so Update installs v0.6.0 first.`
+
+Click **Update** as usual. Once v0.6.0 has finished getting ready, the tab offers v0.7.0 on its
+own.
+
+- A new install is past every update stop already.
+- Canary releases follow the same rules, so the **Canary releases** switch never skips a stop.
+
+### Servers the update is waiting on
+
+On the update stop, Update offers nothing newer until every server has connected to Deplo by
+itself at least once. The tab says **Getting ready for the next update**, with one of:
+
+- `Deplo v0.7.0 becomes available once v0.6.0 has finished getting ready.`
+- `The next update waits until every server has connected to Deplo.`, while no newer release is
+  out yet.
+
+Below it, the tab names each server it is still waiting on:
+
+`edge-2 hasn't connected to Deplo yet. Check that it's turned on and connected to the internet.`
+
+Usually there is nothing to do. Deplo updates each server agent on its own, and the server
+connects moments later. The newer release is offered as soon as the last server has connected.
+
+When a server stays on the list:
+
+- **Check that it's turned on and connected to the internet.** Once it is back, Deplo updates
+  its server agent and it connects by itself.
+- **Check its line on the Updates tab.** `Unusable - Update failed, retrying in 4 min` under
+  `edge-2 is on v0.4.0` means its server agent has not updated yet. Wait for the retry, or click
+  **Retry now**.
+- **Check Settings -> Servers.** A server that shows **Degraded** with
+  `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.`
+  answers Deplo but can't reach it back.
+
+[A server hasn't connected to Deplo yet](/troubleshooting/servers-and-agents#a-server-hasnt-connected-to-deplo-yet)
+covers each case.
+
+### Leave a server behind
+
+A server you can't bring back, such as one switched off for good, would hold the update forever.
+An instance admin can leave it behind:
+
+1. On **Settings -> Deplo -> Updates**, click **Leave behind** next to the server.
+2. Read the confirmation. **Leave edge-2 behind?** says
+   `Deplo stops waiting for edge-2 to connect. Its apps and settings stay in Deplo.`
+   and warns `After the update, edge-2 won't work until its server agent is reinstalled.`
+3. Click **Leave behind**.
+
+The row then reads `edge-2 was left behind: it needs its server agent reinstalled after the update.`,
+with **Manage** to open the server. Once no server is left waiting, the newer release is offered.
+
+- **Until you update, nothing changes for it.** If it connects after all, it drops off the list
+  and works normally.
+- **After the update, it won't work until its server agent is reinstalled.** Its apps keep
+  running, and its apps and settings stay in Deplo. Reinstalling brings it back as it was:
+  see [A server was left behind](/troubleshooting/servers-and-agents#a-server-was-left-behind).
+- **There is no undo.** It only matters until the server connects.
+- **Activity records it** under your name: `Left server edge-2 behind, so Deplo can update without it`.
+- **The machine Deplo runs on can't be left behind:**
+  `hq-1 is the machine Deplo runs on, so it can't be left behind. It connects on its own once its server agent is up to date.`
+
+Removing a server takes it off the list too. See
+[Remove or uninstall](/operations/remove-a-server-or-uninstall).
+
+## An update was rolled back
+
+When a new version does not start, the previous one is put back on its own and your apps keep
+running. The Updates tab then says so, with the reason:
+
+- **The update to Deplo v0.7.0 was rolled back**
+- `The new version did not start, so Deplo went back to the one that was running.`
+
+A release that has to come after an update stop refuses to start on an instance that has not
+been through the stop. Update installs the stop first, so this is rare: it means the newer
+version was installed some other way. The reason then names the release to install first:
+
+`Deplo v0.7.0 has to come after v0.6.0. Update to v0.6.0 first and let it finish getting ready.`
+
+- **Nothing was changed.** A refused release stops before it touches your data.
+- **Follow what the tab offers.** It installs v0.6.0 first, or shows what v0.6.0 is still
+  waiting on.
+
+The notice stays until an update succeeds.
 
 ## If the panel cannot update itself
 
@@ -80,6 +177,21 @@ deplo update
 It follows the **Canary releases** switch (**Settings -> Deplo -> Advanced**): on, it takes the
 newest release, canary or not; off, only stable ones. It never installs a version older than the
 one running, so turning canaries off does not move a canary panel back to stable.
+
+It goes through [update stops](#when-update-offers-an-older-release) like the button. Below one,
+it installs the stop and prints:
+
+```text
+Deplo v0.7.0 has to come after v0.6.0, so this update installs v0.6.0 first.
+Update again once v0.6.0 has finished getting ready.
+```
+
+On the stop, before it has finished, it installs nothing and prints:
+
+```text
+Deplo v0.7.0 becomes available once v0.6.0 has finished getting ready.
+Settings > Deplo > Updates shows what it is still waiting on.
+```
 
 Without the `deplo` command, run the installer instead:
 
@@ -95,6 +207,8 @@ To pin a version rather than take the newest:
 curl -fsSL https://deplo.build/install.sh | \
   DEPLO_VERSION=0.1.0 bash
 ```
+
+A pinned version goes through update stops too.
 
 ## The agents follow on their own
 

@@ -225,7 +225,7 @@ export const EXAMPLES: {
     MonitoringSettings: "{ saveMetrics }",
     PanelHttps: "{ enabled domain certificateTrusted }",
     PanelDns: "{ host status resolved }",
-    UpdateInfo: "{ current latest updateAvailable }",
+    UpdateInfo: "{ current latest next updateAvailable }",
     DeploChangelog: "{ releases { tag name publishedAt } }",
     BasicAuthUser: "{ id username }",
     Registry: "{ id name type username }",
@@ -1392,7 +1392,7 @@ The panel publishes itself through its host's proxy, so the address it answers o
     sections: [
       { title: "Settings", ops: [q("instanceSettings"), m("setGravatarEnabled"), m("setLogMaxDays"), m("welcomeSeen"), m("finishSetup")] },
       { title: "Panel address and HTTPS", ops: [q("panelAddressImpact"), m("setPanelUrl"), m("panelDns"), m("panelHttps"), m("setPanelHttps"), m("setPanelFallback")] },
-      { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates"), m("updateDeplo"), m("setCanaryReleases")] },
+      { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates"), m("updateDeplo"), m("leaveServerBehind"), m("setCanaryReleases")] },
       { title: "Usage reports", ops: [q("usageReport"), m("setUsageReportsEnabled")] },
       {
         title: "Moving Deplo to another machine",
