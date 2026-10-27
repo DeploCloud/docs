@@ -41,10 +41,14 @@ update to retry.
 It names the version it will install. Confirm, and the machine Deplo runs on pulls the
 new image and restarts the panel.
 
-If an **offline** server runs an agent the new version no longer supports, the confirmation
-names it: `edge-2 is offline on v0.3.0 and will be unusable until its agent updates`. Deplo cannot
-update an agent older than `0.5.1-canary.10`: it has to be
-[reinstalled](#an-agent-too-old-to-connect).
+If a server could not follow the new version, the confirmation names it:
+
+- `edge-2 is offline on v0.5.1-canary.10 and will be unusable until its server agent updates.`
+  Deplo updates it on its own once it is back online.
+- `edge-3 has not connected back to Deplo yet and would be unusable until its server agent is reinstalled.`
+  The new version would never reach it.
+  [Reinstall its server agent](/troubleshooting/servers-and-agents#an-agent-needs-to-be-reinstalled)
+  before you update.
 </Step>
 
 <Step>
@@ -131,31 +135,33 @@ its row in the **Server agents** card. It is for instance admins.
 ## When a server is unusable
 
 Each Deplo version supports agents down to a minimum. A server whose agent is older than that
-is **unusable** until its agent updates:
+is **unusable** until its server agent updates:
 
 - Deploys, logs, the console, backups and every other action on it are refused with
   `This server is being updated. Deplo retries on its own; an instance admin can retry it now.`
 - **The apps on it keep running.** Nothing is stopped.
-- Instance admins see a banner across the dashboard, and the **Server unusable until it
-  updates** alert goes to your notification channels.
+- Instance admins see a banner across the dashboard, for example
+  `edge-2 is unusable until its server agent updates.`, and the **Server unusable** alert goes
+  to your notification channels.
 
 The fix is the agent update itself: automatic, or **Retry now**. An agent newer than the one
 Deplo is paired with is fine and left alone.
 
-### An agent too old to connect
+### A server agent too old to connect
 
-Deplo never connects to a server: the agent connects to Deplo. An agent older than
+Deplo never connects to a server: the server agent connects to Deplo. One older than
 `0.5.1-canary.10` cannot, so Deplo can neither reach it nor update it.
 
 - The server shows **offline**. Checking the machine does not help.
 - Its line, on the server's page and in the **Server agents** card, says
-  `Unusable - reinstall its agent`, with no **Retry now**.
-- The banner says `edge-2 is unusable until its agent is reinstalled.`, and so does the alert.
+  `Unusable - reinstall its server agent`, with no **Retry now**.
+- The banner says `edge-2 is unusable until its server agent is reinstalled.`, and so does
+  the alert.
 
 A server whose agent has never connected to Deplo by itself is in the same place, but it only
 shows **offline**.
 
-[Reinstall its agent](/troubleshooting/servers-and-agents#an-agent-needs-to-be-reinstalled).
+[Reinstall its server agent](/troubleshooting/servers-and-agents#an-agent-needs-to-be-reinstalled).
 The apps on it keep running meanwhile.
 
 ## Before you update again

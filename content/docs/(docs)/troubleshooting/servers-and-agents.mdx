@@ -34,7 +34,7 @@ back online within seconds of reaching the internet again.
 | --- | --- |
 | The machine is off, or has no internet | Start it or reconnect it. Nothing else to do |
 | The machine is on and online | Check the agent on it: `systemctl status deplo-agent`, then `journalctl -u deplo-agent -f` for why it cannot reach the panel |
-| Its update line says `Unusable - reinstall its agent` | Its agent is older than `0.5.1-canary.10`, too old to connect, and Deplo cannot update an agent it cannot reach. [Reinstall the agent](#an-agent-needs-to-be-reinstalled) and it connects on its own |
+| Its update line says `Unusable - reinstall its server agent` | Its server agent is older than `0.5.1-canary.10`, too old to connect, and Deplo cannot update an agent it cannot reach. [Reinstall the agent](#an-agent-needs-to-be-reinstalled) and it connects on its own |
 | It went offline when Deplo was updated, and stays offline | Its agent has never connected to Deplo by itself. [Reinstall the agent](#an-agent-needs-to-be-reinstalled) |
 | The panel's address changed while it was off | See [below](#a-server-was-off-while-the-panels-address-changed) |
 
