@@ -27,7 +27,7 @@ Every entity has an opaque `id` with a type prefix: `prj_` for an app, `db_` for
 - A mutation returns the entity it changed, so a client needs no second fetch.
 - Deletes and toggles return `Boolean`. Bulk operations return `Int`, the number affected.
 - A reveal returns a `String`: `revealConnection`, `rotateDatabasePassword`, `revealAppDeployHook`, `revealBasicAuthPassword`, `revealRegistrationLink`. Reveals are mutations, never queries, so nothing caches or prefetches a secret.
-- A few operations that only read are mutations anyway, because they dial a server: `serverCertificates`, `serverCertificateAccounts`, `panelHttps`, `panelDns`, `checkServerHostInfo`, `checkServerReadiness`, `testDestination`.
+- A few operations that only read are mutations anyway, because they contact a server: `serverCertificates`, `serverCertificateAccounts`, `panelHttps`, `panelDns`, `checkServerHostInfo`, `checkServerReadiness`, `testDestination`.
 
 <Callout type="info" title="A verdict is a return value, not an error">
   Where an operation asks another system whether something works, the answer is in the payload and a failure resolves normally: `testDestination` answers `report.ok: false`, `checkServerHealth` answers a server with `status: error`. A client that treats "the request succeeded" as "the thing it tested works" reports success over a failed check.

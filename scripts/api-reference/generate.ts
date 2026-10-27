@@ -261,7 +261,8 @@ function example(kind: OpKind, field: GraphQLField<unknown, unknown>): string {
 function argRows(args: readonly GraphQLArgument[]): string[] {
   const rows: string[] = [];
   for (const a of args) {
-    rows.push(`| \`${a.name}\` | ${typeRef(a.type)} | ${cell(a.description ?? "")} |`);
+    const dep = a.deprecationReason ? `Deprecated. ${a.deprecationReason}` : "";
+    rows.push(`| \`${a.name}\` | ${typeRef(a.type)} | ${cell([a.description ?? "", dep].filter(Boolean).join(" "))} |`);
     const named = getNamedType(a.type);
     if (isInputObjectType(named)) {
       for (const f of Object.values(named.getFields())) {
