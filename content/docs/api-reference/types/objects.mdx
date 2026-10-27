@@ -769,7 +769,6 @@ One of the old Deplo's servers, as a move would take it. It stays with the old D
 | `id` | `String` |  |
 | `isPanelHost` | `Boolean` | The machine the old Deplo itself runs on. |
 | `name` | `String` |  |
-| `port` | `Int` |  |
 | `problem` | `String` | What keeps the move from starting because of this server, in one sentence. |
 | `reachable` | `Boolean` | The old Deplo reached it just now. Its apps' data can only be copied while it does. |
 | `role` | [`DeploMoveServerRole`](/api-reference/types/enums#deplomoveserverrole) |  |
@@ -1058,8 +1057,9 @@ One server whose agent is older than the fleet version.
 | --- | --- | --- |
 | `id` | `ID` |  |
 | `name` | `String` |  |
+| `reach` | [`AgentReach`](/api-reference/types/enums#agentreach) |  |
 | `update` | [`ServerAgentUpdate`](/api-reference/types/objects#serveragentupdate) |  |
-| `usable` | `Boolean` | False when the agent is older than `FleetAgents.minimum`: the server refuses everything until it updates. |
+| `usable` | `Boolean` | False when the agent is older than `FleetAgents.minimum`: the server refuses everything until it updates, or, too old to link, until it is reinstalled (`reach`). |
 | `version` | `String` |  |
 
 ### FleetAgents
@@ -1070,7 +1070,7 @@ How far the server agents are from the agent this Deplo is pinned to. Deplo upda
 | --- | --- | --- |
 | `behind` | [`[FleetAgent!]`](/api-reference/types/objects#fleetagent) |  |
 | `expected` | `String` | The agent version this Deplo installs everywhere. |
-| `minimum` | `String` | The oldest agent this Deplo still talks to. Older is unusable until it updates. |
+| `minimum` | `String` | The oldest agent this Deplo still talks to. An older one is unusable until it updates, or, too old to link, until its server agent is reinstalled. |
 | `pausedBy` | `String` | The server that took a new agent and did not come back on it. Every other update waits until it recovers. |
 | `total` | `Int` |  |
 | `updating` | `Boolean` | Deplo is still working on it: some server behind `expected` has not used up its 24 hours of retries. |
@@ -1508,7 +1508,7 @@ One machine behind the source instance. The FIRST entry is always the host the s
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `cloudflare` | `Boolean` | That address resolves into Cloudflare's proxy ranges, so it answers as the proxy: no agent can ever be dialled on it, and the machine's own IP has to be given instead. |
+| `cloudflare` | `Boolean` | That address resolves into Cloudflare's proxy ranges, so it names the proxy rather than the machine. A server's address is where its apps' domains point, so the machine's own IP has to be given instead. |
 | `deploServerId` | `String` | The Deplo server at that same address, or null when Deplo has no agent there. Data cannot be copied off a machine Deplo cannot reach: a volume is read by the agent ON its host, and agents cannot dial each other. |
 | `deploServerName` | `String` |  |
 | `deploServerOnline` | `Boolean` | Whether that server's agent answers. A row a failed attempt left behind sits at the same address and is matched all the same, so this - not the id - is what says the machine is ready to be read. |
@@ -2180,7 +2180,7 @@ A connected host running deployments (reached via its agent).
 | Field | Type | Description |
 | --- | --- | --- |
 | `agentUpdate` | [`ServerAgentUpdate`](/api-reference/types/objects#serveragentupdate) | Deplo's update of this server's agent, while one is in flight or has failed. Null otherwise. Requires instanceAdmin. |
-| `agentUsable` | `Boolean` | Whether this Deplo talks to the server's agent at all. False when the agent is older than the minimum this version of Deplo supports: everything on the server is refused until the agent updates, though its apps keep running. True while it is not provisioned yet. |
+| `agentUsable` | `Boolean` | Whether this Deplo talks to the server's agent at all. False when the agent is older than the minimum this version of Deplo supports: everything on the server is refused until the agent updates, or, too old to link, until it is reinstalled, though its apps keep running. True while it is not provisioned yet. |
 | `agentVersion` | `String` | The agent binary version last reported by this server on its last Hello. Null until the server's agent has called home and been provisioned. |
 | `allTeams` | `Boolean` | True (the default) when every team may target this server. False restricts it to `teams` (Settings -> Servers -> Team access). |
 | `buildFallback` | `Boolean` | Whether this host compiles for an app whose own build server could not be reached. On by default for the Deplo host and off for every other server, until setServerBuildFallback says otherwise. An app opts out of the whole chain with setAppBuildServer's buildFallback. |
@@ -2450,12 +2450,13 @@ This Deplo's side of a Deplo move, as the old Deplo.
 
 ### StrandedServer
 
-An offline server whose agent the offered Deplo version would refuse.
+A server the offered Deplo version could not use: offline with an agent it would refuse, or not linked to this Deplo when that version reaches servers only over their link.
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `id` | `ID` |  |
 | `name` | `String` |  |
+| `reinstall` | `Boolean` | True when the offered version could never reach it: its agent is too old to link, or it has not linked to this Deplo since it started and that version contacts servers no other way. Only reinstalling its server agent brings it back. False for an offline server that comes back once its server agent updates. |
 | `version` | `String` |  |
 
 ### Takeover
@@ -2573,7 +2574,7 @@ Result of checking the upstream GitHub repository for a newer Deplo release.
 | `latest` | `String` |  |
 | `name` | `String` |  |
 | `publishedAt` | `String` |  |
-| `strandedServers` | [`[StrandedServer!]`](/api-reference/types/objects#strandedserver) | Offline servers whose agent is older than the minimum the `latest` Deplo supports. They cannot update while offline, so they stay unusable until they come back and their agent updates. Empty when there is no update or the release does not say. |
+| `strandedServers` | [`[StrandedServer!]`](/api-reference/types/objects#strandedserver) | Servers the `latest` Deplo could not use. Offline servers whose agent is older than the minimum it supports: they stay unusable until they come back and their server agent updates, or, too old to link, is reinstalled. And, when `latest` reaches servers only over their link and this Deplo still contacts them directly, every server that has not linked to this Deplo since it started (`reinstall`). Empty when there is no update or the release does not say. |
 | `updateAvailable` | `Boolean` |  |
 | `url` | `String` |  |
 

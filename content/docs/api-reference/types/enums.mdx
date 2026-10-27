@@ -47,6 +47,16 @@ What a per-node capability set is attached to.
 | `ipv4` |  |
 | `ipv6` |  |
 
+### AgentReach
+
+What this Deplo can do with a server's agent.
+
+| Value | Description |
+| --- | --- |
+| `reinstall` | Too old to link, it never reaches Deplo: only reinstalling its server agent brings it back. |
+| `updatable` | It refuses it until it updates, which Deplo does on its own. |
+| `usable` | It talks to it. |
+
 ### AppStatus
 
 | Value | Description |
