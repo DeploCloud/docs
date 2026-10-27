@@ -106,29 +106,63 @@ Click **Create database**.
 </Step>
 </Steps>
 
-Then copy the connection string into the app that needs it, as an environment variable of type
-**Secret**.
+Then connect it to the app that needs it.
 
 ## Connect an app to it
 
-An app reaches a database **in the same environment and on the same server** by name. No port,
-firewall rule or IP is needed.
+Connecting gives the app a variable holding the database's connection string. Deplo writes the
+value again at every deploy, so a password rotation or a new public address needs no edit.
+
+Two places do it:
+
+- The database's **Overview**: **Connected apps**, then **Connect app**.
+- The app's **Environment** tab: **Add**, then the **Database** tab.
+
+Pick the app or the database, keep or change the variable name, and click **Connect**. It applies
+on the next deploy, and the confirmation offers **Redeploy**.
+
+| Engine | Variable |
+| --- | --- |
+| Postgres, MySQL, MariaDB | `DATABASE_URL` |
+| MongoDB | `MONGODB_URI` |
+| Redis | `REDIS_URL` |
+| ClickHouse | `CLICKHOUSE_URL` |
 
 ```
 DATABASE_URL = postgres://appuser:••••••@db-orders:5432/orders
 ```
 
-Set it in the app's **Environment** tab as a **Secret**, then redeploy.
+In the app's variables the row shows the engine's logo, which opens the database. Only its name
+can change. **Unlink** keeps today's value and stops following the database; **Delete** removes
+the variable.
+
+**Pasting the string connects it too.** A variable whose value is exactly the database's
+connection string, private or public, is connected when you save it, and keeps its type and its
+environments. Variables that were already there connect on their own; one saved before its
+database existed connects at the next maintenance pass, at most 12 hours later. The confirmation
+and **Activity** both say `DATABASE_URL now follows orders`.
+
+A value with anything more or less, such as `?sslmode=disable` or just the host `db-orders`, stays
+as written. It shows the logo, but it does not follow the database.
 
 In a Compose app **every service reaches it**. Exceptions: a service with `internal: true`, one
 using `network_mode:`, and one named after Deplo's own infrastructure. See
 [Compose apps](/advanced/compose-apps).
 
 <Callout type="warn" title="Same environment, same server">
-An app in Production does not reach a database in Staging, and no app reaches a database on
-another server. The result is `cannot resolve host`. A database on another server needs a
-published port. See [Network isolation](/advanced/network-isolation).
+By name, an app reaches a database only in the same environment and on the same server. Anywhere
+else the connection uses the database's public address, so turn on **Public** first. A database
+that is neither shows dimmed and cannot be connected. See
+[Network isolation](/advanced/network-isolation).
 </Callout>
+
+- **Connect is production only.** A pull request preview does not get the variable. Point a
+  preview at its own database with a
+  [preview override](/guides/config/environment-variables#preview-overrides).
+- **When the app can no longer reach the database** (one of them moved, or the public address was
+  turned off), its next deploy stops and names the variable. Both sides show **Unreachable**.
+- **Deleting the database deletes the variables** that came from it. The delete dialog names the
+  apps.
 
 ## The overview
 
@@ -266,7 +300,7 @@ commands inside the container.
 - **`Host port` opens the database to anything that can reach the server.**
 - **Capabilities:** `control_databases` for start, stop and restart, `configure_databases` for
   settings, `delete_databases` for Rebuild and Delete, `move_databases` to hand it to another
-  team.
+  team. Connecting it to an app needs `manage_env` and `reveal_secrets` on that app.
 - **Version upgrades are not migrations.** A major Postgres upgrade refuses to start on older
   data. Dump, rebuild, restore.
 
@@ -275,7 +309,8 @@ commands inside the container.
 | Symptom | What to check |
 | --- | --- |
 | The app cannot resolve the database name | They are in different Environments, or on different servers. |
-| Authentication fails after a rotate | The app still has the old string. Update the variable and redeploy. |
+| Authentication fails after a rotate | The app runs with the old password until it redeploys. A connected variable takes the new one on that deploy; a variable written by hand needs updating first. |
+| A deploy stops with "DATABASE_URL comes from orders, which runs on another server" | The app cannot reach the connected database. Move one of them, or turn on the database's public address. |
 | Stuck in provisioning | The agent could not pull the image, or the server is unreachable. Check the server's health. |
 | `Data` reads `-` | That server's agent is too old. Update it. |
 
