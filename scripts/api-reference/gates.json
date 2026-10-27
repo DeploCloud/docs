@@ -791,6 +791,9 @@
   "cap": "create_projects",
   "orInstanceAdmin": false
  },
+ "Mutation.leaveServerBehind": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.login": {
   "kind": "none"
  },

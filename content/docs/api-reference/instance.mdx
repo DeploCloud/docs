@@ -247,6 +247,7 @@ query {
   updateInfo {
     current
     latest
+    next
     updateAvailable
   }
 }
@@ -281,6 +282,7 @@ mutation {
   checkForUpdates {
     current
     latest
+    next
     updateAvailable
   }
 }
@@ -290,13 +292,34 @@ mutation {
 
 Instance admin only. Returns [`DeploUpdateStarted`](/api-reference/types/objects#deploupdatestarted).
 
-Update this instance to the newest release: the agent on the machine Deplo runs on re-runs the installer.
+Update this instance to `updateInfo.next`: the newest release, or the update stop it has to pass first. The server agent on the machine Deplo runs on re-runs the installer.
 
 ```graphql
 mutation {
   updateDeplo {
     logPath
     version
+  }
+}
+```
+
+### `leaveServerBehind`
+
+Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
+
+Let the update stop pass without a server that has not connected to Deplo, and return the update decision after it. The server keeps its apps and settings, and needs its server agent reinstalled once Deplo updates past the stop. Refused for the machine Deplo runs on.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  leaveServerBehind(id: "srv_9f1c2ab7d3e4f5a6") {
+    current
+    latest
+    next
+    updateAvailable
   }
 }
 ```
@@ -316,6 +339,7 @@ mutation {
   setCanaryReleases(enabled: true) {
     current
     latest
+    next
     updateAvailable
   }
 }
