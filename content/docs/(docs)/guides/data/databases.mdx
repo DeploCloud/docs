@@ -145,6 +145,19 @@ and **Activity** both say `DATABASE_URL now follows orders`.
 A value with anything more or less, such as `?sslmode=disable` or just the host `db-orders`, stays
 as written. It shows the logo, but it does not follow the database.
 
+The start of the string can be spelled the way your driver wants it, and the app keeps getting that
+spelling:
+
+- `postgresql://` instead of `postgres://`
+- `mariadb://` instead of `mysql://`
+- a driver, such as `postgresql+asyncpg://` or `mysql+pymysql://`
+
+**A build that reads the database.** A build doesn't run on the app's private network, so a
+framework that queries the database while it builds, such as Next.js generating its pages, can't
+reach `db-orders`. When the database has a **Host port**, the build gets its public address and the
+running app keeps the private one. Without a host port the build gets the private address too, and
+a Compose app's build always does.
+
 In a Compose app **every service reaches it**. Exceptions: a service with `internal: true`, one
 using `network_mode:`, and one named after Deplo's own infrastructure. See
 [Compose apps](/advanced/compose-apps).
