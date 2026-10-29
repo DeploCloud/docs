@@ -56,6 +56,12 @@ The generated address (like `deplo-cb00710a.deplo.site`) keeps working throughou
 stays reachable while DNS moves. See
 [ports, networks, and files](/reference/ports-networks-and-files).
 
+## Behind a router: Cloudflare Tunnel
+
+If the internet cannot reach this server, for example behind a home or office
+router, serve the panel through a [Cloudflare Tunnel](/operations/cloudflare-tunnel)
+instead. While it is on, the address is changed from the tunnel's setting.
+
 ## HTTPS is not optional
 
 There is no switch to serve the panel on plain http from the General tab, and no

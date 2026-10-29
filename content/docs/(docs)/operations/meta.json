@@ -10,6 +10,7 @@
     "instance-administration",
     "anonymous-usage-statistics",
     "panel-address-and-certificates",
+    "cloudflare-tunnel",
     "remove-a-server-or-uninstall",
     "servers"
   ]
