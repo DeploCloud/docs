@@ -82,7 +82,6 @@ export const INTS: Record<string, number> = {
   prNumber: 42,
   port: 5432,
   ports: 5432,
-  agentPort: 7443,
   retentionCount: 7,
 };
 
@@ -1317,7 +1316,7 @@ A server's \`role\` is \`everything\`, \`build\`, \`storage\` or \`import\`. The
       },
       {
         title: "Certificates",
-        intro: `A host's own TLS certificates, installed by hand outside Let's Encrypt. They live in that host's proxy, Deplo keeps no copy, and the private key is write-only. A domain uses one by setting \`certProvider: custom\`. The Let's Encrypt account email is per host too. All of these are mutations even where they only read, because they dial a server.`,
+        intro: `A host's own TLS certificates, installed by hand outside Let's Encrypt. They live in that host's proxy, Deplo keeps no copy, and the private key is write-only. A domain uses one by setting \`certProvider: custom\`. The Let's Encrypt account email is per host too. All of these are mutations even where they only read, because they contact a server.`,
         ops: [m("serverCertificates"), m("addServerCertificate"), m("removeServerCertificate"), m("serverCertificateAccounts"), m("setCertificateEmail")],
       },
     ],

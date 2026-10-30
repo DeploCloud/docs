@@ -43,7 +43,7 @@ It names the version it will install. That is not always the newest one: see
 the machine Deplo runs on pulls the new image and restarts the panel.
 
 If an **offline** server runs a server agent the new version no longer supports, the confirmation
-names it: `edge-2 is offline on server agent v0.3.0 and will be unusable until its server agent updates.`
+names it: `edge-2 is offline on server agent v0.5.1 and will be unusable until its server agent updates.`
 </Step>
 
 <Step>
@@ -89,9 +89,15 @@ own.
 - A new install is past every update stop already.
 - Canary releases follow the same rules, so the **Canary releases** switch never skips a stop.
 
+## Updating through v0.6.0
+
+v0.6.0 is the first update stop. From v0.7.0 on, Deplo never calls a server: every server
+agent connects to Deplo, and one that used to open a port closes it once it has connected.
+v0.6.0 makes sure each server has connected that way before Deplo goes past it.
+
 ### Servers the update is waiting on
 
-On the update stop, Update offers nothing newer until every server has connected to Deplo by
+On v0.6.0, Update offers nothing newer until every server has connected to Deplo by
 itself at least once. The tab says **Getting ready for the next update**, with one of:
 
 - `Deplo v0.7.0 becomes available once v0.6.0 has finished getting ready.`
@@ -105,6 +111,10 @@ Below it, the tab names each server it is still waiting on:
 Usually there is nothing to do. Deplo updates each server agent on its own, and the server
 connects moments later. The newer release is offered as soon as the last server has connected.
 
+Its apps keep running. Until it connects, a deploy, logs or the console on it are refused with:
+
+`This server can't connect to Deplo yet. Its server agent connects on its own once it is up to date: if it still can't in a few minutes, check that the server is connected to the internet.`
+
 When a server stays on the list:
 
 - **Check that it's turned on and connected to the internet.** Once it is back, Deplo updates
@@ -114,15 +124,13 @@ When a server stays on the list:
   **Retry now**.
 - **Check Settings -> Servers.** A server that shows **Degraded** with
   `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.`
-  answers Deplo but can't reach it back.
-
-[A server hasn't connected to Deplo yet](/troubleshooting/servers-and-agents#a-server-hasnt-connected-to-deplo-yet)
-covers each case.
+  answers Deplo but can't reach it back. Check that its network lets it reach
+  `deplo.example.com`.
 
 ### Leave a server behind
 
 A server you can't bring back, such as one switched off for good, would hold the update forever.
-An instance admin can leave it behind:
+On v0.6.0, and only there, an instance admin can leave it behind:
 
 1. On **Settings -> Deplo -> Updates**, click **Leave behind** next to the server.
 2. Read the confirmation. **Leave edge-2 behind?** says
@@ -135,9 +143,9 @@ with **Manage** to open the server. Once no server is left waiting, the newer re
 
 - **Until you update, nothing changes for it.** If it connects after all, it drops off the list
   and works normally.
-- **After the update, it won't work until its server agent is reinstalled.** Its apps keep
-  running, and its apps and settings stay in Deplo. Reinstalling brings it back as it was:
-  see [A server was left behind](/troubleshooting/servers-and-agents#a-server-was-left-behind).
+- **After the update past v0.6.0, it is unusable.** Its apps keep running, and its apps and
+  settings stay in Deplo. Reinstalling its server agent brings it back as it was: see
+  [A server was left behind](/troubleshooting/servers-and-agents#a-server-was-left-behind).
 - **There is no undo.** It only matters until the server connects.
 - **Activity records it** under your name: `Left server edge-2 behind, so Deplo can update without it`.
 - **The machine Deplo runs on can't be left behind:**
@@ -229,6 +237,9 @@ for **24 hours** from the first failure. The card shows each one, for example
 If a server takes the new agent and **does not come back**, Deplo stops updating the rest
 until that one recovers. A broken agent release reaches one server, not all of them.
 
+A server that hasn't connected to Deplo, or can't, is skipped without holding up the others:
+no update reaches it. See [When a server is unusable](#when-a-server-is-unusable).
+
 ### Retry an update by hand
 
 The **Retry now** button appears only once an update has failed, on the server's page and on
@@ -242,17 +253,49 @@ its row in the **Server agents** card. It is for instance admins.
 
 ## When a server is unusable
 
-Each Deplo version supports agents down to a minimum. A server whose agent is older than that
-is **unusable** until its agent updates:
+A server Deplo can't work with is **unusable**. Deploys, logs, the console, backups and every
+other action on it are refused, but **the apps on it keep running**, and its apps and settings
+stay in Deplo.
 
-- Deploys, logs, the console, backups and every other action on it are refused with
-  `This server is being updated. Deplo retries on its own; an instance admin can retry it now.`
-- **The apps on it keep running.** Nothing is stopped.
-- Instance admins see a banner across the dashboard, and the **Server unusable until it
-  updates** alert goes to your notification channels.
+On the server's page, the line under its server agent says which case it is. So does its line
+on the Updates tab, while the server is behind. Instance admins also see a banner across the
+dashboard:
 
-The fix is the agent update itself: automatic, or **Retry now**. An agent newer than the one
-Deplo is paired with is fine and left alone.
+| Its line | Banner | What brings it back |
+| --- | --- | --- |
+| `Unusable - Deplo is updating it`, or how the update stands, like `Unusable - Update failed, retrying in 4 min` | `edge-2 is unusable until its server agent updates.` | The update: automatic, or **Retry now** |
+| `Unusable - it hasn't connected to Deplo yet` | `edge-2 hasn't connected to Deplo yet.` | The server connecting by itself. See [A server hasn't connected to Deplo yet](/troubleshooting/servers-and-agents#a-server-hasnt-connected-to-deplo-yet) |
+| `Unusable - reinstall its server agent` | `edge-2 is unusable until its server agent is reinstalled.` | [Reinstalling its server agent](/troubleshooting/servers-and-agents#a-server-agent-needs-to-be-reinstalled) |
+
+With several servers, the banner counts them, for example
+`3 servers are unusable until their server agents update or are reinstalled.`
+
+With more than three servers behind, **Read more** on the Updates tab lists them all. When
+Deplo can reach none of them, the list says
+`Deplo can't reach these servers to update them. Each line says what brings one back.`
+
+### Its server agent is older than Deplo supports
+
+Each Deplo version supports server agents down to a minimum. Below it, every action is refused
+with `This server is being updated. Deplo retries on its own; an instance admin can retry it now.`
+If the update fails, the **Server unusable until it updates** alert goes to your notification
+channels.
+
+An agent newer than the one Deplo is paired with is fine and left alone.
+
+### A server agent too old to connect
+
+Deplo never calls a server: the server agent connects to Deplo. One older than
+`0.5.1-canary.10` can't, so Deplo can neither reach it nor update it.
+
+- Its card shows **Offline**, and every action is refused with
+  `This server can't be used until its server agent is reinstalled. An instance admin can do it from the server's Advanced tab.`
+- Its badge says **Agent too old**, and its line says `Unusable - reinstall its server agent`,
+  with no **Retry now**.
+
+A server [left behind](#leave-a-server-behind) while updating through v0.6.0 can end up the
+same way. [Reinstall its server agent](/troubleshooting/servers-and-agents#a-server-agent-needs-to-be-reinstalled)
+and it comes back as it was.
 
 ## Before you update again
 

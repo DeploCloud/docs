@@ -151,8 +151,9 @@ separate setting. See [Access](/operations/servers/access).
 
 - **Stuck on provisioning**: the agent never called home. On the server,
   check `systemctl status deplo-agent` and `journalctl -u deplo-agent -f`.
-- **Offline**: the server is not connected to Deplo. Check that the
-  machine is on and connected to the internet. See
+- **Offline**: the server is not connected to Deplo. Its card says what to
+  check: that the machine is on and connected to the internet, or that it
+  can reach Deplo at the panel's address. See
   [A server is offline](/troubleshooting/servers-and-agents#a-server-is-offline).
 - **`Refusing to run an unverified binary`**: the download did not match
   its checksum. Retry; if it persists, something is intercepting the
