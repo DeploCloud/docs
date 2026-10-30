@@ -307,7 +307,9 @@ mutation {
 
 Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
 
-Let the update stop pass without a server that has not connected to Deplo, and return the update decision after it. The server keeps its apps and settings, and needs its server agent reinstalled once Deplo updates past the stop. Refused for the machine Deplo runs on.
+Refused: no update stop waits on servers any more, so there is no server to leave behind.
+
+**Deprecated.** Always refused: no update stop waits on servers any more (ADR-0041). Goes in the next release.
 
 | Argument | Type | Description |
 | --- | --- | --- |

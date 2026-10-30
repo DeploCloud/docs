@@ -25,17 +25,19 @@ journalctl -u deplo-agent -f
 ## A server is offline
 
 `offline` means the server has not been connected to Deplo for about 10
-seconds. Its card says `Check that the machine is on and connected to the internet.`
+seconds. Deplo never calls a server, so there is no port to open: the server
+connects to Deplo by itself, and is back online within seconds of reaching
+the internet again.
 
-There is no port to open. The server connects to Deplo by itself, and is
-back online within seconds of reaching the internet again.
+Its card says what brings it back:
 
-| What you see | What to do |
+| Its card says | What to do |
 | --- | --- |
-| The machine is off, or has no internet | Start it or reconnect it. Nothing else to do |
-| The machine is on and online | Check the agent on it: `systemctl status deplo-agent`, then `journalctl -u deplo-agent -f` for why it cannot reach the panel |
-| It was already offline before Deplo's last update | Its agent is too old to connect by itself, and Deplo cannot update an agent it cannot reach. [Reinstall the agent](#an-agent-needs-to-be-reinstalled) and it connects on its own |
-| The panel's address changed while it was off | See [below](#a-server-was-off-while-the-panels-address-changed) |
+| `Check that the machine is on and connected to the internet.` | Start the machine or reconnect it. If it is on and online, check the server agent on it: `systemctl status deplo-agent`, then `journalctl -u deplo-agent -f` for why it can't reach Deplo |
+| `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.` | It has never connected since it was added. See [A server hasn't connected to Deplo yet](#a-server-hasnt-connected-to-deplo-yet) |
+| `This server can't be used until its server agent is reinstalled. An instance admin can do it from the server's Advanced tab.` | See [A server agent needs to be reinstalled](#a-server-agent-needs-to-be-reinstalled) |
+
+If the panel's address changed while it was off, see [below](#a-server-was-off-while-the-panels-address-changed).
 
 ## A server was off while the panel's address changed
 
@@ -45,58 +47,59 @@ the time still knows the panel's backup address, the generated one like
 
 It cannot find the panel when neither address it knows works any more: the
 domain changed while the backup address was off, or the panel has no domain
-of its own and its generated address changed. Then [reinstall the agent](#an-agent-needs-to-be-reinstalled)
+of its own and its generated address changed. Then [reinstall its server agent](#a-server-agent-needs-to-be-reinstalled)
 with a fresh install command. A panel domain, with the backup address left
 on, avoids this.
 
 ## A server hasn't connected to Deplo yet
 
-While an update waits on a server, **Settings -> Deplo -> Updates** names it:
+The server was added and its server agent enrolled, but it has never connected to Deplo since.
+Deplo never calls a server, so nothing reaches it: it is **unusable** until it connects. Its
+apps keep running.
 
-`edge-2 hasn't connected to Deplo yet. Check that it's turned on and connected to the internet.`
+- Its card shows **Offline**:
+  `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.`
+- On its page, the server agent line says `Unusable - it hasn't connected to Deplo yet`.
+- Instance admins see a banner: `edge-2 hasn't connected to Deplo yet.`
 
-A server connects to Deplo by itself once Deplo has updated its server agent, usually moments
-after the update. Its apps keep running. Until it connects, a deploy, logs or the console on it
-are refused with:
-
-`This server can't connect to Deplo yet. Its server agent connects on its own once it is up to date: if it still can't in a few minutes, check that the server is connected to the internet.`
-
-Find the server under **Settings -> Servers**:
+It connects by itself as soon as it can reach Deplo. Nothing has to be reinstalled:
 
 | What you see | What to do |
 | --- | --- |
-| **Offline** | The machine is off or has no internet. Start it or reconnect it. Deplo updates its server agent once it is back, and it connects by itself |
-| **Degraded**, with `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.` | Deplo reaches the server, but the server can't reach Deplo back. Check that the machine is connected to the internet and that its network lets it reach `deplo.example.com`. The **Server cannot run apps** alert says the same |
-| `Unusable - Update failed, retrying in 4 min` under its name on the Updates tab | Its server agent has not updated yet. Wait for the retry, or [retry it by hand](/operations/update#retry-an-update-by-hand) |
-| A machine you no longer use | [Remove it](/operations/remove-a-server-or-uninstall), or [leave it behind](/operations/update#leave-a-server-behind) so the update stops waiting for it |
+| The machine is off, or has no internet | Start it or reconnect it |
+| It is online, but its network only lets some sites through | Let it reach `https://deplo.example.com`, like a browser would. A company proxy or an outbound firewall rule is the usual cause |
+| Still offline | Check the server agent on it: `systemctl status deplo-agent`, then `journalctl -u deplo-agent -f` for why it can't reach Deplo |
+
+A server you no longer use can be [removed](/operations/remove-a-server-or-uninstall) instead.
+
+While Deplo is on v0.6.0, the Updates tab also lists these servers, and the next update waits
+for them: see [Updating through v0.6.0](/operations/update#updating-through-v060).
 
 ## A server was left behind
 
-An instance admin left this server behind, so Deplo could update without it. The Updates tab
-says:
+An instance admin left this server behind while Deplo updated through v0.6.0, so the update
+could go ahead without it.
 
-`edge-2 was left behind: it needs its server agent reinstalled after the update.`
+- **Before the update past v0.6.0,** nothing changes for it. If it connects by itself, it
+  drops off the list and works normally.
+- **After that update,** it is **unusable** until it connects. Its apps keep running, and its
+  apps and settings stay in Deplo.
 
-- **Before the update,** nothing changes for it. If it connects by itself, it drops off the
-  list and works normally.
-- **After the update,** it won't work until its server agent is reinstalled. Its apps keep
-  running, and its apps and settings stay in Deplo.
+Its line on its page says which case it is:
 
-To bring it back, reinstall its server agent:
+- `Unusable - reinstall its server agent`: only a reinstall brings it back. See
+  [A server agent needs to be reinstalled](#a-server-agent-needs-to-be-reinstalled).
+- `Unusable - it hasn't connected to Deplo yet`: its server agent can still connect by itself.
+  See [A server hasn't connected to Deplo yet](#a-server-hasnt-connected-to-deplo-yet).
 
-1. Open the server under **Settings -> Servers**, then **Advanced -> Install command**.
-2. Click **Reissue install command**, and run the command it shows on the server.
-
-It connects by itself and comes back as it was, with its apps. See
-[An agent needs to be reinstalled](#an-agent-needs-to-be-reinstalled) if the command fails. A
-server you no longer need can be [removed](/operations/remove-a-server-or-uninstall) instead.
+Reinstalling its server agent brings it back either way, as it was, with its apps. A server you
+no longer need can be [removed](/operations/remove-a-server-or-uninstall) instead.
 
 ## A server says warning, error, offline, or Unknown
 
 | Value | Means | Where to look |
 | --- | --- | --- |
 | `warning` | The agent is up and trusted, Docker is not answering | `systemctl status docker` on the host |
-| `warning` that says it can't reach Deplo | The server answers Deplo, but can't reach Deplo back | [A server hasn't connected to Deplo yet](#a-server-hasnt-connected-to-deplo-yet) |
 | `error` | Something answered, but its agent is wrong: untrusted certificate, unsupported contract, or an application error | Re-run the install command to re-enroll |
 | `offline` | Not connected to Deplo for about 10 seconds | [A server is offline](#a-server-is-offline) |
 | `Unknown` | The stored reading is stale | Click **Refresh** |
@@ -146,11 +149,28 @@ Restore outbound access from the panel's machine, then run the command again.
 That address is for the machine running the panel. Paste it there only;
 another server needs the panel's public address.
 
-## An agent needs to be reinstalled
+## A server agent needs to be reinstalled
 
-Run a fresh install command from the server's **Advanced** tab. It clears the
-old certificates, so an expired or already-used token leaves the agent with
-`unknown-token`. Issue a new token from the server's menu first.
+The server is **unusable**, and nothing Deplo does can bring it back:
+
+- Its card shows **Offline**:
+  `This server can't be used until its server agent is reinstalled. An instance admin can do it from the server's Advanced tab.`
+- On its page, the server agent line says `Unusable - reinstall its server agent`, with no
+  **Retry now**.
+- Instance admins see a banner: `edge-2 is unusable until its server agent is reinstalled.`
+
+Either its server agent is older than `0.5.1-canary.10`, too old to connect to Deplo, or it was
+[left behind](#a-server-was-left-behind) while Deplo updated through v0.6.0. Its apps keep
+running, and its apps and settings stay in Deplo.
+
+An instance admin reinstalls it:
+
+1. Open the server under **Settings -> Servers**, then **Advanced -> Install command**.
+2. Click **Reissue install command**, and run the command it shows on the server.
+
+The server agent connects to Deplo by itself and the server comes back as it was, with its
+apps. Always reissue first: the installer clears the old certificates, so a spent or expired
+token leaves the server agent with `unknown-token`.
 
 ## A server is permanently gone
 

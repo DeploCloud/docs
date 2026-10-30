@@ -64,9 +64,15 @@ log, console session and backup goes over it.
   itself within seconds.
 - **Servers follow the panel's address.** Change the panel's domain and every connected server
   learns it on its own.
+- **Deplo never calls a server.** It only answers the connection the server agent opened.
+- **No server keeps a port open.** A new server agent opens none. One installed by an older
+  Deplo closes its old port for good once it has connected.
 
-A server with an older agent keeps working as before until its agent updates itself. It then
-switches over on its own, with nothing to do.
+**Every server agent must be `0.5.1-canary.10` or later**, the first that connects this way.
+An older one can't reach Deplo, and Deplo can't reach it to update it. That server is
+**unusable** until its server agent is
+[reinstalled](/troubleshooting/servers-and-agents#a-server-agent-needs-to-be-reinstalled). Its
+apps keep running, and its apps and settings stay in Deplo.
 
 ## What a server can be used for
 
@@ -90,7 +96,7 @@ contact and has five values:
       type: "string",
     },
     warning: {
-      description: "The server agent answered, but Docker is not, or the server can't reach Deplo, so nothing can deploy there",
+      description: "The server agent answered, but Docker is not, so nothing can deploy there",
       type: "string",
     },
     error: {
@@ -98,7 +104,7 @@ contact and has five values:
       type: "string",
     },
     offline: {
-      description: "Not connected to Deplo for about 10 seconds: the machine is off or has lost its internet connection",
+      description: "Not connected to Deplo for about 10 seconds. Its message says what brings it back: usually the machine is off or has lost its internet connection",
       type: "string",
     },
   }}

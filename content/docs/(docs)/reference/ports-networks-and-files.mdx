@@ -58,10 +58,10 @@ Use this page to check firewall rules, Docker networks, and host paths.
     `http://localhost:3000`. The generated address (like `deplo-cb00710a.deplo.site`)
     covers everything short of that: it answers over HTTPS whatever your
     domain is doing.
-  - **No server listens for Deplo.** An older agent still listens on
-    9443 until it updates itself, then stops on its own. Once
-    **Settings -> Deplo -> Updates** says **Everything is up to date**, a
-    firewall rule kept for 9443 can go.
+  - **No server listens for Deplo.** Deplo never calls a server: the server
+    agent connects to Deplo and opens no port. One installed by an older
+    Deplo listened on 9443, and closes it for good once it has connected,
+    so a firewall rule kept for 9443 can go.
 </Callout>
 
 ## Networks

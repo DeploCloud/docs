@@ -344,13 +344,13 @@ mutation {
 
 Instance admin only. Returns `String`.
 
-Change a server's address - where its apps are reached, and the migration verb for a host whose IP changed. A server whose agent links in (`Server.agentPort` is null) is saved without Deplo contacting it. Any other server's agent must answer at the new address (same pinned certificate) before anything is saved, unless `force`. Returns a warning to surface, or null.
+Change a server's address: where its apps are reached, and the migration verb for a host whose IP changed. Its agent links in, so the change is saved without Deplo contacting the server. Returns null.
 
 | Argument | Type | Description |
 | --- | --- | --- |
 | `address` | `String!` |  |
-| `agentPort` | `Int` | Only for a server whose agent does not link in yet; ignored while `Server.agentPort` is null. |
-| `force` | `Boolean` |  |
+| `agentPort` | `Int` | Deprecated. Ignored: every server agent links in to Deplo (ADR-0040), so Deplo connects to no port. Goes in the next release. |
+| `force` | `Boolean` | Deprecated. Ignored: Deplo no longer contacts the server to save its address, so there is nothing to force. |
 | `id` | `String!` |  |
 | `keepHost` | `Boolean` | Write only the address in use, keeping the one the server was registered at. The migration wizard's flag: a panel behind a proxy hands out the proxy's address, and the import still has to recognise the machine by the one it came from. |
 
@@ -586,7 +586,7 @@ mutation {
 
 ## Certificates
 
-A host's own TLS certificates, installed by hand outside Let's Encrypt. They live in that host's proxy, Deplo keeps no copy, and the private key is write-only. A domain uses one by setting `certProvider: custom`. The Let's Encrypt account email is per host too. All of these are mutations even where they only read, because they dial a server.
+A host's own TLS certificates, installed by hand outside Let's Encrypt. They live in that host's proxy, Deplo keeps no copy, and the private key is write-only. A domain uses one by setting `certProvider: custom`. The Let's Encrypt account email is per host too. All of these are mutations even where they only read, because they contact a server.
 
 ### `serverCertificates`
 
