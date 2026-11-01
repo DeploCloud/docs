@@ -1,0 +1,141 @@
+---
+title: Automatic DNS
+description: Connect your domain on Cloudflare once, and Deplo creates the DNS record of every domain you add to an app. Optionally through a Cloudflare Tunnel.
+---
+
+import { Globe, Cloud, Users } from "lucide-react";
+
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+**Settings -> Automatic DNS**, for anyone who can manage domains in a team.
+
+Connect a domain like `example.com` with your Cloudflare API token. From then on,
+adding `app.example.com` to an app creates its DNS record in Cloudflare, and
+removing the domain deletes it. No record to type by hand.
+
+## Connect a domain
+
+You need:
+
+- The domain on your Cloudflare account, like `example.com`.
+- A Cloudflare API token with these permissions:
+
+| Type    | Item              | Permission                        |
+| ------- | ----------------- | --------------------------------- |
+| Zone    | DNS               | Edit                              |
+| Zone    | Zone              | Read                              |
+| Account | Cloudflare Tunnel | Edit (only for Cloudflare Tunnel) |
+
+<Steps>
+<Step>
+### Pick the provider
+**Settings -> Automatic DNS**, then **Cloudflare**.
+</Step>
+
+<Step>
+### Enter the domain and the token
+For example `example.com`. **Create one** opens Cloudflare's token form with the
+permissions filled in. **Check** confirms the token reaches the domain, and says
+whether it can also create tunnels.
+</Step>
+
+<Step>
+### Pick the teams
+Domains added in these teams get their DNS created. Only teams where you manage
+domains are listed. **Save**.
+</Step>
+</Steps>
+
+Connect the domain as it is listed in Cloudflare. `app.example.com` is refused
+when Cloudflare lists `example.com`: connect `example.com` and every name under
+it is covered.
+
+## Who can use it
+
+The connection is yours, like an [API token](/advanced/api-tokens-and-oauth). Nobody else sees the
+token, and an API token or an AI agent cannot connect or change one.
+
+| Anyone in these teams can use it | Automatic DNS when adding a domain                                     |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| Off (default)                    | Only for you                                                           |
+| On                               | For every member of the selected teams who can manage domains, with your token |
+
+It stops working in a team where you no longer manage domains. **Edit** changes
+the teams and the switch; **Disconnect** removes the connection. Each change is
+listed in the team's **Activity**.
+
+## Add a domain
+
+Open the app, **Domains -> Add Domain**, and type a name under a connected
+domain, like `app.example.com`. The dialog says **Deplo creates the DNS record in
+example.com**. **Add domain** creates an `A` record pointing at the app's server,
+not proxied, so the certificate is issued as usual.
+
+If Cloudflare already has a record on that name:
+
+- **It points at the app's server:** Deplo uses it and never deletes it.
+- **It points somewhere else:** Deplo refuses and names the record. Delete it in
+  Cloudflare, or pick another name.
+
+## Cloudflare Tunnel
+
+The same dialog shows **Use Cloudflare Tunnel**. With it on, Cloudflare reaches
+the server over a connection the server opens itself: no port to open, and HTTPS
+is Cloudflare's.
+
+- The **HTTPS** settings, **Behind a proxy** and the **www redirect** are hidden:
+  the tunnel decides them.
+- The row shows a **Cloudflare Tunnel** badge.
+- The first tunnel domain on a server restarts its proxy for a few seconds.
+- The tunnel is chosen when the domain is added. To switch, remove the domain and
+  add it again.
+
+| Where       | What                                                                       |
+| ----------- | -------------------------------------------------------------------------- |
+| Cloudflare  | One tunnel per connected domain and server, named like `deplo-web-1-3f9a1c` |
+| Cloudflare  | A route per domain, for example `app.example.com`                          |
+| Cloudflare  | A proxied CNAME record `app.example.com -> <tunnel id>.cfargotunnel.com`   |
+| Your server | A `deplo-dns-tunnel-...` container next to the server's proxy             |
+
+**Updates keep the tunnel.** If a server's proxy loses the connector anyway, Deplo
+puts it back within ten minutes.
+
+## What Deplo deletes
+
+Deplo deletes **only the records it created**. A record that was already there is
+never touched.
+
+| You                                | Deplo                                               |
+| ---------------------------------- | --------------------------------------------------- |
+| Remove the domain                  | Deletes its record                                  |
+| Rename it                          | Deletes the old record, creates the new one        |
+| Delete the app or the team         | Deletes the records of all its domains              |
+| **Disconnect** the domain          | Deletes its tunnels and their CNAME records; `A` records stay, so those sites keep working |
+
+A record still used by another domain on the same name, like `app.example.com`
+and `app.example.com/api`, stays until the last one is removed.
+
+<Callout type="warn" title="Disconnect stops tunnel domains">
+Domains served through a Cloudflare Tunnel stop answering when their domain is
+disconnected. Add them again without the tunnel, or reconnect first.
+</Callout>
+
+## Good to know
+
+- **www:** add `www.example.com` as a domain of its own. The www redirect does not
+  create the other name's record.
+- **Cloudflare only, for now.**
+- **The token stays encrypted.** To replace it, connect the same domain again with
+  the new token.
+
+## Next steps
+
+<Cards>
+  <Card icon={<Globe className="text-blue-400" />} title="Domains and HTTPS" description="DNS states, certificates and routing" href="/guides/networking/domains-and-https" />
+  <Card icon={<Cloud className="text-blue-400" />} title="Cloudflare Tunnel for the panel" description="Reach the panel itself through Cloudflare" href="/operations/cloudflare-tunnel" />
+  <Card icon={<Users className="text-blue-400" />} title="Team" description="Members, roles and Activity" href="/guides/team" />
+</Cards>

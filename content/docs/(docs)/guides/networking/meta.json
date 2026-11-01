@@ -1,4 +1,4 @@
 {
   "title": "Networking",
-  "pages": ["domains-and-https", "pull-request-previews"]
+  "pages": ["domains-and-https", "automatic-dns", "pull-request-previews"]
 }
