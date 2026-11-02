@@ -234,6 +234,68 @@ mutation {
 }
 ```
 
+## Cloudflare Tunnel for the panel
+
+### `panelTunnel`
+
+Instance admin only. Returns [`PanelTunnel`](/api-reference/types/objects#paneltunnel).
+
+Read the panel's Cloudflare Tunnel, asking Cloudflare how it is doing. A mutation despite writing nothing, for the same reason panelHttps is one: it leaves the process.
+
+```graphql
+mutation {
+  panelTunnel {
+    status
+    backupUrl
+    connections
+    enabled
+  }
+}
+```
+
+### `setPanelTunnel`
+
+Instance admin only. Returns [`PanelTunnel`](/api-reference/types/objects#paneltunnel).
+
+Serve the panel at https://&lt;hostname> through a Cloudflare Tunnel, or move the one it has to a new hostname. Deplo finds the hostname's zone, creates the tunnel with two routes (the panel, and the path its servers link in on), points the hostname at it, runs the connector beside the panel's proxy and moves the panel once the address answers; anything it did is undone if it does not. Refused when the hostname already has DNS records that do not point at this server. The token needs Account, Cloudflare Tunnel, Edit and Zone, DNS, Edit; omit it to reuse the saved one.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `apiToken` | `String` |  |
+| `hostname` | `String!` |  |
+
+```graphql
+mutation {
+  setPanelTunnel(hostname: "hostname") {
+    status
+    backupUrl
+    connections
+    enabled
+  }
+}
+```
+
+### `disablePanelTunnel`
+
+Instance admin only. Returns [`PanelTunnel`](/api-reference/types/objects#paneltunnel).
+
+Stop serving the panel through its Cloudflare Tunnel. The panel moves to `url`, or to its backup address when none is given, and the move is undone if that address does not answer. Deplo then deletes the tunnel and its DNS record in Cloudflare; what it could not delete comes back as `warning`.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `url` | `String` |  |
+
+```graphql
+mutation {
+  disablePanelTunnel(url: "https://panel.example.com") {
+    status
+    backupUrl
+    connections
+    enabled
+  }
+}
+```
+
 ## Updates
 
 ### `updateInfo`

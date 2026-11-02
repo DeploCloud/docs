@@ -68,6 +68,7 @@ What this Deplo can do with a server's agent.
 | `idle` |  |
 | `queued` |  |
 | `restoring` |  |
+| `starting` |  |
 | `stopping` |  |
 
 ### BackupRunStatus
@@ -170,6 +171,25 @@ The 44 capabilities, one action each. What each one grants is on [Capabilities](
 | `custom` |  |
 | `letsencrypt` |  |
 | `none` |  |
+
+### CommitSignature
+
+| Value | Description |
+| --- | --- |
+| `unverified` |  |
+| `verified` |  |
+
+### DatabaseReach
+
+How an app would reach a database: on its private network, through the database's public address, or not at all (and why).
+
+| Value | Description |
+| --- | --- |
+| `internal` |  |
+| `other_environment` |  |
+| `other_server` |  |
+| `other_team` |  |
+| `public` |  |
 
 ### DatabaseStatus
 
@@ -303,6 +323,12 @@ skipped = left out: an instance admin skipped it after it failed, or the move fi
 | `mobile` |  |
 | `tablet` |  |
 | `unknown` |  |
+
+### DnsProviderKind
+
+| Value | Description |
+| --- | --- |
+| `cloudflare` |  |
 
 ### DockerCleanupRunStatus
 
@@ -509,10 +535,11 @@ One kind of thing a search can return.
 
 ### SecurityFix
 
-How the team gets the fix. `code`: update the dependency in the app's own code. `update`: redeploy to pull the newer build of the image, read and found to have the fix. `newer_tag`: move to the newer version of the image, read likewise. `upstream`: the newer build still has it, so it waits on the image's maintainers. `unverified`: a newer build exists and is not read yet. Only `code`, `update` and `newer_tag` count; `rebuild`, `deplo` and `none` stay for older clients.
+How the team gets the fix. `code`: update the dependency in the app's own code. `update`: redeploy to pull the newer build of the image, read and found to have the fix. `newer_tag`: move to the newer version of the image, read likewise. `upstream`: the newer build still has it, so it waits on the image's maintainers. `unverified`: a newer build exists and is not read yet. `build_only`: the package is reachable only from the app's devDependencies, so it never runs. Only `code`, `update` and `newer_tag` count; `rebuild`, `deplo` and `none` stay for older clients.
 
 | Value | Description |
 | --- | --- |
+| `build_only` |  |
 | `code` |  |
 | `deplo` |  |
 | `newer_tag` |  |
@@ -622,6 +649,14 @@ pending = the migration is not finished. ready = the operator asked for the mach
 | --- | --- |
 | `enterprise` |  |
 | `pro` |  |
+
+### TeamPushChannel
+
+| Value | Description |
+| --- | --- |
+| `NONE` |  |
+| `OFF` |  |
+| `ON` |  |
 
 ### VolumeKind
 

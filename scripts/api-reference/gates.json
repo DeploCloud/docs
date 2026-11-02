@@ -30,6 +30,11 @@
   "cap": "manage_crons",
   "orInstanceAdmin": false
  },
+ "Query.appDatabaseOptions": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
  "Query.appMetrics": {
   "kind": "capability",
   "cap": "view_metrics",
@@ -59,6 +64,9 @@
   "orInstanceAdmin": false
  },
  "Query.apps": {
+  "kind": "loggedIn"
+ },
+ "Query.autoDnsZones": {
   "kind": "loggedIn"
  },
  "Query.backupArtifactCount": {
@@ -101,6 +109,9 @@
   "orInstanceAdmin": false
  },
  "Query.database": {
+  "kind": "loggedIn"
+ },
+ "Query.databaseAppLinks": {
   "kind": "loggedIn"
  },
  "Query.databaseConsoleInfo": {
@@ -170,6 +181,12 @@
   "kind": "capability",
   "cap": "create_apps",
   "orInstanceAdmin": false
+ },
+ "Query.dnsProviderTeamChoices": {
+  "kind": "loggedIn"
+ },
+ "Query.dnsProviders": {
+  "kind": "loggedIn"
  },
  "Query.dockerCleanupPolicy": {
   "kind": "instanceAdmin"
@@ -384,6 +401,9 @@
  "Query.targetMove": {
   "kind": "instanceAdmin"
  },
+ "Query.teamPushChannel": {
+  "kind": "loggedIn"
+ },
  "Query.teamRoles": {
   "kind": "loggedIn"
  },
@@ -500,6 +520,9 @@
  "Mutation.checkAllServerHealth": {
   "kind": "instanceAdmin"
  },
+ "Mutation.checkDnsProvider": {
+  "kind": "loggedIn"
+ },
  "Mutation.checkForUpdates": {
   "kind": "instanceAdmin"
  },
@@ -522,6 +545,11 @@
  },
  "Mutation.confirmTwoFactorEnrolment": {
   "kind": "loggedIn"
+ },
+ "Mutation.connectDatabase": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
  },
  "Mutation.connectDeploMove": {
   "kind": "instanceAdmin"
@@ -713,8 +741,16 @@
   "cap": "configure_apps",
   "orInstanceAdmin": false
  },
+ "Mutation.disablePanelTunnel": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.disableTwoFactor": {
   "kind": "loggedIn"
+ },
+ "Mutation.disconnectDatabase": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
  },
  "Mutation.dismissImportedDomains": {
   "kind": "capability",
@@ -853,6 +889,9 @@
  "Mutation.panelHttps": {
   "kind": "instanceAdmin"
  },
+ "Mutation.panelTunnel": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.passkeyChallenge": {
   "kind": "none"
  },
@@ -907,6 +946,9 @@
   "kind": "capability",
   "cap": "manage_basic_auth",
   "orInstanceAdmin": false
+ },
+ "Mutation.removeDnsProvider": {
+  "kind": "loggedIn"
  },
  "Mutation.removeDomain": {
   "kind": "capability",
@@ -1126,6 +1168,9 @@
  "Mutation.runDockerCleanupNow": {
   "kind": "instanceAdmin"
  },
+ "Mutation.saveDnsProvider": {
+  "kind": "loggedIn"
+ },
  "Mutation.saveNotificationChannel": {
   "kind": "loggedIn"
  },
@@ -1282,6 +1327,9 @@
  "Mutation.setPanelHttps": {
   "kind": "instanceAdmin"
  },
+ "Mutation.setPanelTunnel": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.setPanelUrl": {
   "kind": "instanceAdmin"
  },
@@ -1333,6 +1381,9 @@
   "kind": "capability",
   "cap": "manage_env",
   "orInstanceAdmin": false
+ },
+ "Mutation.setSuggestNewRepos": {
+  "kind": "loggedIn"
  },
  "Mutation.setUsageReportsEnabled": {
   "kind": "instanceAdmin"
@@ -1437,6 +1488,11 @@
  "Mutation.uninstallServerAgent": {
   "kind": "instanceAdmin"
  },
+ "Mutation.unlinkEnv": {
+  "kind": "capability",
+  "cap": "manage_env",
+  "orInstanceAdmin": false
+ },
  "Mutation.unsubscribeWebPush": {
   "kind": "loggedIn"
  },
@@ -1502,6 +1558,9 @@
  },
  "Mutation.updateDeplo": {
   "kind": "instanceAdmin"
+ },
+ "Mutation.updateDnsProvider": {
+  "kind": "loggedIn"
  },
  "Mutation.updateDockerCleanupPolicy": {
   "kind": "instanceAdmin"

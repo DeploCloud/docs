@@ -533,6 +533,116 @@ mutation {
 }
 ```
 
+## Connected apps
+
+### `databaseAppLinks`
+
+Any signed-in principal. Returns [`DatabaseAppLinks`](/api-reference/types/objects#databaseapplinks).
+
+Which apps a database is connected to, and which it could be.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `databaseId` | `String!` |  |
+
+```graphql
+query {
+  databaseAppLinks(databaseId: "db_9f1c2ab7d3e4f5a6") {
+    apps {
+      id
+      slug
+      name
+      logo
+    }
+  }
+}
+```
+
+### `appDatabaseOptions`
+
+Needs `manage_env`. Returns [`[DatabaseLinkOption!]`](/api-reference/types/objects#databaselinkoption).
+
+The team's databases seen from one app, reachable ones first. Empty without manage_env on the app or a role that reaches the whole team.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `appId` | `String!` |  |
+
+```graphql
+query {
+  appDatabaseOptions(appId: "prj_9f1c2ab7d3e4f5a6") {
+    id
+    name
+    connectedKeys
+    logo
+  }
+}
+```
+
+### `connectDatabase`
+
+Needs `manage_env`. Returns `Boolean`.
+
+Give an app a variable whose value is this database's connection string, derived again at every deploy so a password change follows on its own. Replaces a variable of that name. Production only. Needs manage_env and reveal_secrets on the app; refused when the app cannot reach the database.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `appId` | `String!` |  |
+| `databaseId` | `String!` |  |
+| `key` | `String!` |  |
+
+```graphql
+mutation {
+  connectDatabase(
+    appId: "prj_9f1c2ab7d3e4f5a6"
+    databaseId: "db_9f1c2ab7d3e4f5a6"
+    key: "DATABASE_URL"
+  )
+}
+```
+
+### `disconnectDatabase`
+
+Needs `manage_env`. Returns `Boolean`.
+
+Stop every variable of the app that comes from this database following it. They keep the value they resolve to now.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `appId` | `String!` |  |
+| `databaseId` | `String!` |  |
+
+```graphql
+mutation {
+  disconnectDatabase(
+    appId: "prj_9f1c2ab7d3e4f5a6"
+    databaseId: "db_9f1c2ab7d3e4f5a6"
+  )
+}
+```
+
+### `unlinkEnv`
+
+Needs `manage_env`. Returns [`EnvVar`](/api-reference/types/objects#envvar).
+
+Stop a variable following its database. It keeps the value it resolves to now, and Deplo never connects it again on its own.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `id` | `String!` |  |
+
+```graphql
+mutation {
+  unlinkEnv(id: "env_9f1c2ab7d3e4f5a6") {
+    id
+    key
+    type
+    targets
+    isMasked
+  }
+}
+```
+
 ## Subscription
 
 ### `databaseStatus`

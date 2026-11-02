@@ -173,6 +173,22 @@ mutation {
 }
 ```
 
+### `setSuggestNewRepos`
+
+Any signed-in principal. Returns `Boolean`.
+
+Turn the new-repository cards on the Overview on or off, for the caller in the active team only.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `enabled` | `Boolean!` |  |
+
+```graphql
+mutation {
+  setSuggestNewRepos(enabled: true)
+}
+```
+
 ## GitHub Apps
 
 `startGithubConnect` returns what the browser posts to GitHub. GitHub then sends the user back through the callback endpoint; there is no mutation to finish the flow.

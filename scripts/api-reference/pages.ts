@@ -1113,7 +1113,7 @@ A variable is \`plain\` or \`secret\` and applies to one or more \`targets\` (\`
     title: "Domains and basic auth",
     description: "Hostnames on an app, their routing and certificate settings, and the edge password gate.",
     intro: `
-A domain is a hostname routed to one app, or to one service and path of it. \`certProvider\` picks how it gets HTTPS: \`letsencrypt\`, \`cloudflare\` (proxied, origin left alone), \`custom\` (a certificate installed on the host, see [Servers](/api-reference/servers#certificates)) or \`none\`.
+A domain is a hostname routed to one app, or to one service and path of it. \`certProvider\` picks how it gets HTTPS: \`letsencrypt\`, \`cloudflare\` (proxied, a self-signed certificate that Cloudflare's Full mode accepts), \`custom\` (a certificate installed on the host, see [Servers](/api-reference/servers#certificates)) or \`none\`.
 
 Basic auth is a separate grant, \`manage_basic_auth\`. A login applies to every domain of the app within seconds, no redeploy.
 `,
@@ -1123,12 +1123,17 @@ Basic auth is a separate grant, \`manage_basic_auth\`. A login applies to every 
         ops: [q("domains"), m("addDomain"), m("updateDomain"), m("setPrimaryDomain"), m("verifyDomain"), m("removeDomain"), m("dismissImportedDomains")],
       },
       {
+        title: "Automatic DNS",
+        ops: [q("dnsProviders"), q("dnsProviderTeamChoices"), q("autoDnsZones"), m("checkDnsProvider"), m("saveDnsProvider"), m("updateDnsProvider"), m("removeDnsProvider")],
+      },
+      {
         title: "Basic auth",
         ops: [q("basicAuthUsers"), m("addBasicAuthUser"), m("updateBasicAuthUserPassword"), m("revealBasicAuthPassword"), m("removeBasicAuthUser")],
       },
     ],
     seeAlso: [
       { title: "Domains and HTTPS", description: "DNS states, routing, redirects", href: "/guides/networking/domains-and-https" },
+      { title: "Automatic DNS", description: "Connecting a domain from the dashboard", href: "/guides/networking/automatic-dns" },
       { title: "Custom certificates", description: "Installing one on a host", href: "/advanced/custom-certificates" },
     ],
   },
@@ -1162,6 +1167,10 @@ A managed database is provisioned and versioned the same way an app is, and reac
         title: "Moving to another team",
         intro: `Needs \`move_databases\` in both teams. Ask \`databaseTransferInfo\` first: it lists the teams that can take it and what the move removes. See [Move to another team](/guides/team/transfers).`,
         ops: [q("databaseTransferInfo"), m("transferDatabaseToTeam")],
+      },
+      {
+        title: "Connected apps",
+        ops: [q("databaseAppLinks"), q("appDatabaseOptions"), m("connectDatabase"), m("disconnectDatabase"), m("unlinkEnv")],
       },
       { title: "Subscription", ops: [s("databaseStatus")] },
     ],
@@ -1259,7 +1268,7 @@ The webhook receivers themselves are REST: see [REST endpoints](/api-reference/r
     sections: [
       {
         title: "Git connections",
-        ops: [q("gitProviders"), q("gitConnections"), q("gitRepos"), q("gitBranches"), m("connectGitProvider"), m("updateGitConnection"), m("testGitConnection"), m("removeGitConnection")],
+        ops: [q("gitProviders"), q("gitConnections"), q("gitRepos"), q("gitBranches"), m("connectGitProvider"), m("updateGitConnection"), m("testGitConnection"), m("removeGitConnection"), m("setSuggestNewRepos")],
       },
       {
         title: "GitHub Apps",
@@ -1350,7 +1359,7 @@ A channel is a webhook (Slack, Discord, a generic URL) with its own set of subsc
 `,
     sections: [
       { title: "Channels", ops: [q("notificationChannels"), m("saveNotificationChannel"), m("testNotificationChannel"), m("deleteNotificationChannel")] },
-      { title: "Browser push", ops: [q("webPushPublicKey"), m("subscribeWebPush"), m("unsubscribeWebPush")] },
+      { title: "Browser push", ops: [q("teamPushChannel"), q("webPushPublicKey"), m("subscribeWebPush"), m("unsubscribeWebPush")] },
     ],
     seeAlso: [{ title: "Notifications and alerts", description: "The dashboard guide", href: "/guides/observability/notifications-and-alerts" }],
   },
@@ -1391,6 +1400,7 @@ The panel publishes itself through its host's proxy, so the address it answers o
     sections: [
       { title: "Settings", ops: [q("instanceSettings"), m("setGravatarEnabled"), m("setLogMaxDays"), m("welcomeSeen"), m("finishSetup")] },
       { title: "Panel address and HTTPS", ops: [q("panelAddressImpact"), m("setPanelUrl"), m("panelDns"), m("panelHttps"), m("setPanelHttps"), m("setPanelFallback")] },
+      { title: "Cloudflare Tunnel for the panel", ops: [m("panelTunnel"), m("setPanelTunnel"), m("disablePanelTunnel")] },
       { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates"), m("updateDeplo"), m("leaveServerBehind"), m("setCanaryReleases")] },
       { title: "Usage reports", ops: [q("usageReport"), m("setUsageReportsEnabled")] },
       {

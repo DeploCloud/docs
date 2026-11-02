@@ -74,6 +74,18 @@ mutation {
 
 ## Browser push
 
+### `teamPushChannel`
+
+Any signed-in principal. Returns [`TeamPushChannel`](/api-reference/types/enums#teampushchannel).
+
+Whether the active team sends alerts to phones: ON, OFF (a push channel exists but is turned off) or NONE.
+
+```graphql
+query {
+  teamPushChannel
+}
+```
+
 ### `webPushPublicKey`
 
 Any signed-in principal. Returns `String`.

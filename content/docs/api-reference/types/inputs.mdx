@@ -280,7 +280,7 @@ Where one of the old Deplo's servers lands here. A server left out of the map ta
 
 ### DomainConfigInput
 
-Per-domain routing config; an omitted certProvider means no certificate (plain HTTP), unless the add-time DNS check finds the host proxied through Cloudflare, then it is stored as `cloudflare`.
+Per-domain routing config; an omitted certProvider means no certificate (plain HTTP), unless the add-time DNS check finds the host proxied through Cloudflare, then it is stored as `letsencrypt`.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -294,6 +294,7 @@ Per-domain routing config; an omitted certProvider means no certificate (plain H
 | `securityHeaders` | `Boolean` | Omitted means on. |
 | `service` | `String` |  |
 | `stripPrefix` | `Boolean` |  |
+| `tunnel` | `Boolean` | Serve it through a Cloudflare Tunnel. Needs a domain connected for automatic DNS that covers this name; certProvider, entrypoint, proxied and www are then ignored. |
 | `www` | [`DomainWwwRedirect`](/api-reference/types/enums#domainwwwredirect) | One of `none`, `toCounterpart`, `toThis`. |
 
 ### DomainPatchInput

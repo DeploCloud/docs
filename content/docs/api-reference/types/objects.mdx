@@ -128,6 +128,19 @@ One app together with all of its env vars.
 | `name` | `String` |  |
 | `slug` | `String` |  |
 
+### AppLinkOption
+
+An app the viewer may connect a database to.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `ID` |  |
+| `logo` | `String` |  |
+| `name` | `String` |  |
+| `place` | `String` |  |
+| `reach` | [`DatabaseReach`](/api-reference/types/enums#databasereach) |  |
+| `slug` | `String` |  |
+
 ### AppPreview
 
 An ephemeral deploy of one App for one open pull request, running as its own stack `deplo-<slug>__pr-<n>` with its own URL. Not an App and not an Environment.
@@ -260,6 +273,13 @@ A team the viewer could hand this app to - one of their OWN other teams where th
 | --- | --- | --- |
 | `requiresTwoFactor` | `Boolean` | The password was correct but the account has 2FA: no session yet. Send a code to `verifyTwoFactorLogin`. |
 | `viewer` | [`Viewer`](/api-reference/types/objects#viewer) |  |
+
+### AutoDnsZone
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `provider` | [`DnsProviderKind`](/api-reference/types/enums#dnsproviderkind) |  |
+| `zoneName` | `String` |  |
 
 ### Backup
 
@@ -619,6 +639,40 @@ A provisioned database container owned by a team. The connection string is maske
 | `username` | `String` |  |
 | `version` | `String` |  |
 
+### DatabaseAppLink
+
+A variable of an app whose value comes from this database.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `appId` | `ID` |  |
+| `appName` | `String` |  |
+| `appSlug` | `String` |  |
+| `canManage` | `Boolean` |  |
+| `key` | `String` | Empty without manage_env on the app. |
+| `reach` | [`DatabaseReach`](/api-reference/types/enums#databasereach) |  |
+
+### DatabaseAppLinks
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `apps` | [`[AppLinkOption!]`](/api-reference/types/objects#applinkoption) | Apps the viewer may connect it to. |
+| `links` | [`[DatabaseAppLink!]`](/api-reference/types/objects#databaseapplink) |  |
+
+### DatabaseLinkOption
+
+A team database seen from one app, with whether it can be connected.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `connectedKeys` | `[String!]` | This app's variables already connected to it. |
+| `id` | `ID` |  |
+| `logo` | `String` |  |
+| `name` | `String` |  |
+| `place` | `String` |  |
+| `reach` | [`DatabaseReach`](/api-reference/types/enums#databasereach) |  |
+| `type` | [`DatabaseType`](/api-reference/types/enums#databasetype) |  |
+
 ### DatabaseMount
 
 One config file of a database: its name in the stack's files directory, its body, and where it is mounted inside the container.
@@ -887,6 +941,7 @@ A single build + release of an app.
 | `commitAuthor` | `String` |  |
 | `commitMessage` | `String` |  |
 | `commitSha` | `String` |  |
+| `commitSignature` | [`CommitSignature`](/api-reference/types/enums#commitsignature) | GitHub's verdict on the commit's signature. Null when it is unsigned, or the repository is not on GitHub. |
 | `createdAt` | `String` |  |
 | `creator` | `String` |  |
 | `creatorProvider` | `String` | The git host `creator` is a login on, when a webhook push started this build (`github`, `gitlab`, `bitbucket`, `gitea`). Null when somebody on this instance ran it. |
@@ -924,6 +979,34 @@ A completed connection test: the destination with its badge repainted, plus the 
 | --- | --- | --- |
 | `destination` | [`BackupDestination`](/api-reference/types/objects#backupdestination) |  |
 | `report` | [`S3TestReport`](/api-reference/types/objects#s3testreport) |  |
+
+### DnsProvider
+
+A DNS provider account the caller connected for automatic DNS. Its API token belongs to the caller and is never returned.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `createdAt` | `String` |  |
+| `id` | `ID` |  |
+| `provider` | [`DnsProviderKind`](/api-reference/types/enums#dnsproviderkind) |  |
+| `shared` | `Boolean` | Whether every member of its teams may use it, not only the caller. |
+| `teams` | [`[DnsProviderTeam!]`](/api-reference/types/objects#dnsproviderteam) |  |
+| `zoneName` | `String` | The domain whose names get their DNS made for them. |
+
+### DnsProviderCheck
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `tunnels` | `Boolean` | Whether the token may also create Cloudflare Tunnels. |
+| `zoneName` | `String` |  |
+
+### DnsProviderTeam
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `ID` |  |
+| `name` | `String` |  |
+| `slug` | `String` |  |
 
 ### DockerCleanupPolicy
 
@@ -977,7 +1060,8 @@ A routable hostname attached to an app (Traefik router).
 | --- | --- | --- |
 | `appId` | `ID` |  |
 | `appSlug` | `String` |  |
-| `certProvider` | [`CertProvider`](/api-reference/types/enums#certprovider) | How this domain's TLS certificate is issued. Set to `cloudflare` automatically when a DNS check finds the host proxied and it still had no certificate - Cloudflare already serves it over HTTPS. `custom` serves it over HTTPS from a certificate installed on the owning server (see `addServerCertificate`) and asks no ACME provider for one. Null on rows written before the field existed (they route as `letsencrypt`). |
+| `autoDns` | `Boolean` | Deplo created this domain's DNS record through a connected DNS provider, and removes it with the domain. |
+| `certProvider` | [`CertProvider`](/api-reference/types/enums#certprovider) | How this domain's TLS certificate is issued. Set to `letsencrypt` automatically when a DNS check finds the host proxied through Cloudflare and it still had no certificate; once proxied, Deplo matches it to Cloudflare's SSL mode (`none` under Flexible). `custom` serves it over HTTPS from a certificate installed on the owning server (see `addServerCertificate`) and asks no ACME provider for one. Null on rows written before the field existed (they route as `letsencrypt`). |
 | `corsOrigins` | `[String!]` | Browser origins allowed to call this domain (CORS). Empty means CORS is off; `*` allows any. |
 | `createdAt` | `String` |  |
 | `entrypoint` | [`DomainEntrypoint`](/api-reference/types/enums#domainentrypoint) |  |
@@ -997,6 +1081,27 @@ A routable hostname attached to an app (Traefik router).
 | `ssl` | `Boolean` |  |
 | `status` | [`DomainStatus`](/api-reference/types/enums#domainstatus) | DNS verification state. Only `valid` is confirmed: `cloudflare` means the host is proxied and its origin cannot be checked from DNS, so it is routed but unverified. A `misconfigured` host is off the router unless `proxied` declares another proxy answers for it. See the DomainStatus enum. |
 | `stripPrefix` | `Boolean` |  |
+| `tunnel` | `Boolean` | Served through a Cloudflare Tunnel Deplo runs beside the owning server's proxy: Cloudflare holds the certificate, so HTTPS is not configurable, and the server needs no open port. |
+
+### EnvAutoLink
+
+A variable Deplo connected because its value is a database's connection string.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `database` | `String` |  |
+| `key` | `String` |  |
+
+### EnvDatabaseRef
+
+The managed database a variable's value comes from.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `ID` |  |
+| `name` | `String` |  |
+| `reachable` | `Boolean` |  |
+| `type` | [`DatabaseType`](/api-reference/types/enums#databasetype) |  |
 
 ### EnvImportResult
 
@@ -1005,6 +1110,7 @@ What a .env import wrote, and what it deliberately left alone.
 | Field | Type | Description |
 | --- | --- | --- |
 | `added` | `Int` | Variables created or updated. |
+| `autoLinked` | [`[EnvAutoLink!]`](/api-reference/types/objects#envautolink) | Lines whose value is a database's connection string, now connected to it. |
 | `skippedSecrets` | `Int` | Lines whose key already exists as a secret. A secret cannot be edited, so those were left untouched. |
 
 ### Environment
@@ -1030,8 +1136,10 @@ A single environment variable. Secret values are masked unless revealed.
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `connected` | `Boolean` | The value comes from a managed database and is derived again at every deploy. |
 | `createdAt` | `String` |  |
 | `createdBy` | [`VarAuthor`](/api-reference/types/objects#varauthor) |  |
+| `database` | [`EnvDatabaseRef`](/api-reference/types/objects#envdatabaseref) | The connected database; null when not connected or the viewer cannot see databases. |
 | `id` | `ID` |  |
 | `isMasked` | `Boolean` |  |
 | `key` | `String` |  |
@@ -1333,6 +1441,7 @@ Settings that belong to this Deplo instance rather than to a team or a host: the
 | `logMaxDays` | `Int` | How far back the log viewer's time range may reach, in days. Instance-wide because the logs live on the host, which several teams share. It bounds what may be ASKED for and nothing else: docker rotates its json-file logs by size, so no setting here makes the host actually hold that much. |
 | `panelFallbackDisabled` | `Boolean` | Whether that backup address is turned off. It then routes nowhere, and a panel whose domain stops answering is reached again only with `deplo recover panel-address` on the server itself. The address above is what turning it back on would restore. |
 | `panelFallbackUrl` | `String` | The generated address the panel also answers on, over https (https://deplo-&lt;hexip>.deplo.site). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach. |
+| `panelTunnelHostname` | `String` | The address a Cloudflare Tunnel serves the panel on, or null while none does. While one does, the panel's address and its HTTPS are the tunnel's to change. |
 | `panelUrl` | `String` | The address Deplo uses for itself right now. Every install command, deploy hook URL and invite link is built from it. |
 | `panelUrlSource` | `String` | `stored` (set here), `environment` (DEPLO_PUBLIC_URL, set at install time) or `request` (derived from the browser's own host, which is a guess). |
 | `storedPanelUrl` | `String` |  |
@@ -1720,6 +1829,21 @@ How the Deplo panel itself is served, read live off the router that publishes it
 | `fallbackDomain` | `String` | The generated host the panel also answers on, or null when that IS the address above. |
 | `provider` | `String` | The certificate resolver it is ordered from, named as this host names it. Null when https is off, or when this host orders from nobody and serves a certificate you installed. |
 | `unavailable` | `String` |  |
+
+### PanelTunnel
+
+The Cloudflare Tunnel the panel can be served through: a connector on the panel's own server dials out to Cloudflare, so no connection has to reach that server from the internet. Deplo creates the tunnel, its routes and its DNS record with an API token it keeps encrypted and never returns.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `backupUrl` | `String` | Where turning the tunnel off moves the panel when no address is given: its backup address, or null while that is off. |
+| `connections` | `Int` | How many connections the connector holds open to Cloudflare. |
+| `enabled` | `Boolean` |  |
+| `error` | `String` | Why Cloudflare could not be asked how the tunnel is doing. |
+| `hostname` | `String` |  |
+| `status` | `String` | What Cloudflare says, live: `healthy`, `degraded`, `down`, `inactive` (never connected), or `unknown` when it could not be asked. Null while the tunnel is off. |
+| `unavailable` | `String` | Why a tunnel cannot be turned on here: the server running Deplo is not added, or its proxy is not one Deplo installed. |
+| `warning` | `String` | Something the change just made could not finish, such as deleting the old tunnel in Cloudflare. |
 
 ### Passkey
 
@@ -2137,6 +2261,7 @@ One known vulnerability in a package an app or database runs.
 | `packageName` | `String` |  |
 | `service` | `String` | The compose service it was found in; empty for a single-container app. |
 | `summary` | `String` |  |
+| `via` | `[String!]` | Who pulls the package in, from its parent up to the app's own dependency; empty for a direct one. An indirect one is fixed with an override. |
 | `vulnId` | `String` | The OSV id, for example GHSA-xvch-5gv4-984h or GO-2024-2687. |
 
 ### SecurityUpdateGroup
@@ -2158,6 +2283,7 @@ One security update as the dashboard lists it: a package of the app's own, or a 
 | `level` | [`SecurityLevel`](/api-reference/types/enums#securitylevel) |  |
 | `packageName` | `String` |  |
 | `service` | `String` |  |
+| `via` | `[String!]` | Who pulls the package in, parent first; empty for a direct dependency or an image. |
 
 ### SecurityUpdates
 

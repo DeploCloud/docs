@@ -312,6 +312,16 @@ input AppEnvInput {
   value: String!
 }
 
+"""An app the viewer may connect a database to."""
+type AppLinkOption {
+  id: ID
+  logo: String
+  name: String
+  place: String
+  reach: DatabaseReach
+  slug: String
+}
+
 """
 An ephemeral deploy of one App for one open pull request, running as its own stack `deplo-<slug>__pr-<n>` with its own URL. Not an App and not an Environment.
 """
@@ -470,6 +480,7 @@ enum AppStatus {
   idle
   queued
   restoring
+  starting
   stopping
 }
 
@@ -558,6 +569,11 @@ type AuthPayload {
   """
   requiresTwoFactor: Boolean
   viewer: Viewer
+}
+
+type AutoDnsZone {
+  provider: DnsProviderKind
+  zoneName: String
 }
 
 """A scheduled backup of a database or project to a backup destination."""
@@ -856,6 +872,11 @@ type CertificateAccount {
   serverId: String
   serverName: String
   unavailable: String
+}
+
+enum CommitSignature {
+  unverified
+  verified
 }
 
 """
@@ -1408,6 +1429,36 @@ type Database {
   version: String
 }
 
+"""A variable of an app whose value comes from this database."""
+type DatabaseAppLink {
+  appId: ID
+  appName: String
+  appSlug: String
+  canManage: Boolean
+
+  """Empty without manage_env on the app."""
+  key: String
+  reach: DatabaseReach
+}
+
+type DatabaseAppLinks {
+  """Apps the viewer may connect it to."""
+  apps: [AppLinkOption!]
+  links: [DatabaseAppLink!]
+}
+
+"""A team database seen from one app, with whether it can be connected."""
+type DatabaseLinkOption {
+  """This app's variables already connected to it."""
+  connectedKeys: [String!]
+  id: ID
+  logo: String
+  name: String
+  place: String
+  reach: DatabaseReach
+  type: DatabaseType
+}
+
 """
 One config file of a database: its name in the stack's files directory, its body, and where it is mounted inside the container.
 """
@@ -1424,6 +1475,17 @@ input DatabaseMountInput {
   content: String!
   filePath: String!
   mountPath: String!
+}
+
+"""
+How an app would reach a database: on its private network, through the database's public address, or not at all (and why).
+"""
+enum DatabaseReach {
+  internal
+  other_environment
+  other_server
+  other_team
+  public
 }
 
 enum DatabaseStatus {
@@ -1881,6 +1943,11 @@ type Deployment {
   commitAuthor: String
   commitMessage: String
   commitSha: String
+
+  """
+  GitHub's verdict on the commit's signature. Null when it is unsigned, or the repository is not on GitHub.
+  """
+  commitSignature: CommitSignature
   createdAt: String
   creator: String
 
@@ -1990,6 +2057,38 @@ enum DeviceKind {
 }
 
 """
+A DNS provider account the caller connected for automatic DNS. Its API token belongs to the caller and is never returned.
+"""
+type DnsProvider {
+  createdAt: String
+  id: ID
+  provider: DnsProviderKind
+
+  """Whether every member of its teams may use it, not only the caller."""
+  shared: Boolean
+  teams: [DnsProviderTeam!]
+
+  """The domain whose names get their DNS made for them."""
+  zoneName: String
+}
+
+type DnsProviderCheck {
+  """Whether the token may also create Cloudflare Tunnels."""
+  tunnels: Boolean
+  zoneName: String
+}
+
+enum DnsProviderKind {
+  cloudflare
+}
+
+type DnsProviderTeam {
+  id: ID
+  name: String
+  slug: String
+}
+
+"""
 The instance-wide Docker cleanup schedule. One policy, not one per server: a host opts OUT via `excludedServerIds`, so a newly added server cannot silently go un-swept. Until it is saved once it reads as the defaults (ENABLED, daily at 04:00 UTC, every scope), so a fresh install sweeps its hosts without anyone finding this setting first; a saved row (including an explicit disable) always wins.
 """
 type DockerCleanupPolicy {
@@ -2087,7 +2186,12 @@ type Domain {
   appSlug: String
 
   """
-  How this domain's TLS certificate is issued. Set to `cloudflare` automatically when a DNS check finds the host proxied and it still had no certificate - Cloudflare already serves it over HTTPS. `custom` serves it over HTTPS from a certificate installed on the owning server (see `addServerCertificate`) and asks no ACME provider for one. Null on rows written before the field existed (they route as `letsencrypt`).
+  Deplo created this domain's DNS record through a connected DNS provider, and removes it with the domain.
+  """
+  autoDns: Boolean
+
+  """
+  How this domain's TLS certificate is issued. Set to `letsencrypt` automatically when a DNS check finds the host proxied through Cloudflare and it still had no certificate; once proxied, Deplo matches it to Cloudflare's SSL mode (`none` under Flexible). `custom` serves it over HTTPS from a certificate installed on the owning server (see `addServerCertificate`) and asks no ACME provider for one. Null on rows written before the field existed (they route as `letsencrypt`).
   """
   certProvider: CertProvider
 
@@ -2133,10 +2237,15 @@ type Domain {
   """
   status: DomainStatus
   stripPrefix: Boolean
+
+  """
+  Served through a Cloudflare Tunnel Deplo runs beside the owning server's proxy: Cloudflare holds the certificate, so HTTPS is not configurable, and the server needs no open port.
+  """
+  tunnel: Boolean
 }
 
 """
-Per-domain routing config; an omitted certProvider means no certificate (plain HTTP), unless the add-time DNS check finds the host proxied through Cloudflare, then it is stored as `cloudflare`.
+Per-domain routing config; an omitted certProvider means no certificate (plain HTTP), unless the add-time DNS check finds the host proxied through Cloudflare, then it is stored as `letsencrypt`.
 """
 input DomainConfigInput {
   certProvider: CertProvider
@@ -2151,6 +2260,11 @@ input DomainConfigInput {
   securityHeaders: Boolean
   service: String
   stripPrefix: Boolean
+
+  """
+  Serve it through a Cloudflare Tunnel. Needs a domain connected for automatic DNS that covers this name; certProvider, entrypoint, proxied and www are then ignored.
+  """
+  tunnel: Boolean
   www: DomainWwwRedirect
 }
 
@@ -2212,6 +2326,22 @@ enum DomainWwwRedirect {
   toThis
 }
 
+"""
+A variable Deplo connected because its value is a database's connection string.
+"""
+type EnvAutoLink {
+  database: String
+  key: String
+}
+
+"""The managed database a variable's value comes from."""
+type EnvDatabaseRef {
+  id: ID
+  name: String
+  reachable: Boolean
+  type: DatabaseType
+}
+
 input EnvEntryInput {
   key: String!
   value: String!
@@ -2221,6 +2351,11 @@ input EnvEntryInput {
 type EnvImportResult {
   """Variables created or updated."""
   added: Int
+
+  """
+  Lines whose value is a database's connection string, now connected to it.
+  """
+  autoLinked: [EnvAutoLink!]
 
   """
   Lines whose key already exists as a secret. A secret cannot be edited, so those were left untouched.
@@ -2237,8 +2372,17 @@ enum EnvTarget {
 A single environment variable. Secret values are masked unless revealed.
 """
 type EnvVar {
+  """
+  The value comes from a managed database and is derived again at every deploy.
+  """
+  connected: Boolean
   createdAt: String
   createdBy: VarAuthor
+
+  """
+  The connected database; null when not connected or the viewer cannot see databases.
+  """
+  database: EnvDatabaseRef
   id: ID
   isMasked: Boolean
   key: String
@@ -2687,6 +2831,11 @@ type InstanceSettings {
   The generated address the panel also answers on, over https (https://deplo-<hexip>.deplo.site). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach.
   """
   panelFallbackUrl: String
+
+  """
+  The address a Cloudflare Tunnel serves the panel on, or null while none does. While one does, the panel's address and its HTTPS are the tunnel's to change.
+  """
+  panelTunnelHostname: String
 
   """
   The address Deplo uses for itself right now. Every install command, deploy hook URL and invite link is built from it.
@@ -3410,6 +3559,11 @@ type Mutation {
   ): [Server!]
 
   """
+  Check that an API token reaches this domain at the provider, without saving anything.
+  """
+  checkDnsProvider(apiToken: String!, provider: DnsProviderKind!, zone: String!): DnsProviderCheck
+
+  """
   Re-run the upstream release check ignoring the cache, and expire the changelog beside it.
   """
   checkForUpdates: UpdateInfo
@@ -3447,6 +3601,11 @@ type Mutation {
   Finish enrolment with the first code from the authenticator app. Turns two-factor on.
   """
   confirmTwoFactorEnrolment(code: String!): Boolean
+
+  """
+  Give an app a variable whose value is this database's connection string, derived again at every deploy so a password change follows on its own. Replaces a variable of that name. Production only. Needs manage_env and reveal_secrets on the app; refused when the app cannot reach the database.
+  """
+  connectDatabase(appId: String!, databaseId: String!, key: String!): Boolean
 
   """
   Reach the old Deplo with its move code and preview the move. Changes nothing on either side; only a fresh Deplo can receive one.
@@ -3628,9 +3787,19 @@ type Mutation {
   detectAppLogo(id: String!): App
 
   """
+  Stop serving the panel through its Cloudflare Tunnel. The panel moves to `url`, or to its backup address when none is given, and the move is undone if that address does not answer. Deplo then deletes the tunnel and its DNS record in Cloudflare; what it could not delete comes back as `warning`.
+  """
+  disablePanelTunnel(url: String): PanelTunnel
+
+  """
   Turn two-factor off. Requires the password AND a current code (a recovery code also works).
   """
   disableTwoFactor(code: String!, password: String!): Boolean
+
+  """
+  Stop every variable of the app that comes from this database following it. They keep the value they resolve to now.
+  """
+  disconnectDatabase(appId: String!, databaseId: String!): Boolean
 
   """
   Stop telling this app that its addresses changed when it was imported: clears `importedFrom` on every one of its domains. Per app on purpose - a migration brings over many, and one blanket dismissal would hide the fact on every app nobody has looked at yet.
@@ -3817,6 +3986,11 @@ type Mutation {
   panelHttps: PanelHttps
 
   """
+  Read the panel's Cloudflare Tunnel, asking Cloudflare how it is doing. A mutation despite writing nothing, for the same reason panelHttps is one: it leaves the process.
+  """
+  panelTunnel: PanelTunnel
+
+  """
   Options for `navigator.credentials.get`. Public: this is the START of a sign-in, so there is no session yet.
   """
   passkeyChallenge: JSON
@@ -3878,6 +4052,11 @@ type Mutation {
   Remove a basic-auth user, so its login stops working within seconds. Removing the last one drops the login prompt entirely. Returns true.
   """
   removeBasicAuthUser(id: String!): Boolean
+
+  """
+  Disconnect a domain from automatic DNS. Its Cloudflare Tunnels are torn down; returns what Deplo could not clean up, or null.
+  """
+  removeDnsProvider(id: String!): String
 
   """Remove the domain so it stops routing. Returns true."""
   removeDomain(id: String!): Boolean
@@ -4131,6 +4310,11 @@ type Mutation {
   """
   runDockerCleanupNow(serverId: String!): DockerCleanupRun
 
+  """
+  Connect a domain for automatic DNS in the given teams, or replace the token of one the caller already connected.
+  """
+  saveDnsProvider(apiToken: String!, provider: DnsProviderKind!, shared: Boolean!, teamIds: [String!]!, zone: String!): DnsProvider
+
   """Create a channel (omit id) or replace one. Returns the saved channel."""
   saveNotificationChannel(id: ID, input: JSON!): JSON
 
@@ -4314,6 +4498,11 @@ type Mutation {
   setPanelHttps(enabled: Boolean!): PanelHttps
 
   """
+  Serve the panel at https://<hostname> through a Cloudflare Tunnel, or move the one it has to a new hostname. Deplo finds the hostname's zone, creates the tunnel with two routes (the panel, and the path its servers link in on), points the hostname at it, runs the connector beside the panel's proxy and moves the panel once the address answers; anything it did is undone if it does not. Refused when the hostname already has DNS records that do not point at this server. The token needs Account, Cloudflare Tunnel, Edit and Zone, DNS, Edit; omit it to reuse the saved one.
+  """
+  setPanelTunnel(apiToken: String, hostname: String!): PanelTunnel
+
+  """
   Set the address this Deplo answers on, or pass no url to fall back to DEPLO_PUBLIC_URL. A bare domain becomes https://. The value is validated as a hostname with no path, no credentials and no shell metacharacters, because it is interpolated into copy-and-run strings such as a server's install command. On a Deplo that publishes itself through its own proxy this MOVES the panel's route too, and puts the old one back if the new address does not answer; DNS still has to point at the server first.
   """
   setPanelUrl(url: String): InstanceSettings
@@ -4378,6 +4567,11 @@ type Mutation {
 
   """Link or unlink a shared variable to one app. Returns true."""
   setSharedVarAppLink(appId: String!, linked: Boolean!, varId: String!): Boolean
+
+  """
+  Turn the new-repository cards on the Overview on or off, for the caller in the active team only.
+  """
+  setSuggestNewRepos(enabled: Boolean!): Boolean
 
   """
   Turn anonymous usage statistics on or off for the whole instance. Off takes effect at once - no final report, no goodbye - and clears the instance id, so turning it on again starts a history that cannot be joined to the old one. Recorded in Activity. Has no effect while the install set DO_NOT_TRACK=1.
@@ -4530,6 +4724,11 @@ type Mutation {
   """
   uninstallServerAgent(id: String!): ServerUninstall
 
+  """
+  Stop a variable following its database. It keeps the value it resolves to now, and Deplo never connects it again on its own.
+  """
+  unlinkEnv(id: String!): EnvVar
+
   """Forget this browser's push registration."""
   unsubscribeWebPush(endpoint: String!): Boolean
   updateAppBuild(build: BuildConfigInput!, id: String!): App
@@ -4581,6 +4780,9 @@ type Mutation {
   Update this instance to `updateInfo.next`: the newest release, or the update stop it has to pass first. The server agent on the machine Deplo runs on re-runs the installer.
   """
   updateDeplo: DeploUpdateStarted
+
+  """Change which teams may use a connected domain, and who in them."""
+  updateDnsProvider(id: String!, shared: Boolean!, teamIds: [String!]!): DnsProvider
 
   """
   Save the instance-wide cleanup policy. The cron is rejected (not repaired) when it does not parse - an unparseable schedule is a cleanup that silently never runs while the UI says it is enabled. The numeric bounds are clamped instead: there is no dangerous value of 'keep N images', only an unhelpful one.
@@ -4651,7 +4853,7 @@ type Mutation {
   upsertEnv(input: UpsertEnvInput!): EnvVar
 
   """
-  Re-check the domain's DNS and (re)issue its certificate. A check that finds the host proxied through Cloudflare also moves a certificate-less domain onto the `cloudflare` provider.
+  Re-check the domain's DNS and (re)issue its certificate. A check that finds the host proxied through Cloudflare moves a certificate-less domain onto `letsencrypt`; one already proxied is matched to Cloudflare's SSL mode.
   """
   verifyDomain(id: String!): Domain
 
@@ -4778,6 +4980,39 @@ type PanelHttps {
 }
 
 """
+The Cloudflare Tunnel the panel can be served through: a connector on the panel's own server dials out to Cloudflare, so no connection has to reach that server from the internet. Deplo creates the tunnel, its routes and its DNS record with an API token it keeps encrypted and never returns.
+"""
+type PanelTunnel {
+  """
+  Where turning the tunnel off moves the panel when no address is given: its backup address, or null while that is off.
+  """
+  backupUrl: String
+
+  """How many connections the connector holds open to Cloudflare."""
+  connections: Int
+  enabled: Boolean
+
+  """Why Cloudflare could not be asked how the tunnel is doing."""
+  error: String
+  hostname: String
+
+  """
+  What Cloudflare says, live: `healthy`, `degraded`, `down`, `inactive` (never connected), or `unknown` when it could not be asked. Null while the tunnel is off.
+  """
+  status: String
+
+  """
+  Why a tunnel cannot be turned on here: the server running Deplo is not added, or its proxy is not one Deplo installed.
+  """
+  unavailable: String
+
+  """
+  Something the change just made could not finish, such as deleting the old tunnel in Cloudflare.
+  """
+  warning: String
+}
+
+"""
 A WebAuthn credential on this account. Carries no key material: the public key and the credential id stay server-side.
 """
 type Passkey {
@@ -4886,6 +5121,11 @@ type Query {
   """An app's cron jobs, its master switch and its pickable services."""
   appCronJobs(appId: ID!): CronJobsView
 
+  """
+  The team's databases seen from one app, reachable ones first. Empty without manage_env on the app or a role that reaches the whole team.
+  """
+  appDatabaseOptions(appId: String!): [DatabaseLinkOption!]
+
   """A fresh live per-container metrics snapshot for one app."""
   appMetrics(appId: String!): ContainerMetrics
 
@@ -4919,6 +5159,11 @@ type Query {
     """
     q: String
   ): [App!]
+
+  """
+  Domains whose names get their DNS created automatically when the caller adds them in the active team: their own, and ones shared with the team.
+  """
+  autoDnsZones: [AutoDnsZone!]
 
   """
   How many stored backup artifacts (successful runs) one target has. Deleting the target removes them, so this is what that delete takes with it.
@@ -4969,6 +5214,9 @@ type Query {
   """
   dataRecopySource(id: String!, kind: String!): MigrationRecopySource
   database(id: String!): Database
+
+  """Which apps a database is connected to, and which it could be."""
+  databaseAppLinks(databaseId: String!): DatabaseAppLinks
 
   """Attachable container + default target for a database's console."""
   databaseConsoleInfo(databaseId: String!): ConsoleInfo
@@ -5064,6 +5312,14 @@ type Query {
     """Its clone URL, when the caller has one (else derived)."""
     url: String
   ): RecognizedFramework
+
+  """
+  The teams the caller may connect a DNS provider to: where they hold `manage_domains`.
+  """
+  dnsProviderTeamChoices: [DnsProviderTeam!]
+
+  """The DNS provider accounts the caller connected."""
+  dnsProviders: [DnsProvider!]
 
   """
   The instance-wide Docker cleanup policy. Never null: an instance that has never configured cleanup reads as the defaults - enabled, daily, every scope.
@@ -5338,6 +5594,11 @@ type Query {
   The id of the move into this Deplo that is still open, or null. deploMoveStatus reads it.
   """
   targetMove: String
+
+  """
+  Whether the active team sends alerts to phones: ON, OFF (a push channel exists but is turned off) or NONE.
+  """
+  teamPushChannel: TeamPushChannel
 
   """Every role of the active team - defaults first, then the team's own."""
   teamRoles: [TeamRole!]
@@ -5820,9 +6081,10 @@ type SearchTemplate {
 }
 
 """
-How the team gets the fix. `code`: update the dependency in the app's own code. `update`: redeploy to pull the newer build of the image, read and found to have the fix. `newer_tag`: move to the newer version of the image, read likewise. `upstream`: the newer build still has it, so it waits on the image's maintainers. `unverified`: a newer build exists and is not read yet. Only `code`, `update` and `newer_tag` count; `rebuild`, `deplo` and `none` stay for older clients.
+How the team gets the fix. `code`: update the dependency in the app's own code. `update`: redeploy to pull the newer build of the image, read and found to have the fix. `newer_tag`: move to the newer version of the image, read likewise. `upstream`: the newer build still has it, so it waits on the image's maintainers. `unverified`: a newer build exists and is not read yet. `build_only`: the package is reachable only from the app's devDependencies, so it never runs. Only `code`, `update` and `newer_tag` count; `rebuild`, `deplo` and `none` stay for older clients.
 """
 enum SecurityFix {
+  build_only
   code
   deplo
   newer_tag
@@ -5899,6 +6161,11 @@ type SecurityUpdate {
   service: String
   summary: String
 
+  """
+  Who pulls the package in, from its parent up to the app's own dependency; empty for a direct one. An indirect one is fixed with an override.
+  """
+  via: [String!]
+
   """The OSV id, for example GHSA-xvch-5gv4-984h or GO-2024-2687."""
   vulnId: String
 }
@@ -5928,6 +6195,11 @@ type SecurityUpdateGroup {
   level: SecurityLevel
   packageName: String
   service: String
+
+  """
+  Who pulls the package in, parent first; empty for a direct dependency or an image.
+  """
+  via: [String!]
 }
 
 """
@@ -6694,6 +6966,12 @@ type TeamMembership {
 enum TeamPlan {
   enterprise
   pro
+}
+
+enum TeamPushChannel {
+  NONE
+  OFF
+  ON
 }
 
 """
