@@ -89,11 +89,11 @@ switch.
     },
     "Let's Encrypt": {
       type: "automatic",
-      description: "You own the domain and it resolves here. Validated over HTTP on port 80, renewed automatically",
+      description: "You own the domain and it resolves here, or Cloudflare proxies it. Validated over HTTP on port 80, renewed automatically",
     },
     Cloudflare: {
       type: "automatic",
-      description: "The domain is proxied by Cloudflare. Selected for you when the DNS check detects it",
+      description: "The domain is proxied by Cloudflare and the server answers with a self-signed certificate. Works with Cloudflare's Full mode, not Full (strict)",
     },
     "Installed on the server": {
       type: "manual",
@@ -105,9 +105,28 @@ switch.
 **Entrypoint**, in the same group, follows that choice. Leave it on
 **Automatic** unless you know you need `web` or `websecure`.
 
+### Behind Cloudflare
+
+A domain Cloudflare proxies gets **Let's Encrypt**, which works with Cloudflare's
+**Full** and **Full (strict)** modes. Deplo then checks how Cloudflare reaches the
+server, when you press **Verify** and twice a day, and switches a certificate that
+cannot work in that mode:
+
+| Cloudflare SSL mode | Deplo switches the certificate to |
+| --- | --- |
+| Flexible | **None**: Cloudflare reaches the server over plain HTTP |
+| Full | **Let's Encrypt**, if the domain had none |
+| Full (strict) | **Let's Encrypt**, if it had **Cloudflare** or none |
+
+- **Each switch is in the app's Activity**, signed by Deplo.
+- **A certificate installed on the server is never switched.** Any other choice is
+  yours to change; Deplo only moves one that cannot work.
+- **Past the team's Let's Encrypt limit**, a domain keeps **Cloudflare**.
+
 <Callout type="warn" title="Cloudflare Flexible mode">
-Flexible mode uses HTTPS to the browser but plain HTTP to your server. Use
-**Full** or **Full (strict)** with a certificate on this side.
+Flexible mode uses HTTPS to the browser but plain HTTP to your server. Deplo
+follows it so the site works, but that last leg is not encrypted. Prefer
+**Full (strict)**.
 </Callout>
 
 ## Path routing
@@ -231,7 +250,7 @@ https://app.acme.com, http://localhost:5173
 | Cloudflare error 522 | Cloudflare cannot reach the server. Often an AAAA record alone on a server without IPv6: add the A record. |
 | Certificate warning in the browser | The certificate never issued. Port 80 closed, or DNS pointing elsewhere. |
 | 404 from the proxy | Nothing matches the rule: the app is stopped, or the domain belongs to an app on a different server. |
-| A redirect loop | Cloudflare Flexible mode plus an HTTPS redirect on this side. Switch Cloudflare to Full. |
+| A redirect loop | Cloudflare Flexible mode plus an HTTPS redirect. Press **Verify** so Deplo follows the mode, or switch Cloudflare to Full (strict). |
 
 More in [Domains and TLS](/troubleshooting/domains-and-tls).
 

@@ -70,7 +70,7 @@ These configure the dashboard, API, database and control-plane defaults.
       type: "string",
       default: "cloudflare",
       description:
-        "The resolver name used by domains whose certificate provider is Cloudflare, which validates over DNS-01.",
+        "The resolver put on routers whose certificate provider is Cloudflare. None exists by default, so they serve a self-signed certificate; point this at a DNS-01 resolver you added.",
     },
     DEPLO_DATABASE_POOL_MAX: {
       type: "number",
