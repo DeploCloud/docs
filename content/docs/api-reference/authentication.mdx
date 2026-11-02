@@ -47,7 +47,7 @@ curl https://deplo.example.com/api/graphql \
 
 Discovery starts from the MCP endpoint's `401`, which carries `WWW-Authenticate: Bearer resource_metadata="<url>"`. The documents are `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`.
 
-The team is fixed at consent time: `X-Deplo-Team` cannot move a connection. One consent can grant several teams. Connections are listed and revoked under **Settings -> MCP Server**, and `revokeToken` on the minted token ends the credential everywhere it reached.
+The team is fixed at consent time: `X-Deplo-Team` cannot move a connection. One consent can grant several teams. Connections are listed and revoked under **Settings -> AI agents**, and `revokeToken` on the minted token ends the credential everywhere it reached.
 
 </Tab>
 </Tabs>

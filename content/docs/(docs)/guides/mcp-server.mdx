@@ -18,18 +18,19 @@ Let an AI agent work on your infrastructure: deploy an app, read logs, check why
 failed, restart a database. Deplo speaks the Model Context Protocol (MCP), the same protocol
 Claude, ChatGPT and coding agents use to reach tools.
 
-**Settings -> MCP Server** is visible to anyone with **Connect AI agents** (`manage_mcp`) and
-to whoever manages the team's settings. The token created there is personal, listed only under
-your **Settings -> API tokens**.
+**Settings -> AI agents** sits with your account settings and is visible to anyone with
+**Connect AI agents** (`manage_mcp`). The token created there is personal: only you see it,
+under **Settings -> AI agents** and **Settings -> API tokens**. Whether a team allows agents at
+all is its **Allow AI agents** switch, in **Settings -> General**.
 
 ## Connect an agent
 
 <Steps>
 <Step>
 
-### Open the MCP settings
+### Open AI agents
 
-**Settings -> MCP Server**.
+**Settings -> AI agents**.
 
 </Step>
 <Step>
@@ -41,7 +42,7 @@ or **Something else**.
 
 <Image
   src={`${basePath}/screenshots/mcp-server/01-agent-picker.png`}
-  alt="Settings -> MCP Server, step 1: pick the agent you are connecting"
+  alt="Settings -> AI agents, step 1: pick the agent you are connecting"
   width={1728}
   height={1080}
   className="w-full rounded-lg"
@@ -50,10 +51,10 @@ or **Something else**.
 </Step>
 <Step>
 
-### Turn MCP on
+### Turn AI agents on
 
-Click **Turn on MCP for this team** if it is still off. This is a team setting and needs
-**Manage team settings**. Later you find it in the menu next to the **agents connected** count.
+Click **Turn on AI agents for this team** if it is still off. This is a team setting and needs
+**Manage team settings**. Later you find it in **Settings -> General**, as **Allow AI agents**.
 
 </Step>
 <Step>
@@ -109,7 +110,7 @@ A link can open the wizard on one agent and one template. The
 [agent setup](/getting-started/agent-setup) sends you this way:
 
 ```
-https://deplo.example.com/settings/mcp?agent=claude-code&step=permissions&preset=agent
+https://deplo.example.com/settings/agents?agent=claude-code&step=permissions&preset=agent
 ```
 
 | Parameter | Values |
@@ -123,8 +124,9 @@ goes through **the same permission checks a person goes through**.
 
 Three things control access:
 
-- **A team switch**, on by default for a new team. It decides whether agents may work in this
-  team at all. Changing it needs **Manage team settings**.
+- **A team switch**, **Allow AI agents** in **Settings -> General**, on by default for a new
+  team. It decides whether agents may work in this team at all. Changing it needs **Manage team
+  settings**.
 - **A capability**, **Connect AI agents** (`manage_mcp`). A token works in a team only if its
   owner has it there. Remove it and every agent of theirs is refused in that team, immediately.
 - **A token.** An agent signs in with a normal [API token](/advanced/api-tokens-and-oauth),
@@ -178,12 +180,12 @@ compose file if needed.
 
 ## See and revoke what is connected
 
-Your agents are your tokens: **Settings -> API tokens** lists them with the agent's name.
-**Edit** changes what one may do, **Revoke** ends it. Revoking is immediate and applies to every
-team the agent reached.
+Your agents are your tokens: **Settings -> AI agents** lists every one you connected, in every
+team, and **Settings -> API tokens** lists them with the agent's name. **Edit** changes what one
+may do, **Revoke** ends it. Revoking is immediate and applies to every team the agent reached.
 
-The team sees only a number: **agents connected** on the MCP page, and per member under
-**Settings -> Members**. To disconnect somebody else's agent, remove their **Connect AI agents**
+The team sees only a number: **Settings -> General** counts the agents connected to it, and
+**Settings -> Members** shows the count per member. To disconnect somebody else's agent, remove their **Connect AI agents**
 capability, or remove them from the team.
 
 ## What an agent can and cannot do
@@ -213,7 +215,8 @@ would not want it to do.
 
 ## Troubleshooting
 
-- **The agent connects and sees no tools** - MCP is off for that team.
+- **The agent connects and sees no tools** - **Allow AI agents** is off for that team, in its
+  **Settings -> General**.
 - **Every call is refused** - the token lacks the capability, or the team requires two-factor
   and its owner has not set it up.
 - **"You may not connect AI agents to this team"** - you lost the **Connect AI agents**
