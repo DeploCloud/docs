@@ -11,7 +11,8 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-**Settings -> Automatic DNS**, for anyone who can manage domains in a team.
+**Settings -> General**, in the **Automatic DNS** card, for anyone who can manage domains in a
+team.
 
 Connect a domain like `example.com` with your Cloudflare API token. From then on,
 adding `app.example.com` to an app creates its DNS record in Cloudflare, and
@@ -32,21 +33,25 @@ You need:
 
 <Steps>
 <Step>
-### Pick the provider
-**Settings -> Automatic DNS**, then **Cloudflare**.
+### Open the dialog
+**Settings -> General**, then **Connect a domain** in the **Automatic DNS** card.
 </Step>
 
 <Step>
-### Enter the domain and the token
-For example `example.com`. **Create one** opens Cloudflare's token form with the
-permissions filled in. **Check** confirms the token reaches the domain, and says
-whether it can also create tunnels.
+### Fill it in
+- **DNS provider:** **Cloudflare**.
+- **Domain:** for example `example.com`.
+- **API token:** **Create one** opens Cloudflare's token form with the permissions
+  filled in.
+- **Who can use it:** the teams whose new domains get their DNS created. Only teams
+  where you manage domains are listed.
 </Step>
 
 <Step>
-### Pick the teams
-Domains added in these teams get their DNS created. Only teams where you manage
-domains are listed. **Save**.
+### Connect
+**Connect** checks that the token reaches the domain, then saves it. A token that
+cannot create tunnels still connects, and Deplo says the domain has no Cloudflare
+Tunnel.
 </Step>
 </Steps>
 
@@ -64,9 +69,9 @@ token, and an API token or an AI agent cannot connect or change one.
 | Off (default)                    | Only for you                                                           |
 | On                               | For every member of the selected teams who can manage domains, with your token |
 
-It stops working in a team where you no longer manage domains. **Edit** changes
-the teams and the switch; **Disconnect** removes the connection. Each change is
-listed in the team's **Activity**.
+It stops working in a team where you no longer manage domains. In the card,
+**Edit** changes the teams and the switch; **Disconnect** removes the connection.
+Each change is listed in the team's **Activity**.
 
 ## Add a domain
 
