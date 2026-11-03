@@ -17,12 +17,12 @@ Recent activity in the active team, newest first.
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `actorUserIds` | `[ID!]` |  |
-| `cursor` | `String` |  |
-| `from` | `String` |  |
-| `limit` | `Int` |  |
-| `resourceIds` | `[ID!]` |  |
-| `to` | `String` |  |
+| `actorUserIds` | `[ID!]` | Only these people. `system` picks what Deplo did itself. |
+| `cursor` | `String` | The last row's `cursor`, to read the page after it. |
+| `from` | `String` | Only rows at or after this ISO 8601 date, like `2026-11-01` or `2026-11-01T09:00:00Z`. |
+| `limit` | `Int` | Rows per page, 1 to 200. Default 20. |
+| `resourceIds` | `[ID!]` | Only rows about these apps or databases, or the apps in these folders or projects. |
+| `to` | `String` | Only rows before this ISO 8601 date. |
 | `types` | [`[ActivityType!]`](/api-reference/types/enums#activitytype) |  |
 
 ```graphql
