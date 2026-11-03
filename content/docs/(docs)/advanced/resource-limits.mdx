@@ -8,19 +8,17 @@ import { basePath } from "@/lib/base-path";
 
 import { Activity, Server, Database } from "lucide-react";
 
-Resource limits stop one runaway container from taking down the host and
-everything else on it.
+Resource limits stop one runaway container from taking down its server and everything on it.
 
 **Settings -> Resources**, on an app or a database.
 
-Each field becomes a key in the rendered Compose file, applied by Docker
-when the container starts. They are enforced by the kernel, not by Deplo,
-which is why they take effect on the next deploy and not before.
+- **Every limit is optional.** Empty means no limit.
+- **Each one becomes a key in the rendered Compose file**, enforced by the kernel, so it
+  applies on the **next deploy**, not on save.
+- **On a Compose app** they apply to each service of the stack, and a limit the service sets in
+  its own file wins.
 
-Every dimension is independently optional. Setting a memory limit does not
-oblige you to set anything else.
-
-## Memory and CPU
+## Memory and CPU [#the-two-that-matter]
 
 <Image
   src={`${basePath}/screenshots/resource-limits/01-size-tiles.png`}
@@ -30,37 +28,25 @@ oblige you to set anything else.
   className="w-full rounded-lg"
 />
 
-**Size** sets both at once. Pick a tile from Nano to Large, or **No limit**
-to leave the app uncapped. A tile bigger than the app's server is greyed
-out and says why.
+**Size** sets memory and CPU at once: **Nano** (256 MB, 0.25 CPU), **Micro** (512 MB, 0.5), **Small**
+(1 GB, 1), **Medium** (2 GB, 2) or **Large** (4 GB, 4). **No limit** leaves it uncapped, and a
+size bigger than the server is greyed out.
 
-<TypeTable
-  type={{
-    "Memory limit": {
-      type: "hard ceiling",
-      description: "The container is killed when it exceeds this.",
-    },
-    "CPU limit": {
-      type: "share of a core",
-      description: "The share of CPU it may use, as a fraction of one core.",
-    },
-  }}
-/>
+| Field | What it caps |
+| --- | --- |
+| **Memory limit** | RAM, in MB. Over it, the container is killed and restarted. |
+| **CPU limit** | Cores: `0.5` is half a core, `2` is two. Over it, the container is throttled. |
 
-The slider and numeric field stay in sync. With **View monitoring**, the bar
-also shows current and 15-minute peak usage. The suggested size leaves 1.5x
-headroom; **Apply** fills it and **Save limits** stores it. A cap below the
-recent peak is flagged before you save.
+With **View monitoring**, each field shows current use and the peak of the last 15 minutes. The
+suggested size is the smallest with 1.5x headroom over that peak: **Apply** fills it in. A cap
+below the peak is flagged before you save.
 
-Limits apply on the next deploy, so the confirmation offers **Deploy now**
-(**Redeploy now** on a database). **Clear all** removes every limit,
-advanced ones included.
+**Save limits** offers **Deploy now** (**Redeploy now** on a database). **Clear all** empties
+every field, advanced ones included.
 
 <Callout type="warn">
-A memory limit is a kill switch, not a throttle. A process that goes past
-it is terminated, not slowed down. Set it above the app's real peak, not
-at it, and watch [Monitoring](/guides/observability/monitoring) for a while before
-tightening.
+A memory limit is a kill switch, not a throttle. Set it above the app's real peak, not at it, and
+watch [Monitoring](/guides/observability/monitoring) for a while before tightening.
 </Callout>
 
 ## Advanced limits
@@ -73,75 +59,41 @@ tightening.
   className="w-full rounded-lg"
 />
 
-<TypeTable
-  type={{
-    "Memory reservation": {
-      type: "soft floor",
-      description: "The scheduler tries to leave this much available.",
-    },
-    "Swap limit": {
-      type: "memory + swap",
-      description: "Memory plus swap combined.",
-    },
-    "CPU shares": {
-      type: "relative weight",
-      description: "Weight against other containers under contention.",
-    },
-    "CPU pinning": {
-      type: "core list",
-      description: "Which cores it may run on.",
-    },
-    "Process limit": {
-      type: "hard ceiling",
-      description: "Maximum processes and threads. The defence against a fork bomb.",
-    },
-    "Open files": {
-      type: "hard ceiling",
-      description: "The file descriptor ceiling.",
-    },
-    "User processes": {
-      type: "hard ceiling",
-      description: "The per-user process ceiling.",
-    },
-    "Shared memory": {
-      type: "size",
-      description: "The size of /dev/shm. Postgres, Chrome and some test runners need more than the default.",
-    },
-    "Disk quota": {
-      type: "hard ceiling",
-      description: "A cap on the container's writable layer.",
-    },
-    "OOM priority": {
-      type: "kill order",
-      description: "How likely this container is to be killed first when the host runs out of memory.",
-    },
-  }}
-/>
+| Field | What it caps |
+| --- | --- |
+| **Memory reservation** | Soft floor: RAM kept free for it under contention. No higher than the memory limit. |
+| **Swap limit** | Memory plus swap. Needs a memory limit, and at least that much. |
+| **CPU shares** | Relative weight, only under contention. Default 1024; 2048 gets twice the share. |
+| **CPU pinning** | Cores it may run on: `0`, `0,1` or `0-3`. |
+| **Process limit** | Processes and threads. The defence against a fork bomb. |
+| **Open files** | File descriptors (`ulimit nofile`). Raise it on "too many open files". |
+| **User processes** | Per-user processes (`ulimit nproc`). |
+| **Shared memory** | `/dev/shm`, 64 MB by default. Some databases and Chromium need more. |
+| **Disk quota** | The container's writable layer, not its volumes. |
+| **OOM priority** | -1000 to 1000. Higher is killed first when the host runs out of memory. |
 
 ## Important limits
 
-- **Disk quota only works on some hosts.** It needs `overlay2` on XFS with
-  project quotas, or devicemapper. Anywhere else, Compose rejects the key
-  and the deploy fails. Leave it alone unless you know the storage driver.
-- **MySQL and MariaDB will not start under about 512 MB.** The interface
-  warns you about exactly this on a database.
-- **Limits apply on the next deploy.** Save, then redeploy.
-- **A container killed for memory looks like a crash.** The logs end
-  mid-work with no error, and the app restarts. If a container dies at the
-  same size every time, this is why.
-- **CPU limit and CPU shares are different things.** A limit is a ceiling
-  that applies always. Shares only matter when the machine is contended.
-- **A negative OOM priority needs the host-volumes grant.** It asks the
-  kernel to kill other containers first, so it is gated like a bind mount.
+- **Disk quota only works on some hosts**: `overlay2` on XFS with project quotas, or
+  devicemapper. Anywhere else the deploy fails. Leave it empty unless you know the storage
+  driver.
+- **MySQL and MariaDB need about 512 MB.** Less can send InnoDB into a restart loop. Their
+  Resources page says so.
+- **A container killed for memory looks like a crash.** The logs end mid-work with no error,
+  then it restarts. Dying at the same size every time is the tell.
+- **CPU limit and CPU shares differ.** A limit always applies; shares only matter on a busy
+  machine.
+- **A negative OOM priority needs the host-volumes grant.** It asks the kernel to kill other
+  containers first, so it is gated like a bind mount. See
+  [Host access](/advanced/host-access-and-privileges).
 
 ## Troubleshooting
 
-- **The container is killed repeatedly** - the memory limit is under its
-  real peak. Raise it, or fix the leak.
-- **The deploy fails on the storage option** - the host does not support
-  disk quotas. Clear that field.
-- **The limits seem to do nothing** - they were saved but not deployed.
-  Redeploy.
+- **The container is killed repeatedly**: the memory limit is under its real peak. Raise it, or
+  fix the leak.
+- **The deploy fails on the storage option**: the host does not support disk quotas. Clear that
+  field.
+- **The limits seem to do nothing**: they were saved but not deployed. Redeploy.
 
 More in [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
 

@@ -8,14 +8,10 @@ import { basePath } from "@/lib/base-path";
 
 import { UserPlus, Users } from "lucide-react";
 
-**Activity**, in the sidebar, shows who did what on your team, and when.
-
-On a wide screen the filters and the breakdown are in a column on the right. On a narrow one
-the filters are above the timeline and the breakdown at the end of the page.
+**Activity**, in the sidebar (on a phone, under **More**), shows who did what on your team,
+and when.
 
 ## The timeline
-
-One timeline, newest first, grouped by month. Each entry shows:
 
 <Image
   src={`${basePath}/screenshots/activity/01-timeline.png`}
@@ -25,25 +21,19 @@ One timeline, newest first, grouped by month. Each entry shows:
   className="w-full rounded-lg"
 />
 
-1. the **face** of the person who acted,
-2. their **name**, and how long ago it was,
-3. **what they did**, in one sentence, with the exact time at the end.
+Newest first, grouped by month, with the month and its event count pinned at the top while
+you scroll. More entries load as you scroll down.
 
-The app or database named in an entry shows its own picture, and the name links to it.
-
-The same action repeated by the same person is grouped into one entry, with one line per run.
-
-The month heading stays at the top while you scroll, with the number of events in that month.
-
-Actions done by the system or by a git provider are attributed to `System`, with the event's
-icon instead of a face.
-
-More entries load as you scroll down.
+- Each entry shows **who acted** (face and name), how long ago, and **what they did** in one
+  sentence, with the exact time at the end.
+- The app or database named in an entry shows its picture and links to it.
+- The same action repeated by the same person is one entry, with one line per run.
+- Actions by the system or a git provider are attributed to `System`.
 
 ## Filters
 
-Four filters, and they combine: several values in one filter widen the result, two different
-filters narrow it.
+On a wide screen the filters sit in a column on the right. Below 768px they open from one
+**Filters** button.
 
 <Image
   src={`${basePath}/screenshots/activity/02-filtered.png`}
@@ -57,52 +47,46 @@ filters narrow it.
   type={{
     User: {
       description:
-        "Who acted. Type to search, tick as many people as you want. Includes people who have since left the team, and one System entry for everything with no person behind it.",
+        "Who acted. Includes people who have since left the team, and one System entry for everything with no person behind it.",
       type: "multiple",
     },
     Date: {
       description:
-        "All time, or the last 24 hours, 3 days, 7 days or 30 days - or pick an exact range on the calendar.",
+        "All time, the last 24 hours, 3, 7 or 30 days, or an exact range on the calendar.",
       type: "one",
     },
     Event: {
       description:
-        "What kind of thing happened, grouped into Apps, Data, Team and Platform. Search it, or tick a whole group with Select all.",
+        "What happened, grouped into Apps, Data, Team and Platform. Tick a whole group with Select all.",
       type: "multiple",
     },
     Resource: {
-      description:
-        "Which app, folder, project or database it happened to. One searchable list covering all four.",
+      description: "Which app, folder, project or database it happened to.",
       type: "multiple",
     },
   }}
 />
 
-The filters are part of the URL, so a filtered view can be shared as a link.
-
-Every option shows how many events it covers. An option with `0` stays in the list.
+- **Several values in one filter widen** the result, **two filters narrow** it.
+- Every option shows how many events it covers.
+- The filters are part of the URL, so a filtered view can be shared as a link.
+- **Filtering by Resource hides team-level events**: adding a member or rotating a token did
+  not happen *to* an app.
 
 ## The breakdown
 
-Under the filters, **Events** and **People** list what the period holds, busiest first. Click
-a line to filter the timeline by it, click again to remove the filter.
+**Events** and **People** list what the period holds, busiest first, five lines each. Click a
+line to filter by it, click again to remove it.
 
-The heading says which period the numbers cover: the dates you picked, or the **last 30 days**
-when no date is set. With no date filter the timeline itself goes back further than that.
-
-Each list ignores its own filter: picking a person filters the events next to them, but still
-shows everyone else's totals. Each list shows five lines, with the rest one click away.
-
-<Callout type="info">
-  Filtering by **Resource** hides team-level events. Adding a member or rotating a token did
-  not happen *to* an app, so they are left out.
-</Callout>
+- The heading names the period: the dates you picked, or the **last 30 days** when no date is
+  set. The timeline itself goes back further.
+- Each list ignores its own filter: picking a person narrows the events, but the People list
+  still shows everyone's totals.
 
 ## One app, one database
 
-Every app and every database has its own **Activity** page, in its menu just above
-**Settings**. It is the same timeline, already filtered to that one thing. User, Date and Event
-still work, and **Clear filters** brings you back to that page.
+Every app and database has its own **Activity** page, in its menu just above **Settings**: the
+same timeline, already filtered to it. **Clear filters** brings you back to that page.
 
 <Image
   src={`${basePath}/screenshots/activity/03-one-app.png`}
@@ -112,51 +96,33 @@ still work, and **Clear filters** brings you back to that page.
   className="w-full rounded-lg"
 />
 
-<Callout type="info">
-  A database's own page shows only events recorded after this page was added. Older events are
-  still on the team-wide **Activity**.
-</Callout>
+A database's own page shows only events recorded after that page was added. Older ones are
+still on the team-wide **Activity**.
 
 ## One person
 
-A member has an activity page too: **Settings -> Members -> the member -> Activity**. It is the
-same timeline, already filtered to them. Date, Event and Resource still work, and
-**Clear filters** brings you back here.
-
-It needs **Manage members**, like the rest of a member's page.
+**Settings -> Members -> the member -> Activity** is the same timeline, filtered to them. It
+needs **Manage members**, like the rest of a member's page.
 
 ## Events
 
-Every event has one type, and the Event filter groups them:
-
 | Group | Covers |
 | --- | --- |
-| **Apps** | Deployments, apps, projects, domains, variables |
+| **Apps** | Deployments, apps, security updates, projects, domains, variables |
 | **Data** | Databases, backups, backup destinations, cron jobs |
 | **Team** | Members and roles; tokens, passkeys and two-factor |
 | **Platform** | Servers, integrations, instance settings, Docker cleanup, monitoring, MCP access |
 
 ## What you can see
 
-Activity needs the **View activity** capability. A member with access to only part of the team
-sees the events of the apps they can reach, not the team-wide events.
-
-If an entry could not be written, the next entry says so, so a gap in the log is always
-visible.
+- Activity needs the **View the activity log** capability (`view_activity`).
+- A member whose role reaches only part of the team sees the events of what they can reach,
+  not the team-wide ones.
+- If entries could not be recorded, the log says how many, so a gap is always visible.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<UserPlus className="text-blue-400" />}
-    title="Members"
-    description="Add, invite and remove people"
-    href="/guides/team/members"
-  />
-  <Card
-    icon={<Users className="text-blue-400" />}
-    title="Teams and capabilities"
-    description="How teams, roles and capabilities fit together"
-    href="/concepts/teams-and-capabilities"
-  />
+  <Card icon={<UserPlus className="text-blue-400" />} title="Members" description="Add, invite and remove people" href="/guides/team/members" />
+  <Card icon={<Users className="text-blue-400" />} title="Teams and capabilities" description="How teams, roles and capabilities fit together" href="/concepts/teams-and-capabilities" />
 </Cards>

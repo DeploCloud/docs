@@ -1,6 +1,6 @@
 ---
 title: Add a domain
-description: Give an hostname to your app, and serve it over HTTPS.
+description: Give a hostname to your app, and serve it over HTTPS.
 icon: Globe
 ---
 
@@ -9,33 +9,38 @@ import { basePath } from "@/lib/base-path";
 
 import { Globe, ShieldCheck, GitPullRequestArrow } from "lucide-react";
 
-Most apps get a generated `deplo.site` address the moment they are created, this guide
-covers how to change it. An app that serves nothing over HTTP starts with no address at all
+Most apps get a generated `deplo.site` address when they are created. This page puts your own
+hostname in front of one.
 
 ## Point the domain at the server
+
+<Callout type="info" title="Domain on Cloudflare?">
+  Connect its zone once under **Settings -> General -> Automatic DNS** and Deplo creates the
+  record for you: skip this part. See [Automatic DNS](/guides/networking/automatic-dns).
+</Callout>
 
 <Steps>
 <Step>
 
 ### Find the server's public IP
 
-It is on the server card in **Settings -> Servers**, and it is also the hexadecimal part of the
-app's generated `deplo.site` URL.
+It is the hex part of the app's generated URL (`cb00710a` is `203.0.113.10`), and it is on the
+server's card in **Settings -> Servers**.
 
 </Step>
 <Step>
 
 ### Create an A record
 
-At your DNS provider, create an **A record** for the hostname, for example
+At your DNS provider, point an **A record** for the hostname at the server, for example
 `app.example.com` -> `203.0.113.10`.
 
-If the server has IPv6, also create an **AAAA record** for the same hostname. Once the domain is
-added, its row prints the address, for example `2001:db8::10`.
+If the server has IPv6, add an **AAAA record** too. Once the domain is added, its row prints the
+address, for example `2001:db8::10`.
 
 <Callout type="warn" title="No AAAA unless the server has IPv6">
 An AAAA record that points anywhere but this server makes the domain `misconfigured`, even next
-to a correct A record. If the row prints no AAAA address, create only the A record.
+to a correct A record. If the row prints no IPv6 address, create only the A record.
 </Callout>
 
 </Step>
@@ -63,9 +68,11 @@ Click **Add Domain** and type the hostname, for example `app.example.com`.
 
 ### Turn on HTTPS
 
-Open **Advanced settings**, then the **HTTPS** group, and set **Certificate** to **Let's
-Encrypt**. Behind Cloudflare's orange cloud, Deplo detects the proxy and selects **Cloudflare**
-for you.
+Under **HTTPS**, set **Certificate** to **Let's Encrypt**. It starts on **None (no
+certificate)**, which serves plain HTTP.
+
+Behind Cloudflare's proxy, Deplo follows Cloudflare's SSL mode by itself: Let's Encrypt under
+**Full** or **Full (strict)**, no certificate under **Flexible**.
 
 <Image
   src={`${basePath}/screenshots/add-a-domain/02-add-domain-dialog.png`}
@@ -80,42 +87,41 @@ for you.
 
 ### Confirm, and wait for DNS
 
-Click **Add domain**. The DNS will be automatically checked
+Click **Add domain**. Deplo checks the DNS right away and keeps checking until it points here.
 
 </Step>
 <Step>
 
 ### Set it as primary
 
-When available, you can click the star on the domain's row to mark it as primary
+Click the star on the domain's row to make it the app's main address. The star stays disabled
+while the domain is `misconfigured`.
 
 </Step>
 </Steps>
 
-Let's Encrypt validates over HTTP, so port 80 must be reachable from the internet even for a site
-you only intend to serve on 443.
+Let's Encrypt validates over HTTP: port `80` must be reachable even for a site served on `443`.
 
 ## No domain yet?
 
-The **Add Domain** dialog has a **Generate** button that automatically creates a new deplo.site hostname
+The **Add Domain** dialog has a **Generate** button that fills in a new `deplo.site` hostname.
 
-Deplo skips the generated address when it cannot tell where the traffic should land:
+Deplo creates no generated address when it cannot tell where traffic should land:
 
-- a compose app where no service declares `ports:` or `expose:`, a stack of background workers
-  for example
-- an app built from a database image, like `redis` or `postgres`
+- a compose app where no service declares `ports:` or `expose:`, such as a stack of workers
+- an app from a database image, like `redis` or `postgres`, or an image that declares no port
 
-Nothing is broken, the app simply has no front door yet. Open **Add Domain**, click **Generate**,
-and on a compose app pick the container the address routes to
+Nothing is broken: the app has no front door yet. Open **Add Domain**, click **Generate**, and on
+a compose app pick the container it routes to.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| Stuck on **Waiting for DNS** | The record has not propagated, or it points at a different machine. Check with `dig +short app.example.com`. |
-| `misconfigured` with a correct A record | An AAAA record points elsewhere. Check with `dig +short AAAA app.example.com`, then remove it or point it at the server's IPv6. |
-| The browser shows a certificate warning | The certificate has not issued, the port 80 is closed, or the domain resolves elsewhere. If the hostname is new it needs to propagate or your browser is using the old certificate from cache |
-| 404 from the proxy | The domain resolves and the certificate is fine, but no router matches. Usually the app is stopped, or the domain sits on an app running on a different server. |
+| Stuck on **Waiting for DNS** | The record has not propagated, or points at another machine. Check with `dig +short app.example.com`. |
+| `misconfigured` with a correct A record | An AAAA record points elsewhere. Check with `dig +short AAAA app.example.com`, then remove it or point it at the server. |
+| The browser shows a certificate warning | The certificate is still **None**, has not issued yet, port `80` is closed, or the domain resolves elsewhere. A browser can also hold an old certificate in cache. |
+| 404 from the proxy | DNS and certificate are fine but no route matches. Usually the app is stopped, or runs on a different server. |
 
 More in [Domains and TLS](/troubleshooting/domains-and-tls).
 

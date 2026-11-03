@@ -6,129 +6,91 @@ description: "Fix the common problems after buying a server with Deplo from a ho
 import { Download, Globe, KeyRound, LifeBuoy } from "lucide-react";
 
 You picked a plan on [deplo.build/get-started](https://deplo.build/get-started) and paid on the
-hosting provider's checkout. The hosting provider installs Deplo on your server and sends you its
-login. Most problems below fix themselves within a few minutes, or with one check in the hosting
-provider's panel.
-
-## Who does what
+hosting provider's checkout. The provider installs Deplo on your server and sends you its login.
 
 | What | Who handles it |
 | --- | --- |
-| Payment, invoices, renewals, refunds | The hosting provider |
+| Payment, invoices, renewals, refunds, upgrades | The hosting provider |
 | The server: power, reinstall, resources, firewall | The hosting provider |
 | The email with your Deplo login | The hosting provider |
 | Deplo, once you are signed in | [These docs](/), then the [issue tracker](https://github.com/DeploCloud/deplo/issues) |
 
-## Email and sign-in
+## The email with your Deplo login has not arrived
 
-### The email with your Deplo login has not arrived
-
-1. **Wait up to 5 minutes.** The server boots, Deplo installs, and only then does the email go
-   out.
-2. **Check spam and promotions.** Search your inbox for `Deplo` and for the hosting provider's
-   name.
-3. **Check the address on your order.** The email goes to the one in the hosting provider's
-   client area, which may not be the one you use every day.
-4. **Check that Deplo is installed.** Open your server in the hosting provider's panel. Some
-   providers install Deplo on their own, others need you to press their button that installs Deplo,
-   or to pick the Deplo template. If you never did, do it now and wait another 5 minutes.
-5. **Contact the hosting provider's support.** They send this email, not Deplo: they can resend it
-   and check the install from their side.
+1. **Wait up to 5 minutes.** The server boots and installs Deplo before the email goes out.
+2. **Check spam and promotions** for `Deplo` and for the provider's name.
+3. **Check the address on your order**, in the provider's client area.
+4. **Check that Deplo is installed.** Some providers install it on their own; others need their
+   install button, or the Deplo template. If you skipped it, do it now and wait 5 more minutes.
+5. **Ask the provider's support.** They send this email, not Deplo, and can resend it.
 
 <Callout type="info" title="Installing Deplo yourself? There is no email">
-  When the hosting provider's steps tell you to install Deplo with the guide, nobody sends a
-  login. The installer prints a setup link and you create your account there: see
+  The installer prints a setup link where you create your account: see
   [Create your first account](/getting-started/install#create-your-first-account).
 </Callout>
 
-### Your email and password are rejected
+## Your email and password are rejected
 
 | Check | Why |
 | --- | --- |
-| You used the Deplo login from the email | The client area login and the server's root password are different accounts |
-| The password has no space at either end | A space copied by mistake is part of the password |
-| You already changed the temporary password | Deplo replaced it at your first sign-in: use the one you chose |
+| You used the Deplo login from the email | The client area login and the server's root password are other accounts |
+| No space at either end of the password | A space copied by mistake is part of it |
+| You already replaced the temporary password | Use the one you chose |
 
-Some hosting panels can only pass the server's root password to Deplo. In that case the root
-password also works on the sign-in page, until your first sign-in.
+Some hosting panels can only pass the server's root password to Deplo: then the root password is
+the temporary one. Still locked out? See [Sign-in and access](/troubleshooting/sign-in-and-access).
 
-Still locked out? See [Sign-in and access](/troubleshooting/sign-in-and-access).
+## Deplo asks for a new password right away
 
-### Deplo asks for a new password right away
+Expected. At the first sign-in you replace the temporary password with your own and name your
+team. Until then the account can do nothing else.
 
-That is expected. At the first sign-in Deplo asks you to replace the temporary password with one
-of your own and to name your team. Until you do, the account can do nothing else.
+## The panel address does not open
 
-## The panel
+The address is in the email, like `https://deplo-cb00710a.deplo.site`.
 
-### The panel address does not open
+1. **Wait a few minutes.** It does not answer until the install finishes.
+2. **Check that the server is running** in the provider's panel.
+3. **Check the address.** `cb00710a` is the server's IPv4 in hexadecimal: `203.0.113.10` gives
+   `cb00710a`.
+4. **Open ports `80` and `443`** in the provider's firewall, if it has one.
+5. **On your own domain**, its DNS must point at the server's IP. The `deplo.site` address works
+   meanwhile.
 
-The address is in the email and looks like `https://deplo-cb00710a.deplo.site`.
+Still nothing after 15 minutes? The provider can check the install from their side.
 
-1. **Wait a few minutes.** The install takes a few minutes after the server boots. Until then the
-   address does not answer.
-2. **Check that the server is on.** In the hosting provider's panel the server must be running.
-   Start it if it is stopped.
-3. **Check the address.** `cb00710a` is your server's IP in hexadecimal: each of the four numbers
-   becomes two characters, so `203.0.113.10` gives `cb00710a`.
-4. **Check the firewall.** Ports `80` and `443` must be open. If the hosting provider's panel has
-   a firewall, allow both.
-5. **On your own domain**, the domain's DNS must point at the server's IP. Meanwhile the
-   `deplo.site` address works.
+## The browser says the connection is not secure
 
-Still nothing after 15 minutes? The hosting provider can check the install from their side.
+Right after the install the certificate may still be on its way: wait a minute and reload. On your
+own domain it needs the DNS pointing at the server and port `80` open: see
+[Domains and TLS](/troubleshooting/domains-and-tls).
 
-### The browser says the connection is not secure
+## The server has no Deplo on it
 
-Right after the install the certificate may still be on its way. Wait a minute and reload.
+The provider's panel shows another operating system, or no Deplo panel ever answers: the order went
+out without the Deplo template, or the install button was never pressed.
 
-On your own domain the certificate needs the domain's DNS pointing at the server and port `80`
-open. See [Domains and TLS](/troubleshooting/domains-and-tls).
-
-## Deplo is not on the server
-
-### The server has no Deplo on it
-
-The hosting provider's panel shows another operating system, or no Deplo panel ever answers. The
-order went out without the Deplo template, or the install button was never pressed.
-
-- **Install it from the hosting provider's panel**, with their button that installs Deplo, or by
-  reinstalling the server with the Deplo template.
+- **Install it from the provider's panel**, with their install button or the Deplo template.
 - **Or install it yourself** with one command: see [Installation](/getting-started/install).
 
 <Callout type="warn" title="A reinstall wipes the disk">
-  On a new server there is nothing to lose. If you already put data on it, take a snapshot or a
-  backup first.
+  Nothing to lose on a new server. If you already put data on it, take a snapshot or a backup first.
 </Callout>
 
-## Checkout and billing
+## The checkout did not open
 
-### The checkout did not open
+After the countdown, deplo.build opens the provider's checkout in a new tab. If the browser blocks
+it, the window says so: press **Open now**, or allow pop-ups for `deplo.build`.
 
-After the countdown, deplo.build opens the hosting provider's checkout in a new tab. When the
-browser blocks it, the window says so: press **Open now**, or allow pop-ups for `deplo.build`.
+## The price at checkout is different
 
-### The price at checkout is different
+- **Taxes:** VAT or other taxes can be added, depending on your country.
+- **Currency:** deplo.build can show the price converted to your currency, as an estimate. The
+  checkout charges in the provider's currency.
 
-| Cause | What happens |
-| --- | --- |
-| Taxes | VAT or other taxes can be added at checkout, depending on your country |
-| Currency | deplo.build can show the price converted to your currency, as an estimate. The checkout charges in the hosting provider's currency |
-
-Buying through deplo.build never raises it: Deplo earns a commission from the hosting provider,
-and your price stays the same.
-
-### Invoices, renewals, refunds and upgrades
-
-All of it is between you and the hosting provider: Deplo never sees your payment. Look in their
-client area or ask their support. A bigger plan is an upgrade with the hosting provider too.
-
-## If you still need help
-
-- **The server, the email, the bill:** the hosting provider's support. Tell them your order
-  number and what you see.
-- **Deplo itself:** the rest of [Troubleshooting](/troubleshooting), then the
-  [issue tracker](https://github.com/DeploCloud/deplo/issues).
+Buying through deplo.build never raises the price: Deplo earns a commission from the provider.
+Invoices, renewals, refunds and upgrades stay between you and the provider: Deplo never sees your
+payment.
 
 ## See also
 

@@ -11,11 +11,14 @@ import { SlidersHorizontal, FolderTree } from "lucide-react";
 One variable that several apps use: an API key, an S3 bucket name, a `SENTRY_DSN`. Change it once
 and every app that uses it gets the new value on its next deploy.
 
-A shared variable has two separate parts: **who it is offered to**, and **which apps link it**.
+<Callout type="info">
+Two separate parts: **who it is offered to**, and **which apps link it**. Only the per-app link
+injects the variable. Until an app links it, the value reaches nothing.
+</Callout>
 
 ## Who it is offered to
 
-**Availability scopes** say which apps can see the variable:
+The **Shared with** step has three scopes:
 
 | Scope | Offered to |
 | --- | --- |
@@ -23,36 +26,28 @@ A shared variable has two separate parts: **who it is offered to**, and **which 
 | **Projects** | Every app in the chosen projects, or only in the environments you pick |
 | **Specific apps** | Exactly the apps you pick. The only scope that links right away |
 
-Two variables can have the same name if they are offered to different apps, for example one
-`DATABASE_URL` per project.
-
-<Callout type="info">
-**Only the per-app link injects the variable.** Until an app links it, the value reaches nothing.
-</Callout>
-
-At deploy time a linked shared variable wins over the app's own variable with the same name, and
-loses to a preview override.
+- **Two variables can share a name** if they are offered to different apps, for example one
+  `DATABASE_URL` per project.
+- **A linked shared variable wins over the app's own variable** with the same name, and loses to
+  a preview override. If an app needs its own value, unlink the shared one.
 
 ### Shared with two teams or more
 
-Ticking a **second** team changes the behaviour:
+Ticking a **second** team, for a company proxy or a registry mirror, changes the behaviour. The
+**Review** step says which kind you are creating.
 
-- The variable is added to every app in every ticked team. No link needed.
-- It has the **lowest** priority, so an app's own value still wins.
-
-Use this for things like a company proxy or an internal registry mirror. The review step tells you
-which kind you are creating.
-
-You can only tick a team where you hold **Manage environment variables** on the whole team.
-Unticking teams until one is left turns the automatic add off. Deleting a team does not.
+- **It is added automatically** to every app in every ticked team. No link needed.
+- **It has the lowest priority**, so an app's own value still wins.
+- **It shows on each app's Environment tab**, read-only, with the owner team's name.
+- **You can only tick a team where you hold Manage environment variables** on the whole team.
+- **Unticking teams until one is left turns the automatic add off.** Deleting a team does not.
+- **An older instance-wide variable works the same way** for every team, new ones included. It
+  reads **Every team**, only an instance admin can change it, and no new one can be created.
 
 ### A variable another team shares with you
 
-It shows in your **Shared** tab with the owner team's name and no edit buttons. You can link it to
-your apps, but not change it. On an app's **Environment** tab the only action is **Remove from
-this app**.
-
-If the owner stops sharing it with your team, your links to it are removed.
+It shows on your **Shared** tab with the owner team's name and no edit buttons. You can link it to
+your apps, not change it. If the owner stops sharing it with your team, your links are removed.
 
 ## Create one
 
@@ -71,7 +66,7 @@ If the owner stops sharing it with your team, your links to it are removed.
 
 ### Open the Shared tab
 
-Open **Variables** in the sidebar, then the **Shared** tab, then **New shared variable**.
+**Variables** in the sidebar, the **Shared** tab, then **New shared variable**.
 
 <Image
   src={`${basePath}/screenshots/shared-variables/02-shared-only.png`}
@@ -84,77 +79,34 @@ Open **Variables** in the sidebar, then the **Shared** tab, then **New shared va
 </Step>
 <Step>
 
-### Fill the table
+### Fill the rows
 
-A name and a value per row. **Add another** adds rows. Pasting a whole `.env` into a name field
-splits it into rows.
-
-The **Secret** switch applies to the whole table.
+A name and a value per row. **Add another** adds rows, and a `.env` pasted into a name field splits
+into rows. **Secret** applies to every row.
 
 </Step>
 <Step>
 
 ### Set availability
 
-Choose at least one scope, or pick specific apps. The choice applies to every row.
-
-</Step>
-<Step>
-
-### Review and create
-
-The last step shows what will be created and how many apps it reaches.
+Pick one or more scopes, then the teams, projects or apps. **Review** shows what will be created
+and how many apps it reaches.
 
 </Step>
 </Steps>
 
 ### From an app
 
-<Steps>
-<Step>
+On the app's **Environment** tab, click **Add**, open the **Shared** tab, then **New shared
+variable**. Same steps, and the variable is linked to this app as soon as it is created.
 
-### Open the app's variables
-
-Open the app, then **Environment**, then **Add**.
-
-</Step>
-<Step>
-
-### Go to Shared
-
-On the **Shared** tab, click **New shared variable**.
-
-</Step>
-<Step>
-
-### Fill it in
-
-Same table. The variable is linked to this app as soon as it is created. You can also offer it to
-teams or projects.
-
-</Step>
-</Steps>
-
-<Callout type="info">
-Creating a shared variable needs **Manage environment variables** on the whole team. Without it
-the button is not shown.
-</Callout>
+Creating, changing or deleting one needs **Manage environment variables** on the whole team.
+Without it the button is not shown.
 
 ## Use one in an app
 
-<Steps>
-<Step>
-
-### Open Environment
-
-Open the app, then **Environment**.
-
-</Step>
-<Step>
-
-### Link it
-
-Click **Add**, then the **Shared** tab. Add the variable you want.
+On the app's **Environment** tab, click **Add**, open the **Shared** tab and add the variable.
+Then redeploy.
 
 <Image
   src={`${basePath}/screenshots/shared-variables/03-used-in-an-app.png`}
@@ -164,38 +116,20 @@ Click **Add**, then the **Shared** tab. Add the variable you want.
   className="w-full rounded-lg"
 />
 
-</Step>
-<Step>
-
-### Redeploy
-
-Redeploy.
-
-</Step>
-</Steps>
-
-A linked row has two actions:
-
-- **Manage** opens the variable on **Variables -> Shared**.
-- **Remove from this app** removes the link here. Other apps keep the variable.
-
-To delete the variable itself, use the **Shared** tab. A variable shared with more than one team
-keeps arriving after **Remove from this app**, at the lowest priority.
+- **Manage**, on a linked row, opens the variable on **Variables -> Shared**. Delete it there: it
+  leaves every app it reaches on their next deploy.
+- **Remove from this app** removes only this link. A variable shared with two or more teams keeps
+  arriving, at the lowest priority.
 
 ## Good to know
 
-- **Scope is not injection.** The link is the only way in, unless the variable is shared with
-  more than one team.
-- **A linked shared variable wins over the app's own variable.** If an app needs its own value,
-  unlink the shared one.
 - **The variable belongs to the team that created it.** Deleting that team deletes the variable
   everywhere.
-- **Deleting a variable affects every linked app** on its next deploy.
-- **A fork preview receives no shared value.**
-- **The compose file wins.** A key set in the compose file keeps the compose value. Those rows are
-  marked **Set in the compose file**.
+- **A secret's name and value never change.** You can still change who it is shared with.
+- **The compose file wins.** A key it sets keeps the compose value; the row reads **Set in the
+  compose file**.
 - **If everything it was offered to is deleted**, the variable stays and reads **Not shared with
-  anything** until you give it a new audience.
+  anything** until you share it again.
 
 ## Troubleshooting
 
@@ -203,7 +137,7 @@ keeps arriving after **Remove from this app**, at the lowest priority.
 | --- | --- |
 | The app does not see the value | It is offered but not linked. Link it on the app's **Environment** tab. |
 | The value changed and the app still has the old one | It applies on the next deploy. Redeploy. |
-| A different value than expected | The app defines the same name itself, a preview override does, or the compose file sets that key. |
+| A different value than expected | A preview override or the compose file sets that key. For a variable added automatically, the app's own value wins. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

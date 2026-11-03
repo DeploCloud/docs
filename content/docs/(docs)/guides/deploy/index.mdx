@@ -6,8 +6,8 @@ description: Five ways to get code onto Deplo, plus ready-made templates.
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-Every app starts from one of five sources. Pick the one that matches what you have, or start from
-a template.
+Every app starts from one of five sources. On the Overview, open **Add New**, then
+**Application**, and pick the one that matches what you have.
 
 <Image
   src={`${basePath}/screenshots/deploy/01-five-sources.png`}
@@ -21,31 +21,15 @@ a template.
 | --- | --- | --- | --- |
 | [GitHub](/guides/deploy/from-git) | A repository, connected once per team | yes | yes |
 | [Git](/guides/deploy/from-git) (beta) | GitLab, Bitbucket, Gitea or any git server | yes | yes |
-| [Docker image](/guides/deploy/docker-image) | An image reference | no, already built | no |
-| [Upload](/guides/deploy/upload-code) | A compressed archive of the project | yes | yes |
+| [Docker Image](/guides/deploy/docker-image) | An image reference | no, already built | no |
 | [Compose](/advanced/compose-apps) | A `docker-compose.yml`, started as written | no | no |
+| [Upload](/guides/deploy/upload-code) | A `.zip` or tarball of the project | yes | kept builds only |
 
 ## Or start from a template
 
 A [template](/guides/deploy/from-template) is a Compose stack from the catalogue, with passwords
-generated and the address picked for you. Deplo creates a normal Compose app from it.
+generated and the address picked for you. Open **Templates** in the sidebar, or the **Template**
+tile under the five sources.
 
-Open the catalogue from **Templates** in the sidebar, or from the **Template** button under the
-five tiles in the new-app wizard.
-
-## In this section
-
-**Deploy from Git** - point an app at a repository, on GitHub or anywhere else.
-[Learn more ->](/guides/deploy/from-git)
-
-**Deploy a Docker image** - run something that is already built.
-[Learn more ->](/guides/deploy/docker-image)
-
-**Deploy from a template** - one click, preconfigured, from the catalogue.
-[Learn more ->](/guides/deploy/from-template)
-
-**Upload your code** - deploy an archive, with no repository at all.
-[Learn more ->](/guides/deploy/upload-code)
-
-**Compose apps** - start a `docker-compose.yml` as written.
-[Learn more ->](/advanced/compose-apps)
+To let anyone deploy your own project from its README, add a
+[Deploy button](/guides/deploy/deploy-button).

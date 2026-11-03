@@ -5,12 +5,12 @@ description: Databases, scheduled backups and storage that survives a redeploy.
 
 Everything that lives on a disk:
 
-- A **database** is created like an app and joins the same **Environment network** as its apps,
-  so they reach it by name.
-- A **volume** is disk space managed by Deplo that an app or database keeps across redeploys. A
-  **bind mount** uses an existing server folder instead.
-- A **backup** is a scheduled, encrypted copy of a database or an app, sent to S3 or to another
-  server's disk.
+- A **database** is created like an app and joins its **environment**'s network, so the apps
+  there reach it by name.
+- A **volume** is disk space Deplo keeps for an app across redeploys. A **bind** uses a folder
+  already on the server instead.
+- A **backup** is a scheduled, encrypted copy of a database or an app, sent to an S3 bucket or to a
+  folder on one of your servers.
 
 <Callout type="warn" title="An app's backup schedule does not cover its database">
 Apps and databases are backed up separately. Schedule both.
@@ -22,5 +22,5 @@ Apps and databases are backed up separately. Schedule both.
 **Backups and restore** - encrypted, scheduled, sent to storage you own.
 [Learn more ->](/guides/data/backups-and-restore)
 
-**Persistent storage** - volumes, config files and bind mounts.
+**Persistent storage** - volumes, files and bind mounts.
 [Learn more ->](/guides/data/persistent-storage)

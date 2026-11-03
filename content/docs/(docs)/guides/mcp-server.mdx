@@ -14,31 +14,37 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-Let an AI agent work on your infrastructure: deploy an app, read logs, check why a build
-failed, restart a database. Deplo speaks the Model Context Protocol (MCP), the same protocol
-Claude, ChatGPT and coding agents use to reach tools.
+Let an AI agent deploy an app, read logs, check why a build failed or restart a database. Deplo
+speaks the Model Context Protocol (MCP) at `https://deplo.example.com/api/mcp`, and every tool goes
+through **the same permission checks a person goes through**.
 
-**Settings -> AI agents** sits with your account settings and is visible to anyone with
-**Connect AI agents** (`manage_mcp`). The token created there is personal: only you see it,
-under **Settings -> AI agents** and **Settings -> API tokens**. Whether a team allows agents at
-all is its **Allow AI agents** switch, in **Settings -> General**.
+Three things decide what an agent may do:
+
+- **Allow AI agents**, a team switch in **Settings -> General**, on by default for a new team.
+  Changing it needs **Manage team settings**. Off, every agent stops working in that team.
+- **Connect AI agents** (`manage_mcp`), a capability. Without it in a team, none of your agents
+  reach that team.
+- **The token.** An agent signs in with a normal [API token](/advanced/api-tokens-and-oauth) and
+  does only what its capabilities allow, never more than its owner can still do.
 
 ## Connect an agent
+
+Open **Settings -> AI agents**, in the **Account** group. It shows only with **Connect AI agents**.
 
 <Steps>
 <Step>
 
-### Open AI agents
+### Turn AI agents on
 
-**Settings -> AI agents**.
+Only if the team has them off: **Turn on AI agents for this team** (needs **Manage team settings**).
 
 </Step>
 <Step>
 
 ### Pick the agent
 
-Claude, ChatGPT, Claude Desktop, Claude Code, Cursor, VS Code, Windsurf, Gemini CLI, Codex CLI,
-or **Something else**.
+Claude, ChatGPT, Claude Code, Cursor, VS Code, Windsurf, Antigravity, Gemini CLI, Codex CLI, or
+**Something else** for any client that speaks Streamable HTTP.
 
 <Image
   src={`${basePath}/screenshots/mcp-server/01-agent-picker.png`}
@@ -51,21 +57,13 @@ or **Something else**.
 </Step>
 <Step>
 
-### Turn AI agents on
-
-Click **Turn on AI agents for this team** if it is still off. This is a team setting and needs
-**Manage team settings**. Later you find it in **Settings -> General**, as **Allow AI agents**.
-
-</Step>
-<Step>
-
 ### Create a token
 
-Click **Create token**. Start from a **Template** or pick capabilities yourself, and set an
-expiry. **MCP & AI agents** reads the team and redeploys; **Agent setup** also creates projects,
-apps and databases and uses your Git connections, which is what an agent
-[setting up Deplo](/getting-started/agent-setup) needs. By default the agent reaches **every
-team you can connect agents to**. Narrow it under **Access** if it should see only one.
+Set **Permissions**, **Access** and **Expires** (90 days by default), then click **Create token**.
+**Permissions** start from a template: **MCP & AI agents**, the default, reads the team and
+restarts or redeploys apps; **Agent setup** also creates projects, apps and databases and uses your
+Git connections, for an agent [setting up Deplo](/getting-started/agent-setup). **Access** left
+empty reaches every team you can connect agents to.
 
 <Image
   src={`${basePath}/screenshots/mcp-server/02-permissions.png`}
@@ -80,498 +78,112 @@ team you can connect agents to**. Narrow it under **Access** if it should see on
 
 ### Paste the config
 
-Copy the configuration shown on the page and paste it where the agent expects it. The token is
-shown once: if you leave the page before the agent connects, create a new one.
-
-It goes in the agent's settings for your whole machine, not in one project, so Deplo stays
-connected in every folder you open. Replacing the token in Claude Code? Run
-`claude mcp remove Deplo -s user` first, or the new command stops at "already exists".
+Copy what the page shows into the agent's settings for your whole machine, so Deplo is there in
+every folder you open. The token is shown **once**: leave before the agent connects and you need a
+new one. Replacing a token in Claude Code? Run `claude mcp remove Deplo -s user` first.
 
 </Step>
 <Step>
 
 ### Start the agent
 
-Deplo waits for the agent's **first call**. Start the agent, or ask it to list its tools.
-
-Nothing after a few minutes? A **Check again** button appears. **Connect another** repeats the
-steps for the next agent.
+Deplo waits for its **first call**: start the agent, or ask it to list its tools. After five
+minutes without one, **Check again** appears. **Done** starts over for the next agent.
 
 </Step>
 </Steps>
 
-A web agent such as claude.ai or chatgpt.com does not take a pasted token. It goes through the
-[OAuth consent screen](/advanced/api-tokens-and-oauth) instead, which creates a token after
-you approve it.
+**Claude and ChatGPT** skip the token step: add the address as a custom connector, then approve on
+Deplo's [OAuth consent screen](/advanced/api-tokens-and-oauth#connected-clients-and-oauth), which
+creates the token. They need the panel served over HTTPS.
+
+On connect, the agent is told Deplo's vocabulary (App, Project, Environment, Folder, Server), how
+to change team, and where this manual is. You do not have to explain the product.
 
 ### Link to a step
 
-A link can open the wizard on one agent and one template. The
-[agent setup](/getting-started/agent-setup) sends you this way:
-
-```
-https://deplo.example.com/settings/agents?agent=claude-code&step=permissions&preset=agent
-```
-
-| Parameter | Values |
-| --- | --- |
-| `agent` | `claude-code`, `codex-cli`, `gemini-cli`, `cursor`, `vscode`, `windsurf`, `antigravity`, `other` |
-| `step` | `permissions` opens the token step for that agent |
-| `preset` | The template to start from: `readonly`, `ci`, `mcp`, `automation` or `agent`. A link never preselects **Root access** |
-
-The endpoint is `/api/mcp` on your own instance. It exposes one tool per action, and every tool
-goes through **the same permission checks a person goes through**.
-
-Three things control access:
-
-- **A team switch**, **Allow AI agents** in **Settings -> General**, on by default for a new
-  team. It decides whether agents may work in this team at all. Changing it needs **Manage team
-  settings**.
-- **A capability**, **Connect AI agents** (`manage_mcp`). A token works in a team only if its
-  owner has it there. Remove it and every agent of theirs is refused in that team, immediately.
-- **A token.** An agent signs in with a normal [API token](/advanced/api-tokens-and-oauth),
-  and **it can do only what the token's capabilities allow**.
-
-When an agent connects, Deplo gives it a short introduction: what Deplo is, the words it uses
-(App, Project, Environment, Folder, Server), how to work in another team, and a link to this
-manual. You do not have to explain the product to your agent.
+A link can preselect the agent and the template, as the [agent setup](/getting-started/agent-setup)
+does: `https://deplo.example.com/settings/agents?agent=claude-code&step=permissions&preset=agent`.
+`agent` takes `claude-web`, `chatgpt`, `claude-code`, `cursor`, `vscode`, `windsurf`,
+`antigravity`, `gemini-cli`, `codex-cli` or `other`; `preset` takes `readonly`, `ci`, `mcp`,
+`automation` or `agent`. A link never preselects **Root access**.
 
 ## Working in several teams
 
-A connection reaches every team its owner may connect agents to. Every call still runs in
-**one** team:
+A connection reaches every team where its owner may connect agents. Each call runs in **one**:
 
-- `whoami` names the default team.
-- `list_teams` names every team the connection can act in, and says why one cannot be used
-  (MCP off, or the permission missing).
-- Every tool takes an optional **`team`** argument (id or slug). Passing it is how the agent
-  changes team.
+- `whoami` names the default team; `list_teams` lists every team and whether the agent can act there.
+- Every tool takes an optional **`team`** argument (id or slug). That is how the agent changes team.
 - `find` searches every team at once and says which team each result is in.
-
-A terminal agent can also set its default team with the `X-Deplo-Team` header.
+- A terminal agent can set its default team with the `X-Deplo-Team` header
+  ([wire reference](/api-reference/mcp)).
 
 ## Apps with more than one container
 
-A Compose app runs several containers, so an action on "the app" has to say **which one**. The
-names are the service names in the compose file, and `get_app` returns them:
-
-- **A domain** names the container that serves it, and its port. Two hostnames can reach two
-  different containers of the same app, and one hostname can serve a second container under a
-  path such as `/api`.
-- **A cron job** names the container the command runs in. Without it, the job runs in any
-  container of the stack that is up.
-- **A log read** names the container the same way.
-
-A typical exchange:
+On a Compose app, a domain, a cron job and a log read name **which container** by its compose
+service name. `get_app` returns the compose file with the names:
 
 ```text
-get_app         slug: analytics                                     -> the compose file, with the names
+get_app         slug: analytics                                     -> the compose file
 add_domain      appId, name: app.acme.com, service: client,  port: 3002
 add_domain      appId, name: api.acme.com, service: backend, port: 3001
 render_compose  appId                                               -> the routing that was written
 ```
 
-Got one wrong? `update_domain` moves a hostname to another container without deleting it.
-
-Six names are reserved by Deplo - `deplo`, `deplo-traefik`, `traefik`, `postgres`,
-`deplo-socket-proxy` and `docker-socket-proxy` - in any capitalisation. A domain cannot point
-at a container with one of these names, or with one of them as `hostname:`. Rename it in the
-compose file if needed.
+- One hostname can serve a second container under a path such as `/api`.
+- `update_domain` moves a hostname to another container without deleting it.
+- Without a service, a cron job runs in the container the app's domain routes to, and a log read
+  uses the app's own container.
+- A domain cannot point at a service that claims one of Deplo's
+  [six reserved names](/advanced/compose-apps) (`deplo`, `traefik`, `postgres` and three more).
 
 ## See and revoke what is connected
 
-Your agents are your tokens: **Settings -> AI agents** lists every one you connected, in every
-team, and **Settings -> API tokens** lists them with the agent's name. **Edit** changes what one
-may do, **Revoke** ends it. Revoking is immediate and applies to every team the agent reached.
+- **Settings -> AI agents**: **N agents connected** lists yours, across every team. **Edit**
+  changes what one may do, **Remove** cuts it off at once, in every team it reached.
+- **Settings -> API tokens** lists them too, marked as agents, with **Revoke**.
+- The team sees only counts: **Settings -> General** for the team, **Settings -> Members** per
+  member. To cut off someone else's agents, take away their **Connect AI agents** or **Use API
+  tokens** capability, or remove them from the team.
 
-The team sees only a number: **Settings -> General** counts the agents connected to it, and
-**Settings -> Members** shows the count per member. To disconnect somebody else's agent, remove their **Connect AI agents**
-capability, or remove them from the team.
+Creating, editing and revoking a token is recorded in **Activity**, with who did it.
 
 ## What an agent can and cannot do
 
-**Can, if the token allows it:** almost everything the dashboard does. Apps and their settings,
-a Compose file, deployments, environment and shared variables, domains, databases, logs and
-metrics, backups and restores, cron jobs, previews, projects, environments and folders, roles
-and members, notifications, git connections. An instance admin can also manage servers,
-certificates, Docker cleanup, the panel's address and updates.
+**Can, if the token allows it:** almost everything the dashboard does, from apps and Compose files
+to backups, members and Git connections. A token with the **instance admin** bit also manages
+servers, certificates, Docker cleanup, the panel's address and updates.
 
 **Cannot, ever:** reveal a secret. No tool exposes one, whatever the token allows.
 
-Deplo adds **no confirmation step of its own**. Destructive tools are flagged so the agent's
-client can ask you first. If your agent does not ask, give it a token that cannot do what you
-would not want it to do.
-
-## Good to know
-
-- **Off by default for a new team.** Letting an AI act on your infrastructure is a choice.
-- **A call acts in one team at a time.** The agent picks it with the `team` argument; the
-  default comes from the `X-Deplo-Team` header.
-- **A token can never do more than its owner.** Its power is what it was granted, limited to
-  what the person who created it can still do, in each team.
-- **Scope it.** A token can be limited to one project, one folder or one app. This is safer
-  than trusting a prompt.
-- **Everything is in the activity log**, including who connected the agent.
+Deplo adds **no confirmation step of its own**. Destructive tools are flagged so the agent's client
+can ask you first. If yours does not ask, give it a token that cannot do what you would not want
+done, scoped to one project, folder or app if that is all it needs.
 
 ## Troubleshooting
 
-- **The agent connects and sees no tools** - **Allow AI agents** is off for that team, in its
-  **Settings -> General**.
-- **Every call is refused** - the token lacks the capability, or the team requires two-factor
-  and its owner has not set it up.
-- **"You may not connect AI agents to this team"** - you lost the **Connect AI agents**
-  capability there. The reply lists the teams the connection can still use.
-- **The agent cannot reach the endpoint** - your panel address must be reachable from where
-  the agent runs.
-- **The same refusal keeps coming back** - the agent is passing an argument the tool does not
-  take. The reply names it and lists the valid ones.
+| Symptom | What to check |
+| --- | --- |
+| `The team "Acme" has turned off MCP access` | **Allow AI agents** is off in that team's **Settings -> General**. |
+| `You may not connect AI agents to the team "Acme"` | You lack **Connect AI agents** there. The reply lists the teams the connection can still use. |
+| Every call is refused | The token lacks the capability, or the team requires two-factor and the token's owner has not enrolled. |
+| `That API token is not valid` | The token expired or was revoked. Create a new one. |
+| The same refusal keeps coming back | The agent passes an argument the tool does not take. The reply names it and lists the valid ones. |
+| The agent cannot reach the endpoint | The panel address must be reachable from where the agent runs, over HTTPS for Claude and ChatGPT. |
+| **AI agents** reads **Outside your access** | Your role reaches only part of the team. Connecting an agent needs all of it. |
 
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
 
 ## When no tool fits
 
-Two generic tools cover the rest:
-
-- **`graphql_query`** reads anything in Deplo's API.
-- **`graphql_mutate`** writes anything in it.
-
-They run a query written by the agent, with the same permission checks as every other tool.
-The agent can discover what exists by asking the schema.
-
-Two things they never do, whatever the token allows: return a **credential** (a password,
-connection string, token or install command) and run a **command inside a container**.
-
-Because `graphql_mutate` covers everything from a rename to a deletion, it is always flagged
-destructive, so your agent asks before using it.
+`graphql_query` reads and `graphql_mutate` writes anything in Deplo's [API](/api-reference), with
+the same permission checks. Whatever the token allows, they never return a **credential** (a
+password, connection string, token or install command) and never run a **command inside a
+container**. `graphql_mutate` is always flagged destructive.
 
 ## Every tool
 
-Deplo exposes **191 tools** today, plus the two above. The number changes with the product.
-While creating a token, **See which** lists them all, marks the ones the token would reach and
-flags the destructive ones. An agent only sees the tools its token can use.
-
-**Needs** is the capability the token must have. **Kind** is what the agent's client is told
-before running the tool: a **destructive** one is where a good client asks you first.
-
-<Accordions>
-<Accordion title="Diagnostics (2)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `whoami` | Who am I | any token | read |
-| `list_teams` | List teams | any token | read |
-
-</Accordion>
-<Accordion title="Apps (39)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_templates` | List templates | `view` | read |
-| `list_apps` | List apps | `view` | read |
-| `find` | Find an app or database in any team | `view` | read |
-| `get_app` | Get an app | `view` | read |
-| `list_deployments` | List deployments | `view` | read |
-| `get_deployment` | Get a deployment | `view` | read |
-| `render_compose` | Render an app's compose file | `view` | read |
-| `deploy_app` | Deploy an app | `deploy_apps` | write |
-| `rebuild_app` | Rebuild an app | `deploy_apps` | **destructive** |
-| `rollback_deployment` | Roll back to a deployment | `rollback_apps` | **destructive** |
-| `retake_deployment_screenshot` | Retake a deployment's screenshot | `configure_apps` | write |
-| `cancel_deployment` | Cancel a deployment | `deploy_apps` | write |
-| `control_app` | Start or reload an app | `control_apps` | write |
-| `stop_app` | Stop an app | `control_apps` | **destructive** |
-| `bulk_app_action` | Start, stop or restart a whole folder or project | `control_apps` | **destructive** |
-| `bulk_redeploy_apps` | Redeploy a whole folder or project | `deploy_apps` | **destructive** |
-| `create_app_from_template` | Create an app from a template | `create_apps` | write |
-| `create_app` | Create an app | `create_apps` | write |
-| `rename_app` | Rename an app | `configure_apps` | write |
-| `update_app_build` | Change build settings | `configure_apps` | write |
-| `update_app_source` | Change where an app deploys from | `configure_apps` | write |
-| `move_app_to_server` | Move an app to another server | `configure_apps` | **destructive** |
-| `update_app_compose` | Edit an app's compose file | `configure_apps` | write |
-| `set_app_resources` | Set an app's resource limits | `configure_apps` | write |
-| `set_app_volumes` | Set an app's volumes | `configure_apps` | write |
-| `set_app_auto_deploy` | Turn auto-deploy on or off | `configure_apps` | write |
-| `delete_app` | Delete an app | `delete_apps` | **destructive** |
-| `get_app_runtime` | Get an app's containers | `view` | read |
-| `set_app_ports` | Publish ports on the host | `configure_apps` | write |
-| `set_app_framework` | Override the detected framework | `configure_apps` | write |
-| `set_app_health_check` | Set an app's health check | `configure_apps` | write |
-| `set_app_rollback_keep` | Set how many builds are kept for rollback | `configure_apps` | write |
-| `set_app_build_server` | Choose where an app is built | `configure_apps` | write |
-| `list_build_servers` | List servers that can build | `view` | read |
-| `set_app_compose_args` | Set extra docker compose up arguments | `configure_apps` | write |
-| `set_app_deploy_hook_enabled` | Turn an app's deploy hook on or off | `configure_apps` | write |
-| `set_app_console_enabled` | Allow or forbid the web console for an app | `configure_apps` | write |
-| `clear_app_build_cache` | Clear an app's build cache | `configure_apps` | write |
-| `detect_app_logo` | Detect an app's logo | `configure_apps` | write |
-| `read_app_file` | Read a file from an app's storage | `configure_apps` | read |
-| `write_app_file` | Write a file into an app's storage | `configure_apps` | **destructive** |
-
-</Accordion>
-<Accordion title="Environment (10)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_env` | List environment variables | `manage_env` | read |
-| `set_env_var` | Set an environment variable | `manage_env` | write |
-| `delete_env_var` | Delete an environment variable | `manage_env` | **destructive** |
-| `import_env` | Import a .env file | `manage_env` | write |
-| `list_shared_vars` | List shared variables | `manage_env` | read |
-| `list_app_shared_vars` | List the shared variables an app can use | `manage_env` | read |
-| `save_shared_var` | Create or edit a shared variable | `manage_env` | write |
-| `link_shared_var` | Link or unlink a shared variable to an app | `manage_env` | write |
-| `delete_shared_var` | Delete a shared variable | `manage_env` | **destructive** |
-| `set_env` | Replace an app's environment variables | `manage_env` | **destructive** |
-
-</Accordion>
-<Accordion title="Domains (6)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_domains` | List domains | `view` | read |
-| `add_domain` | Add a domain | `manage_domains` | write |
-| `update_domain` | Update a domain | `manage_domains` | write |
-| `verify_domain` | Verify a domain | `manage_domains` | write |
-| `set_primary_domain` | Make a domain primary | `manage_domains` | write |
-| `remove_domain` | Remove a domain | `manage_domains` | **destructive** |
-
-</Accordion>
-<Accordion title="Databases (14)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_databases` | List databases | `view` | read |
-| `get_database` | Get a database | `view` | read |
-| `create_database` | Create a database | `create_databases` | write |
-| `control_database` | Start, stop or restart a database | `control_databases` | write |
-| `redeploy_database` | Redeploy a database | `control_databases` | write |
-| `rebuild_database` | Rebuild a database (factory reset) | `delete_databases` | **destructive** |
-| `delete_database` | Delete a database | `delete_databases` | **destructive** |
-| `update_database` | Expose a database or move it to another server | `configure_databases` | write |
-| `rename_database` | Rename a database | `configure_databases` | write |
-| `set_database_resources` | Cap a database's CPU, memory or disk | `configure_databases` | write |
-| `set_database_config_files` | Set a database's config files | `configure_databases` | **destructive** |
-| `set_database_image` | Change a database's engine version or image | `configure_databases` | write |
-| `move_database` | Move a database into an environment | `configure_databases` | write |
-| `check_host_ports` | Check whether host ports are free | `create_databases` | read |
-
-</Accordion>
-<Accordion title="Logs (1)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `logs` | Read logs | `view_logs` | read |
-
-</Accordion>
-<Accordion title="Monitoring (4)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `metrics` | Live metrics | `view_metrics` | read |
-| `metrics_history` | Read metrics history | `view_metrics` | read |
-| `fleet_metrics` | Read the fleet's live metrics | `view_metrics` | read |
-| `set_metrics_retention` | Turn metrics history on or off | `manage_monitoring` | write |
-
-</Accordion>
-<Accordion title="Backups (14)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_backups` | List backup schedules | `view` | read |
-| `list_backup_runs` | List backup runs | `view` | read |
-| `run_backup` | Back up now | `manage_backups` | write |
-| `restore_backup` | Restore a backup | `restore_backups` | **destructive** |
-| `list_destinations` | List backup destinations | `view` | read |
-| `set_backup_schedule` | Create or edit a backup schedule | `manage_backups` | write |
-| `delete_backup_schedule` | Delete a backup schedule | `manage_backups` | **destructive** |
-| `cancel_backup_run` | Cancel a running backup | `manage_backups` | write |
-| `delete_backup_run` | Delete a backup | `delete_backups` | **destructive** |
-| `delete_backup_artifacts` | Delete every backup of an app or database | `delete_backups` | **destructive** |
-| `list_backup_destination_options` | List where a backup can go | `manage_backups` | read |
-| `create_destination` | Add a backup destination | `manage_backup_destinations` | write |
-| `test_destination` | Test a backup destination | `manage_backup_destinations` | write |
-| `delete_destination` | Delete a backup destination | `manage_backup_destinations` | **destructive** |
-
-</Accordion>
-<Accordion title="Cron (8)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_cron_jobs` | List cron jobs | `manage_crons` | read |
-| `create_cron_job` | Create a cron job | `manage_crons` | write |
-| `run_cron_job_now` | Run a cron job now | `manage_crons` | write |
-| `delete_cron_job` | Delete a cron job | `manage_crons` | **destructive** |
-| `update_cron_job` | Edit a cron job | `manage_crons` | write |
-| `set_cron_enabled` | Turn cron on or off for an app or database | `manage_crons` | write |
-| `list_cron_runs` | List a cron job's runs | `manage_crons` | read |
-| `cancel_cron_run` | Cancel a running cron job | `manage_crons` | write |
-
-</Accordion>
-<Accordion title="Previews (9)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_previews` | List pull-request previews | `manage_previews` | read |
-| `deploy_pull_request` | Deploy a pull request preview | `manage_previews` | write |
-| `destroy_preview` | Destroy a preview | `manage_previews` | **destructive** |
-| `list_open_pull_requests` | List an app's open pull requests | `manage_previews` | read |
-| `set_app_preview_settings` | Configure pull request previews for an app | `manage_previews` | write |
-| `approve_preview` | Approve a preview from a fork | `manage_previews` | write |
-| `redeploy_preview` | Redeploy a preview | `manage_previews` | write |
-| `list_preview_env` | List an app's preview-only variables | `manage_env` | read |
-| `set_preview_env_var` | Set or delete a preview-only variable | `manage_env` | write |
-
-</Accordion>
-<Accordion title="Organization (17)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_projects` | List projects | `view` | read |
-| `list_folders` | List folders | `view` | read |
-| `list_environments` | List a project's environments | `view` | read |
-| `create_folder` | Create a folder | `create_folders` | write |
-| `move_app` | Move an app | `move_apps` | write |
-| `get_project` | Get a project | `view` | read |
-| `create_project` | Create a project | `create_projects` | write |
-| `update_project` | Rename or recolour a project | `organize_projects` | write |
-| `delete_project` | Delete a project | `delete_projects` | **destructive** |
-| `create_environment` | Create an environment | `manage_environments` | write |
-| `update_environment` | Update an environment | `manage_environments` | write |
-| `delete_environment` | Delete an environment | `manage_environments` | **destructive** |
-| `update_folder` | Rename, recolour or move a folder | `organize_folders` | write |
-| `delete_folder` | Delete a folder | `delete_folders` | **destructive** |
-| `move_apps_to_folder` | Move several apps into a folder | `move_apps` | write |
-| `list_folder_grants` | List who can access a folder | `view` | read |
-| `set_folder_grant` | Grant or change someone's access to a folder | `organize_folders` | write |
-
-</Accordion>
-<Accordion title="Team (12)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_members` | List team members | `view` | read |
-| `list_activity` | Read the activity trail | `view_activity` | read |
-| `list_roles` | List the team's roles | `view` | read |
-| `create_role` | Create a role | `manage_roles` | write |
-| `update_role` | Edit a role | `manage_roles` | write |
-| `delete_role` | Delete a role | `manage_roles` | **destructive** |
-| `reset_role` | Reset a default role | `manage_roles` | write |
-| `add_member` | Add an existing user to the team | `manage_members` | write |
-| `update_member` | Change a member's role or access | `manage_members` | write |
-| `remove_member` | Remove a member from the team | `manage_members` | **destructive** |
-| `update_team` | Rename the team or set its two-factor policy | `manage_team` | write |
-| `transfer_app` | Move an app to another team | `move_apps` | write |
-| `transfer_database` | Move a database to another team | `move_databases` | write |
-
-</Accordion>
-<Accordion title="Git (7)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_git_sources` | List git connections | `view` | read |
-| `list_repos` | List repositories or branches | `view` | read |
-| `list_git_providers` | List the git providers Deplo can connect | `view` | read |
-| `connect_git_provider` | Connect a git provider with a token | `manage_git` | write |
-| `update_git_connection` | Rotate a git connection's token or rename it | `manage_git` | write |
-| `test_git_connection` | Test a git connection | `manage_git` | write |
-| `remove_git_connection` | Disconnect a git provider | `manage_git` | **destructive** |
-
-</Accordion>
-<Accordion title="Registries (3)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_registries` | List registry credentials | `view` | read |
-| `add_registry` | Add a registry credential | `manage_registries` | write |
-| `delete_registry` | Delete a registry credential | `manage_registries` | **destructive** |
-
-</Accordion>
-<Accordion title="Access (3)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_basic_auth_users` | List an app's basic-auth logins | `manage_basic_auth` | read |
-| `set_basic_auth_user` | Add a basic-auth login, or change its password | `manage_basic_auth` | write |
-| `remove_basic_auth_user` | Remove a basic-auth login | `manage_basic_auth` | **destructive** |
-
-</Accordion>
-<Accordion title="Servers (20)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_servers` | List servers | `view` | read |
-| `get_server` | Get a server | `view` | read |
-| `check_server_health` | Check a server's health | instance admin | write |
-| `check_server_readiness` | Check whether a server can deploy | instance admin | read |
-| `update_server_agent` | Update a server's agent | instance admin | **destructive** |
-| `restart_server_workloads` | Restart everything on a server | instance admin | **destructive** |
-| `restart_server_traefik` | Restart a server's proxy | instance admin | **destructive** |
-| `run_docker_cleanup` | Reclaim disk on a server | instance admin | write |
-| `add_server` | Register a new server | instance admin | write |
-| `remove_server` | Remove a server | instance admin | **destructive** |
-| `update_server` | Change a server's address, role, teams or limits | instance admin | write |
-| `get_server_host_info` | Read a server's host facts | instance admin | write |
-| `check_agent_updates` | Check for server agent updates | instance admin | write |
-| `uninstall_server_agent` | Uninstall a server's agent | instance admin | **destructive** |
-| `add_server_certificate` | Add a custom TLS certificate to a server | instance admin | write |
-| `remove_server_certificate` | Remove a custom TLS certificate | instance admin | **destructive** |
-| `set_certificate_email` | Set the Let's Encrypt account email | instance admin | write |
-| `get_docker_cleanup_policy` | Read the Docker cleanup policy | instance admin | read |
-| `update_docker_cleanup_policy` | Change the Docker cleanup policy | instance admin | write |
-| `set_server_cleanup_excluded` | Exclude a server from Docker cleanup | instance admin | write |
-
-</Accordion>
-<Accordion title="Deployments (2)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `delete_deployments` | Delete deployment records | `delete_apps` | **destructive** |
-| `cancel_all_deployments` | Cancel every running deployment | `deploy_apps` | write |
-
-</Accordion>
-<Accordion title="Notifications (4)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_notification_channels` | List notification channels | `manage_notifications` | read |
-| `save_notification_channel` | Create or edit a notification channel | `manage_notifications` | write |
-| `test_notification_channel` | Send a test notification | `manage_notifications` | write |
-| `delete_notification_channel` | Delete a notification channel | `manage_notifications` | **destructive** |
-
-</Accordion>
-<Accordion title="Instance (8)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `get_instance` | Read this Deplo's own settings | instance admin | read |
-| `check_for_updates` | Check for a Deplo update | instance admin | write |
-| `set_canary_releases` | Turn canary releases on or off | instance admin | write |
-| `read_changelog` | Read Deplo's changelog | instance admin | read |
-| `set_panel_url` | Set the panel's public address | instance admin | write |
-| `set_panel_https` | Turn HTTPS for the panel on or off | instance admin | write |
-| `set_log_retention` | Set how many days of logs are kept | instance admin | write |
-| `restart_panel` | Restart the Deplo panel | instance admin | **destructive** |
-
-</Accordion>
-<Accordion title="Security (3)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `list_security_updates` | List security updates | `view` | read |
-| `ignore_security_update` | Ignore a security update | `ignore_security_updates` | write |
-| `unignore_security_update` | Stop ignoring a security update | `ignore_security_updates` | write |
-
-</Accordion>
-<Accordion title="Generic GraphQL (2)">
-
-| Tool | What it does | Needs | Kind |
-| --- | --- | --- | --- |
-| `graphql_query` | Run a GraphQL read | any token | read |
-| `graphql_mutate` | Run a GraphQL write | any token | **destructive** |
-
-</Accordion>
-</Accordions>
+The full list, with the capability each tool needs, is on [MCP tools](/reference/mcp-tools).
 
 ## Next steps
 

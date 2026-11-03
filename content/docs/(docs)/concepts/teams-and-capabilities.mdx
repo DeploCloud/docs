@@ -8,15 +8,14 @@ import { UserPlus, ShieldCheck, KeyRound, Lock } from "lucide-react";
 Deplo is built for several people sharing one instance. Everything belongs to a **team**, every
 change is checked against a **capability**, and a **role** is a named set of capabilities.
 
-If you are the only person here, none of this gets in your way: your account has the Owner role
-of your own team and can do everything.
+Alone on your instance? None of this gets in your way: you are the Owner of your own team.
 
 ## Team
 
 An isolated workspace. It owns apps, domains, environment variables, databases, backup
-destinations, registries, git connections, API tokens, activity, members and notification
-settings. A person can belong to several teams and switches between them from the top bar. Every
-list you see is filtered by the **active team**.
+destinations, registries, git connections, activity, members and notification settings. A person
+can belong to several teams and switches the **active team** from the top bar; every list is
+filtered by it.
 
 <Callout type="info" title="Servers are the one exception">
 Servers belong to the instance, not to a team. Which teams may deploy to a server is a setting on
@@ -25,136 +24,101 @@ the server.
 
 ### The team's address
 
-Every page has the team in its address: `deplo.example.com/acme/apps/wiki`. A link to an app, a database or
-a setting always opens in the team that owns it, whoever clicks it. This is what makes links in
-notifications, or links you send to a colleague, open the right page.
-
-The name in the address is set when the team is created and never changes, so old links keep
-working. An older address with no team in it still works too. A link to a team you are not in
-shows a "no access" page with your own teams.
+Every page has the team in its address, `deplo.example.com/acme/apps/wiki`, so a shared link
+opens in the right team whoever clicks it. The name never changes after creation. A link to a team
+you are not in shows a "no access" page listing your own teams.
 
 ### Deleting a team
 
-**Settings -> Team -> General -> Danger zone**, with the `delete_team` capability. You cannot
-delete your only team: create or join another first.
-
-Everything in the team is deleted with it: apps and databases with their data, folders, projects,
-domains, variables, members and backups. Deplo then sends you to another of your teams.
+**Settings -> General -> Danger zone**, with `delete_team`. Everything in it goes: apps and
+databases with their data, folders, projects, domains, variables, members and backups. Your only
+team cannot be deleted.
 
 ### The primary owner
 
-The account that created the team is the primary owner. No other owner and no instance admin can
-remove, demote or edit them.
+The account that created the team. No other owner and no instance admin can remove, demote or
+edit them.
 
-Only the primary owner can transfer it, from **Settings -> Members -> the member -> Advanced**,
-to a member of the same team, with their password and second factor. An API token can never do it.
+Only the primary owner can hand the team over, to a member of the same team, with their password
+and second factor: from **Settings -> General -> Danger zone -> Transfer ownership**, or from
+**Settings -> Members ->** the member **-> Advanced**. An API token never can.
 
 ## Capability
 
-**One capability is one action.** `create_apps`, `deploy_apps`, `delete_apps`,
-`open_app_console`, `restore_backups`, `manage_tokens`, and so on. There are 45 of them, `view` included.
+**One capability is one action:** `create_apps`, `deploy_apps`, `delete_apps`,
+`open_app_console`, `restore_backups` and so on. There are 46, `view` included, the floor every
+member has. Deleting an app is `delete_apps`, not `deploy_apps`.
 
-They are fine-grained on purpose: deleting an app is `delete_apps`, not `deploy_apps`. `view` is
-the base level everybody has.
-
-One to know by name: **`reveal_secrets`** protects the only four values Deplo can show you again:
-a basic-auth password, a backup recovery key, a managed database's connection string, and an
-app's deploy hook URL. An environment variable is never one of them.
-
-Three grants are different:
-
-- **`instanceAdmin`** is instance-wide, not a team capability. It unlocks Servers, Users and the
-  Deplo instance settings.
-- **`canExposePorts`** allows publishing a port on the host.
-- **`canMountHostVolumes`** allows every way out of a container: bind mounts, `privileged`,
-  added kernel capabilities, devices, host namespaces, foreign networks and foreign volumes. See
-  [Host access](/advanced/host-access-and-privileges).
+One to know by name: **`reveal_secrets`** shows a managed database's connection string and a
+backup recovery key, downloads a backup, and connects a database to an app. A secret
+environment variable is never readable, with any capability.
 
 The full list is in [Capabilities](/reference/capabilities).
 
+**Every capability is checked in the data layer** before the write, for the dashboard, the API and
+the MCP server alike. Hidden or disabled buttons are only cosmetic. An id from another team behaves
+as if it did not exist.
+
 ## Role
 
-A role belongs to a team. Every team starts with three roles it can rename, edit and later reset
-to the defaults: **Owner**, **Member**, **Viewer**. You can create as many more as you like.
+A role belongs to a team. Every team starts with **Owner**, **Member** and **Viewer**, which it can
+rename, edit and reset to the defaults, and can add as many more as it likes.
 
 - **Owner always has full access** and cannot be reduced.
 - **Editing a role changes every member holding it** at once.
-- A change cannot leave the team with nobody holding `manage_members`, `manage_roles` or
+- No change may leave the team with nobody holding `manage_members`, `manage_roles` or
   `manage_team`.
 - A member with no role has a hand-picked **Custom** set.
 
 ## Access inside one folder
 
-A set of capabilities can also be given on a **folder or a single app** instead of the whole
-team. Inside that folder or app it **replaces** the team role, and it **can be larger**. The most
-specific grant wins.
+A set of capabilities can also be given on a **folder, a project or a single app**. Inside it,
+that set **replaces** the team role, and **can be larger**. The most specific grant wins.
 
-This is how someone with a read-only team role can deploy everything in one folder, without
-gaining that power anywhere else.
+This is how someone with a read-only team role can deploy everything in one folder, and nowhere
+else.
 
 ## API tokens
 
-A token has **its own capabilities**. It does not act as the person who created it. You choose
-what it can do when you create it, and you can edit that later.
+A token **belongs to the person who created it**: nobody else, not even an instance admin, lists,
+edits or revokes it.
 
-A token can never do more than its creator can do right now, so removing capabilities from a
-person also limits every token they created. A token can be limited to whole teams, projects,
-folders or single apps, and it can have an expiry. It is shown once, at creation.
+- **It has its own capabilities**, chosen at creation and editable later. It never does more than
+  its owner can do right now.
+- **The team decides where it acts.** It reaches a team only while its owner holds `manage_tokens`
+  (**Use API tokens**) there, and drives it over MCP only with **Connect AI agents**. A team takes
+  access away through the member, never the token.
+- **It can be narrowed** to teams, projects, folders or single apps, and given an expiry. It is
+  shown once.
 
 ## Two-factor is a policy, not a capability
 
-A team, or a role inside it, can **require** two-factor authentication. A member who has not
-enabled it can do nothing in that team: not in the dashboard, not over the API, and not with
-their tokens. They see a lock screen with the option to enable it, switch team or sign out.
-
-A passkey counts. Signing in with one satisfies the requirement for that session.
-
-## The two checks
-
-Every change is checked twice, and only the second one matters:
-
-- **In the interface**, capabilities hide or disable buttons. This is cosmetic.
-- **In the data layer**, the capability is checked before the write. This is the real check,
-  and the API and the MCP server pass through it too.
-
-A resource inside a folder is also checked against that folder's grant. For security reasons, an
-id belonging to another team behaves as if it did not exist.
+A team, or a role inside it, can **require** two-factor authentication. A member without it can do
+nothing in that team, in the dashboard, over the API or with their tokens: they see a lock screen
+to enable it, switch team or sign out. Signing in with a passkey satisfies it.
 
 ## Instance admin and instance owner
 
-**Instance admin** unlocks the system-wide pages: Servers, Users, and the instance settings. It
-is not a team capability and grants no team capabilities.
+Per-user grants outside any team, set by an instance admin in **Settings -> Users**:
 
-**Instance owner** is the level above it, held by the account created at first setup. No other
-admin can demote, suspend or reset the owner, and the owner cannot drop their own admin flag.
-Only the owner can transfer it, to an active instance admin, with their password. A locked-out
-owner can only be recovered with a command run on the host.
+- **Instance admin** unlocks Servers, Users, Migrations and the Deplo instance settings, and holds
+  the three grants below implicitly.
+- **Publish ports** (`canExposePorts`) lets a stack publish a port on the server.
+- **Bind server folders** (`canMountHostVolumes`) allows every way out of a container: bind mounts,
+  `privileged`, added kernel capabilities, devices, host namespaces, foreign networks and volumes.
+  See [Host access](/advanced/host-access-and-privileges).
+- **Configure Traefik** allows custom proxy labels, which can affect other teams on the server.
+
+**Instance owner** is the level above, held by the account created at first setup. No other admin
+can demote, suspend or reset it, and it cannot drop its own admin flag. Only the owner transfers it,
+to an active instance admin, with their password. A locked-out owner is recovered only with
+`deplo recover` on the host.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<UserPlus className="text-blue-400" />}
-    title="Teams and members"
-    description="Adding people"
-    href="/guides/team/members"
-  />
-  <Card
-    icon={<ShieldCheck className="text-blue-400" />}
-    title="Roles and permissions"
-    description="Building a role, sharing a folder"
-    href="/guides/roles-and-permissions"
-  />
-  <Card
-    icon={<Lock className="text-blue-400" />}
-    title="Capabilities"
-    description="All 45, by category"
-    href="/reference/capabilities"
-  />
-  <Card
-    icon={<KeyRound className="text-blue-400" />}
-    title="API tokens"
-    description="Scoping, expiry, effective power"
-    href="/advanced/api-tokens-and-oauth"
-  />
+  <Card icon={<UserPlus className="text-blue-400" />} title="Teams and members" description="Adding people" href="/guides/team/members" />
+  <Card icon={<ShieldCheck className="text-blue-400" />} title="Roles and permissions" description="Building a role, sharing a folder" href="/guides/roles-and-permissions" />
+  <Card icon={<Lock className="text-blue-400" />} title="Capabilities" description="All 46, by category" href="/reference/capabilities" />
+  <Card icon={<KeyRound className="text-blue-400" />} title="API tokens" description="Scoping, expiry, effective power" href="/advanced/api-tokens-and-oauth" />
 </Cards>

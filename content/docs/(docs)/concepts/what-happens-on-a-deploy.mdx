@@ -8,8 +8,7 @@ import { basePath } from "@/lib/base-path";
 
 import { Hammer, Zap, RotateCcw, Variable, LifeBuoy } from "lucide-react";
 
-One deploy, from the trigger to a running container. Knowing these steps makes most error
-messages easy to understand.
+One deploy, from the trigger to a running container: the steps behind most error messages.
 
 <Steps>
 <Step>
@@ -18,115 +17,93 @@ messages easy to understand.
 | Trigger | Comes from |
 | --- | --- |
 | **Deploy** or **Redeploy** in the dashboard | A person |
-| A push to the tracked branch | The git provider's webhook |
-| A new tag | The same webhook, when the trigger is set to tags |
+| A push to the tracked branch, or a new tag | The git provider's webhook |
 | A `POST` to the app's deploy hook URL | CI, a script, a provider Deplo cannot register a webhook with |
-| A pull request opened or updated | Previews, if they are on |
-| **Rollback** | A person, and it skips most of the steps below |
+| A pull request opened or updated | [Previews](/guides/networking/pull-request-previews), if they are on |
 | The MCP server or the GraphQL API | A token with `deploy_apps` |
 
-An automatic trigger can be filtered: **watch paths** skip the deploy if the push touched nothing
-under the paths you listed, and **skip unchanged deployments** skips it if nothing under the root
-directory changed. A manual redeploy always runs.
+**Watch paths** skip an automatic deploy when the push touched nothing under them. A manual
+redeploy always runs.
 </Step>
 
 <Step>
 ### It waits for a slot
 
-Every server runs `1` deploy at a time by default, so deploys to the same machine queue. Deploys
-to other servers run in parallel. Two deploys of the same app never overlap.
-
-A queued deploy shows its position in the build log. If the app builds on a
-[build server](/advanced/build-servers), it waits for a slot on **that** machine.
+Each server runs `1` deploy at a time by default, so deploys to one machine queue while other
+servers work in parallel. Two deploys of the same app never overlap. A queued deploy shows its
+position in the build log. An app built on a [build server](/advanced/build-servers) waits for a
+slot on **that** machine.
 </Step>
 
 <Step>
 ### The agent fetches the source
 
-The control plane contacts the agent on the target server over an encrypted connection and hands
-over the job, including the decrypted credentials. The agent never holds the encryption key.
-
-- **Git sources** are cloned by the agent with the token from the git connection. Submodules are
-  included if the app asks for it, from the repository's own git server only.
-- **Upload sources** use the archive you uploaded.
-- **Docker image** and **Compose** sources skip this step.
+The control plane hands the job, decrypted credentials included, to the agent on the target
+server. A **Git** source is cloned with the git connection's token (submodules too, if asked, from
+the same git server only). An **Upload** uses your archive. **Docker image** and **Compose** skip
+this step.
 </Step>
 
 <Step>
 ### The build method is picked
 
-With **Detect automatically**, the default, Deplo looks in the root directory on every deploy: a
-`Dockerfile` is built, otherwise a Compose file is deployed as a stack, otherwise Railpack builds
-the app. The log says which one ran. A method you picked yourself is used as it is.
+On **Automatic**, the default, Deplo looks in the root directory on every deploy: a `Dockerfile`
+is built, else a Compose file is deployed as a stack, else Railpack builds the app. The log says
+which one ran. A method you picked yourself is used as it is.
 
-For a Railpack build, Deplo also detects the framework from `package.json` and the root
-configuration, **on every deploy**. Detection gives the install, build and start commands and the
-default container port. Anything you typed by hand always wins. Dockerfile and Docker Compose
-builds skip detection.
+Under Railpack, Deplo also recognises the framework from `package.json` and the root config on
+every deploy, and shows it on the app. Railpack works out the install, build and start commands
+unless you typed your own.
 </Step>
 
 <Step>
 ### The image is built
 
-| Method | What happens |
-| --- | --- |
-| **Railpack** | Creates a build plan from the detected language and framework |
-| **Dockerfile** | Your `Dockerfile`, with your build context and optionally a `--target` stage |
-| **Docker Compose** | Builds the services of the Compose file in your repository |
+**Railpack** makes a build plan from the detected language and framework, **Dockerfile** builds
+your `Dockerfile` (optionally one stage), **Compose** builds the services of your Compose file.
 
-One build step may use about 75% of the server's memory. Past that, the build stops with a
-message that says so, and the apps already running on that server keep theirs. When Railpack
-cannot build the app, the last line of the log says what to change.
+One build step may use about 75% of the server's memory. Past that the build stops and says so,
+and the apps already running there keep theirs. Every environment variable is available during
+the build too, so values like `NEXT_PUBLIC_*` work.
 
-Every environment variable is available **during** the build too, so build-time values such as
-`NEXT_PUBLIC_*` work. Each one becomes a build `ARG`. Only `NODE_ENV` also becomes an `ENV`, and
-the running container gets the app's variables anyway.
-
-<Callout type="info">
-The image stays on that server. Deplo pushes to no registry, so an instant rollback needs the
-image to still be there. Once it is gone, an app from a repository rebuilds the commit.
-</Callout>
-
-Build output streams to the dashboard live and survives a page reload or a control plane restart.
-It is capped at 20,000 lines of 4,000 characters each.
+The image stays on that server: Deplo pushes to no registry. Build output streams live, survives a
+page reload or a control plane restart, and is capped at 20,000 lines of 4,000 characters.
 </Step>
 
 <Step>
 ### The environment is resolved
 
-Four layers, lowest priority first: **instance-wide variables**, **the app's own variables**, **a
-shared variable** the app has linked, then **a preview override** (previews only). The highest
-layer that defines a name wins.
+Four layers, lowest priority first:
 
-A **secret** value is write-only on every layer. For security reasons, a preview built from a
-**fork** gets only the plain preview overrides and nothing the app itself was given.
+1. **Shared variables injected everywhere** (owned by the instance or reaching several teams)
+2. **The app's own variables**
+3. **A shared variable the app has linked**
+4. **A preview override** (previews only)
+
+The highest layer that defines a name wins. A preview built from a **fork** gets only the plain
+preview overrides, never the app's own values.
 </Step>
 
 <Step>
 ### The stack is rendered
 
-This happens on the control plane, never on the server. It produces:
+On the control plane, never on the server:
 
-- **The Compose file.** One service for a single-image app, or your Compose stack with Deplo's
-  entries added.
-- **The Traefik labels.** One route per domain, with its rule, entry point, certificate provider
-  and extras. Path routes win over whole-host ones, longest path first.
-- **The port.** One container port per app, plus any per-hostname override.
-- **The volumes, the resource limits and the mounts.**
+- **The Compose file:** one service for a single-image app, or your stack with Deplo's entries.
+- **The Traefik labels:** one route per domain; path routes win over whole-host ones, longest
+  first.
+- **The port, the volumes, the resource limits and the mounts.**
 
-The agent receives the finished YAML. No routing logic lives on the server side.
+The agent receives finished YAML: no routing logic lives on the server.
 </Step>
 
 <Step>
 ### The agent starts it
 
-The agent writes the stack and, when there are secrets, a private environment file next to it,
-then runs Compose. The containers join the app's **Environment network**, `deplo-env-<id>`, or
-the team's `deplo-team-<id>` when the app is in no Environment, or `deplo-preview-<key>` for a
-preview. This is why apps and databases in the same Environment reach each other by name.
-
-Traefik sees the new labels and starts routing. If the domain has a certificate provider, Traefik
-requests the certificate on the first HTTPS request.
+The agent writes the stack and a private environment file next to it, then runs Compose. The
+containers join the app's **Environment network** (`deplo-env-<id>`), the team's
+`deplo-team-<id>` when the app is in no Environment, or `deplo-preview-<key>` for a preview. Traefik
+sees the new labels and starts routing.
 </Step>
 
 <Step>
@@ -135,23 +112,21 @@ requests the certificate on the first HTTPS request.
 A deploy is ready only when the app really runs:
 
 - **It stays up** for 10 seconds after it starts: no exit, no restart.
-- **An app with a domain answers on its port.** An app with no domain only has to stay up, so a
+- **An app with a domain answers on its port.** An app with none only has to stay up, so a
   background worker deploys fine.
 - **A slow starter gets up to 3 minutes.**
 
-A crash, a restart loop, an app that never listens, or one that listens only on `127.0.0.1` inside
-its container fails the deploy. The log says why and shows the app's last log lines.
-
-If the app listens on another port than the one set, for example `8080` instead of `3000`,
-Deplo sends the traffic to `8080`, saves it as the app's port, and says so in the log. See
-[The port is the one people get wrong](/guides/releases/build-settings#the-port-is-the-one-people-get-wrong).
+A crash, a restart loop, or an app that never listens (or listens only on `127.0.0.1`) fails the
+deploy; the log says why and shows the app's last lines. If it listens on another port, for
+example `8080` instead of `3000`, Deplo routes to `8080`, saves it as the app's port and says so.
+See [The port is the one people get wrong](/guides/releases/build-settings#the-port-is-the-one-people-get-wrong).
 </Step>
 
 <Step>
 ### The result is recorded
 
-The deployment gets its final status, its image reference, its duration and its logs. The app's
-status becomes `active`, or `error` if the build or the start failed.
+The deployment gets its final status, image, duration and logs. The app's status becomes
+`active`, or `error` if the build or the start failed.
 
 <Image
   src={`${basePath}/screenshots/what-happens-on-a-deploy/01-deploy-trace.png`}
@@ -162,77 +137,52 @@ status becomes `active`, or `error` if the build or the start failed.
 />
 
 Images older than the app's **rollbacks kept** setting (default `3`) can be removed by the
-server's disk cleanup. Deplo pushes to no registry, so a removed image is gone.
+server's disk cleanup, and a removed image is gone. An app from a repository can still roll back
+by rebuilding that commit.
 </Step>
 
 <Step>
 ### A picture is taken
 
 Once the deployment is live, the app's server opens it in a private browser and takes a picture
-in light and in dark. It becomes the cover of the **Production Deployment** card and of the
-deployment's page, matching your theme.
+in light and dark. It becomes the cover of the **Production Deployment** card and of the
+deployment's page.
 
-- **Cookie banners** are dismissed with **Reject** for the consent tools Deplo knows. A banner a
-  site built itself can still show; hover the cover and use **Retake screenshot**.
-- **Ads and analytics** are not loaded, so the picture never counts as a visit in your analytics.
-- **Basic auth**: the picture shows the real site, because Deplo signs in with the app's own
-  username and password. A pull request from a fork is never signed in.
-- **No picture** when the page answers with an error, stays blank, or the app has no domain: the
-  card simply looks the way it always did. Deplo tries once more a minute later, then waits for
-  the next deploy.
+- **Cookie banners** are dismissed with **Reject** for the consent tools Deplo knows. For any
+  other, hover the cover and use **Retake screenshot**.
+- **Ads and analytics** are not loaded, so the picture never counts as a visit.
+- **Basic auth**: Deplo signs in with the app's credentials, never for a fork's pull request.
+- **No picture** when the page errors, stays blank, or the app has no domain. Deplo retries once a
+  minute later, then waits for the next deploy.
+- **No private network**: the browser goes out only through the server, which refuses private
+  addresses.
 
-The browser has no network of its own: it reaches the internet only through the server, which
-refuses every private address. Turn pictures off in the app's **Settings** > **Advanced** >
-**Deployment screenshots**; that also deletes the saved ones.
+Turn it off in **Settings -> Advanced -> Deployment screenshots**, which also deletes the saved
+ones.
 </Step>
 </Steps>
 
 ## What a deploy does not do
 
-- **It does not touch your data.** Volumes are reattached, never recreated.
-- **It does not change the slug**, the volume names or the app's identity.
+- **It does not touch your data or identity.** Volumes are reattached, never recreated; the slug
+  and volume names stay.
 - **It does not roll back on failure.** A failed build leaves the previous version running. An
-  app that fails the start check has already replaced it, so
-  [roll back](/guides/releases/rollbacks) to the last version that worked. See
+  app that fails the start check has already replaced it: [roll back](/guides/releases/rollbacks)
+  to the last version that worked. See
   [App status](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
 
 ## A rollback is much shorter
 
-Steps 3 to 6 are skipped. Deplo runs an existing image again with the **current** configuration:
-the code goes back, the variables, domains, volumes and limits do not. It is recorded as a real
-deployment with its own logs.
+Steps 3 to 5 are skipped: no fetch, no build. Deplo runs an existing image again with the
+**current** configuration, so the code goes back while the variables, domains, volumes and limits
+do not. It is recorded as a real deployment with its own logs.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Hammer className="text-blue-400" />}
-    title="Build settings"
-    description="Builders, framework detection, build args"
-    href="/guides/releases/build-settings"
-  />
-  <Card
-    icon={<Zap className="text-blue-400" />}
-    title="Automatic deployments"
-    description="Webhooks, watch paths, deploy hooks"
-    href="/guides/releases/automatic-deployments"
-  />
-  <Card
-    icon={<RotateCcw className="text-blue-400" />}
-    title="Rollbacks"
-    description="Rollbacks kept, what a rollback skips"
-    href="/guides/releases/rollbacks"
-  />
-  <Card
-    icon={<Variable className="text-blue-400" />}
-    title="Environment variables"
-    description="The four layers, secrets, build-time values"
-    href="/guides/config/environment-variables"
-  />
-  <Card
-    icon={<LifeBuoy className="text-blue-400" />}
-    title="Deploys and builds troubleshooting"
-    description="When a deploy or build goes wrong"
-    href="/troubleshooting/deploys-and-builds"
-  />
+  <Card icon={<Hammer className="text-blue-400" />} title="Build settings" description="Builders, framework detection, build args" href="/guides/releases/build-settings" />
+  <Card icon={<Zap className="text-blue-400" />} title="Automatic deployments" description="Webhooks, watch paths, deploy hooks" href="/guides/releases/automatic-deployments" />
+  <Card icon={<RotateCcw className="text-blue-400" />} title="Rollbacks" description="Rollbacks kept, what a rollback skips" href="/guides/releases/rollbacks" />
+  <Card icon={<Variable className="text-blue-400" />} title="Environment variables" description="The four layers, secrets, build-time values" href="/guides/config/environment-variables" />
+  <Card icon={<LifeBuoy className="text-blue-400" />} title="Deploys and builds troubleshooting" description="When a deploy or build goes wrong" href="/troubleshooting/deploys-and-builds" />
 </Cards>

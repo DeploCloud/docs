@@ -7,107 +7,75 @@ import { ShieldCheck, Users, Lock, Fingerprint } from "lucide-react";
 
 ## You cannot sign in
 
-| Symptom | Cause |
+| Symptom | Fix |
 | --- | --- |
-| Password rejected | Check the password and whether the account is suspended |
-| Password forgotten | An instance admin resets it in **Settings -> Users**; the only admin [resets it from the host](/operations/break-glass-recovery#reset-a-password) |
-| No identifier accepted | The field accepts an email or username; check which one exists |
-| Six-digit code rejected | Correct the phone's clock; TOTP is time-based |
-| Code and recovery code rejected | Recovery codes are single-use; an instance admin must reset two-factor |
-| Passkey says **Not usable here** | The panel hostname changed; see [Passkeys stopped working](#passkeys-stopped-working) |
-| Page will not load | Try `https://deplo-cb00710a.deplo.site`; if disabled, see [the panel's own address](/operations/panel-address-and-certificates#turn-the-backup-address-off) |
+| `Invalid email or password` | The field takes an email or a username. Check both, and the password |
+| `This account has been suspended` | An instance admin lifts it, or `deplo recover unsuspend` on the host |
+| `Too many attempts. Try again in 42s.` | Wait: sign-in allows 8 tries a minute per account |
+| Password forgotten | An instance admin sets a new one in **Settings -> Users**; the only admin [resets it from the host](/operations/break-glass-recovery#reset-a-password) |
+| `That code is not valid` | Correct the phone's clock: two-factor codes are time-based |
+| Codes and recovery codes all rejected | Recovery codes are single-use. An instance admin uses **Reset two-factor** in **Settings -> Users** |
+| The page does not load | Try the generated address, like `https://deplo-cb00710a.deplo.site`. If it is off, see [the panel's own address](/operations/panel-address-and-certificates#turn-the-backup-address-off) |
 
 ## Passkeys stopped working
 
-Passkeys are bound to the hostname where they were registered. Moving the
-panel invalidates them on the new address.
+A passkey is bound to the address it was registered on: after the panel moves, **Settings ->
+Security** marks it **Not usable here**. Sign in with the password, remove it, and register a new
+one. Everybody on the instance does this once.
 
-<Callout type="info" title="The way back in">
-Sign in with the password and register a new passkey on the new address.
-Everybody on the instance must do this once.
-</Callout>
+## Two-factor authentication required
 
-## A team is locked until you enroll two-factor
-
-That team requires two-factor authentication and your account has not
-enrolled. Until you enroll, you cannot access that team in the dashboard or
-API.
-
-The screen offers to turn it on, switch to another team, or sign out.
+The team requires a second factor and your account has none, so the team is closed to you in the
+dashboard and the API. **Turn on two-factor authentication** or add a passkey (it counts too), sign
+back in with a passkey you already have, or switch to another team.
 
 ## A button is missing or greyed out
 
-Check these in order:
-
 1. **Capability:** your role may not include it.
 2. **Folder share:** a folder share replaces your team role inside that folder.
-3. **Advanced grant:** publishing a port needs **Publish ports**; anything that
-   reaches the host needs **Bind server folders**. Find them under **Settings -> Users -> the
-   user -> Permissions -> Advanced grants**.
-4. **Instance admin:** Servers, Users, and Deplo settings are not team capabilities.
-5. **Feature switch:** Console needs acknowledgement; cron jobs and previews
-   need their switch enabled.
+3. **Advanced grant:** publishing a port needs **Publish ports**, an existing server folder needs
+   **Bind server folders**, custom proxy labels need **Configure Traefik**. They are under **Settings
+   -> Users -> the user -> Permissions -> Advanced grants**.
+4. **Instance admin:** Servers, Users and Deplo settings are not team capabilities.
+5. **Feature switch:** the console needs a confirmation; cron jobs and previews need their switch on.
 
 ## An API token returns 401
 
-The token is missing, revoked, or **expired**. Create or rotate it in
-**Settings -> Tokens**.
+The token is missing, revoked, or expired. Create or rotate it in **Settings -> API tokens**.
 
 ## An API token returns 403
 
 | Cause | Fix |
 | --- | --- |
-| The token lacks that capability | Edit it in **Settings -> Tokens** |
-| Its creator lost that capability | A token can never do more than its creator can do **right now** |
+| The token lacks that capability | Edit it in **Settings -> API tokens** |
+| Its owner lost that capability | A token never does more than its owner can do **right now** |
+| Its owner lacks **Use API tokens** in that team | A team admin grants it to the member |
 | The scope excludes the resource | Naming a project or an app drops every team-wide capability in that team |
-| The team requires two-factor and its creator has not enrolled | The token resolves nothing |
+| The team requires two-factor and its owner has none | The token resolves nothing until they enroll |
+| An AI agent is refused over MCP | See [the MCP server's troubleshooting](/guides/mcp-server#troubleshooting) |
 
 ## An API resource returns 404
 
-It belongs to another team, or it is outside the token's scope. Deplo resolves
-out-of-scope resources to nothing rather than revealing that they exist.
-
-A deleted app behaves the same way from the moment deletion starts.
+It belongs to another team, is outside the token's scope, or is an app being deleted: Deplo answers
+as if it did not exist.
 
 ## You are the owner and locked out
 
-The instance owner cannot be reset by another admin. If that account is lost,
-run `deplo recover owner <username>` on the control-plane host. See
-[Break-glass recovery](/operations/break-glass-recovery).
+No other admin can reset the instance owner. Run `deplo recover owner <username>` on the
+control-plane host: see [Break-glass recovery](/operations/break-glass-recovery#restore-ownership-or-access).
 
 ## Somebody left the company
 
-1. In **Settings -> Members**, open them, choose **Advanced**, and remove them.
-2. Their tokens immediately lose access from their membership.
-3. Transfer primary ownership first if they are the owner.
-4. Check **Activity** for recent actions.
-
+1. If they are the team's primary owner, open the new owner in **Settings -> Members** and
+   **Transfer** the team first.
+2. Open them in **Settings -> Members**, then **Advanced -> Remove**. Their tokens lose that team at once.
+3. Check **Activity** for their recent actions.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Lock className="text-blue-400" />}
-    title="Account security"
-    description="Password, two-factor, passkeys"
-    href="/guides/team/account-security"
-  />
-  <Card
-    icon={<Users className="text-blue-400" />}
-    title="Teams and members"
-    description="Inviting, removing, transferring ownership"
-    href="/guides/team/members"
-  />
-  <Card
-    icon={<ShieldCheck className="text-blue-400" />}
-    title="Roles and permissions"
-    description="Capabilities, folder shares, scope"
-    href="/guides/roles-and-permissions"
-  />
-  <Card
-    icon={<Fingerprint className="text-blue-400" />}
-    title="API tokens and OAuth"
-    description="Scopes, expiry, creator inheritance"
-    href="/advanced/api-tokens-and-oauth"
-  />
+  <Card icon={<Lock className="text-blue-400" />} title="Account security" description="Password, two-factor, passkeys" href="/guides/team/account-security" />
+  <Card icon={<Users className="text-blue-400" />} title="Teams and members" description="Inviting, removing, transferring ownership" href="/guides/team/members" />
+  <Card icon={<ShieldCheck className="text-blue-400" />} title="Roles and permissions" description="Capabilities, folder shares, scope" href="/guides/roles-and-permissions" />
+  <Card icon={<Fingerprint className="text-blue-400" />} title="API tokens and OAuth" description="Scopes, expiry, creator inheritance" href="/advanced/api-tokens-and-oauth" />
 </Cards>

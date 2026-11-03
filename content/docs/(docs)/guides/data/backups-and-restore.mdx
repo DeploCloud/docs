@@ -9,60 +9,52 @@ import { basePath } from "@/lib/base-path";
 import { LifeBuoy, Server, Database } from "lucide-react";
 import { BackupDiagram } from "@/components/diagrams/backups-and-restore";
 
-Scheduled, encrypted copies of a database or an app, sent to an S3 bucket or to another server's
-disk, with a restore that puts them back.
+Scheduled, encrypted copies of a database or an app, sent to an S3 bucket or to a folder on one of
+your servers, with a restore that puts them back.
 
 - A **destination** is where the copies go.
 - A **schedule** says what to copy, where, how often and how many to keep.
-- A **run** is one execution. It produces one **artifact**.
+- A **run** is one execution. It produces one **artifact**, listed as a restore point.
 
-The backup runs on the server that holds the data. It is compressed and encrypted with `age`
-before it leaves the server, with one key pair per destination. Nothing in between can read it.
+The server that holds the data runs the backup. It is compressed and encrypted with `age` before it
+leaves that server, with one key pair per destination. Nothing in between can read it.
+
+- **An app backup** holds its Volumes, its Files, and a snapshot of its compose file and variables.
+- **A database backup** is a dump of that database alone.
 
 <BackupDiagram />
 
 ## Add a destination
 
-**Storage -> Destinations -> Add Destination**.
+**Storage -> Destinations -> Add Destination**, then pick the type and a **Name**.
 
-<Tabs items={['A folder on a server', 'An S3-compatible bucket']}>
-<Tab value="A folder on a server">
+<Tabs items={['Server', 'S3 bucket']}>
+<Tab value="Server">
 
-Pick any server, including a [storage-only](/advanced/server-roles) one. Leave the path empty to
-use the agent's managed store. A custom path must be absolute and needs instance admin.
+A folder on any of your servers, including a [storage-only](/advanced/server-roles) one. Backups of
+apps on other servers are copied there.
+
+Leave **Advanced -> Folder** empty and Deplo manages it. A custom folder (instance admins only) is
+an absolute path that already exists and is empty the first time.
 
 </Tab>
-<Tab value="An S3-compatible bucket">
+<Tab value="S3 bucket">
 
-<TypeTable
-  type={{
-    Provider: {
-      type: "select",
-      description: "AWS, Cloudflare R2, Backblaze B2, MinIO, DigitalOcean, Wasabi, or other",
-    },
-    "Endpoint, Region, bucket, folder": {
-      type: "text",
-      description: "As your provider documents them",
-    },
-    "Access key, secret key": {
-      type: "secret",
-      description: "Encrypted, never returned",
-    },
-    Advanced: {
-      type: "text",
-      description: "Extra provider flags, and an instance-admin-only option for an endpoint inside your own network",
-    },
-  }}
-/>
+| Field | What to enter |
+| --- | --- |
+| **Provider** | Amazon S3, Cloudflare R2, Backblaze B2, DigitalOcean Spaces, Wasabi, MinIO, or Other S3-compatible. Pre-fills the endpoint format |
+| **Endpoint**, **Region**, **Bucket** | As your provider documents them. **Region** defaults to `auto` |
+| **Access Key ID**, **Secret Access Key** | Encrypted, never returned |
+| **Advanced -> Additional flags** (beta) | Provider workarounds such as `--s3-force-path-style=true`. Unknown flags are refused |
+| **Advanced -> This bucket is on my own network** | Instance admins only. Allows a private endpoint such as `10.0.0.5` |
 
 </Tab>
 </Tabs>
 
-Then click **Test connection**. An agent runs a real test: a small write and a delete on a bucket,
-a write and a free-space check on a folder. A read-only key is reported as failed.
-
-A failed test is a normal result. **Connection log** in the destination's menu shows every step
-and the commands to repeat it by hand.
+**Test connection** in the destination's menu runs a real probe from an agent: a small write and a
+delete on a bucket, a write and a free-space check on a folder. A read-only key fails. A failed
+test is a normal result: **Connection log** in the same menu shows every step and the commands to
+repeat it by hand.
 
 ## Read the destinations list
 
@@ -80,25 +72,26 @@ last figures and turns red.
 - **A folder on a server** shows a bar: your backups, everything else on that disk, and free
   space. It turns amber past 80% used.
 - **A bucket** shows the total: `48.2 GB in 137 backups`.
-
-The refresh icon re-tests one destination. The toolbar has search, filters, and a switch between
-cards and a table.
+- **The refresh icon** re-tests one destination. The toolbar has search, filters, and a switch
+  between cards and a table.
+- **Remove** deletes the destination's schedules and restore points. The backup files stay unless
+  you tick **Also delete**, but the key that opens them goes: save it first.
 
 ## Save the recovery key
 
-Every destination has one. Download it from **Download recovery key** in the destination's menu.
-The card keeps reminding you until somebody does.
+**Download recovery key** in the destination's menu. Deplo offers it right after you add one, and
+the card keeps reminding you until somebody downloads it. It needs `manage_backup_destinations`
+and `reveal_secrets`, and the download is recorded in **Activity**.
 
-You need it when `DEPLO_SECRET` was rotated or lost, or when the control plane itself is gone. With
-the file, any artifact from that destination can be decrypted anywhere:
+You need it when `DEPLO_SECRET` was rotated or lost, or when the control plane itself is gone.
+With the file, any artifact from that destination decrypts anywhere:
 
 ```bash
-age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
+age -d -i deplo-recovery-key.txt backup.tar.gz.age > backup.tar.gz
 ```
 
-<Callout type="info">
-Downloading the key is recorded in the activity log.
-</Callout>
+Artifacts are named `deplo/<team>/<app|database>/<id>/<when>-<run>.<ext>.age`. An app backup
+unpacks to `volumes/`, `files/` and `snapshot/`.
 
 ## Schedule a backup
 
@@ -115,6 +108,9 @@ Downloading the key is recorded in the activity log.
 
 ### Start a new backup
 
+**Storage -> Backups -> New Backup**, then pick the target: one **App** or one **Database**. From
+the **Backups** tab of an app or a database, use **Back up -> New schedule** instead.
+
 <Image
   src={`${basePath}/screenshots/backups-and-restore/04-database-backups.png`}
   alt="A database with no backup yet, the empty state 'Schedule a backup' starts from"
@@ -123,57 +119,39 @@ Downloading the key is recorded in the activity log.
   className="w-full rounded-lg"
 />
 
-**Storage -> Backups -> New Backup**, or **Back up -> New schedule** on the **Backups** tab of an
-app or a database.
-
-</Step>
-<Step>
-
-### Pick the target
-
-One app or one database.
-
 </Step>
 <Step>
 
 ### Pick the destination
 
-Pick the **Destination**.
-
-</Step>
-<Step>
-
-### Name it
-
-A name is suggested from the schedule.
+Each destination shows whether Deplo could reach it.
 
 </Step>
 <Step>
 
 ### Set the schedule
 
-Set the schedule and its **Timezone**. The shortest interval is **every 15 minutes**.
+Pick how often and the **Timezone** (yours by default). The shortest interval is **every 15
+minutes**. The name follows the frequency until you change it.
 
 </Step>
 <Step>
 
 ### Set retention
 
-Set **Keep**.
+**Keep** is a count, not a number of days. `Keep 7` (the default) keeps the seven most recent
+successful backups. The newest one is never removed, a failed run does not use a slot, and the
+maximum is 365.
 
 </Step>
 </Steps>
 
-**Keep is a count, not a number of days.** `Keep 7` (the default) keeps the seven most recent
-successful artifacts. The newest one is never removed, and a failed run does not use a slot. The
-maximum is 365.
-
-**Back up -> Back up now** runs one backup right away.
+**Back up -> Back up now** runs one backup right away, with no schedule.
 
 ## Restore
 
-Every finished run is a restore point, listed under **Restore points** on the target's **Backups**
-tab. Each row's menu has **Restore**, **Download** and **Delete**.
+Every successful run is a restore point, listed under **Restore points** on the target's
+**Backups** tab. Each row's menu has **Download**, **Restore** and **Delete**.
 
 <Image
   src={`${basePath}/screenshots/backups-and-restore/03-app-backups.png`}
@@ -183,47 +161,31 @@ tab. Each row's menu has **Restore**, **Download** and **Delete**.
   className="w-full rounded-lg"
 />
 
-**A restore replaces the current data.** It asks you to type the target's name.
+**A restore replaces the current data** and cannot be undone. It asks you to type the target's
+name, and checks the artifact's checksum first.
 
-<Tabs items={['Database', 'App']}>
-<Tab value="Database">
+- **A database** is dropped and recreated from the dump.
+- **An app** is stopped, its data cleared, the artifact unpacked, and the app started again. It
+  shows `restoring` meanwhile.
 
-Drops and recreates the database.
+**Back up -> Restore from file** (beta) restores a `.gz`, `.tgz` or `.age` file from your computer.
+For an encrypted one, paste the destination's recovery key.
 
-</Tab>
-<Tab value="App">
-
-Stops the app, clears its data, unpacks the artifact and starts it again. The app shows
-`restoring` during the process.
-
-</Tab>
-</Tabs>
-
-The artifact's checksum is checked before the restore starts.
-
-**Back up -> Restore from file** restores an artifact from your computer. If it is encrypted,
-paste the recovery key.
-
-## Download an artifact
-
-**Download** in a restore point's menu. The artifact is decrypted on the way out. This needs
-`restore_backups`. An **app** archive also needs `reveal_secrets`, because it contains the app's
-environment variables.
+**Download** decrypts the artifact on the way out. It needs `restore_backups`; an **app** archive
+also needs `reveal_secrets`, because it contains the app's variables.
 
 ## Good to know
 
 - **An app schedule does not include its databases.** Schedule the database separately.
-- **Retention counts successes.** Failed runs do not use a slot.
 - **A skipped hour on a DST change shows a warning.**
 - **`delete_backups` is a separate capability**, because deleting runs can leave a target with no
   restore point.
-- **Deleting a schedule does not delete its backups.** They stay until you delete them under
-  **Restore points**.
-- **Deleting the app or database removes its backups after 30 days.** Until then they can still
-  be recovered.
-- **A destination on the same server as the data is lost with that server.** Put at least one
-  copy elsewhere.
-- **Backups are always encrypted.**
+- **Deleting a schedule does not delete its backups.** They stay under **Restore points** until you
+  delete them.
+- **Deleting the app or database deletes its backups too.** If a destination cannot be reached, the
+  delete is refused.
+- **A destination on the same server as the data is lost with that server.** Put at least one copy
+  elsewhere.
 
 ## Troubleshooting
 

@@ -7,134 +7,105 @@ import { Globe, FileLock2, Server } from "lucide-react";
 
 ## DNS is missing or points to the wrong server
 
-| State | Means | Fix |
-| --- | --- | --- |
-| `pending` | No record found at all | Create the records the row prints: the A, and the AAAA when the server has IPv6 |
-| `misconfigured` | It resolves, but somewhere else | Point it at this app's server. The row prints the record that is wrong |
+The domain's row prints the record to fix, and Deplo re-checks it by itself.
 
-Check it yourself:
+| Status | Row says | Fix |
+| --- | --- | --- |
+| **Pending** | `This domain doesn't resolve yet.` | Create the A record it prints, and the AAAA when the server has IPv6 |
+| **Misconfigured** | `A record points at 198.51.100.7, not this server` | Point it at the server this app runs on, or remove it |
 
 ```bash
 dig +short app.example.com        # A records (IPv4)
 dig +short AAAA app.example.com   # AAAA records (IPv6)
 ```
 
-No output means propagation or a typo. A different address means the record
-still points to another host, proxy, or wildcard.
-
-**A wrong AAAA breaks a correct A.** If the A record is right and the domain is
-still `misconfigured`, an AAAA points at another machine. Remove it, or point
-it at the server's IPv6. A server with no IPv6 needs no AAAA at all.
-
-<Callout type="warn" title="The server matters">
-An app running on server B needs its domain pointing at **B**, not at the
-machine the panel runs on.
-</Callout>
+- **A wrong AAAA breaks a correct A.** Remove it, or point it at the server's IPv6.
+- **The app's server, not the panel's.** An app running on server B needs its DNS pointing at B.
+- **Behind a CDN or another proxy?** Turn on **Behind a proxy** in the domain's **Advanced
+  settings**: Deplo then routes it without waiting for a DNS check.
 
 ## Cloudflare shows error 522
 
-Cloudflare cannot reach the server. The usual cause is a hostname with **only
-an AAAA record** on a server that has no IPv6: Cloudflare can only dial it over
-IPv6, and nothing answers.
-
-- **Add an A record** pointing at the server, proxied like the AAAA.
-- **Or give the server an IPv6 first**, then keep the AAAA.
-
+Cloudflare cannot reach the server. Usually the hostname has **only an AAAA record** and the server
+has no IPv6. Add a proxied A record pointing at the server, or give the server an IPv6 first.
 Ports 80 and 443 closed on the server give the same error.
 
 ## The browser shows a certificate warning
 
-Check these first:
-
 1. **Port 80 is open.** Let's Encrypt validates over HTTP.
-2. **DNS resolves from the server.** Fix the record, then **Reload** the app
-   or redeploy.
-3. **The domain is not `deplo.site`.** Use a domain you own for a certificate.
-4. **Certificate is set to Let's Encrypt.** Check the domain's **HTTPS** group,
-   above **Advanced**.
+2. **DNS points at the app's server.** Then re-check the domain.
+3. **Certificate is Let's Encrypt**, in the domain's **HTTPS** group.
+4. **A generated `.deplo.site` name** gets a certificate only on a public IP: nothing outside can
+   validate a private one.
 
 ## A custom certificate is not being served
 
-- **It never loaded.** Check the intermediate chain and that the key matches.
-  Otherwise the proxy serves its default certificate.
-- **It is on the wrong server.** Certificates are per host. Add it to every
-  server that runs the app.
-- **The domain is set to None.** A domain with no certificate is on plain
-  HTTP and will never pick one up.
-- **It expired.** Nothing renews a custom certificate. The certificates page
-  warns for the last three weeks.
+- **It never loaded:** check the intermediate chain and that the key matches.
+- **Wrong server:** certificates are per server. Add it to every server that runs the app.
+- **The domain's certificate is None:** that domain serves plain HTTP only.
+- **It expired:** nothing renews it. The server's **Certificates** tab warns for the last 21 days.
 
 ## The domain returns 404
 
-The request reached the proxy, but no route matched. Check:
+The request reached the proxy, but no route matched.
 
 | Check | Why |
 | --- | --- |
 | Is the app running? | A stopped app has no container to route to |
 | Is the domain on the right app? | One hostname can route by path, but each path must match |
-| Is DNS routable? | Only `valid` and `cloudflare` are routed |
+| Is it **Valid** or **Proxied**? | Only those are routed, plus one with **Behind a proxy** on |
 | Is it the right server? | DNS decides which machine receives the request |
 | For a Compose app, is **Container** set? | The router needs to know which service |
 
 ## The domain redirects in a loop
 
-This is usually Cloudflare's **Flexible** mode combined with an HTTPS redirect.
-Press **Verify** on the domain and Deplo turns its certificate off to match. Better:
-switch Cloudflare to **Full (strict)** and keep **Let's Encrypt**.
+Usually Cloudflare's **Flexible** mode plus an HTTPS redirect. Deplo follows Cloudflare's SSL mode by
+itself, and re-checks it when you re-check the domain:
+
+| Cloudflare mode | Deplo's certificate |
+| --- | --- |
+| **Flexible** | **None** |
+| **Full** | **Let's Encrypt**, if it had none |
+| **Full (strict)** | **Let's Encrypt**, also when Cloudflare shows error 526 |
+
+**Activity** records each switch, like `Switched app.example.com to no certificate`. Prefer **Full
+(strict)**.
 
 ## Two apps share a hostname
 
-`example.com/` and `example.com/api` may point at different apps. The longest
-matching path wins.
-
-If the wrong app answers, check **Internal path** and **Strip path before
-forwarding** on both rows.
+`example.com/` and `example.com/api` may point at different apps: the longest matching path wins. If
+the wrong app answers, check **Internal path** and **Strip path before forwarding** on both rows.
 
 ## A hostname cannot be added
 
-**One hostname belongs to one team.** If another team already holds it, it
-cannot be added here. The same applies to a preview base domain.
+| Error | Fix |
+| --- | --- |
+| `app.example.com is already routed by another team on this Deplo` | A hostname belongs to one team. Remove it there first |
+| `app.example.com is under another team's preview domain on this Deplo` | Same, for a team's preview base domain |
+| `deplo.example.com is this Deplo's own address` | The panel's address cannot serve an app |
+| `This team has reached its limit of 50 Let's Encrypt domains` | Remove a certificate-backed domain, or add this one with no certificate |
 
 ## The panel is unreachable
 
-Try the generated address (like `https://deplo-cb00710a.deplo.site`). If it works, fix the
-address in **Settings -> Deplo**. The browser warns about its certificate once.
-
-If that is silent too, the proxy is down. From the server itself:
+Try its generated address, like `https://deplo-cb00710a.deplo.site`. If that works, fix the address
+in **Settings -> Deplo**. If that is silent too, check from the server itself:
 
 ```bash
 curl http://127.0.0.1:3000/api/health   # the panel, past the proxy
 docker ps
 docker logs deplo-traefik
 docker logs deplo-deplo-1
+docker logs deplo-tunnel                # only when the panel runs through a Cloudflare Tunnel
+ssh -L 3000:localhost:3000 root@203.0.113.10   # proxy down: from your machine, then open http://localhost:3000
 ```
 
-If the proxy is down, tunnel to the panel:
-
-```bash
-ssh -L 3000:localhost:3000 root@203.0.113.10   # then open http://localhost:3000
-```
-
+If the address itself is what broke, move it from the server with `deplo recover panel-address`:
+see [Break-glass recovery](/operations/break-glass-recovery#when-the-address-is-what-broke).
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Globe className="text-blue-400" />}
-    title="Domains and HTTPS"
-    description="Adding a domain, certificates, redirects"
-    href="/guides/networking/domains-and-https"
-  />
-  <Card
-    icon={<FileLock2 className="text-blue-400" />}
-    title="Custom certificates"
-    description="Bringing your own certificate"
-    href="/advanced/custom-certificates"
-  />
-  <Card
-    icon={<Server className="text-blue-400" />}
-    title="The panel's own address"
-    description="Panel address and certificates"
-    href="/operations/panel-address-and-certificates"
-  />
+  <Card icon={<Globe className="text-blue-400" />} title="Domains and HTTPS" description="Adding a domain, certificates, redirects" href="/guides/networking/domains-and-https" />
+  <Card icon={<FileLock2 className="text-blue-400" />} title="Custom certificates" description="Bringing your own certificate" href="/advanced/custom-certificates" />
+  <Card icon={<Server className="text-blue-400" />} title="The panel's own address" description="Panel address and certificates" href="/operations/panel-address-and-certificates" />
 </Cards>

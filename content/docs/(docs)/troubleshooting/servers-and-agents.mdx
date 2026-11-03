@@ -7,203 +7,147 @@ import { ServerPlus, Settings2, Network, FolderTree } from "lucide-react";
 
 ## A server is stuck provisioning
 
-`provisioning` means the agent has never called home. On the machine, run:
+**Provisioning** means its agent has never called home. On the machine:
 
 ```bash
 systemctl status deplo-agent
 journalctl -u deplo-agent -f
 ```
 
-| What you see | Cause |
+| What you see | Fix |
 | --- | --- |
-| The unit does not exist | The install command never ran, or failed early |
-| `Refusing to run an unverified binary` | The download did not match its checksum. Retry; if it persists, something is intercepting it |
-| The unit runs but nothing happens | It cannot reach the panel. Check that the machine is connected to the internet, and the address in the command |
-| `bootstrap token` errors | The token was used already, or it expired. Issue a new one from the server's menu |
-| `status=216/GROUP` | The unit wants the docker group and Docker is not installed. That is expected on a backups-only host, and its unit is installed without it |
+| No `deplo-agent` unit | The install command never ran, or failed early. Run it again |
+| `Refusing to run an unverified binary` while installing | The download did not match its checksum. Retry; if it persists, something intercepts the download |
+| `bootstrap token has already been used`, `has expired` or `is not recognised` | The token is single-use and lasts one hour. [Reissue the install command](#a-server-agent-needs-to-be-reinstalled) and run the new one |
+| `status=216/GROUP` | The unit needs the `docker` group and Docker is gone. Run the install command again. A server that only holds backups is added as **Backups only** |
+| The unit runs, nothing happens | It cannot reach the panel. Check the machine's internet access and the address in the command |
 
 ## A server is offline
 
-`offline` means the server has not been connected to Deplo for about 10
-seconds. Deplo never calls a server, so there is no port to open: the server
-connects to Deplo by itself, and is back online within seconds of reaching
-the internet again.
+Deplo never calls a server: its agent connects out to Deplo, so there is no port to open.
+**Offline** means it has not been connected for about 10 seconds. It comes back by itself within
+seconds of reaching Deplo again, and its apps keep running meanwhile.
 
-Its card says what brings it back:
-
-| Its card says | What to do |
+| Its card says | Fix |
 | --- | --- |
-| `Check that the machine is on and connected to the internet.` | Start the machine or reconnect it. If it is on and online, check the server agent on it: `systemctl status deplo-agent`, then `journalctl -u deplo-agent -f` for why it can't reach Deplo |
-| `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.` | It has never connected since it was added. See [A server hasn't connected to Deplo yet](#a-server-hasnt-connected-to-deplo-yet) |
-| `This server can't be used until its server agent is reinstalled. An instance admin can do it from the server's Advanced tab.` | See [A server agent needs to be reinstalled](#a-server-agent-needs-to-be-reinstalled) |
-
-If the panel's address changed while it was off, see [below](#a-server-was-off-while-the-panels-address-changed).
+| `Check that the machine is on and connected to the internet.` | Start or reconnect the machine. Still offline: `journalctl -u deplo-agent -f` says why it cannot reach Deplo |
+| `This server can't reach Deplo at deplo.example.com.` | See [A server hasn't connected to Deplo yet](#a-server-hasnt-connected-to-deplo-yet) |
+| `This server can't be used until its server agent is reinstalled.` | See [A server agent needs to be reinstalled](#a-server-agent-needs-to-be-reinstalled) |
 
 ## A server was off while the panel's address changed
 
-A connected server learns a new panel address at once. One that was off at
-the time still knows the panel's backup address, the generated one like
-`deplo-cb00710a.deplo.site`, and connects there.
+A connected server learns the new address at once. One that was off reconnects through the
+panel's backup address, like `deplo-cb00710a.deplo.site`.
 
-It cannot find the panel when neither address it knows works any more: the
-domain changed while the backup address was off, or the panel has no domain
-of its own and its generated address changed. Then [reinstall its server agent](#a-server-agent-needs-to-be-reinstalled)
-with a fresh install command. A panel domain, with the backup address left
-on, avoids this.
+If that is gone too (turned off, or the panel had no domain and its generated address changed),
+[reinstall its server agent](#a-server-agent-needs-to-be-reinstalled). A panel domain with the
+backup address left on avoids this.
 
 ## A server hasn't connected to Deplo yet
 
-The server was added and its server agent enrolled, but it has never connected to Deplo since.
-Deplo never calls a server, so nothing reaches it: it is **unusable** until it connects. Its
-apps keep running.
+It enrolled but never connected since, so it is **unusable**. Its apps keep running.
 
-- Its card shows **Offline**:
-  `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.`
-- On its page, the server agent line says `Unusable - it hasn't connected to Deplo yet`.
-- Instance admins see a banner: `edge-2 hasn't connected to Deplo yet.`
+- Card: `This server can't reach Deplo at deplo.example.com. Check that it's connected to the internet.`
+- Its page: `Unusable - it hasn't connected to Deplo yet`. Banner: `edge-2 hasn't connected to Deplo yet.`
 
-It connects by itself as soon as it can reach Deplo. Nothing has to be reinstalled:
+Nothing needs reinstalling: it connects as soon as it can reach `https://deplo.example.com` the way
+a browser would.
 
-| What you see | What to do |
-| --- | --- |
-| The machine is off, or has no internet | Start it or reconnect it |
-| It is online, but its network only lets some sites through | Let it reach `https://deplo.example.com`, like a browser would. A company proxy or an outbound firewall rule is the usual cause |
-| Still offline | Check the server agent on it: `systemctl status deplo-agent`, then `journalctl -u deplo-agent -f` for why it can't reach Deplo |
+- **The machine is off or has no internet**: start it or reconnect it.
+- **Its network only lets some sites through**: allow `https://deplo.example.com`. A company proxy
+  or an outbound firewall rule is the usual cause.
+- **Still can't reach Deplo**: on the server, `systemctl status deplo-agent`, then
+  `journalctl -u deplo-agent -f` says why.
 
 A server you no longer use can be [removed](/operations/remove-a-server-or-uninstall) instead.
 
-While Deplo is on v0.6.0, the Updates tab also lists these servers, and the next update waits
-for them: see [Updating through v0.6.0](/operations/update#updating-through-v060).
-
 ## A server was left behind
 
-An instance admin left this server behind while Deplo updated through v0.6.0, so the update
-could go ahead without it.
+An instance admin [left it behind](/operations/update#leave-a-server-behind) at the v0.6.0 update
+stop. Past that update it is **unusable**, with its apps still running. Its page says which way back:
 
-- **Before the update past v0.6.0,** nothing changes for it. If it connects by itself, it
-  drops off the list and works normally.
-- **After that update,** it is **unusable** until it connects. Its apps keep running, and its
-  apps and settings stay in Deplo.
+- `Unusable - reinstall its server agent`: [reinstall it](#a-server-agent-needs-to-be-reinstalled).
+- `Unusable - it hasn't connected to Deplo yet`: it can still [connect by itself](#a-server-hasnt-connected-to-deplo-yet).
 
-Its line on its page says which case it is:
+## A server says Degraded, Error, or Unknown
 
-- `Unusable - reinstall its server agent`: only a reinstall brings it back. See
-  [A server agent needs to be reinstalled](#a-server-agent-needs-to-be-reinstalled).
-- `Unusable - it hasn't connected to Deplo yet`: its server agent can still connect by itself.
-  See [A server hasn't connected to Deplo yet](#a-server-hasnt-connected-to-deplo-yet).
-
-Reinstalling its server agent brings it back either way, as it was, with its apps. A server you
-no longer need can be [removed](/operations/remove-a-server-or-uninstall) instead.
-
-## A server says warning, error, offline, or Unknown
-
-| Value | Means | Where to look |
+| Chip | Means | Fix |
 | --- | --- | --- |
-| `warning` | The agent is up and trusted, Docker is not answering | `systemctl status docker` on the host |
-| `error` | Something answered, but its agent is wrong: untrusted certificate, unsupported contract, or an application error | Re-run the install command to re-enroll |
-| `offline` | Not connected to Deplo for about 10 seconds | [A server is offline](#a-server-is-offline) |
-| `Unknown` | The stored reading is stale | Click **Refresh** |
+| **Degraded** | `The agent is up but Docker is unreachable` | `systemctl status docker` on the host |
+| **Error** | The agent's certificate is untrusted or expired, it speaks an unsupported protocol, or it answered with an error. The tooltip says which | Reissue the install command and run it; for a protocol error, update the agent |
+| **Unknown** | The stored reading is stale | **Refresh** on the Servers list |
 
-<Callout type="info">
-Health is a stored reading. A deploy performs a live handshake, so a green
-card and a failing deploy can still happen together.
-</Callout>
+Health is a stored reading, while a deploy does a live handshake: a green chip and a failing deploy
+can happen together.
 
 ## Check readiness instead of guessing
 
-Use **Check readiness** in the server's menu for one live check of the agent,
-Docker, routing, capacity, build methods, and Deplo configuration.
-
-`fail` blocks a deploy. `warn` means it can deploy but is not fully usable.
-`skip` means the check could not be evaluated, not that it passed.
+**Check readiness** on the server's **Overview** tab runs one live check of the agent, Docker,
+routing, capacity, build methods and Deplo configuration. A failed check blocks deploys, a warning
+means it deploys but is not fully usable, and **skipped** means it could not be evaluated, not that
+it passed.
 
 ## Metrics show dashes
 
-The telemetry stream is not connected. Refresh the server health first.
-History is held in memory and starts empty after a panel restart.
+The telemetry stream is not connected: refresh the server first. Chart history lives in the panel's
+memory, so it starts empty after a panel restart, and on every reload when **Save metrics on
+server** is off.
 
-## A deploy says Docker cannot create a network
+## A deploy says the server has run out of Docker networks
 
-Deplo uses one Docker network per **Environment**. If the installer could not
-restart Docker because containers were running, the configured address pool is
-not active yet. Restart Docker in a maintenance window; the file is already
-correct.
+`This server has run out of Docker networks (the default is about 31).` Every Environment and every
+preview has its own network.
+
+- The installer wrote a wider address pool but printed `Docker is running 3 container(s), so it was NOT restarted`:
+  run `systemctl restart docker` in a maintenance window.
+- Otherwise reclaim **Leftover networks** in the server's **Cleanup** tab.
 
 ## A deploy fails with No chain DOCKER-FORWARD
 
-Docker's forwarding chains were removed underneath it. Restart Docker to
-recreate them.
+Docker's forwarding chains were removed underneath it. Restart Docker to recreate them.
 
 ## A removed container still appears
 
-Deplo retries an unconfirmed teardown and raises an alert if it gives up.
+Deplo retries an unconfirmed teardown and raises a **Leftover containers** alert if it gives up.
 Removing the server drops its pending teardowns.
 
-## The install command returns 503 or cannot resolve a release
+## The install command returns 503
 
-The panel cannot reach `github.com` to resolve or checksum the agent release.
-Restore outbound access from the panel's machine, then run the command again.
+`Deplo could not resolve the agent's binary`: the panel cannot reach `github.com` to fetch the
+agent release and its checksums. Restore outbound access from the panel's machine, then run the
+command again.
 
 ## The install command contains 127.0.0.1
 
-That address is for the machine running the panel. Paste it there only;
-another server needs the panel's public address.
+Deplo generates that address only for the machine running the panel. Run it there; every other
+server gets a command with the panel's public address.
 
 ## A server agent needs to be reinstalled
 
-The server is **unusable**, and nothing Deplo does can bring it back:
+Its agent is older than `0.5.1-canary.10`, too old to connect, or it was
+[left behind](#a-server-was-left-behind). Nothing Deplo does can reach it.
 
-- Its card shows **Offline**:
-  `This server can't be used until its server agent is reinstalled. An instance admin can do it from the server's Advanced tab.`
-- On its page, the server agent line says `Unusable - reinstall its server agent`, with no
-  **Retry now**.
-- Instance admins see a banner: `edge-2 is unusable until its server agent is reinstalled.`
-
-Either its server agent is older than `0.5.1-canary.10`, too old to connect to Deplo, or it was
-[left behind](#a-server-was-left-behind) while Deplo updated through v0.6.0. Its apps keep
-running, and its apps and settings stay in Deplo.
+- Card: **Offline**, `This server can't be used until its server agent is reinstalled. An instance admin can do it from the server's Advanced tab.`
+- Its page: `Unusable - reinstall its server agent`, with no **Retry now**. Banner: `edge-2 is unusable until its server agent is reinstalled.`
 
 An instance admin reinstalls it:
 
-1. Open the server under **Settings -> Servers**, then **Advanced -> Install command**.
-2. Click **Reissue install command**, and run the command it shows on the server.
+1. **Settings -> Servers -> the server -> Advanced -> Install command**.
+2. **Reissue install command**, then run the command it shows on the server.
 
-The server agent connects to Deplo by itself and the server comes back as it was, with its
-apps. Always reissue first: the installer clears the old certificates, so a spent or expired
-token leaves the server agent with `unknown-token`.
+It comes back as it was, with its apps. Always reissue first: the installer clears the old
+certificates, and an old token is rejected.
 
 ## A server is permanently gone
 
-Remove it in Deplo. This revokes trust and does not require the machine to
-answer. See
+Remove it in Deplo. That revokes its trust and does not need the machine to answer. See
 [Remove or uninstall](/operations/remove-a-server-or-uninstall).
-
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<ServerPlus className="text-blue-400" />}
-    title="Add a server"
-    description="Enrolling a new host"
-    href="/operations/servers/add-a-server"
-  />
-  <Card
-    icon={<Settings2 className="text-blue-400" />}
-    title="Server settings"
-    description="Concurrent deployments, roles, cleanup"
-    href="/operations/servers"
-  />
-  <Card
-    icon={<Network className="text-blue-400" />}
-    title="Servers and agents"
-    description="Enrollment, health, readiness, roles"
-    href="/concepts/servers-and-the-agent"
-  />
-  <Card
-    icon={<FolderTree className="text-blue-400" />}
-    title="Ports, networks, files"
-    description="Reference for the file layout on a host"
-    href="/reference/ports-networks-and-files"
-  />
+  <Card icon={<ServerPlus className="text-blue-400" />} title="Add a server" description="Enrolling a new host" href="/operations/servers/add-a-server" />
+  <Card icon={<Settings2 className="text-blue-400" />} title="Server settings" description="Concurrent deployments, roles, cleanup" href="/operations/servers" />
+  <Card icon={<Network className="text-blue-400" />} title="Servers and agents" description="Enrollment, health, readiness, roles" href="/concepts/servers-and-the-agent" />
+  <Card icon={<FolderTree className="text-blue-400" />} title="Ports, networks, files" description="Reference for the file layout on a host" href="/reference/ports-networks-and-files" />
 </Cards>

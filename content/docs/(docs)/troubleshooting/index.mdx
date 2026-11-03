@@ -3,61 +3,48 @@ title: Troubleshooting
 description: Find the symptom, check the right log, and fix the common causes.
 ---
 
-Start with the symptom you can see. Keep the exact error message and the time it
-happened - they are usually enough to find the cause.
+Start from the symptom, and keep the exact error text and the time it happened.
 
 ## Find your symptom
 
 | What you see | Page |
 | --- | --- |
-| The email with your Deplo login has not arrived | [Buying from hosting providers](/troubleshooting/buying-from-hosting-providers) |
-| You bought a server, but Deplo is missing or does not open | [Buying from hosting providers](/troubleshooting/buying-from-hosting-providers) |
-| A question about a payment, a renewal or a refund | [Buying from hosting providers](/troubleshooting/buying-from-hosting-providers) |
-| A build fails or a deploy is queued | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| The build passes, but the app does not answer | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| A push does not create a deploy | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| A rollback is missing or fails | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| The server is full | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| DNS, HTTPS, a 404, or a redirect is wrong | [Domains and TLS](/troubleshooting/domains-and-tls) |
-| The panel or an app domain is unreachable | [Domains and TLS](/troubleshooting/domains-and-tls) |
-| The server is provisioning, offline, or unhealthy | [Servers and agents](/troubleshooting/servers-and-agents) |
-| Every deploy fails on one server | [Servers and agents](/troubleshooting/servers-and-agents) |
-| Metrics are empty | [Servers and agents](/troubleshooting/servers-and-agents) |
-| A container keeps restarting, is unhealthy, or is missing | [Deploys and builds](/troubleshooting/deploys-and-builds) |
-| A database will not start or an app cannot connect to it | [Databases and backups](/troubleshooting/databases-and-backups) |
-| A backup or restore fails | [Databases and backups](/troubleshooting/databases-and-backups) |
-| You cannot sign in, or a passkey is unusable | [Sign-in and access](/troubleshooting/sign-in-and-access) |
-| A token returns 401 or 403, or a button is missing | [Sign-in and access](/troubleshooting/sign-in-and-access) |
+| No email with your Deplo login, Deplo missing on a server you bought, a payment or refund question | [Buying from hosting providers](/troubleshooting/buying-from-hosting-providers) |
+| A build fails, a deploy is queued, the app does not answer, a push does not deploy | [Deploys and builds](/troubleshooting/deploys-and-builds) |
+| A container keeps restarting or is unhealthy, a rollback fails, the server is full | [Deploys and builds](/troubleshooting/deploys-and-builds) |
+| DNS, HTTPS, a 404, a redirect loop, or the panel is unreachable | [Domains and TLS](/troubleshooting/domains-and-tls) |
+| A server is provisioning, offline or unusable, every deploy fails on one server, metrics are empty | [Servers and agents](/troubleshooting/servers-and-agents) |
+| A database will not start or connect, a backup or restore fails | [Databases and backups](/troubleshooting/databases-and-backups) |
+| You cannot sign in, a passkey is unusable, a token returns 401 or 403, a button is missing | [Sign-in and access](/troubleshooting/sign-in-and-access) |
 
 ## Check these first
 
-1. **Open the relevant log.** Use the deployment's build log, the app's
-   **Logs** tab, or a destination's **Connection log**.
-2. **Check the server.** In **Settings -> Servers**, refresh the server and
-   run **Check readiness** if the problem involves a deploy or container.
-3. **Separate the app from its domain.** Try the generated
-   `https://deplo-cb00710a.deplo.site` address. If it works, investigate DNS or the
-   certificate. If it does not, investigate the app or server.
+1. **Open the log:** the deployment's build log, the app's **Logs** tab, or a destination's
+   **Connection log**.
+2. **Check the server:** **Check readiness** on its **Overview** tab in **Settings -> Servers**.
+3. **Separate the app from its domain:** try its generated address, like
+   `https://blog-otter-cb00710a.deplo.site`. It works: look at DNS or the certificate. It fails:
+   look at the app or the server.
 
-If it worked before, compare the last successful deploy with the failing one.
-The change is usually a variable, dependency, Git credential, certificate, or
-full disk.
+If it worked before, compare with the last good deploy. The change is usually a variable, a
+dependency, a Git credential, a certificate or a full disk.
 
 ## Statuses people often misread
 
 | What you see | What it means |
 | --- | --- |
-| App **Error**, site still works | The last deploy failed; the previous stack is still serving |
-| Preview is grey | It was evicted at the preview limit; redeploy it |
-| Cron **skipped** | It did not start because the app was stopped or another run was active |
-| Cron **lost** | The agent could not report the result; the command may have completed |
-| Server **Unknown** | The health reading is stale; refresh the server |
-| Readiness **skip** | Deplo could not evaluate that check; it is not a pass |
+| A deploy failed, the site still works | A failed deploy changes nothing: the previous version keeps serving |
+| Preview **Over the limit** (grey) | Stopped at the app's **Live previews** limit. **Redeploy** brings back the same URL |
+| Cron run **Skipped** | It never started: the container was not running, the previous run was still going, or Deplo stopped first |
+| Cron run **Unknown** | Deplo lost track of it when the server agent restarted. The command may have completed |
+| Server **Unknown** | The health reading is stale. Press **Refresh** |
+| Readiness **skipped** | Deplo could not evaluate that check. It is not a pass |
 
 ## If you still need help
 
-Record the app, server, deploy timestamp, exact error, and the last successful
-deploy. Use the feature guide's **Troubleshooting** section for context.
+Note the app, the server, the deploy time, the exact error and the last good deploy.
 
-Report bugs in the issue tracker; report security issues using the project's
-security policy.
+- **Bugs:** the [issue tracker](https://github.com/DeploCloud/deplo/issues).
+- **Security issues:** never in a public issue. Open a
+  [private security advisory](https://github.com/DeploCloud/deplo/security/advisories/new), or
+  email `security@deplo.build`.

@@ -8,13 +8,9 @@ import { basePath } from "@/lib/base-path";
 
 import { Globe, Server } from "lucide-react";
 
-Deplo routes websites and APIs through its proxy and HTTPS. Use a published
-port for protocols that are not HTTP, such as game servers, SMTP, or raw TCP.
-
-A **published port** binds a port of the server straight to a port of your
-container, so clients connect to `your-server:16379` instead of to a name.
-
-**Settings -> Advanced -> Published ports**, on an app.
+A **published port** binds a port of the server straight to a port of your container, so
+clients connect to `203.0.113.10:16379` instead of a domain. Use it for what is not HTTP: game
+servers, SMTP, raw TCP or UDP.
 
 ## Publish a port
 
@@ -31,7 +27,7 @@ container, so clients connect to `your-server:16379` instead of to a name.
   className="w-full rounded-lg"
 />
 
-**Settings -> Advanced -> Published ports**, then **Add port**. Twenty rows is the ceiling, and the button goes dead there.
+**Settings -> Advanced -> Published ports**, then **Add port**. An app can publish up to 20.
 
 </Step>
 <Step>
@@ -40,81 +36,56 @@ container, so clients connect to `your-server:16379` instead of to a name.
 
 <TypeTable
   type={{
-    "Host port": {
-      type: "1024-65535",
-      description:
-        "The port on the server, the one clients connect to. It must be free.",
-    },
-    "Container port": {
-      type: "1-65535",
-      description: "The port your app listens on inside the container.",
-    },
-    Protocol: {
-      type: "TCP or UDP",
-      description:
-        "TCP unless the protocol says otherwise. A game server is often UDP.",
-    },
+    "Host port": { type: "1024-65535", description: "The port on the server, the one clients connect to. It must be free." },
+    "Container port": { type: "1-65535", description: "The port your app listens on inside the container." },
+    Protocol: { type: "TCP or UDP", description: "TCP unless the protocol says otherwise. A game server is often UDP." },
   }}
 />
 
 </Step>
 <Step>
 
-### Deploy
+### Save and deploy
 
-The ports are written into the app's Compose file, so they bind on the
-**next deploy**, like a volume or a resource limit.
+**Save**, then deploy. The ports bind on the **next deploy**, like a volume or a resource
+limit.
 
 </Step>
 </Steps>
 
-## Rules
+## The rules
 
-- **It needs the publish-ports permission** (`canExposePorts`), the same one a database's **Host
-  port** needs. Without it the section is read-only and says so - though removing every port needs
-  no grant, so you are never locked out of undoing one. See
-  [Host access](/advanced/host-access-and-privileges#published-ports-use-a-separate-grant).
-- **Ports under 1024 are refused.** They belong to the host, and 80 and 443
-  belong to Deplo's proxy. Publish 8025 and let your DNS or firewall do the
-  rest.
-- **A host port belongs to one thing on the machine.** Deplo refuses a port another single-image
-  app or database on that server already publishes, even one in another team, because a server is
-  shared. A **compose** stack's own `ports:` are not in that table and nothing probes the host, so
-  a clash with one of those, or with a process Deplo did not start, surfaces as Docker's own
-  failure at deploy.
-- **Pull request previews never publish.** A preview would be fighting
-  production for the same port, so it gets none.
-- **A Compose app publishes its own.** The section is not offered: write
-  `ports:` in the Compose file, which needs the same permission.
+- **It needs the Publish ports grant** (`canExposePorts`), like a database's **Host port**.
+  Without it the section is read-only. See
+  [Host access](/advanced/host-access-and-privileges#publishing-a-port-is-a-separate-grant).
+- **Ports under 1024 are refused.** They belong to the host, and 80 and 443 to Deplo's proxy.
+  Publish 8025 and let your DNS or firewall do the rest.
+- **A host port has one owner per server.** A port another app or database on that server
+  already publishes is refused, even one in another team, because servers are shared. A Compose
+  stack's own `ports:` and processes Deplo did not start are not checked: that clash shows up
+  as Docker's own error at deploy.
+- **Pull request previews never publish.** They would fight production for the same port.
+- **A Compose app publishes its own.** The section is not offered: write `ports:` in the
+  Compose file, which needs the same grant.
 
 <Callout type="warn">
-  A published port is open to whatever can reach the server. It carries no
-  certificate, no basic auth and none of the middlewares a domain gets. Put a
-  firewall in front of it, and use a domain whenever the protocol is HTTP.
+  A published port is open to whatever can reach the server, and to every container on it. It
+  carries no certificate, no basic auth and none of a domain's middlewares. Put a firewall in
+  front of it, and use a domain whenever the protocol is HTTP.
 </Callout>
 
 ## When not to use one
 
-| You wanted                                              | Do this instead                                                          |
-| ------------------------------------------------------- | ------------------------------------------------------------------------ |
-| A website or an API reachable from outside              | [Add a domain](/getting-started/add-a-domain). HTTPS is handled for you. |
-| One app to reach another                                | Nothing. Apps in one environment reach each other by name.               |
-| An app to reach its database                            | Nothing. The database answers as `db-<name>`.                            |
-| A game server, a mail server, a raw TCP or UDP protocol | A published port. This is what it is for.                                |
+| You wanted | Do this instead |
+| --- | --- |
+| A website or an API reachable from outside | [Add a domain](/getting-started/add-a-domain). HTTPS is handled for you. |
+| One app to reach another | Nothing. Apps in one environment, on one server, reach each other by name. |
+| An app to reach its database | Nothing. The database answers as `db-<name>`. |
+| A game server, a mail server, a raw TCP or UDP protocol | A published port. This is what it is for. |
 
 ## See also
 
 <Cards>
-  <Card
-    icon={<Globe className="text-blue-400" />}
-    title="Domains and HTTPS"
-    description="The other way in, and the one to prefer"
-    href="/guides/networking/domains-and-https"
-  />
-  <Card
-    icon={<Server className="text-blue-400" />}
-    title="Host access"
-    description="The two grants that reach outside a container"
-    href="/advanced/host-access-and-privileges"
-  />
+  <Card icon={<Globe className="text-blue-400" />} title="Domains and HTTPS" description="The other way in, and the one to prefer" href="/guides/networking/domains-and-https" />
+  <Card icon={<Server className="text-blue-400" />} title="Host access" description="The two grants that reach outside a container" href="/advanced/host-access-and-privileges" />
 </Cards>

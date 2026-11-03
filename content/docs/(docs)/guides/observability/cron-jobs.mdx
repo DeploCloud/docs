@@ -8,40 +8,33 @@ import { basePath } from "@/lib/base-path";
 
 import { Terminal, Bell, BookOpen } from "lucide-react";
 
-For example: a nightly cleanup, a report at 6am, a queue worker tick, or
-`php artisan schedule:run`.
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
 
-How it works:
+A nightly cleanup, a report at 6am, a queue worker tick, `php artisan schedule:run`.
 
-- The panel decides **when** a job runs. The **agent** on the server runs it,
-  so restarting or updating the panel does not kill a running job. While the
-  panel is down, nothing new starts.
-- The command runs in the current container of the Compose service you named,
-  so a redeployed app keeps working. With no service named, it runs in the
-  app's own container.
-- The command runs in a plain `sh -c` (or `bash -c`), with the container's own
-  environment. No login shell, no profile files.
-- Each job has **its own timezone**. A job set to 03:00 Europe/Rome runs at
-  03:00 in Rome, in summer and in winter. Backup schedules use UTC instead.
+- **The panel decides when, the agent runs it.** Restarting or updating the panel does not kill a
+  running job; while the panel is down, nothing new starts.
+- **It runs in the current container** of the service you picked, so a redeploy does not break
+  it. No service picked means the app's own, the one its domain routes to.
+- **It runs in `sh -c` or `bash -c`** with the container's environment, as the container's user.
+  No login shell, no profile files.
+- **Each job has its own timezone**, yours by default. 03:00 Europe/Rome is 03:00 in Rome, summer
+  and winter. Backup schedules use UTC instead.
 
 ## Turn it on
 
-Cron jobs are off by default, per app and per database. The switch is also
-the pause button for every job under it.
+Cron jobs are off by default, per app and per database.
 
 <Steps>
 <Step>
 
-### Open the app's Advanced settings
+### Turn on Cron jobs
 
-Open the app, then **Settings -> Advanced**.
-
-</Step>
-<Step>
-
-### Turn on cron jobs
-
-Turn on **Cron jobs**.
+Open the app or database, then **Settings -> Advanced**, and turn on **Cron jobs**.
 
 <Image
   src={`${basePath}/screenshots/cron-jobs/01-turn-it-on.png`}
@@ -61,7 +54,7 @@ A **Cron jobs** tab appears. Open it and click **New cron job**.
 </Step>
 </Steps>
 
-For a database it is the same, in **Settings -> Advanced** of that database.
+The switch also pauses every job under it: turned off, the jobs are kept and none runs.
 
 ## Create a job
 
@@ -73,60 +66,31 @@ For a database it is the same, in **Settings -> Advanced** of that database.
   className="w-full rounded-lg"
 />
 
+The main fields, then **Advanced** for the rest:
+
 <TypeTable
   type={{
-    "Name, Description": {
-      type: "text",
-      description: "Yours, for the list.",
-    },
+    Name: { type: "text", description: "Yours, for the list." },
     Container: {
       type: "select",
-      description:
-        "Which Compose service to run in. Blank means the app's own container, the one its domain routes to.",
+      description: "Which Compose service to run in. Shown only for a stack with more than one.",
+      default: "the app's own",
     },
     Schedule: {
       type: "cron expression",
-      description:
-        "Five-field cron expression. Names work too (`0 9 * * MON-FRI`, `0 0 1 JAN *`), and so do `@hourly`, `@daily`, `@weekly`, `@monthly` and `@yearly`.",
+      description: "Five fields. Names work (0 9 * * MON-FRI, 0 0 1 JAN *), and so do @hourly, @daily, @weekly, @monthly and @yearly.",
+      default: "0 3 * * *",
     },
-    Timezone: {
-      type: "IANA zone",
-      description: 'For example "Europe/Rome".',
-    },
-    Shell: {
-      type: '"sh" | "bash"',
-      description:
-        "If the image does not have this shell, the run fails. There is no fallback.",
-    },
-    Command: {
-      type: "text",
-      description: "What to run.",
-    },
-    "Timeout (minutes)": {
-      type: "number",
-      description: "Per attempt, not per run.",
-    },
-    Attempts: {
-      type: "number",
-      description: "How many tries before the run is marked failed.",
-    },
-    "If it is still running": {
-      type: "select",
-      description: "Skip the new occurrence, or allow overlap.",
-    },
-    "Runs kept": {
-      type: "number",
-      description: "How much history to keep.",
-    },
-    "Working directory, User": {
-      type: "text",
-      description: "Optional, passed to the exec.",
-    },
-    Variables: {
-      type: "key-value",
-      description:
-        "Extra environment for this command only. Values are write-only: when editing, a variable left blank keeps its value.",
-    },
+    Timezone: { type: "IANA zone", description: "For example Europe/Rome.", default: "yours" },
+    Command: { type: "text", description: "Run as typed by the shell, so pipes and && work. Anything interactive hangs until the timeout." },
+    Enabled: { type: "switch", description: "Off keeps the job and its history, and it does not fire.", default: "on" },
+    Shell: { type: '"sh" | "bash"', description: "Advanced. If the image lacks it, the run fails: there is no fallback.", default: "sh" },
+    "If it is still running": { type: "select", description: "Advanced. Skip this run, or Run it anyway.", default: "Skip this run" },
+    "Timeout (minutes)": { type: "1 to 1440", description: "Advanced. Per attempt, not per run.", default: "60" },
+    Attempts: { type: "1 to 4", description: "Advanced. Launches per run, a minute apart. All of them must fit in 24 hours.", default: "1" },
+    "Runs kept": { type: "10 to 500", description: "Advanced.", default: "50" },
+    "Working directory, User": { type: "text", description: "Advanced. Empty means the image's own." },
+    Variables: { type: "key-value", description: "Advanced. Extra environment for this job only. Write-only: when editing, a value left blank keeps it." },
   }}
 />
 
@@ -140,87 +104,43 @@ For a database it is the same, in **Settings -> Advanced** of that database.
   className="w-full rounded-lg"
 />
 
-<TypeTable
-  type={{
-    running: {
-      type: "running",
-      description: "Running now.",
-    },
-    succeeded: {
-      type: "final",
-      description: "Exit code 0.",
-    },
-    failed: {
-      type: "final",
-      description: "It ran and exited non-zero.",
-    },
-    timedout: {
-      type: "final",
-      description:
-        "It hit the per-attempt timeout. Check the Timeout setting.",
-    },
-    skipped: {
-      type: "final, silent",
-      description:
-        "It never started: the container was stopped, or the previous run was still going. Raises no alert.",
-    },
-    lost: {
-      type: "final, uncertain",
-      description:
-        "The agent could not report the result. Not marked failed, because the command may have completed.",
-    },
-  }}
-/>
+| Status | What it means | Alert |
+| --- | --- | --- |
+| **Running** | Running now. **Retrying** between attempts | - |
+| **Succeeded** | Exit code 0 | Cron job finished |
+| **Failed** | It ran and exited non-zero | Cron job failed |
+| **Timed out** | It hit the per-attempt timeout | Cron job failed |
+| **Skipped** | It never started: the container was stopped, or the previous run was still going | None |
+| **Unknown** | The agent could not report the result. Not retried, since the command may have finished | Cron job failed, "outcome unknown" |
 
-Retries share one row: a job with three attempts is one run with an attempt
-counter. The stored output is the last 16 KiB of the last attempt. **Run now**
-creates a run marked as manually triggered.
+- Retries share one row: three attempts are one run with an attempt counter.
+- The stored output is the last 16 KiB of the last attempt.
+- **Run now** starts a run marked with who triggered it. **Stop this run** stops the command and
+  everything it started.
+- A job that keeps failing alerts once every 30 minutes, not on every run.
 
 ## Good to know
 
-- **A job runs any code as the container's user.** For security reasons
-  `manage_crons` is a sensitive capability, and the feature is off by default.
-- **The switch pauses everything.** Turning it off keeps the jobs defined and
-  stops all of them.
-- **A stopped app runs nothing.** Occurrences are `skipped`.
-- **Stopping a run stops the command** and everything it started.
-- **A job that keeps failing alerts once every 30 minutes**, not on every
-  run.
-- **This is not a job queue.** No dependencies between jobs, no backoff beyond
-  the attempt count.
+- **A job runs any code as the container's user.** That is why `manage_crons` is a sensitive
+  capability and the feature is off by default.
+- **This is not a job queue.** No dependencies between jobs, no backoff beyond **Attempts**.
 
 ## Troubleshooting
 
-- **Every run is `skipped`**: the container is stopped, or the previous run
-  never finishes.
-- **`shell not found`**: the image has no `bash`. Choose `sh`.
-- **The command works in the console and fails here**: the console is an
-  interactive login shell, a cron job is not. Anything a profile file sets up
-  is missing. Use absolute paths, or set it under **Variables**.
-- **Runs go `lost`**: the agent lost contact during the run. Check that
-  server.
+- **Every run is Skipped**: the container is stopped, or the previous run never finishes.
+- **This container has no bash. Switch the job to sh.**: pick `sh`.
+- **This container has no shell, so it cannot run a cron job.**: a distroless or scratch image.
+- **It works in the console and fails here**: the console's `/bin/sh` and `/bin/bash` start a
+  login shell, a cron job does not. Use absolute paths, or set what is missing under
+  **Variables**.
+- **Runs end Unknown**: the agent lost contact during the run. Check that server.
 
-See [Servers and agents](/troubleshooting/servers-and-agents) for more.
+More in [Servers and agents](/troubleshooting/servers-and-agents).
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Terminal className="text-blue-400" />}
-    title="Console"
-    description="Try the command by hand first"
-    href="/guides/observability/console"
-  />
-  <Card
-    icon={<Bell className="text-blue-400" />}
-    title="Notifications and alerts"
-    description="Cron job failed, cron job finished"
-    href="/guides/observability/notifications-and-alerts"
-  />
-  <Card
-    icon={<BookOpen className="text-blue-400" />}
-    title="Glossary"
-    description="Terms used across the docs"
-    href="/reference/glossary"
-  />
+  <Card icon={<Terminal className="text-blue-400" />} title="Console" description="Try the command by hand first" href="/guides/observability/console" />
+  <Card icon={<Bell className="text-blue-400" />} title="Notifications and alerts" description="Cron job failed, cron job finished" href="/guides/observability/notifications-and-alerts" />
+  <Card icon={<BookOpen className="text-blue-400" />} title="Glossary" description="Terms used across the docs" href="/reference/glossary" />
 </Cards>

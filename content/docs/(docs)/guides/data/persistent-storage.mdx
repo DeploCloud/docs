@@ -9,65 +9,20 @@ import { basePath } from "@/lib/base-path";
 import { Database, Archive, Terminal, Lock } from "lucide-react";
 
 A container's own filesystem is deleted every time it is recreated. Uploads, caches and databases
-need a mount to survive a deploy.
-
-Everything here is in **Settings -> Storage**, in the **Mounted storage** card.
+need a mount to survive a deploy. Everything here is in the app's **Settings -> Storage**, in the
+**Mounted storage** card.
 
 | Kind | What it is | Needs permission |
 | --- | --- | --- |
-| **Volume** | Disk space Deplo creates and manages for this app. The normal choice | no |
-| **File** | A file you write in the browser, placed inside the app. For config files | no |
-| **Bind** | A folder that already exists on the server, shared with everything else on that machine | yes |
+| **Volume** | Disk space Deplo creates and keeps for this app, named `deplo-<slug>-<name>` on the server. The normal choice | no |
+| **File** | A text file you write in the browser, kept in the app's Files and placed inside the app. For config files | no |
+| **Bind** | A folder that already exists on the server, shared with everything else on that machine | **Bind server folders** |
 
-- A **Volume** is named `deplo-<slug>-<name>` on the host. Removing the row stops mounting it but
-  does not delete the data.
-- A **File** is written before the container starts, so Docker never turns it into an empty
-  folder by mistake.
-- A **Bind** reaches outside Deplo's control. For security reasons it needs the "Bind server
-  folders" permission.
-
-## A Compose app's own mounts
-
-A [Compose app](/advanced/compose-apps) can declare storage in its own `docker-compose.yml` and
-also have Storage rows. A row names the service it mounts into.
-
-<Image
-  src={`${basePath}/screenshots/persistent-storage/01-app-storage.png`}
-  alt="Settings -> Storage of a Compose app: the mounts its own compose file declares"
-  width={1728}
-  height={1080}
-  className="w-full rounded-lg"
-/>
-
-**Settings -> Storage** lists the compose file's mounts read-only, under **From
-docker-compose.yml**. To change them, edit the compose file under **Deployments**.
-
-A `./<path>` source that does not exist yet is created before the container starts:
-
-- a name that looks like a file (`config.yml`, `nginx.conf`, `Caddyfile`, `.env`) becomes an empty
-  file
-- anything else (`./data`, `./conf.d`, `./html`) becomes an empty folder
-
-<Callout type="warn" title="The compose file wins on the same path">
-  A Storage row on a path the compose file already mounts is ignored. Change the YAML instead.
-</Callout>
-
-## What deleting the app removes
-
-| Kind | When you delete the app |
-| --- | --- |
-| **Volume** | **Erased.** Deplo removes `deplo-<slug>-<name>` on the server |
-| **File** | **Erased.** The app's files directory goes with the stack |
-| **Bind** | **Left alone.** The folder belongs to the server, not to Deplo |
-
-<Callout type="warn" title="A Bind is yours to remove">
-Deleting the app does not delete a bound folder, and [server cleanup](/operations/servers/cleanup)
-never removes server folders. Note the paths before you delete the app, and remove them on the
-server yourself.
-</Callout>
-
-In a [Compose app](/advanced/compose-apps), Deplo only removes the volumes it owns, named
-`deplo-<slug>-<name>`. A volume marked `external: true` or with a custom name survives.
+- **Removing a row stops mounting it.** The data stays.
+- **A File is written before the container starts**, so Docker never turns it into an empty folder
+  by mistake. It holds at most 1 MiB of text; a binary or bigger file already there stays as it is.
+- **A Bind reaches outside Deplo**, so an instance admin grants **Bind server folders** in
+  **Settings -> Users**. See [Host access](/advanced/host-access-and-privileges).
 
 ## Add storage
 
@@ -76,7 +31,8 @@ In a [Compose app](/advanced/compose-apps), Deplo only removes the volumes it ow
 
 ### Open Storage
 
-Open the app, then **Settings -> Storage**.
+Open the app, then **Settings -> Storage**. Click **Add storage** and choose **Volume**, **File** or
+**Bind**.
 
 <Image
   src={`${basePath}/screenshots/persistent-storage/02-add-storage.png`}
@@ -89,114 +45,109 @@ Open the app, then **Settings -> Storage**.
 </Step>
 <Step>
 
-### Add storage
-
-Click **Add storage** and choose the kind.
-
-</Step>
-<Step>
-
 ### Fill the source
 
-<Tabs items={['Volume', 'File', 'Bind']}>
-<Tab value="Volume">
-
-A **Name** such as `uploads`.
-
-</Tab>
-<Tab value="File">
-
-The file's path and its content.
-
-</Tab>
-<Tab value="Bind">
-
-The **Path on the server**, for example `/srv/media`.
-
-</Tab>
-</Tabs>
+- **Volume:** a **Name** such as `uploads`. Left empty, Deplo derives one from the path.
+- **File:** the **Path in Files**, such as `config.toml` or `conf/nginx.conf`, then the content.
+- **Bind:** the **Path on the server**, such as `/srv/media`.
 
 </Step>
 <Step>
 
 ### Set the mount path
 
-The path inside the container, for example `/app/uploads`.
+The **Path inside the app**, for example `/app/uploads`. For an app Deplo builds it can stay blank:
+`uploads` lands in `/app/uploads`, the folder your code runs in. For a prebuilt image or a Compose
+service, type the full path.
 
 </Step>
 <Step>
 
 ### Optional: pick a container
 
-For a multi-container app, name the **Container** to mount into.
-
-</Step>
-<Step>
-
-### Save and redeploy
-
-Click **Save storage**, then redeploy.
+In a Compose app, **Which service uses this data?** picks the service that mounts it.
+**Automatic** uses the main one.
 
 </Step>
 </Steps>
 
-For an app Deplo builds, the mount path can be left blank: `uploads` becomes `/app/uploads`. For a
-prebuilt image or a Compose service you must type the full path.
+Click **Save storage**: it applies on the next production deploy. Every row can also turn on **Let
+the app read but not change it (ro)**.
 
 ## Bind options
 
-A **Bind** row has two extra controls. The first is labelled **What if something is mounted inside
-this folder?**:
+A **Bind** row adds **What if something is mounted inside this folder?**:
 
-<TypeTable
-  type={{
-    "Only what is already there (rprivate)": {
-      type: "default",
-      description: "The container sees the folder as it was when it started. The default",
-    },
-    "Keep up with the server (rslave)": {
-      type: "propagation",
-      description: "Mounts that appear on the host later become visible inside the container",
-    },
-    "Keep up, and let the server see this app's own (rshared)": {
-      type: "propagation",
-      description: "Both directions. A mount the container makes appears on the host too",
-    },
-    "Let the app read but not change it (ro)": {
-      type: "boolean",
-      description: "Read-only",
-    },
-  }}
-/>
+| Option | What the container sees |
+| --- | --- |
+| **Only what is already there (rprivate)** | The folder as it was when the container started. The default |
+| **Keep up with the server (rslave)** | Mounts that appear on the server later show up inside too |
+| **Keep up, and let the server see this app's own (rshared)** | Both directions: a mount the container makes appears on the server too |
 
 Without `rslave`, a network share or a FUSE mount attached after the container started never
 appears inside it.
 
-## Good to know
+## A Compose app's own mounts
 
-- **Storage applies on the next deploy.**
-- **Data is never deleted by a redeploy, a source change, or removing the row.** Only deleting
-  the app erases **Volume** and **File** storage. See
-  [what deleting the app removes](#what-deleting-the-app-removes).
-- **A Compose service name that does not exist is an error.**
-- **Do not put a database's data in a Bind.** A managed [database](/guides/data/databases) already
-  has its own volume.
-- **A File is for text config, at most 1 MiB.** A binary or bigger file already on the path stays
-  as it is.
-- **Backups of an app include its files.** They do not include its databases.
+A [Compose app](/advanced/compose-apps) can declare storage in its own `docker-compose.yml` and also
+have Storage rows.
+
+<Image
+  src={`${basePath}/screenshots/persistent-storage/01-app-storage.png`}
+  alt="Settings -> Storage of a Compose app: the mounts its own compose file declares"
+  width={1728}
+  height={1080}
+  className="w-full rounded-lg"
+/>
+
+- **The compose file's mounts are listed read-only**, under **From docker-compose.yml**. Change them
+  in the compose file under **Deployments**.
+- **The compose file wins on the same path.** A Storage row on a path it already mounts is ignored.
+- **A `./<path>` source that does not exist yet is created** before the container starts: a name
+  that looks like a file (`config.yml`, `nginx.conf`, `Caddyfile`, `.env`) becomes an empty file,
+  anything else (`./data`, `./conf.d`) an empty folder.
+- **A service name the compose file lacks is an error**, never a silent remount.
+
+## What deleting the app removes
+
+| Kind | When you delete the app |
+| --- | --- |
+| **Volume** | **Erased.** Deplo removes `deplo-<slug>-<name>` on the server |
+| **File** | **Erased.** The app's files directory goes with the stack |
+| **Bind** | **Left alone.** The folder belongs to the server, not to Deplo |
+
+A Compose app's own volumes are erased too, named `deplo-<slug>_<key>`. One marked
+`external: true` or with its own `name:` survives.
+
+<Callout type="warn" title="A Bind is yours to remove">
+Deleting the app does not delete a bound folder, and [server cleanup](/operations/servers/cleanup)
+never removes server folders. Note the paths before you delete the app, and remove them on the
+server yourself.
+</Callout>
 
 ## Move an app to another server
 
-**Settings -> General**, then **Move** on the **Server** card. Pick the new server and confirm. The
-card appears only when you have more than one server.
+**Settings -> General**, then **Move** on the **Server** card (shown only with more than one
+server). Pick the new server and confirm.
 
 - **Deplo redeploys the app there and copies its data first.** The app is offline during the copy.
 - **If the copy fails, the app goes back to its old server.** If the old server cannot be reached,
   the app is kept **stopped** on the new one: redeploy when the old server is back, or press
   **Deploy anyway** to start without the data.
 - **Apps it reached by name stay behind.** The dialog names them before you confirm.
-- **A volume Deplo cannot find on the old server stays there.** The deploy log names it.
-- **A Bind and an `external:` volume do not move.** They belong to the server.
+- **A volume missing on the old server is named in the deploy log**, and the old server's volumes
+  are kept in case the data lives under another name.
+- **What does not move:** a Bind, an `external:` volume, and a Compose app's `./` folders in the
+  repository's copy on the old server. The deploy log lists them.
+
+## Good to know
+
+- **Data is never deleted by a redeploy, a source change, or removing the row.** Only deleting the
+  app erases Volumes and Files.
+- **A Volume cannot replace a system folder** such as `/etc`, `/usr`, `/proc` or `/var/run`.
+- **Do not put a database's data in a Bind.** A managed [database](/guides/data/databases) already
+  has its own volume.
+- **An app backup includes its Volumes and Files**, not a Bind and not its databases.
 
 ## Troubleshooting
 
@@ -204,8 +155,7 @@ card appears only when you have more than one server.
 - **Permission denied inside the container** - the container's user does not own the directory.
   For a **Bind**, fix ownership on the server. For a **Volume**, make sure the image creates the
   directory as its own user.
-- **A Bind row will not save** - you do not have the permission. See
-  [Host access](/advanced/host-access-and-privileges).
+- **A Bind row will not save** - you do not have **Bind server folders**.
 
 More in [Servers and agents](/troubleshooting/servers-and-agents).
 

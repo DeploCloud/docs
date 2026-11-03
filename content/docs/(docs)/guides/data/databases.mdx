@@ -6,7 +6,7 @@ description: A managed Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse on
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-import { Archive, HardDrive, Terminal, Gauge, Network } from "lucide-react";
+import { Archive, HardDrive, Terminal } from "lucide-react";
 
 A managed database on one of your servers: Postgres, MySQL, MariaDB, MongoDB, Redis or ClickHouse.
 Deplo creates it, gives you a connection string, and handles backups, logs, metrics and a console.
@@ -19,30 +19,22 @@ Deplo creates it, gives you a connection string, and handles backups, logs, metr
   className="w-full rounded-lg"
 />
 
-A database is created like an app, on the server you pick, as a stack named `db-<slug>`. The slug
-is generated from the name at creation and never changes. The database joins the network of its
-**environment**, so the apps there reach it **by name**.
-
-Images are the official ones: `postgres:<v>-alpine`, `mysql:<v>`, `mariadb:<v>`, `mongo:<v>`,
-`redis:<v>-alpine` and `clickhouse/clickhouse-server:<v>`.
-
-Credentials are encrypted and masked. Revealing them needs `reveal_secrets`.
+- **One stack per database, named `db-<slug>`.** The slug comes from the name at creation and never
+  changes, so neither does the host apps connect to.
+- **Official images:** `postgres:<v>-alpine`, `mysql:<v>`, `mariadb:<v>`, `mongo:<v>`,
+  `redis:<v>-alpine`, `clickhouse/clickhouse-server:<v>`. Any published Docker Hub tag works as the
+  version.
+- **Credentials are encrypted and masked.** Revealing them needs `reveal_secrets`.
 
 ## Create one
 
 <Steps>
 <Step>
 
-### Open Databases
+### Pick the engine
 
-Open **Storage**, then the **Databases** tab.
-
-</Step>
-<Step>
-
-### New database
-
-Click **New Database**.
+**Storage -> Databases -> New Database**. Type a **Name**, then pick the **Engine** and the
+**Version**.
 
 <Image
   src={`${basePath}/screenshots/databases/02-create-dialog.png`}
@@ -55,71 +47,39 @@ Click **New Database**.
 </Step>
 <Step>
 
-### Pick the engine
-
-Pick the engine and the **Version**.
-
-</Step>
-<Step>
-
-### Name it
-
-Name it.
-
-</Step>
-<Step>
-
 ### Set the password
 
-Use **Generate** unless you need a specific password.
+**Credentials** are optional: blank fields get generated values. **Generate** fills a strong
+password you can see. The username and the database name are set once and never change.
 
 </Step>
 <Step>
 
-### Pick the server
+### Pick the server and the environment
 
-Pick the server.
-
-</Step>
-<Step>
-
-### Pick the environment
-
-Pick the **Environment** where the apps that will use it live. Leave **No environment** if your
-apps are not in a project.
+**Server** shows up when you have more than one. **Environment** is where the apps that use it
+live; leave **No environment** if your apps are not in a project.
 
 </Step>
 <Step>
 
 ### Optional: host port
 
-Set a **Host port** only if something outside the server needs it. This needs the
-`canExposePorts` grant. You can also turn it on later.
-
-</Step>
-<Step>
-
-### Create it
-
-Click **Create database**.
+Turn on **Expose publicly** and set a **Host port** (1024-65535, or **Generate**) only if
+something outside the server needs it. This needs the **Publish ports** permission, and can wait.
 
 </Step>
 </Steps>
 
-Then connect it to the app that needs it.
+Click **Create database**, then connect it to the app that needs it.
 
 ## Connect an app to it
 
-Connecting gives the app a variable holding the database's connection string. Deplo writes the
-value again at every deploy, so a password rotation or a new public address needs no edit.
-
-Two places do it:
-
-- The database's **Overview**: **Connected apps**, then **Connect app**.
-- The app's **Environment** tab: **Add**, then the **Database** tab.
-
-Pick the app or the database, keep or change the variable name, and click **Connect**. It applies
-on the next deploy, and the confirmation offers **Redeploy**.
+Connecting gives the app a variable holding the connection string, rewritten at every deploy, so a
+password rotation or a new public address needs no edit. Use **Connected apps -> Connect app** on
+the database's **Overview**, or **Environment -> Add -> Database** on the app. Keep or change the
+variable name and click **Connect**. It applies on the next deploy; the confirmation offers
+**Redeploy**.
 
 | Engine | Variable |
 | --- | --- |
@@ -129,37 +89,31 @@ on the next deploy, and the confirmation offers **Redeploy**.
 | ClickHouse | `CLICKHOUSE_URL` |
 
 ```
-DATABASE_URL = postgres://appuser:••••••@db-orders:5432/orders
+DATABASE_URL = postgres://app:••••••@db-orders:5432/orders
 ```
 
-In the app's variables the row shows the engine's logo, which opens the database. Only its name
+The row in the app's variables shows the engine's logo, which opens the database. Only its name
 can change. **Unlink** keeps today's value and stops following the database; **Delete** removes
 the variable.
 
 **Pasting the string connects it too.** A variable whose value is exactly the database's
-connection string, private or public, is connected when you save it, and keeps its type and its
-environments. Variables that were already there connect on their own; one saved before its
-database existed connects at the next maintenance pass, at most 12 hours later. The confirmation
-and **Activity** both say `DATABASE_URL now follows orders`.
+connection string, private or public, connects when you save it and keeps its type. One saved
+before its database existed connects at the next maintenance pass, at most 12 hours later.
+**Activity** says `DATABASE_URL now follows orders`.
 
-A value with anything more or less, such as `?sslmode=disable` or just the host `db-orders`, stays
-as written. It shows the logo, but it does not follow the database.
+- **Anything more or less stays as written**, such as `?sslmode=disable` or just `db-orders`. It
+  shows the logo but does not follow the database.
+- **Spell the scheme the way your driver wants**, and the app keeps that spelling: `postgresql://`
+  for `postgres://`, `mariadb://` for `mysql://`, or a driver such as `postgresql+asyncpg://` or
+  `mysql+pymysql://`.
 
-The start of the string can be spelled the way your driver wants it, and the app keeps getting that
-spelling:
+**A build that reads the database.** A build does not run on the app's private network, so a
+framework that queries the database while building (Next.js generating its pages) cannot reach
+`db-orders`. With a **Host port**, the build gets the public address and the running app keeps the
+private one. Without one, and always in a Compose app, the build gets the private address.
 
-- `postgresql://` instead of `postgres://`
-- `mariadb://` instead of `mysql://`
-- a driver, such as `postgresql+asyncpg://` or `mysql+pymysql://`
-
-**A build that reads the database.** A build doesn't run on the app's private network, so a
-framework that queries the database while it builds, such as Next.js generating its pages, can't
-reach `db-orders`. When the database has a **Host port**, the build gets its public address and the
-running app keeps the private one. Without a host port the build gets the private address too, and
-a Compose app's build always does.
-
-In a Compose app **every service reaches it**. Exceptions: a service with `internal: true`, one
-using `network_mode:`, and one named after Deplo's own infrastructure. See
+**In a Compose app every service reaches it**, except one with `internal: true`, one using
+`network_mode:`, and one named after Deplo's own infrastructure. See
 [Compose apps](/advanced/compose-apps).
 
 <Callout type="warn" title="Same environment, same server">
@@ -187,28 +141,27 @@ that is neither shows dimmed and cannot be connected. See
   className="w-full rounded-lg"
 />
 
-**Connection** holds the connection string (click to reveal, needs `reveal_secrets`), the engine
-and version, the username, the database name and the server.
-
-**Networking** holds the **Environment** and the two addresses:
+The **Connection** card holds the connection string (click to reveal), the two addresses, the
+engine and version, the username, the database name, the server and the **Environment**.
 
 | Address | What it is | Who uses it |
 | --- | --- | --- |
-| **Internal** | `db-<slug>` on the environment's network, on the engine's port: `5432` for Postgres, `3306` for MySQL and MariaDB, `27017` for MongoDB, `6379` for Redis, `8123` for ClickHouse | Apps in the same environment, on the same server |
+| **Internal** | `db-<slug>` on the engine's port: `5432` Postgres, `3306` MySQL and MariaDB, `27017` MongoDB, `6379` Redis, `8123` ClickHouse | Apps in the same environment, on the same server |
 | **Public** | `<server>:<host port>`, or **Not published** | Anything that can reach the server |
 
-Wrong environment? Use **Move to environment** in the card menu of the database list.
-
-The switch on the **Public** row and the **Host port** field publish the database. This needs
-`configure_databases` and the `canExposePorts` grant.
+- **Wrong environment?** Pick another in the card's **Environment** field, or use **Move to
+  environment** in the database's menu on the list.
+- **The switch on the Public row** publishes the database. This needs `configure_databases` and the
+  **Publish ports** permission.
 
 <Callout type="warn" title="A published port is not encrypted">
 The engine's port is opened directly, with no proxy and no certificate. The password is the only
 protection.
 </Callout>
 
-The three tiles are **Health** (healthcheck, uptime, restarts), **Data** (disk and memory use) and
-**Backups** (last run and schedule). **Data** shows `-` when the server's agent is too old.
+Below it, **Connected apps** lists the apps that get the connection string, then three tiles:
+**Health** (healthcheck, uptime, restarts), **Data** (disk and memory use) and **Backups** (last run
+and schedule). **Data** shows `-` when the server's agent is too old or unreachable.
 
 ## Actions, and which ones delete data
 
@@ -216,16 +169,17 @@ The three tiles are **Health** (healthcheck, uptime, restarts), **Data** (disk a
 | --- | --- | --- |
 | **Start** / **Stop** / **Restart** | Container lifecycle | kept |
 | **Redeploy** | Recreates the container with the same data | kept |
-| **Rebuild** | Danger Zone. Removes the stack **and its volume**, then creates a new empty database with the same credentials | **erased** |
-| **Delete** | Removes the database and its volume | **erased** |
+| **Rebuild** | **Settings -> Advanced -> Danger Zone**. Destroys the container **and its data volume**, then creates an empty database with the same engine, version and credentials | **erased** |
+| **Delete** | Removes the database, its volume and **every backup it has stored** | **erased** |
 
 <Callout type="warn" title="Rebuild is a factory reset">
-The connection string keeps working, so everything looks fine and the data is gone. Rebuild needs
-`delete_databases`.
+The connection string keeps working, so everything looks fine and the data is gone. Restore a
+backup afterwards to bring it back.
 </Callout>
 
-**Delete** is refused until the host confirms the container and the volume are gone. If the host
-is permanently gone, a `force` option appears.
+**Delete is refused until the host confirms the container and the volume are gone**, and when a
+backup destination cannot be reached. If the host is gone for good, tick **Delete it from Deplo
+anyway**: Deplo keeps retrying the teardown on that host.
 
 ## Settings
 
@@ -237,85 +191,62 @@ is permanently gone, a `force` option appears.
   className="w-full rounded-lg"
 />
 
-**Settings -> Connection** has the exposure controls and password rotation.
+| Page | What is there |
+| --- | --- |
+| **General** | Logo, **Database name** (a label only), and the **Server** card to move it |
+| **Connection** | **Expose publicly** with the **Host port**, and **Rotate password** |
+| **Resources** | CPU and memory limits. See [Resource limits](/advanced/resource-limits) |
+| **Advanced** | Console, Cron jobs, Restart loop protection, the image, config files, Danger Zone |
 
-<TypeTable
-  type={{
-    "Host port": {
-      type: "number",
-      description: "Publish it outside the server. Needs canExposePorts",
-    },
-    "Rotate password": {
-      type: "text",
-      description: "New password (optional), or leave blank to generate one",
-    },
-  }}
-/>
+**Rotate password** takes a new password, or generates one when left blank. The database must be
+running. The new connection string is shown once. For Redis and ClickHouse it recreates the
+container.
 
-For Redis and ClickHouse, rotating the password recreates the container.
+**Advanced** also holds the image fields. They apply on the next **Redeploy**:
 
-**Settings -> Advanced**
+- **Version:** any Docker Hub tag. Going down a major version can leave data the engine cannot read.
+- **Custom image:** replaces the default, e.g. `timescale/timescaledb:2.15-pg16`. **Version** is
+  ignored while it is set.
+- **Custom command:** replaces the start command. For Redis the default carries `--requirepass`;
+  a command without it removes authentication, and backups stop authenticating too.
 
-<TypeTable
-  type={{
-    "Custom image": {
-      type: "text",
-      description: "Replaces the default image. Version is ignored while it is set",
-    },
-    "Custom command": {
-      type: "text",
-      description: "Replaces the container command",
-    },
-    "Config files": {
-      type: "file",
-      description: "Add file, give it a File name and a Path in the container, edit it in the browser, then Save and apply",
-    },
-  }}
-/>
-
-**Redis and `--requirepass`:** the default command contains the password. A custom command
-without it removes authentication.
-
-Config files are how you set `postgresql.conf`, `my.cnf`, `redis.conf` or an init script.
-**Save and apply** writes them and restarts the container.
+**Config files** set `postgresql.conf`, `my.cnf`, `redis.conf` or an init script: **Add file**, give
+it a **File name** and a **Path in the container**, write it, then **Save and apply**. Saving
+recreates the container. A path inside the engine's data directory is refused.
 
 ## Move a database to another server
 
-**Settings -> General**, then **Move** on the **Server** card. Deplo stops the database, copies the
-data to the new server, and starts it there. The card appears only when you have more than one
-server.
-
-If the copy fails, the database is blocked from starting until you fix it. This protects your
-data from being replaced by an empty database.
+**Settings -> General**, then **Move** on the **Server** card (shown only with more than one
+server). Deplo stops the database, copies its data to the new server and starts it there. It is
+offline during the copy. If the copy fails, the move is rolled back and the database stays where
+it was.
 
 ## Move a database to another team
 
-**Settings -> Advanced -> Danger Zone -> Transfer**, or **Transfer to another team** in the card
-menu. It needs `move_databases` in both teams.
+**Settings -> Advanced -> Danger Zone -> Transfer**, or **Transfer to another team** in the
+database's menu on the list. It needs `move_databases` in both teams.
 
-The data, the host `db-<slug>` and the connection string stay the same. It lands at the new
-team's top level and restarts once. Backup schedules and cron jobs are removed, and apps of the
-old team stop reaching it: the dialog names them.
-[Everything the move costs ->](/guides/team/transfers)
+The data, the host `db-<slug>` and the connection string stay. It lands at the new team's top level
+and restarts once. Backup schedules and cron jobs are removed, and apps of the old team stop
+reaching it: the dialog names them. [Everything the move costs ->](/guides/team/transfers)
 
 ## The other tabs
 
-**Logs**, **Monitoring** and **Backups** work like for an app. **Console** opens the engine's own
-shell (`psql`, `mysql`, `redis-cli`) after a one-time confirmation. **Cron jobs** runs scheduled
-commands inside the container.
+- **Logs**, **Monitoring** and **Backups** work like for an app.
+- **Console** opens the engine's own shell (`psql`, `mysql`, `redis-cli`) after a one-time
+  confirmation. Until then, open it from **Settings -> Advanced**.
+- **Cron jobs** runs scheduled commands inside the container. The tab appears once you turn it on
+  in **Settings -> Advanced**. See [Cron jobs](/guides/observability/cron-jobs).
 
 ## Good to know
 
-- **The username and the database name never change.** Renaming the database only changes its
-  label.
 - **Redeploy and Rebuild do not work while the database is provisioning.**
-- **An app's backup schedule does not cover its database.** Schedule both.
-- **`Host port` opens the database to anything that can reach the server.**
-- **Capabilities:** `control_databases` for start, stop and restart, `configure_databases` for
-  settings, `delete_databases` for Rebuild and Delete, `move_databases` to hand it to another
-  team. Connecting it to an app needs `manage_env` and `reveal_secrets` on that app.
-- **Version upgrades are not migrations.** A major Postgres upgrade refuses to start on older
-  data. Dump, rebuild, restore.
+- **Capabilities:** `create_databases` to create, `control_databases` for start, stop, restart and
+  redeploy, `configure_databases` for settings, `delete_databases` for Rebuild and Delete,
+  `move_databases` to hand it to another team, `open_database_console` for the console.
+  Connecting it to an app needs `manage_env` and `reveal_secrets` on that app.
+- **Version upgrades are not migrations.** A major Postgres upgrade refuses to start on older data.
+  Dump, rebuild, restore.
 
 ## Troubleshooting
 
@@ -325,7 +256,6 @@ commands inside the container.
 | Authentication fails after a rotate | The app runs with the old password until it redeploys. A connected variable takes the new one on that deploy; a variable written by hand needs updating first. |
 | A deploy stops with "DATABASE_URL comes from orders, which runs on another server" | The app cannot reach the connected database. Move one of them, or turn on the database's public address. |
 | Stuck in provisioning | The agent could not pull the image, or the server is unreachable. Check the server's health. |
-| `Data` reads `-` | That server's agent is too old. Update it. |
 
 More in [Databases and backups](/troubleshooting/databases-and-backups).
 
@@ -335,6 +265,4 @@ More in [Databases and backups](/troubleshooting/databases-and-backups).
   <Card icon={<Archive className="text-blue-400" />} title="Backups and restore" description="Schedule the database separately from the app" href="/guides/data/backups-and-restore" />
   <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="How the volume behind a database works" href="/guides/data/persistent-storage" />
   <Card icon={<Terminal className="text-blue-400" />} title="Console" description="The engine's own shell" href="/guides/observability/console" />
-  <Card icon={<Gauge className="text-blue-400" />} title="Resource limits" description="CPU and memory for a database container" href="/advanced/resource-limits" />
-  <Card icon={<Network className="text-blue-400" />} title="Network isolation" description="Why an app reaches a database only from the same environment" href="/advanced/network-isolation" />
 </Cards>

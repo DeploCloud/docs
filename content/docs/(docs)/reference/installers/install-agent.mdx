@@ -3,93 +3,72 @@ title: install-agent.sh
 description: Brings one more server into the fleet, verifies its checksum and enrolls it over mutual TLS.
 ---
 
+The command the dashboard gives you under **Settings -> Servers -> Add server**:
+
 ```bash
-curl -fsSL https://deplo.example.com/install-agent.sh | sudo bash -s -- <TOKEN> <URL> [FINGERPRINT]
+curl -fsSL 'https://deplo.example.com/install-agent.sh' --output /tmp/deplo-agent-install.sh && echo '<token>' | sudo bash /tmp/deplo-agent-install.sh - 'https://deplo.example.com' '<fingerprint>'
 ```
 
-The three role flags below pick what the server is for, see
-[Server roles](/advanced/server-roles) for the full comparison.
-
 <Callout type="warn" title="Always take this command from the dashboard">
-  The copy in the repository has placeholders that the running instance
-  substitutes with the release's per-architecture URL and its checksum,
-  and it refuses to run unsubstituted.
+  The panel fills the script in with the release's per-architecture download URL and checksum.
+  The copy in the repository is a template and refuses to run.
 </Callout>
 
 <Callout type="info" title="Requires">
-  Root, `systemd`, `curl` and `sha256sum`, on `linux/amd64` or `arm64`.
-  Docker is installed if missing, except for a migration source, which
-  needs the Docker it imports from. It refuses below **5 GB free on `/`**,
-  recommends 30 GB, and checks nothing about memory or CPU.
+  Root, `systemd`, `curl` and `sha256sum`, on `linux/amd64` or `arm64`. Docker is installed if
+  missing, except on a migration source, which needs the Docker it imports from. It refuses
+  below **5 GB free on `/`**, warns below 30 GB, and checks nothing about memory or CPU.
 </Callout>
 
 <TypeTable
   type={{
-    "$1": {
-      type: "bootstrap token",
-      description: "The one-time bootstrap token. Single-use, hashed at rest, about an hour.",
-    },
-    "$2": {
-      type: "url",
-      description: "The control plane's URL, http(s)://host[:port].",
-    },
-    "$3": {
-      type: "certificate fingerprint (optional)",
-      description:
-        "Pins the control plane over HTTPS. Over plain HTTP the token authenticates the response instead.",
-    },
+    "$1": { type: "bootstrap token, or -", description: "The one-time bootstrap token: single-use, hashed at rest, valid about an hour. Pass - to read it from stdin, which keeps it out of the process list." },
+    "$2": { type: "url", description: "The control plane's URL, http(s)://host[:port]." },
+    "$3": { type: "certificate fingerprint (optional)", description: "Pins the control plane over HTTPS. Over plain HTTP the token authenticates the response instead." },
   }}
 />
 
+Flags go anywhere among the arguments:
+
 <TypeTable
   type={{
-    "DEPLO_STORAGE_ONLY=1": {
-      type: "flag",
-      description:
-        "Backups only: no Docker, no Traefik, no shared network, and the unit is installed without the docker group.",
-    },
-    "DEPLO_BUILD_ONLY=1": {
-      type: "flag",
-      description: "Build only: Docker and address pools, no Traefik.",
-    },
-    "DEPLO_IMPORT_ONLY=1": {
-      type: "flag",
-      description:
-        "Migration source: Docker must already exist, address pools untouched, no Traefik, no network, no backup store. Refused on a machine whose agent belongs to another Deplo.",
-    },
+    "--check": { type: "flag", description: "Runs the preflight and exits, changing nothing." },
+    "--force": { type: "flag", description: "Installs even though the preflight found a blocking problem." },
+    "--ipv4 / --ipv6": { type: "flag", description: "How Docker is set up here. An IPv6-only server gets IPv6 on its own. Not the server's generated addresses, which the dashboard sets." },
+    "--plain / --no-color / --quiet / --help": { type: "flag", description: "Output, as for install.sh." },
+  }}
+/>
+
+The server's role is an environment variable, set after `sudo`. See
+[Server roles](/advanced/server-roles) for the full comparison.
+
+<TypeTable
+  type={{
+    "DEPLO_STORAGE_ONLY=1": { type: "role", description: "Backups only: no Docker, no git, no Traefik, and the unit is installed without the docker group." },
+    "DEPLO_BUILD_ONLY=1": { type: "role", description: "Build only: Docker, git and address pools, no Traefik." },
+    "DEPLO_IMPORT_ONLY=1": { type: "role", description: "Migration source: Docker must already exist, address pools untouched, no Traefik, no network, no backup store. Refused on a machine whose agent belongs to another Deplo." },
   }}
 />
 
 ## What the installer does
 
-- Runs a preflight for the architecture, required tools, disk space and
-  control-plane URL. `--force` overrides only the 5 GB disk check.
-- Installs Docker, address pools, `git`, and Traefik when the selected role
-  needs them.
-- Downloads the `amd64` or `arm64` agent and verifies its SHA-256 checksum.
-- Installs the agent and systemd unit, then starts the service.
-- Enrolls over mTLS. It stores bootstrap credentials in
-  `/var/lib/deplo-agent/bootstrap.env` with mode `0600`, and clears old
-  certificates and saved panel addresses on reinstall.
+- Preflight: architecture, required tools, disk space, and whether the control plane's
+  `/api/health` answers.
+- Installs Docker, `git`, address pools and Traefik when the role needs them. Traefik is
+  skipped when one is already running, or when `80` or `443` is taken (apps there stay
+  unrouted until a proxy on the `deplo` network handles them).
+- Downloads the `amd64` or `arm64` agent and refuses it unless its SHA-256 checksum matches.
+- Writes `/var/lib/deplo-agent/bootstrap.env` (`0600`), the systemd unit and, except on a
+  migration source, `/data/backups`, then starts the service. A reinstall first clears old
+  certificates and saved panel addresses.
+- IPv6-only: NAT64 and `deplo-clat`, as in the [panel installer](/reference/installers/install#ipv6).
 
-The installer never changes the firewall, and the agent needs nothing from
-it: it opens no port.
+The agent then calls home, sends a certificate signing request, and gets a signed
+certificate. From then on it keeps a connection open to the control plane, which sends every
+deploy over it. **The control plane never connects to your machine**, the agent opens no port,
+and the installer never touches the firewall.
 
-Flags: `--check` runs the preflight and exits, `--force` overrides the disk floor, and `--plain`,
-`--no-color`, `--quiet` and `--help` do what they say.
-
-`--ipv6` gives Docker IPv6, which an IPv6-only server gets on its own, along
-with public NAT64 for `ghcr.io` and `github.com`. The same as the
-[panel installer](/reference/installers/install#ipv6). Which kind of address
-the server's apps get is set in the dashboard, under
-[Generated addresses](/operations/servers/maintenance-and-advanced#generated-addresses).
-
-The agent then calls home, sends a certificate signing request, and
-receives a signed certificate. From then on it stays connected to the control
-plane, which sends every deploy over that connection. **The control plane
-never connects to your machine.**
-
-Logs: `journalctl -u deplo-agent -f`.
+Logs: `journalctl -u deplo-agent -f`. Install transcript: `/var/log/deplo-agent-install.log`.
 
 ## See also
 

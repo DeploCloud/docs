@@ -5,8 +5,8 @@ description: What a machine is allowed to be. Everything, Build only, Backups on
 
 import { Server, Hammer, Archive, Library } from "lucide-react";
 
-The role is chosen when the agent is installed. It controls what is set up
-on the host and where the server appears in Deplo.
+The role is picked when you add the server. It decides what the installer sets up on the host
+and where the server appears in Deplo.
 
 ## Compare server roles
 
@@ -19,72 +19,55 @@ on the host and where the server appears in Deplo.
 
 ### Everything
 
-The default, and what a single-machine install uses. Docker, Traefik on
-ports 80 and 443, the shared `deplo` network, and the address-pool
-configuration that supports about 31 environment networks.
+The default, and what a single-machine install uses: Docker, Traefik on ports 80 and 443, the
+shared `deplo` network, and Docker address pools sized for about 2,000 networks (Docker's own
+default stops at about 31).
 
 ### Build only
 
-For [build servers](/advanced/build-servers). It runs the full build
-pipeline, so it gets Docker and the address pools, but no Traefik, because
-nothing is ever routed to it. It never appears as a deploy target.
+For [build servers](/advanced/build-servers). Docker and the address pools, because it creates
+networks while building, but no Traefik, because nothing is routed to it.
 
-Install with `DEPLO_BUILD_ONLY=1` in front of the agent installer, or pick
-the **Build** tile when you add a server. The tile carries a Beta chip; the card badge afterwards reads **Build only**.
+Pick the **Build** tile (Beta) when you add a server, or put `DEPLO_BUILD_ONLY=1` in front of the
+agent installer. Its badge then reads **Build only**.
 
-Any role except Backups only and Migration source can also stand in as a
-[build fallback](/advanced/build-servers#when-the-builder-is-down) - the
-Deplo host does by default.
+Any server but Backups only and a migration source can also be a
+[build fallback](/advanced/build-servers#when-the-builder-is-down).
 
 ### Backups only
 
-A storage box. **No Docker at all**, no Traefik, no shared network. It
-holds backup artifacts and nothing else, exactly what you want for the
-copy that has to survive losing the machine your apps run on.
+A storage box for backup artifacts: **no Docker**, no Traefik, no `deplo` network.
 
-It never encrypts anything itself and only receives the public half of
-each destination's key, so **it produces artifacts it cannot read**.
+Backups are encrypted before they reach it, and it only gets the public half of each
+destination's key, so **it holds artifacts it cannot read**.
 
-Install with `DEPLO_STORAGE_ONLY=1`, or pick the **Backups** tile when you add a server. The card badge afterwards reads **Backups only**.
+Pick the **Backups** tile, or use `DEPLO_STORAGE_ONLY=1`. Its badge reads **Backups only**.
 
 ### Migration source
 
-The narrowest install, and the only one you never choose from the servers
-page: it is created by the [migration wizard](/migrations).
+Created only by the [migration wizard](/migrations), never from the servers page.
 
-Docker must already exist on the machine. The address pools are left
-alone, there is no Traefik and not even the `deplo` network. It is out of
-every deploy and build picker, never a backup destination, never swept by
-cleanup, absent from monitoring and from the fleet count, and granted to
-one team only.
-
-It is also **the only server Deplo uninstalls itself from**. On the
-servers page it is listed apart, with a single action to take it back out
-again.
-
-A migration from [another Deplo](/migrations/move-from-another-deplo)
-creates none: the old Deplo hands its data over itself. The installer
-refuses to make a migration source of a machine whose agent already belongs
-to another Deplo.
+- **Docker must already be there.** No address pools, no Traefik, no `deplo` network.
+- **It is out of everything else**: deploy and build pickers, backup destinations, cleanup,
+  monitoring and the fleet count. One team only.
+- **It is the only server Deplo uninstalls itself from**, with one action on the servers page.
+  Do that when the migration is done.
+- **A [move from another Deplo](/migrations/move-from-another-deplo) needs none.** The
+  installer refuses a machine whose agent belongs to another Deplo.
 
 ## Change a role later
 
-There is no in-place role change. Remove the server and install it again
-with the role you want. Removal is
-[trust revocation](/operations/remove-a-server-or-uninstall), so nothing on
-the host is destroyed by that step alone.
+**Settings -> Servers -> the server -> Advanced -> What this server is for**, then **Save**.
+Instance admins only.
 
-## Important limits
+- **Leaving Everything** needs an empty server: move its apps and databases off first.
+- **Build only back to Everything** has no Traefik: apps run but stay unreachable on their
+  domains until you re-run the install command on the host.
+- **A server installed as Backups only** has no Docker, so it stays Backups only until you
+  re-run the install command.
+- **A migration source** never changes role.
 
-- **A backups-only host has no Docker.** The agent's systemd unit is
-  installed without the docker group, because systemd would refuse to
-  start a unit whose group does not exist.
-- **A build-only host still needs the address pools**, because it creates
-  networks while building.
-- **A migration source is a live agent on a machine you are
-  decommissioning.** Uninstall it when the migration is done.
-- **Roles do not change who may use the server.** That is
-  [team access](/operations/servers), a separate setting.
+The role does not decide who may use the server. That is [team access](/operations/servers).
 
 <Callout type="info">
 Server not enrolling or showing unhealthy? See [Servers and agents troubleshooting](/troubleshooting/servers-and-agents).

@@ -10,8 +10,8 @@ import { Rocket, Users, Database } from "lucide-react";
 
 ## Open it
 
-Press **Ctrl K** (**⌘K** on a Mac) anywhere in Deplo. Clicking the search box at the top of the
-sidebar or pressing **/** does the same.
+Press **Ctrl K** (**⌘K** on a Mac) anywhere in Deplo, press **/**, or click **Search** at the top
+of the sidebar. On a phone, the magnifier in the header opens it full screen.
 
 <Image
   src={`${basePath}/screenshots/search/01-palette.png`}
@@ -21,12 +21,13 @@ sidebar or pressing **/** does the same.
   className="w-full rounded-lg"
 />
 
-On a phone, the magnifier in the header opens it full screen.
+With the box empty it lists Deplo's pages, with your last five picks in this team under
+**Recent**.
 
 ## What it finds
 
-Type a few letters and the palette searches everything at once. Case and separators are
-ignored, so `better auth` finds `better-auth-docs`.
+Type a few letters and it searches everything at once. Case and separators are ignored, so
+`better auth` finds `better-auth-docs`. You only see what you are allowed to see.
 
 <Image
   src={`${basePath}/screenshots/search/02-results.png`}
@@ -36,89 +37,55 @@ ignored, so `better auth` finds `better-auth-docs`.
   className="w-full rounded-lg"
 />
 
-| Group                           | What it covers                                                   |
-| ------------------------------- | ---------------------------------------------------------------- |
-| Apps, Databases                 | Every app and database, by name, slug or id                      |
-| Servers                         | Fleet machines, by name or address                               |
-| Projects, Environments, Folders | The Overview's own structure                                     |
-| Domains                         | A hostname, and the app serving it                               |
-| Members                         | People on the team, by name or username                          |
-| Roles                           | The team's roles, by name                                        |
-| Cron jobs                       | Scheduled jobs, and what they run on                             |
-| Templates                       | The one-click catalogue                                          |
-| Pages                           | Every page in Deplo, New app included, and each app's own tabs   |
-| Settings                        | Two-factor, passkeys, registries, cleanup and the rest           |
+| Group | Matches on |
+| --- | --- |
+| Apps | Name, slug or id |
+| Databases | Name or id |
+| Servers | Name or address |
+| Projects, Environments, Folders | Name |
+| Domains | The hostname. The row names the app serving it |
+| Members | Name or username |
+| Roles | Name or description |
+| Cron jobs | Name, or the app or database it runs on |
+| Templates | The one-click catalogue, by name |
+| Navigation, Settings | Every page, **New app**, and settings such as two-factor and passkeys |
 
-**Every row is a page.** **Enter** opens it and closes the palette. For an app or a database,
-that is its Overview. The palette never deploys, starts or stops anything: those actions stay
-on their own page, behind their own confirmation.
-
-You only see what you are allowed to see.
+**Enter** opens the row's page and closes the palette: an app or a database opens on its Overview.
+The palette never deploys, starts or stops anything. **Search the documentation**, at the bottom,
+opens this manual in a new tab.
 
 ## Reach one app's page directly
 
-Type a page name to get it for every app. Add the app name to get only that one:
+Type a page name to get it for every app and database. Add the app's name to get only that one:
 
-| You type              | You get                                            |
-| --------------------- | -------------------------------------------------- |
-| `deployments`         | Deplo's own page, then **every app's Deployments** |
-| `deplo variables`     | **deplo-web / Environment**                        |
-| `gamewatcher domains` | **gamewatcher / Domains**                          |
-| `main backups`        | **main / Backups**                                 |
+| You type | You get |
+| --- | --- |
+| `deployments` | Deplo's own page, then **every app's Deployments** |
+| `deplo variables` | **deplo-web / Environment** |
+| `gamewatcher domains` | **gamewatcher / Domains** |
 
-These rows show the app's logo with the page's icon on it.
-
-A page also matches on its description, which is why `variables` finds the page called
-**Environment**.
-
-Six rows show at once. **Show N more** opens the rest.
-
-<Callout type="info">
-  A word that names one of your apps matches the app. Typing `blog` gives you the app, not
-  all of its pages.
-</Callout>
+- A page also matches on its description, which is why `variables` finds **Environment**.
+- Six of these rows show at once. **Show N more** opens the rest.
+- A word that names an app matches the app, not its pages: `blog` gives you the app.
 
 ## Other teams
 
-The palette searches every team you can reach. Results from the current team come first.
-Others are listed under **Other teams**, each labelled with its team.
+The palette searches every team you can reach. The current team comes first; the rest are under
+**Other teams**, each labelled with its team. **Enter** on one switches team and opens the page in
+one step.
 
-**Enter** on one of those switches team and opens the page in one step.
-
-**Team settings are included.** Searching `roles` gives you the Roles page of every team you
-can reach, and the roles themselves are searchable by name.
-
-Teams you cannot enter right now, for example because two-factor is required, are skipped.
+Team settings are included: `roles` gives you the Roles page of every team. Teams you cannot enter
+right now, for example because they require two-factor, are skipped.
 
 ## Keys
 
-| Key                 | What it does                                        |
-| ------------------- | --------------------------------------------------- |
-| **Ctrl K** / **⌘K** | Open or close the palette                           |
-| **/**               | Open the palette (unless you are typing in a field) |
-| **↑ ↓**             | Move through the results                            |
-| **Enter**           | Open the row                                        |
-| **Escape**          | Close the palette                                   |
+**Ctrl K** / **⌘K** opens and closes the palette, **/** opens it unless you are typing in a field.
+Inside it, **↑ ↓** move through the results, **Enter** opens the row and **Escape** closes.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Rocket className="text-blue-400" />}
-    title="Deploy an app"
-    description="Push, and it is live"
-    href="/guides/deploy"
-  />
-  <Card
-    icon={<Database className="text-blue-400" />}
-    title="Databases"
-    description="Provision, connect and back up"
-    href="/guides/data"
-  />
-  <Card
-    icon={<Users className="text-blue-400" />}
-    title="Roles and permissions"
-    description="What each member can reach"
-    href="/guides/roles-and-permissions"
-  />
+  <Card icon={<Rocket className="text-blue-400" />} title="Deploy an app" description="Push, and it is live" href="/guides/deploy" />
+  <Card icon={<Database className="text-blue-400" />} title="Databases" description="Provision, connect and back up" href="/guides/data" />
+  <Card icon={<Users className="text-blue-400" />} title="Roles and permissions" description="What each member can reach" href="/guides/roles-and-permissions" />
 </Cards>

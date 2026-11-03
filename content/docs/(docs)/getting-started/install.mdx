@@ -19,23 +19,20 @@ import { Rocket, Variable, Network, Terminal, Trash2 } from "lucide-react";
 
 ## Install it yourself
 
-Deplo installs from a single shell script on a fresh Linux server.
+One shell script, run as root on a fresh Linux server.
 
 <Tabs items={['Quick install', 'With your own domain']}>
 <Tab value="Quick install">
-
-As root, on the server:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash
 ```
 
-The dashboard will be automatically deployed on a generated address like `https://deplo-cb00710a.deplo.site` (check the output of the installer for the correct url)
+The dashboard comes up on a generated HTTPS address such as `https://deplo-cb00710a.deplo.site`
+(for IP `203.0.113.10`). The installer prints the real one.
 
-An IPv6-only server needs nothing extra: the installer sees it and sets
-Docker up for IPv6 on its own. On a server with both, IPv4 is the default and
-`bash -s -- --ipv6` picks IPv6 instead. See
-[IPv6](/reference/installers/install#ipv6).
+An IPv6-only server needs nothing extra. On a server with both, IPv4 is the default and
+`bash -s -- --ipv6` picks IPv6. See [IPv6](/reference/installers/install#ipv6).
 
 </Tab>
 <Tab value="With your own domain">
@@ -47,7 +44,11 @@ curl -fsSL https://deplo.build/install.sh | \
   DEPLO_DOMAIN=deplo.example.com ACME_EMAIL=you@example.com bash
 ```
 
-A generated address like `https://deplo-cb00710a.deplo.site` (check the output of the installer for the correct url) is also installed as a secondary url, but it can be disabled from the panel's settings menu
+The generated `deplo.site` address stays as a **Backup address**. Turn it off in **Settings ->
+Deplo -> Advanced**.
+
+`localhost`, `*.local`, `*.localdomain`, a bare IP or a name without a dot is not a domain: the
+installer warns and keeps the generated address.
 
 </Tab>
 </Tabs>
@@ -61,29 +62,23 @@ A generated address like `https://deplo-cb00710a.deplo.site` (check the output o
 
 ## What you need
 
-We encourage you to start from a clean environment to prevent configurations that can interfere with Deplo
-
 | What | Requirement |
 | --- | --- |
-| A server | <Os name="ubuntu">Ubuntu 24.04 LTS or newer</Os>, <Os name="debian">Debian 12 or 13</Os>, or one of the other <Os name="linux">[supported distributions](/reference/supported-operating-systems)</Os>, `x86-64` or `arm64`, compatible with Docker. `systemd` is needed for the [agent](/concepts/servers-and-the-agent). |
-| Size | **2 cores, 4 GB of RAM, 30 GB of disk** is the minimum, **4 cores and 8 GB** the comfortable size. Both are about your apps: the platform itself fits in about 1 GB. The installer warns below the minimum and **refuses below 8 GB free on `/`**, where Docker images alone do not fit. |
-| Ports | `80` and `443` reachable from the internet. Nothing else: every [server](/concepts/servers-and-the-agent) connects to Deplo by itself. |
-| Outbound HTTPS | To `ghcr.io` for the image, to `get.docker.com` when Docker is missing, and to Let's Encrypt for the certificate. The first two are checked before anything is installed. |
-| A domain | Optional: The generated `deplo.site` hostname works from the first deploy. |
-| Docker knowledge | Optional: Only when you are ready for the best Deplo experience. |
+| A clean server | <Os name="ubuntu">Ubuntu 24.04 LTS or newer</Os>, <Os name="debian">Debian 12 or 13</Os>, or one of the other <Os name="linux">[supported distributions](/reference/supported-operating-systems)</Os>, `x86-64` or `arm64`, with `systemd` for the [agent](/concepts/servers-and-the-agent). |
+| Size | **2 cores, 4 GB of RAM, 30 GB of disk** minimum, **4 cores and 8 GB** comfortable. Deplo itself fits in about 1 GB; the rest is for your apps. The installer warns below the minimum and **refuses below 8 GB free on `/`**. |
+| Ports | `80` and `443` reachable from the internet, nothing else. Behind a home or office router, serve the panel through a [Cloudflare Tunnel](/operations/cloudflare-tunnel). |
+| Outbound HTTPS | `ghcr.io` (the image), `github.com` (the server agent), `get.docker.com` (when Docker is missing) and Let's Encrypt. The preflight checks all but GitHub. |
+| A domain | Optional: the generated `deplo.site` address works from the first deploy. |
 
-To check a machine without touching it, run the preflight and exit:
+To check a machine without changing anything, run only the preflight:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash -s -- --check
 ```
 
-It changes nothing on the host and prints every blocking problem and every warning, so a server
-that cannot finish the install says so in ten seconds instead of halfway through.
-
 ## Create your first account
 
-The installer prints a **setup link** at the end, under **Next**:
+The installer ends with a **setup link** under **Next**:
 
 ```
  Next
@@ -92,7 +87,7 @@ The installer prints a **setup link** at the end, under **Next**:
    3  Deploy your first app.
 ```
 
-The setup will create the first account with the [Owner role](/guides/roles-and-permissions).
+That first account gets the [Owner role](/guides/roles-and-permissions).
 
 <Callout type="info" title="Installed by your hosting provider?">
   Sign in with the email and temporary password from their welcome email. Deplo then asks for a
@@ -102,78 +97,64 @@ The setup will create the first account with the [Owner role](/guides/roles-and-
 
 ## What the installer does
 
-On the host itself, four things change:
-
-| Change | Why |
+| Change on the host | Why |
 | --- | --- |
-| Docker is installed if absent | Via `get.docker.com`, then the service is enabled |
-| `default-address-pools` is rewritten in `/etc/docker/daemon.json` | Docker's defaults allow about 31 networks and Deplo uses one per Environment, so an untouched host runs out. An existing pool config is never clobbered, the old file is kept as `daemon.json.deplo-bak`, and the new one is validated with `dockerd --validate` first |
-| The `deplo` Docker network is created | It carries Traefik and the control plane. No app ever joins it: a stack gets its own [Environment network](/advanced/network-isolation) |
-| This machine is enrolled as a server | The installer waits for `/api/health`, then runs the agent installer against the panel on `127.0.0.1` |
+| Installs Docker if absent | From `get.docker.com`, then enables the service |
+| Sets `default-address-pools` in `/etc/docker/daemon.json` | Docker's defaults allow about 31 networks and Deplo uses one per Environment. An existing pool config is left alone; the old file is kept as `daemon.json.deplo-bak` and the new one checked with `dockerd --validate` first |
+| Creates the `deplo` Docker network | For Traefik and the control plane only. Apps get their own [Environment network](/advanced/network-isolation) |
+| Enrolls this machine as a server | Waits for `/api/health`, then runs the agent installer against the panel on `127.0.0.1` |
 
-Then, four [Docker's containers](https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/) come up:
+Then four containers come up:
 
 | Image | Purpose | Exposed ports |
 | --- | --- | --- |
-| `postgres:16-alpine` | The internal database of the control-plane | Nothing |
-| `ghcr.io/deplocloud/deplo:latest` | The control-plane itself | 3000 and 3101, only localhost |
-| `traefik:v3.7` | To serve the web apps to a domain | 80, 443 |
-| `tecnativa/docker-socket-proxy:v0.5.0` | A secure way for Traefik to know which web apps to serve | Nothing |
+| `postgres:16-alpine` | The control plane's database | None |
+| `ghcr.io/deplocloud/deplo:latest` | The control plane | `3000` and `3101`, on `127.0.0.1` only |
+| `traefik:v3.7.17` | Routes your apps' domains | `80`, `443` |
+| `tecnativa/docker-socket-proxy:v0.5.0` | Lets Traefik read container labels, read-only | None |
 
-Running it again when already installed it will just update Deplo and its services.
-
-Neither Traefik nor the control plane ever gets the Docker socket itself. See
+Neither Traefik nor the control plane gets the Docker socket: see
 [How Deplo works](/concepts/how-deplo-works).
 
 ## How to update
 
-From the dashboard: **Settings -> Deplo -> Updates**, and the button there installs the new
-version. The panel always notifies you for new versions available.
-
-See [Update](/operations/update) for the full procedure, including the server agents, and how to pin a specific version.
+**Settings -> Deplo -> Updates** installs a new version with one button, and the panel tells you
+when one is out. Running the install script again also updates in place. See
+[Update](/operations/update) for the server agents and version pinning.
 
 ## Run it with Compose instead
 
-`docker-compose.yml` in the repository runs the control plane and its Postgres. It is a readable,
-hand-editable starting point, not a copy of what the installer writes: it brings up no Traefik of
-its own and joins the external `deplo` network by labels, while the installer routes the panel
-through Traefik's **file provider** so the panel's own route can be changed from the panel later. Example usage:
+`docker-compose.yml` in the repository runs the control plane and its Postgres, routed by labels
+through a Traefik you already run on the external `deplo` network.
 
 ```bash
 docker network create deplo
-export DEPLO_DOMAIN=deplo.example.com   # required: it is the only address it serves
+export DEPLO_DOMAIN=deplo.example.com   # required: the only address it serves
 export DEPLO_SECRET=$(openssl rand -base64 48)
 export DEPLO_DB_PASSWORD=$(openssl rand -base64 24)
-export DEPLO_SETUP_KEY=$(openssl rand -hex 16)   # then open /setup?key=<xxx>
+export DEPLO_SETUP_KEY=$(openssl rand -hex 16)   # then open /setup?key=<key>
 docker compose up -d
 ```
 
-Going this way, you enroll the host as a server yourself from **Settings -> Servers**, exactly
-like any other machine. Five things are worth knowing before you do:
+Then enroll the host yourself from **Settings -> Servers**, like any other machine. Good to know:
 
-- **It publishes one port, on `127.0.0.1` only.** `3101`, where a server agent on this
-  machine connects to Deplo. Set `DEPLO_LINK_PORT` before `docker compose up` to use another.
-- **`DEPLO_SETUP_KEY` is yours to set.** The installer generates one; Compose does not. Leave it
-  unset and Deplo derives one from `DEPLO_SECRET` and prints the setup link in its log at boot:
-  `docker compose logs deplo | grep setup`.
-- **`DEPLO_SECRET` is not rotatable.** It derives every encryption key, every session signature
-  and the agent certificate authority. Change it and every stored secret becomes unreadable,
-  every session ends, and every agent certificate is created again. Back it up with the rest of
-  `/opt/deplo/.env`.
-- **The domain must resolve before the certificate can issue.** Let's Encrypt validates over HTTP
-  on port 80, so point the A record first. The generated address answers meanwhile.
-- **`localhost`, `*.local`, `*.localdomain`, a bare IP and any name without a dot are rejected as
-  `DEPLO_DOMAIN`.** The panel needs a hostname a certificate can be issued for; the installer says
-  so and falls back to the generated `deplo.site` address.
+- **One port is published, `3101` on `127.0.0.1`**, for this machine's own server agent.
+  `DEPLO_LINK_PORT` changes it.
+- **`DEPLO_SETUP_KEY` is optional.** Unset, Deplo derives one from `DEPLO_SECRET` and prints the
+  link at boot: `docker compose logs deplo | grep setup`.
+- **`DEPLO_SECRET` cannot be rotated.** It derives every encryption key, session signature and
+  agent certificate: change it and stored secrets become unreadable. Back it up (the installer
+  keeps it in `/opt/deplo/.env`).
+- **The domain must resolve first.** Let's Encrypt validates over HTTP on port 80.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| `docker compose` not found | The script requires Compose v2. Install Docker's own packages rather than a distribution's `docker.io`. |
-| The dashboard does not answer | From the server, `curl http://127.0.0.1:3000/api/health`. If that works, the proxy is the problem. If it does not, check `docker ps` shows the `deplo` container and read `docker logs deplo`; a failure to reach Postgres is the usual cause. |
-| The domain shows a certificate warning | The A record is not resolving to this server yet, or port 80 is closed. |
-| Agent enrollment failed | Not fatal. The dashboard still comes up and the script says so; re-running the installer retries it. |
+| `docker compose` not found | Compose v2 is required. Install Docker's own packages, not a distribution's `docker.io`. |
+| The dashboard does not answer | On the server, `curl http://127.0.0.1:3000/api/health`. If it answers, look at the proxy: `docker logs deplo-traefik`. If not, `docker logs deplo-deplo-1`; a failure to reach Postgres is the usual cause. |
+| The domain shows a certificate warning | The A record does not point at this server yet, or port 80 is closed. |
+| Agent enrollment failed | Not fatal: the dashboard still comes up and says so. Run the installer again to retry. |
 
 More in [Servers and agents](/troubleshooting/servers-and-agents) and
 [Domains and TLS](/troubleshooting/domains-and-tls).

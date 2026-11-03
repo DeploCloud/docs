@@ -10,48 +10,42 @@ import { Users, ShieldCheck, Variable, Network } from "lucide-react";
 import { HierarchyDiagram } from "@/components/diagrams/apps-projects-and-environments";
 
 An **App** is the thing that runs. A **Folder** groups apps. A **Project** is a folder with
-environments. An **Environment** is one isolated copy of a project's apps. None of this is
-required: a flat list of apps with no folders is a normal setup.
+environments. An **Environment** is one isolated copy of a project's apps. None of it is
+required: a flat list of apps is a normal setup.
 
 <HierarchyDiagram />
 
 ## App
 
 The unit you deploy: a repository, an image, an archive or a Compose file, run as a Docker stack
-named `deplo-<slug>` behind Traefik. An App owns its source, build settings, domains, variables,
-volumes and deployment history. It lives in one place only: the team's top level, a Folder, or
+named `deplo-<slug>` behind Traefik. It owns its source, build settings, domains, variables,
+volumes and deployment history, and lives in one place only: the team's top level, a Folder, or
 one Environment of one Project.
 
-The **slug** is generated from the name at creation and never changes. It is used in the stack
-name, the volume names (`deplo-<slug>-<volume>`) and the generated hostname. The display name
-can change.
-
-In Compose, a "service" is one container inside a stack. It is not an App.
+The **slug** is set from the name at creation and never changes: it names the stack, the volumes
+(`deplo-<slug>-<volume>`) and the generated hostname. The display name can change.
 
 ### App status is intent, not observation
 
-The status shows the last thing Deplo was **asked** to do: `queued`, `building`, `active`,
-`error`, `stopping`, `idle` or `restoring`. **Stopped** in the interface is the `idle` value.
-
-Two things to keep in mind:
+The status is the last thing Deplo was **asked** to do: `queued`, `building`, `starting`,
+`active`, `error`, `stopping`, `idle` or `restoring`. The interface shows `active` as
+**Online** or **Running**, `idle` as **Stopped**, and an app never deployed as **Not deployed**.
 
 - **`error` means the last deploy failed**, not that the app is down. The previous version keeps
   running.
-- The interface adds live information on top. An `active` app with restarting containers shows
-  as **restarting**, **degraded**, **unhealthy** or **down**.
+- **Live state is added on top** of `active`: an app whose containers are restarting, failing
+  their health check or gone shows **Restarting**, **Unhealthy** or **Not running**.
 
 ## Folder
 
-A team-wide group with a name, a colour and an owner. Folders can nest.
-
-Folders are also how you delegate access. The folder owner, or an admin, can share it with a
-member and give them permissions **inside that folder only**. Those permissions can be larger
-than the member's team role. This is how one person can manage Production and nothing else.
+A team-wide group with a name, a colour and an owner. Folders can nest, and are how you
+delegate: share one with a member and their permissions **inside it** can exceed their team role.
+See [Access inside one folder](/concepts/teams-and-capabilities#access-inside-one-folder).
 
 ## Project
 
-A **Project is a folder whose apps are split per environment.** It has an owner, a colour and an
-order like a folder, plus Environments, each with its own apps and shared variables.
+**A folder whose apps are split per environment.** It has an owner, a colour and an order like a
+folder, plus Environments, each with its own apps and shared variables.
 
 <Image
   src={`${basePath}/screenshots/apps-projects-and-environments/02-project.png`}
@@ -61,26 +55,22 @@ order like a folder, plus Environments, each with its own apps and shared variab
   className="w-full rounded-lg"
 />
 
-Two rules:
-
-- **A Project never nests** inside another Project, and **Folders never live inside a Project**.
-- **A Project has no page of its own.** You browse it on the Overview:
+- **A Project never nests** in another Project, and **Folders never live inside one**.
+- **A Project has no page of its own.** You browse it on the Overview, at
   `/?project=<id>&env=<envId>`. Old `/projects/<slug>` links redirect there.
 
 ## Environment
 
-An isolated deploy target inside a Project: its own containers, URLs, git branch and variables. A
-new Project starts with **Development**, **Preview** and **Production**, all renamable. You can
-add up to ten per project. A name like `pr-<n>` is reserved for pull request previews.
+An isolated deploy target inside a Project: its own containers, URLs, git branch and variables.
+A new Project starts with **Development**, **Preview** and **Production**, all renamable, and holds
+up to ten. Names like `pr-12` are reserved for pull request previews.
 
-An Environment is a **network boundary**. Apps and managed databases in the same Environment, on
-the same server, reach each other by name. Nothing else can reach them: not other environments,
-not other projects, not other teams. Apps outside any project use their team's network instead.
-See [Network isolation](/advanced/network-isolation).
-
-An Environment is also one of the three scopes of a
-[shared variable](/guides/config/shared-variables). A variable scoped to an environment is
-*suggested* to the apps there, and each app still links it on purpose.
+- **It is a network boundary.** Apps and managed databases in the same Environment, on the same
+  server, reach each other by name. Nothing else reaches them: not other environments, projects
+  or teams. Apps outside any project share their team's network. See
+  [Network isolation](/advanced/network-isolation).
+- **It is a scope of a [shared variable](/guides/config/shared-variables).** A variable scoped to
+  an environment is *suggested* to its apps; each app still links it on purpose.
 
 ## Which one do I want
 
@@ -97,49 +87,24 @@ An Environment is also one of the three scopes of a
 | A handful of apps, one of everything | Nothing. Leave them at the top level. |
 | "These six apps belong to the marketing site" | A **Folder** |
 | "Sara should manage those six and nothing else" | A **Folder**, shared with her |
-| "I want staging and production of the same three apps" | A **Project** with two **Environments** |
-| "Every pull request should get its own copy" | Not this. Use [pull request previews](/guides/networking/pull-request-previews) |
+| "Staging and production of the same three apps" | A **Project** with two **Environments** |
+| "Every pull request should get its own copy" | [Pull request previews](/guides/networking/pull-request-previews) |
 
-A pull request preview is neither an App nor an Environment. It has no domains, console, backups
-or monitoring. It is a temporary stack that disappears when the pull request closes.
+A pull request preview is neither an App nor an Environment: a temporary stack with no domains,
+console, backups or monitoring of its own, removed when the pull request closes.
 
 ## Good to know
 
-- **You can move an app between teams, but not its folder.** Folders, projects and shared
-  variables stay in the source team. Variables, domains, deployments, volumes and basic-auth
-  users move with the app.
-- **An app belongs to at most one Project.** Putting it in an environment takes it out of a
-  folder, and the other way round.
-- **Deleting a folder does not delete its apps** unless you choose so in the confirmation.
-  Deleting an app is always final.
-- **Deleting an app does not delete a server folder it was bound to.** Its own volumes and files
-  go. A [Bind](/guides/data/persistent-storage) belongs to the server and stays.
+- **An app moves between teams, its folder does not.** Folders, projects and shared variables stay
+  behind; variables, domains, deployments, volumes and basic-auth users go with the app.
+- **Deleting a folder keeps its apps** unless you choose otherwise in the confirmation. Deleting an
+  app is final, but a [Bind](/guides/data/persistent-storage) folder on the server stays.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Users className="text-blue-400" />}
-    title="Teams and capabilities"
-    description="Who can see and do what"
-    href="/concepts/teams-and-capabilities"
-  />
-  <Card
-    icon={<Network className="text-blue-400" />}
-    title="Network isolation"
-    description="What an Environment's network boundary means"
-    href="/advanced/network-isolation"
-  />
-  <Card
-    icon={<ShieldCheck className="text-blue-400" />}
-    title="Roles and permissions"
-    description="Sharing a folder"
-    href="/guides/roles-and-permissions"
-  />
-  <Card
-    icon={<Variable className="text-blue-400" />}
-    title="Shared variables"
-    description="Availability scopes and linking"
-    href="/guides/config/shared-variables"
-  />
+  <Card icon={<Users className="text-blue-400" />} title="Teams and capabilities" description="Who can see and do what" href="/concepts/teams-and-capabilities" />
+  <Card icon={<Network className="text-blue-400" />} title="Network isolation" description="What an Environment's network boundary means" href="/advanced/network-isolation" />
+  <Card icon={<ShieldCheck className="text-blue-400" />} title="Roles and permissions" description="Sharing a folder" href="/guides/roles-and-permissions" />
+  <Card icon={<Variable className="text-blue-400" />} title="Shared variables" description="Availability scopes and linking" href="/guides/config/shared-variables" />
 </Cards>

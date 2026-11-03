@@ -5,66 +5,50 @@ description: Connect your code host once per team, so every app can clone from i
 
 import { GitCommit, Workflow, GitPullRequest } from "lucide-react";
 
-**Settings -> Git**.
+**Settings -> Git**, then **Connect**. It needs the `manage_git` capability.
 
-There are two ways to connect:
-
-- **GitHub** connects as a **GitHub App**. You click, approve on GitHub, and
-  Deplo receives the credentials. Nothing to copy. See
+- **GitHub** connects as a **GitHub App**: click, approve on GitHub, nothing to copy. See
   [GitHub](/guides/git-providers/github).
-- **Everything else** connects as a **git connection**: one stored token per
-  host, reused by every app. This covers
-  [GitLab, Bitbucket and Gitea or Forgejo](/guides/git-providers/git-connections),
-  your own instance included, and is marked **Beta**. A plain **Git** connection works
-  for any other server, but has no repository picker, branch list or webhook.
+- **GitLab, Bitbucket, Gitea / Forgejo and plain Git** connect as a **git connection**, marked
+  **Beta**: one stored token per host, your own instance included. See
+  [Git connections](/guides/git-providers/git-connections).
 
 Tokens are encrypted and never returned by the API.
 
 ## What each connection unlocks
 
-| | GitHub App | GitLab, Bitbucket, Gitea | A plain Git connection, or a bare URL |
+| | GitHub App | GitLab, Bitbucket, Gitea | Plain Git, or a Repository URL |
 | --- | --- | --- | --- |
-| Repository picker | yes | yes | no |
-| Branch list | yes | yes | no |
-| Deploy on push | yes | yes | no |
-| Pull request previews | yes | no | no |
-| Preview comments | yes | no | no |
+| Repository picker and branch list | yes | yes | no |
+| Deploy on push | yes | yes | no, use the [deploy hook](/guides/releases/automatic-deployments#the-deploy-hook) |
+| Pull request previews and comments | yes | no | no |
 | [Railpack](/guides/releases/build-settings#railpack) downloads past GitHub's anonymous limit | yes | no | no |
 
-The last column only clones. To deploy automatically, use the
-[deploy hook](/guides/releases/automatic-deployments).
-
-## Where to find it in the interface
-
-The deploy sources are GitHub, Git, Docker Image, Upload and Compose. GitLab,
-Bitbucket and Gitea are in a dropdown **inside** the Git source.
+In the new-app wizard, GitHub has its own tile. Every other host is in the **Provider** menu of
+the **Git** tile, which can also **Connect a git provider** on the spot.
 
 ## Good to know
 
-- **A team can connect more than one GitHub App**, one per GitHub owner. This
-  is how a personal account and an organisation live side by side.
-- **GitLab reports token expiry, Gitea does not.** For Gitea or Forgejo, a
-  background check tells you when a token stopped working.
-- **A revoked token is reported before a deploy fails**, because connections
-  are re-tested in the background.
-- **Webhooks are registered automatically** and removed when the app stops
-  using them.
-- **The token is per host, not per repository.** Limit its scope on the
-  provider's side.
+- **One GitHub App per GitHub account or organization.** Connect once for each, so a personal
+  account and an organization live side by side.
+- **Connections are re-checked every 12 hours.** A revoked token, a GitLab token that expires
+  within 7 days, or a lost permission raises the **Git connection stopped working** or **Git
+  provider is missing access** [alert](/guides/observability/notifications-and-alerts), both on
+  by default.
+- **Push webhooks are registered for you**, and removed when no app deploys that repository
+  anymore.
+- **A token is per host, not per repository.** Limit its scope on the provider's side.
 
 ## Troubleshooting
 
-- **The repository list is empty**: the GitHub App has no access. Use
-  **Manage** and grant it there.
-- **`Authentication failed` in a clone**: the token expired or was revoked.
-  **Test connection** confirms it.
-- **Pushes do not deploy**: check the webhook status in the app's
-  **Settings -> Deployments**. The provider must be able to reach this
-  instance.
-- **Saving the address is refused**: it resolves to a private
-  address. Only an instance admin can allow that.
+| Symptom | What to check |
+| --- | --- |
+| **No repositories accessible to this App.** | Click **Configure repository access on GitHub** and add the repository. |
+| `Authentication failed` in a clone | The token expired or was revoked. **Test connection** in the connection's menu confirms it. |
+| Pushes do not deploy | The app's **Settings -> Deployments** shows **Deplo could not add the push webhook** with the reason. |
+| `Address must not point at a private or internal address` | Only an instance admin can connect a host on a private network. |
 
-See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.
+More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
 ## Next steps
 
@@ -78,7 +62,7 @@ See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.
   <Card
     icon={<Workflow className="text-blue-400" />}
     title="Automatic deployments"
-    description="Push to deploy, and the bare URL deploy hook"
+    description="Push to deploy, and the deploy hook"
     href="/guides/releases/automatic-deployments"
   />
   <Card

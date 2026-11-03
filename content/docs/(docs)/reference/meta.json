@@ -5,8 +5,9 @@
     "glossary",
     "capabilities",
     "environment-variables",
+    "mcp-tools",
+    "ports-networks-and-files",
     "supported-operating-systems",
-    "installers",
-    "ports-networks-and-files"
+    "installers"
   ]
 }

@@ -7,7 +7,7 @@ import { Container, Hammer, ShieldCheck } from "lucide-react";
 import { TabsList, TabsTrigger } from "fumadocs-ui/components/tabs";
 import { siGithub, siDocker, siGitlab } from "simple-icons";
 
-**Settings -> Registries**.
+**Settings -> Registries**, with the **Manage container registries** capability.
 
 <Callout type="info" title="Beta">
 This feature is currently beta/experimental and subject to change. It is
@@ -15,22 +15,15 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-One entry per registry, stored per team and encrypted. Every deploy of
-an app in that team carries the credentials to its server, which
-authenticates with them on every pull it makes:
+One entry per registry, per team, encrypted. Every deploy in that team carries the credentials to
+its server, which uses them on every pull:
 
 - the image an app of source **Docker image** runs,
 - every image a **Compose stack** brings up,
 - the base image a **Dockerfile** build starts `FROM`.
 
-Nothing is set per app. Connect the registry once and every private
-image from that host pulls, on every server the team deploys to.
-
-The password or token is write-only: it is never returned by the API and
-there is no reveal path.
-
-The credential itself is not something Deplo issues, it is created on
-the registry provider's own site first, then pasted in here.
+Nothing is set per app: connect the registry once and every private image from that host pulls, on
+every server the team deploys to. The token is write-only, with no way to reveal it.
 
 ## Add one
 
@@ -39,23 +32,23 @@ the registry provider's own site first, then pasted in here.
 
 ### Open registries settings
 
-**Settings -> Registries**, then **Add registry**.
+**Settings -> Registries**, then **Add registry**, and give it a **Name**.
 
 </Step>
 <Step>
 
 ### Pick the type
 
-Pick the **Type**: `ghcr`, `dockerhub`, `gitlab` or `generic`.
+Pick the **Type**: **GitHub (ghcr.io)**, **Docker Hub**, **GitLab** or **Generic / self-hosted**.
+It fills in the default **Registry host**.
 
 </Step>
 <Step>
 
 ### Create a credential on the provider, then fill in the form
 
-Go to the provider's own site first and create a read-only credential.
-The exact steps, and what goes in **Registry host**, **Username** and
-**Token**, differ per provider:
+Deplo issues no credential: create a read-only one on the provider's own site first. What goes in
+**Registry host**, **Username** and **Token** differs per provider:
 
 <Tabs defaultValue="ghcr">
 <TabsList>
@@ -89,64 +82,45 @@ The exact steps, and what goes in **Registry host**, **Username** and
 
 - **Registry host**: `ghcr.io`.
 - **Username**: your GitHub username.
-- **Token**: a **classic** personal access token with the `read:packages`
-  scope, created under GitHub's own **Settings -> Developer settings ->
-  Personal access tokens -> Tokens (classic)**. If the image belongs to an
-  organization, the org may also need to grant that token access under its
-  package settings.
+- **Token**: a **classic** personal access token with `read:packages`, from GitHub's **Settings ->
+  Developer settings -> Personal access tokens -> Tokens (classic)**. For an organization's image, the
+  org may also have to grant the token access in its package settings.
 
 <Callout type="warn" title="Classic token, not fine-grained">
-GHCR does not work with a **fine-grained** personal access token: GitHub's
-fine-grained tokens have no `packages` permission to grant, so a pull with
-one fails with `unauthorized` even if the token looks valid. Use **Tokens
-(classic)** and tick `read:packages`.
+Fine-grained tokens have no `packages` permission, so a pull with one fails with `unauthorized` even
+if the token looks valid.
 </Callout>
 
-See GitHub's docs on
-[authenticating to the Container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
-for the exact steps.
+See GitHub's [Container registry docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 
 </Tab>
 <Tab value="dockerhub">
 
 - **Registry host**: `docker.io`.
 - **Username**: your Docker Hub username.
-- **Token**: a Docker Hub access token, not your account password.
-  Create one on Docker Hub under **Account settings -> Personal access
-  tokens**, with **Read** permission.
+- **Token**: an access token with **Read** permission, from Docker Hub's **Account settings ->
+  Personal access tokens**. Not your account password.
 
-See Docker's docs on
-[personal access tokens](https://docs.docker.com/security/access-tokens/)
-for the exact steps.
+See Docker's [personal access tokens](https://docs.docker.com/security/access-tokens/).
 
 </Tab>
 <Tab value="gitlab">
 
-- **Registry host**: `registry.gitlab.com`, or your own
-  instance's registry host.
-- **Username**: the deploy token's username, shown by GitLab when the
-  token is created, not your account name.
-- **Token**: a GitLab deploy token with the `read_registry` scope,
-  created under the project or group's **Settings -> Repository ->
-  Deploy tokens**.
+- **Registry host**: `registry.gitlab.com`, or your own instance's registry host.
+- **Username**: the deploy token's username, shown by GitLab when the token is created.
+- **Token**: a deploy token with the `read_registry` scope, from the project or group's **Settings ->
+  Repository -> Deploy tokens**.
 
-See GitLab's docs on
-[deploy tokens](https://docs.gitlab.com/ee/user/project/deploy_tokens/)
-for the exact steps.
+See GitLab's [deploy tokens](https://docs.gitlab.com/ee/user/project/deploy_tokens/).
 
 </Tab>
 <Tab value="generic">
 
-For anything else, such as Harbor, a cloud provider's container
-registry, or a registry you run yourself, use whatever credential that
-registry issues for read-only pulls, for example a robot account or an
-IAM-generated token. There is no common format across
-registries, check that provider's own documentation for how to create
-one.
+For anything else, such as Harbor, a cloud provider's registry or one you run yourself:
 
 - **Registry host**: the registry's own host.
-- **Username** and **Password or access token**: whatever that registry
-  issued. This is the one type where a real password is a normal answer.
+- **Username** and **Password or access token**: whatever it issues for read-only pulls, like a robot
+  account or an IAM token. The one type where a real password is a normal answer.
 
 </Tab>
 </Tabs>
@@ -154,42 +128,31 @@ one.
 </Step>
 <Step>
 
-### Save
+### Add it
 
-Save.
+Click **Add registry**.
 
 </Step>
 </Steps>
 
-Use it by referencing the image in an app whose source is
-[a Docker image](/guides/deploy/docker-image), or as the base image of
-a Dockerfile build.
+Then reference the image in an app whose source is [a Docker image](/guides/deploy/docker-image), a
+Compose stack, or as the base image of a Dockerfile build.
 
 ## Before using a registry
 
-- **The server's agent has to be recent enough** to authenticate a pull.
-  An outdated one is flagged on the **Servers** page, where you update it.
 - **Registries are per team.** Another team needs its own entry.
-- **Tokens expire.** A pull that used to work and now fails with
-  `unauthorized` is almost always this.
-- **Scope the token to read-only** on the provider's side. Deplo only
-  ever pulls.
-- **Deplo pushes nothing.** Images it builds stay on the server that
-  built them, which is why [rollbacks](/guides/releases/rollbacks) depend
-  on local retention rather than a registry.
+- **Tokens expire.** A pull that used to work and now fails with `unauthorized` is almost always this.
+- **Deplo only pulls, and pushes nothing.** Images it builds stay on the server that built them, which
+  is why [rollbacks](/guides/releases/rollbacks) depend on local retention.
 
 ## Troubleshooting
 
-- **`pull access denied`**: no credential matches that image's host, or
-  the token cannot see that repository.
-- **It works for one image and not another**: same host, different
-  repository permissions on the provider's side.
-- **Nothing changed after connecting the registry**: the deploy that
-  failed ran before it existed. Deploy again, the credentials are read at
-  deploy time.
-- **A registry on a private address**: the server pulls from it fine, it
-  is on the same network. Only the image search box in the app form
-  cannot reach it, so type the image reference in full.
+- **`pull access denied`**: no credential matches that image's host, or the token can't see that
+  repository.
+- **One image works and another doesn't**: same host, different repository permissions on the provider.
+- **Nothing changed after connecting the registry**: credentials are read at deploy time. Deploy again.
+- **A registry on a private address**: the server pulls from it fine. Only the image search in the app
+  form can't reach it, so type the image reference in full.
 
 See [Deploys and builds](/troubleshooting/deploys-and-builds) for more.
 

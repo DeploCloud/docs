@@ -5,8 +5,8 @@ description: Manage instance-wide users, settings, ownership, and servers.
 
 import { Users, Globe, ArrowUpCircle, ShieldCheck } from "lucide-react";
 
-Only **instance admins** see these pages, and instance admin is a flag on
-an account, not a team capability.
+Only **instance admins** see these pages. Instance admin is a flag on an account, not a team
+capability: an admin still needs a membership and a role to act inside a team.
 
 ## Users
 
@@ -14,96 +14,86 @@ an account, not a team capability.
 
 | Action | What it does |
 | --- | --- |
-| **Manage users** | The full list, with Admin, Owner, and Suspended badges |
+| **Manage users** | The full list, with Admin, Owner and Suspended badges |
 | **Manage user** | Open one account to suspend it, reset its password, or change what it may do |
-| Register user | Opens a wizard that creates a single-use **registration link**. It works once and expires in 24 hours, and you share it yourself. A link can either let the person create their own team, or attach them to teams you already belong to, with the role baked in |
-| Pending links | Reveal or **Revoke** a link before it is used. **Revoke all** revokes every pending link at once, whoever created it |
-| Delete a user | Shows an impact preview first, since a person owns things |
+| **Register user** | A wizard that creates a single-use **registration link**, valid 24 hours, that you share yourself. It lets the person create their own team, or joins them to teams you belong to with a role you pick |
+| Pending links | Reveal or **Revoke** one before it is used. **Revoke all** revokes every pending link, whoever created it |
+| Delete a user | Shows an impact preview first: deleting a user is not removing them from a team |
 
-Deplo sends no account email of its own, which is why registration is a link you hand over rather
-than an invitation it mails. It does send alert email, through a team's own SMTP server or Resend
-key; that is [notifications](/guides/observability/notifications-and-alerts), a different thing.
+Deplo sends no account email, which is why registration is a link you hand over. Alert email is a
+separate thing: see [notifications](/guides/observability/notifications-and-alerts).
 
 ### The Permissions section
 
-Opening a user shows a **Permissions** section, and it holds the two grants that are not team
-capabilities:
+Opening a user shows **Permissions**, with the grants that are not team capabilities:
 
-- **Instance admin**, at the top of the section. It unlocks Servers, Users and the instance
-  settings, across every team.
-- **Advanced grants**, an accordion below it, holding exactly two switches: **Publish ports** and
-  **Bind server folders**. Both are instance-wide properties of the account, not of a membership,
-  which is why they are here and not on the Members page.
+- **Instance admin**: Servers, Users and the instance settings, across every team.
+- **Advanced grants**: **Publish ports**, **Bind server folders** and **Configure Traefik** (custom
+  `traefik.*` labels in a compose file). They belong to the account, not to a membership, which is
+  why they are here and not on the Members page.
 
-An instance admin holds both grants implicitly, so while that toggle is on the two switches show
-as on and cannot be changed. See
-[Host access](/advanced/host-access-and-privileges) for what **Bind server folders** actually
-opens up.
+An instance admin holds all three implicitly: while that toggle is on, the switches show on and
+locked. See [Host access](/advanced/host-access-and-privileges) for what they open up.
 
 ## Instance settings
 
-**Settings -> Deplo**.
+**Settings -> Deplo**, in four tabs.
 
-| Setting | What it does |
-| --- | --- |
-| **Panel address** | Where the dashboard answers. See [The panel's own address](/operations/panel-address-and-certificates) |
-| **Certificate account email** | The address Let's Encrypt has for this instance |
-| **Anonymous usage statistics** | Whether this instance sends Deplo one anonymous Usage report a day. On by default. See [Anonymous usage statistics](/operations/anonymous-usage-statistics) |
-| **Maximum range** | On the **Advanced** tab. The ceiling on how far back log queries may reach. Default 7 days, 1 to 90 |
-| Gravatar | **Advanced** tab. Whether a person with no picture of their own falls back to their Gravatar. **Off by default**, and off means everyone wears a face Deplo generates, or their initials if they pick those |
-| Serve the panel over plain HTTP | **Advanced** tab, for an instance behind something else that terminates TLS |
-| Updates | Its own tab: whether a newer Deplo release exists, with the changelog |
+| Tab | Setting | What it does |
+| --- | --- | --- |
+| General | **Panel address** | Where the dashboard answers. See [The panel's own address](/operations/panel-address-and-certificates) |
+| General | **Certificates** | The email Let's Encrypt has for every server |
+| General | **Instance owner** | Who owns the instance, and **Transfer ownership** |
+| Updates | | Installed version, available releases, servers still updating. See [Update](/operations/update) |
+| Advanced | **Canary releases** | Offer canary versions as updates. Off by default |
+| Advanced | **Log search range** | How far back a log page can reach. Default 7 days, 1 to 90 |
+| Advanced | **Gravatar pictures** | Whether people with no picture of their own fall back to Gravatar. **Off by default** |
+| Advanced | **Backup address**, **HTTPS**, **Cloudflare Tunnel** | Panel access. See [The panel's own address](/operations/panel-address-and-certificates) and [Cloudflare Tunnel](/operations/cloudflare-tunnel) |
+| Advanced | **Security updates** | Match the packages in your images against known flaws. On by default. See [Security updates](/guides/observability/security-updates) |
+| Advanced | **Anonymous usage statistics** | One anonymous report a day. On by default. See [Anonymous usage statistics](/operations/anonymous-usage-statistics) |
+| Advanced | **Diagnostics** | The versions this instance runs, with **Copy** for a bug report |
+| About | | Version, commit, license and open source notices |
 
-Panel address, certificate account email, usage statistics and ownership transfer are on
-**General**; the rest is split between **Advanced** and **Updates**.
-
-The page also shows this instance's version and which host it runs on.
+**Log search range** limits what can be asked for, not what a server keeps: Docker rotates container
+logs by size, so an older window can come back empty.
 
 <Callout type="info" title="What turning Gravatar on sends">
-Deplo never dials gravatar.com itself - each **person's browser** does, with a
-hash of their email address in the URL. Their IP address and that hash reach a
-third party as a result, which is why it ships off. The switch only decides
-whether Gravatar is offered at all; each person still chooses their own picture
-in **Settings > Account** - a generated face, an upload, their Gravatar, or
-their initials.
+Deplo never calls gravatar.com itself: each **person's browser** does, with a hash of their email
+address in the URL, so their IP and that hash reach a third party. The switch only decides whether
+Gravatar is offered; each person still picks their own picture in **Settings -> Account**.
 </Callout>
 
 ## Instance owner
 
 The tier above instance admin, held by the account created at first-run setup.
 
-- **No other admin can demote, suspend, or reset the owner.**
+- **No other admin can demote, suspend or reset the owner.**
 - The owner cannot drop their own admin flag either.
-- Instance admin is separate from team capabilities and applies across the instance.
-
-**Transfer ownership** is on the same page: only by the owner, only to an active instance admin, and only with the password re-entered.
+- **Transfer ownership** (**Settings -> Deplo -> General**): only by the owner, only to an active
+  instance admin, and only with their password re-entered.
 
 <Callout type="warn" title="Lost owner account">
-If the owner account is genuinely lost, the only way back is a command run
-on the host that runs the control plane. That is the one intended shell
-path in the entire product.
+The only way back is `deplo recover owner` on the machine Deplo runs on: see
+[Break-glass recovery](/operations/break-glass-recovery#restore-ownership-or-access). It is the one
+intended shell path in the product.
 </Callout>
 
 ## Instance-wide variables
 
-An instance-wide value is a **shared variable owned by the instance**, offered to every team, folding at the **lowest** priority so any team can override it. Create it on **Variables -> Shared**; there is no separate All-teams tab. Good for an internal registry mirror or a proxy setting, wrong for anything one team should not see.
+An older **shared variable owned by the instance** shows **Every team** as its owner. It reaches
+every team at the **lowest** priority, so any team can override it, and only an instance admin can
+change it. A new shared variable always belongs to a team; to reach several, see
+[Shared with two teams or more](/guides/config/shared-variables#shared-with-two-teams-or-more).
 
 ## Servers
 
-Servers are instance-wide, not team-owned, so the whole of **Settings -> Servers** is an instance-admin surface, including which teams may deploy to which machine. See [Server settings](/operations/servers).
-
-## Important details
-
-- **Instance admin is not team capabilities.** An admin still needs a membership and a role to act inside a team.
-- **A registration link is single-use and hashed.** Even two people clicking at once cannot both consume it.
-- **Deleting a user is not the same as removing them from a team.** Read the impact preview.
-- **Raising Max log range does not make hosts keep more.** Docker rotates container logs by size.
+Servers belong to the instance, not to a team, so all of **Settings -> Servers** is for instance
+admins, including which teams may deploy where. See [Servers](/operations/servers).
 
 ## Troubleshooting
 
-Settings -> Servers missing from the sidebar, can't edit another admin, or
-a registration link rejected: see
-[Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
+Settings -> Servers missing from the sidebar, can't edit another admin, or a registration link
+rejected: see [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
 
 ## Next steps
 

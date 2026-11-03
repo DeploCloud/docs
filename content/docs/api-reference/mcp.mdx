@@ -7,7 +7,7 @@ description: The wire protocol behind the MCP server. Every tool runs a GraphQL 
   This feature is currently beta/experimental. It works and is gated like everything else, but the spec revision is new and the tool surface will move.
 </Callout>
 
-AI agents reach Deplo at `POST /api/mcp`, speaking the Model Context Protocol, **revision 2026-07-28**. This page is the wire-level reference. Setup, connecting an agent, and the full list of tools are on [MCP server](/guides/mcp-server).
+AI agents reach Deplo at `POST /api/mcp`, speaking the Model Context Protocol, **revision 2026-07-28**. This page is the wire-level reference. Setup and connecting an agent are on [MCP server](/guides/mcp-server), the full list of tools on [MCP tools](/reference/mcp-tools).
 
 The MCP server is a different framing of this same API, not a second one: each tool runs a GraphQL document in-process as the caller's own principal, so every capability gate, folder grant, token scope and two-factor policy on the GraphQL pages applies identically.
 

@@ -6,27 +6,23 @@ description: Hostnames, certificates, path-based routing and redirects for an ap
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-import { Globe, ShieldCheck, GitPullRequest, Terminal } from "lucide-react";
+import { Globe, ShieldCheck, Cloud, GitPullRequest } from "lucide-react";
 
-This page covers every address an app answers on: your own hostnames,
-certificates, path-based routing and redirects. For one domain with HTTPS,
+Every address an app answers on. For one domain with HTTPS,
 [Add a domain](/getting-started/add-a-domain) is the short version.
 
-A domain is **one row: hostname plus path**. On every deploy Deplo turns each
-row into a proxy route with its certificate, middlewares, target container and
-port.
-
-**A path route always wins over a whole-host route**, longest path first. This
-is what lets `example.com/api` and `example.com/` go to two different apps.
-
-Deplo checks DNS itself, on a schedule and on demand. A hostname is routed only
-when the check passes.
+- **A domain is one row: hostname plus path.** Deplo turns each row into a proxy route with its
+  certificate, middlewares, container and port.
+- **A path route always wins over a whole-host route**, longest path first. That is how
+  `example.com/api` and `example.com/` go to two different apps.
+- **A row is routed only once its DNS check passes.** See [DNS states](#dns-states).
+- **Changes apply at once** while the app runs, otherwise on its next deploy. **Reload** on the app
+  re-applies domains without a rebuild.
 
 ## Add and manage domains
 
-Open the app, then **Domains**. **Add Domain** opens the dialog. **Add domain**
-confirms, and **Generate** creates a free `deplo.site` hostname. Each row has four
-buttons: re-check DNS, **Set as primary**, edit, and **Remove domain**.
+Open the app, then **Domains -> Add Domain**. Type the hostname, or press **Generate** for a free
+`deplo.site` one, then **Add domain**.
 
 <Image
   src={`${basePath}/screenshots/domains-and-https/01-domains-list.png`}
@@ -36,41 +32,46 @@ buttons: re-check DNS, **Set as primary**, edit, and **Remove domain**.
   className="w-full rounded-lg"
 />
 
-<Callout title="Skip the DNS record">
-With your domain connected under [Automatic DNS](/guides/networking/automatic-dns),
-Deplo creates the record when you add the domain.
-</Callout>
+- **Refresh icon:** re-checks DNS now. It shows until the domain is `valid`.
+- **Star:** makes the domain **primary**, the app's URL in its header and in notifications. The
+  first domain you add is primary, and there is always exactly one.
+- **Pencil and bin:** edit and remove. On a phone, all of these sit in the row's menu.
 
-Exactly one domain is primary. It is the URL shown in the app header, in
-notifications, and everywhere Deplo names the app's address.
+While the Domains page is open, Deplo re-checks a domain waiting for DNS every 30 seconds and
+starts routing the moment the record resolves.
+
+<Callout title="Skip the DNS record">
+With your domain connected under [Automatic DNS](/guides/networking/automatic-dns), Deplo creates
+the record when you add the domain.
+</Callout>
 
 ## DNS states
 
 | State | What it means | Routed |
 | --- | --- | --- |
 | `valid` | The hostname resolves to this app's server | yes |
-| `cloudflare` | Proxied through Cloudflare, so the real origin cannot be checked. The row gets a **Cloudflare DNS** badge | yes |
-| `pending` | No record found yet. The row shows the exact A record to create, and the AAAA when the server has IPv6 | no |
-| `misconfigured` | It resolves, but to a different address, or an AAAA record points elsewhere. The row shows the record that is wrong | no |
-| `error` | The lookup itself failed | no |
+| `cloudflare` | It resolves to Cloudflare's proxy, so the real origin cannot be checked. The row gets a **Cloudflare** badge | yes |
+| `pending` | Nothing resolves yet. The row shows the exact A record to create, and the AAAA when the server has IPv6 | no |
+| `misconfigured` | It resolves elsewhere, or one A or AAAA record points at another machine. The row names that record | no |
 
-For a CDN or proxy Deplo does not recognise, turn on **Behind a proxy** under
-**Advanced settings -> Proxy**.
+- **A CDN or proxy Deplo does not recognise:** turn on **Behind a proxy** under **Advanced
+  settings -> Proxy**. The domain is then routed without a DNS check.
+- **Twice a day Deplo re-checks every `valid` domain.** One that no longer points here leaves
+  `valid` and fires the **Domain points elsewhere** alert.
 
 ### IPv6 and AAAA records
 
-- **An A record alone is enough.** The AAAA record is optional.
-- **When the server has a public IPv6, the row prints the AAAA to create**, for example
+- **An A record alone is enough.** The AAAA is optional.
+- **With a public IPv6 on the server, the row prints the AAAA to create**, for example
   `app.example.com` -> `2001:db8::10`.
-- **An AAAA that points elsewhere makes the domain `misconfigured`**, even next to a correct A
-  record. Let's Encrypt tries IPv6 first, so the certificate would fail too.
-- **Behind Cloudflare's proxy, the A record is enough.** Cloudflare answers visitors over IPv6 on
-  its own. An AAAA alone needs a server with IPv6, or Cloudflare shows error 522.
+- **An AAAA pointing elsewhere makes the domain `misconfigured`**, even next to a correct A record.
+  Let's Encrypt checks over IPv6 whenever an AAAA exists, so the certificate would fail too.
+- **Behind Cloudflare's proxy, the A record is enough.** An AAAA alone needs a server with IPv6, or
+  Cloudflare shows error 522.
 
 ## Certificates
 
-The **Certificate** field is in the **HTTPS** group, above **Advanced
-settings**. Picking a provider is how a domain gets HTTPS. There is no separate
+**Certificate**, in the dialog's **HTTPS** group, is how a domain gets HTTPS. There is no separate
 switch.
 
 <Image
@@ -81,36 +82,26 @@ switch.
   className="w-full rounded-lg"
 />
 
-<TypeTable
-  type={{
-    "None (no certificate)": {
-      type: "default",
-      description: "Plain HTTP. This is the default for a new domain",
-    },
-    "Let's Encrypt": {
-      type: "automatic",
-      description: "You own the domain and it resolves here, or Cloudflare proxies it. Validated over HTTP on port 80, renewed automatically",
-    },
-    Cloudflare: {
-      type: "automatic",
-      description: "The domain is proxied by Cloudflare and the server answers with a self-signed certificate. Works with Cloudflare's Full mode, not Full (strict)",
-    },
-    "Installed on the server": {
-      type: "manual",
-      description: "You added the certificate yourself under Settings -> Servers. See Custom certificates",
-    },
-  }}
-/>
+| Certificate | What it does |
+| --- | --- |
+| **None (no certificate)** | Plain HTTP. What a domain you add starts on |
+| **Let's Encrypt** | Validated over HTTP on port 80, renewed automatically. Works directly or behind Cloudflare's Full and Full (strict) |
+| **Cloudflare** | For a Cloudflare-proxied domain: the server answers with a self-signed certificate. Works with Full, not Full (strict) |
+| **Installed on the server** | One an instance admin installed on that server. See [Custom certificates](/advanced/custom-certificates) |
 
-**Entrypoint**, in the same group, follows that choice. Leave it on
-**Automatic** unless you know you need `web` or `websecure`.
+Deplo picks one for you in two cases:
+
+- **A domain Cloudflare proxies** moves from **None** to **Let's Encrypt** when you add or verify it.
+- **The generated `deplo.site` address** of an app on a server with a public IP gets **Let's
+  Encrypt**. On a private IP it stays plain HTTP.
+
+**Entrypoint**, in the same group, follows the certificate when left on **Automatic**. Pick `web`
+only when something in front already terminates TLS.
 
 ### Behind Cloudflare
 
-A domain Cloudflare proxies gets **Let's Encrypt**, which works with Cloudflare's
-**Full** and **Full (strict)** modes. Deplo then checks how Cloudflare reaches the
-server, when you press **Verify** and twice a day, and switches a certificate that
-cannot work in that mode:
+When you press **Verify** and twice a day, Deplo checks how Cloudflare reaches the server and
+switches a certificate that cannot work in that mode:
 
 | Cloudflare SSL mode | Deplo switches the certificate to |
 | --- | --- |
@@ -118,15 +109,13 @@ cannot work in that mode:
 | Full | **Let's Encrypt**, if the domain had none |
 | Full (strict) | **Let's Encrypt**, if it had **Cloudflare** or none |
 
-- **Each switch is in the app's Activity**, signed by Deplo.
-- **A certificate installed on the server is never switched.** Any other choice is
-  yours to change; Deplo only moves one that cannot work.
+- **Each switch is in the app's Activity**, signed by Deplo. A certificate installed on the server
+  is never switched.
 - **Past the team's Let's Encrypt limit**, a domain keeps **Cloudflare**.
 
 <Callout type="warn" title="Cloudflare Flexible mode">
-Flexible mode uses HTTPS to the browser but plain HTTP to your server. Deplo
-follows it so the site works, but that last leg is not encrypted. Prefer
-**Full (strict)**.
+Flexible is HTTPS to the browser but plain HTTP to your server. Deplo follows it so the site works,
+but that last leg is not encrypted. Prefer **Full (strict)**.
 </Callout>
 
 ## Path routing
@@ -139,67 +128,32 @@ follows it so the site works, but that last leg is not encrypted. Prefer
   className="w-full rounded-lg"
 />
 
-**Advanced settings -> Request routing**.
+| **Advanced settings -> Request routing** | What it does |
+| --- | --- |
+| **Internal path (optional)** | Only requests under this path reach this app. Blank routes the whole host |
+| **Strip path before forwarding** | Removes the prefix before the request reaches your container |
+| **Middlewares (optional)** | Comma-separated Traefik middlewares, applied in order. Each must already exist on that proxy |
 
-<TypeTable
-  type={{
-    "Internal path (optional)": {
-      type: "path",
-      description: "Only requests under this path reach this app. Blank routes the whole host",
-    },
-    "Strip path before forwarding": {
-      type: "boolean",
-      description: "Removes the prefix before the request reaches your container",
-    },
-    "Middlewares (optional)": {
-      type: "text",
-      description: "Comma-separated Traefik middlewares, applied in order. Each must already exist on that proxy",
-    },
-    Container: {
-      type: "select",
-      description: "Which Compose service to route to. Only shown for multi-container apps",
-    },
-    "Application port": {
-      type: "number",
-      description: "The port this hostname routes to, overriding the app's own",
-    },
-  }}
-/>
+What the row routes to sits at the top of the dialog: **Container** (Compose apps only) and
+**Application port** (the app's port by default). A Compose app must set both.
 
 Example, **two apps on one domain**:
 
-- `example.com/api` goes to the API app, with internal path `/api` and strip
-  path on. The API container receives `/users` instead of `/api/users`.
+- `example.com/api` goes to the API app, with internal path `/api` and strip path on. The API
+  container receives `/users` instead of `/api/users`.
 - `example.com/` goes to the web app, with no internal path.
 
 ## Redirects
 
-The **www redirect** field, under **Advanced settings**, redirects
-`www.example.com` to `example.com`, or the other way round. It only offers that
-pair, and is hidden when the hostname has no www or apex counterpart.
-
-The redirecting hostname is a normal domain row with its own DNS check and its
-own certificate. The primary flag stays on the hostname that serves the app.
+**www redirect**, under **Advanced settings -> Redirect**, sends `www.example.com` to `example.com`
+or the other way round, with a permanent 301. It only offers that pair, and is hidden when the
+hostname has no www or apex counterpart. The other hostname becomes a row of its own, with its own
+DNS check and certificate; the primary flag stays on the one that serves the app.
 
 ## Security headers and CORS
 
-**Advanced settings -> Security**.
-
-<TypeTable
-  type={{
-    "Security headers": {
-      type: "boolean",
-      description: "Adds the three headers below to every response. On for every domain you add",
-      default: "on",
-    },
-    "Allowed origins (optional)": {
-      type: "text",
-      description: "Comma-separated sites whose pages may call this domain from the browser. * allows any. Blank turns CORS off",
-    },
-  }}
-/>
-
-What **Security headers** sends:
+Both under **Advanced settings -> Security**. **Security headers**, on by default, adds three
+headers to every response:
 
 | Header | Value | What it stops |
 | --- | --- | --- |
@@ -207,50 +161,47 @@ What **Security headers** sends:
 | `X-Frame-Options` | `SAMEORIGIN` | Another site showing yours inside a frame |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | Full URLs, query string included, leaking to other sites |
 
-- **Turn it off when another site embeds yours in a frame**, for example a widget or a dashboard
-  shown inside another tool.
-- **A domain added before the setting existed keeps it off**, and so does one that came from a
-  move. Turn it on when you are ready.
+- **Turn them off when another site embeds yours in a frame**, like a widget or a dashboard.
+- **A domain added before the setting existed, or imported from another platform, has them off.**
 - **There is no HSTS.** It would keep browsers on HTTPS for months, even after the certificate is
   removed.
 
-**Allowed origins**, for an API on `api.acme.com` called by a frontend on `app.acme.com`:
+**Allowed origins (optional)** lists the sites whose pages may call this domain from the browser
+(CORS). `*` allows any; blank turns CORS off. For an API on `api.acme.com` called by `app.acme.com`:
 
 ```text
 https://app.acme.com, http://localhost:5173
 ```
 
-- **An origin is a scheme and a host, with an optional port.** `https://app.acme.com`, never
-  `https://app.acme.com/login`.
-- **Every method and any request header are allowed**, `Authorization` included, and the browser
-  caches the answer for 10 minutes.
+- **An origin is a scheme and a host, with an optional port**: `https://app.acme.com`, never
+  `https://app.acme.com/login`. Up to 20 per domain.
+- **Every method and any request header are allowed**, `Authorization` included. The browser caches
+  the answer for 10 minutes.
 - **Cookies are not sent across sites.** An app that needs them sets its own CORS headers; leave
   this blank then.
-- **Up to 20 origins per domain.**
+
+## HTTP Basic Auth
+
+**Settings -> Access** on the app. **Add credential** puts a browser login in front of every domain
+of the app, within seconds and with no redeploy. It needs `manage_basic_auth`.
 
 ## Good to know
 
-- **A `deplo.site` hostname can never hold a certificate.**
-- **50 Let's Encrypt domains per team.** Open pull request previews with a
-  Let's Encrypt hostname count too. Domains with no certificate do not.
-- **Port 80 must be open even for an HTTPS-only site.** The certificate
-  validation happens there.
-- **A hostname belongs to one team.** Another team cannot add it. The same
-  applies to a preview base domain.
+- **50 Let's Encrypt domains per team.** Open pull request previews with a Let's Encrypt hostname
+  count too; domains with no certificate do not.
+- **Port 80 must be open even for an HTTPS-only site.** The certificate is validated there.
+- **A hostname belongs to one team**, and so does a preview base domain. Another team cannot add it.
+- **Deplo's own panel address cannot be an app's domain.**
 - **The same hostname on two paths can belong to two apps in your team.**
-- **Changing a domain applies on the next deploy or a Reload.** Use **Reload**
-  on the app to re-apply routing without rebuilding.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| Stuck on `pending` | No A record yet. The row shows the exact record to create. |
-| `misconfigured` | It resolves somewhere else. An old record, an AAAA pointing at another machine, or a proxy in front. |
-| Cloudflare error 522 | Cloudflare cannot reach the server. Often an AAAA record alone on a server without IPv6: add the A record. |
-| Certificate warning in the browser | The certificate never issued. Port 80 closed, or DNS pointing elsewhere. |
-| 404 from the proxy | Nothing matches the rule: the app is stopped, or the domain belongs to an app on a different server. |
-| A redirect loop | Cloudflare Flexible mode plus an HTTPS redirect. Press **Verify** so Deplo follows the mode, or switch Cloudflare to Full (strict). |
+| Certificate warning in the browser | The certificate is **None** or never issued: port 80 closed, or DNS pointing elsewhere. |
+| **This site is not running** | The app behind the address is stopped, or its last deploy failed. |
+| 404 from the proxy | No route matches: the app is stopped, or DNS points at a server the app is not on. |
+| A redirect loop | Cloudflare Flexible plus an HTTPS redirect. Press **Verify** so Deplo follows the mode, or switch Cloudflare to Full (strict). |
 
 More in [Domains and TLS](/troubleshooting/domains-and-tls).
 
@@ -259,6 +210,6 @@ More in [Domains and TLS](/troubleshooting/domains-and-tls).
 <Cards>
   <Card icon={<Globe className="text-blue-400" />} title="Add a domain" description="The short version, for one hostname" href="/getting-started/add-a-domain" />
   <Card icon={<ShieldCheck className="text-blue-400" />} title="Custom certificates" description="Bring your own certificate" href="/advanced/custom-certificates" />
+  <Card icon={<Cloud className="text-blue-400" />} title="Automatic DNS" description="Deplo creates the record in Cloudflare" href="/guides/networking/automatic-dns" />
   <Card icon={<GitPullRequest className="text-blue-400" />} title="Pull request previews" description="A hostname per pull request" href="/guides/networking/pull-request-previews" />
-  <Card icon={<Terminal className="text-blue-400" />} title="Console" description="Basic auth lives under Settings -> Access" href="/guides/observability/console" />
 </Cards>

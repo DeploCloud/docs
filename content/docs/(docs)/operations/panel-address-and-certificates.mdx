@@ -5,128 +5,99 @@ description: Change the panel address, certificate, and backup address safely.
 
 import { Settings, Globe, KeyRound, ShieldAlert } from "lucide-react";
 
-**Settings -> Deplo**, instance admins only.
+**Settings -> Deplo -> General**, instance admins only.
 
-The panel is served over **HTTPS**. It is never reachable at
-`http://203.0.113.10:3000`: that port is bound to `127.0.0.1` for recovery access
-only.
-
-The panel has two addresses:
+The panel answers on two addresses, over **HTTPS**:
 
 - **Your domain**, when you gave one, with a Let's Encrypt certificate.
-- **A generated host (like `deplo-cb00710a.deplo.site`)**, which works without DNS setup and
-  remains available if the custom domain breaks. It is on by default.
+- **The backup address**, generated like `deplo-cb00710a.deplo.site`. It needs no DNS and keeps
+  working when your domain breaks. On by default.
 
-Changing the address also changes:
-
-- The **install command** printed for new servers.
-- The address **every server** connects to Deplo on. Connected servers learn it by
-  themselves; one that was off finds the panel again through the backup address.
-- The URL where **Git provider webhooks** deliver.
-- The hostname **passkeys are bound to**.
-- The cookie's security mode.
+Port `3000` on the machine is bound to `127.0.0.1` only, so `http://203.0.113.10:3000` never answers.
 
 ## Change the address
 
 <Steps>
 <Step>
 ### Point DNS at this server
-Point the new hostname's DNS at this server first. The page shows the exact record.
+Point the new hostname at this server first. The **Panel address** card shows the record to create,
+and whether it resolves here yet.
 </Step>
 
 <Step>
-### Open the panel address setting
-**Settings -> Deplo**, find **Panel address**, click **Change address**.
-</Step>
-
-<Step>
-### Enter the new address
-An impact check runs and tells you what it found: passkeys that stop working,
-sessions that end, or a DNS record that does not resolve here yet. An IP address
+### Enter the new address and save
+In **Panel address**, type the hostname, like `deplo.example.com`, and press **Save**. An IP address
 is refused: no certificate authority issues for one.
 </Step>
 
 <Step>
-### Save
-The certificate issues on the first request to the new address.
+### Read the impact, then confirm
+**Move the panel to deplo.example.com?** lists what breaks, each as **Critical**, **Fix by hand** or
+**Minor**:
+
+- passkeys stop working: everyone registers a new one
+- deploy hooks and invite links keep the old address: copy them again
+- browser notification subscriptions stop: each person turns them back on
+- connected AI clients must reconnect
+- every sign-in ends, yours included
+
+Press **Change address**. The certificate issues on the first request to the new address.
 </Step>
 </Steps>
 
-The generated address (like `deplo-cb00710a.deplo.site`) keeps working throughout, so the panel
-stays reachable while DNS moves. See
-[ports, networks, and files](/reference/ports-networks-and-files).
+The backup address keeps working throughout. Your servers learn the new address by themselves; one
+that was off finds the panel again through the backup address (see
+[A server was off while the panel's address changed](/troubleshooting/servers-and-agents#a-server-was-off-while-the-panels-address-changed)).
+New install commands and git webhooks use the new address; re-point existing webhooks.
 
-## Behind a router: Cloudflare Tunnel
-
-If the internet cannot reach this server, for example behind a home or office
-router, serve the panel through a [Cloudflare Tunnel](/operations/cloudflare-tunnel)
-instead. While it is on, the address is changed from the tunnel's setting.
+Behind a home or office router, where this server is not reachable from the internet, serve the panel through a
+[Cloudflare Tunnel](/operations/cloudflare-tunnel) instead. While it is on, the address is changed
+from the tunnel's setting.
 
 ## HTTPS is not optional
 
-There is no switch to serve the panel on plain http from the General tab, and no
-way to reach it on `203.0.113.10:3000`. The one exception lives under
-**Settings -> Deplo -> Advanced**, **Serve the panel over plain HTTP**, and it
-exists for one case: a panel on an internal network that no certificate authority
-can reach. Turning it on sends every password and every session cookie across the
-network in clear, and passkeys stop working entirely, so the confirm says so.
+There is one exception: **Settings -> Deplo -> Advanced -> HTTPS**, for a panel on an internal network
+where no certificate can be issued. Turning it off sends every password and session cookie across the
+network in clear, passkeys stop working, and browsers that loaded the panel over https refuse plain
+http there for months. The confirmation says so.
 
 ## Turn the backup address off
 
-In **Settings -> Deplo -> Advanced**, turn off **Backup address** only if you do
-not want the generated public hostname.
+**Settings -> Deplo -> Advanced -> Backup address**, only if you don't want the generated public
+hostname. Your domain is then the only route to the panel; your servers forget the backup address,
+and learn it again when you turn it back on.
 
-With it off, your custom domain is the only route to the panel. Your servers forget the
-backup address by themselves, and learn it again when you turn it back on.
+<Callout type="info" title="It can't be turned off while it IS the address">
+On an instance with no domain of its own, the generated host is what the panel answers on: Deplo
+refuses until you set a domain.
+</Callout>
 
-If the domain breaks, restore the address from the control-plane host:
-
-```bash
-# Put the panel back on the generated address (and turn the backup address on)
-deplo recover panel-address -
-
-# Or move it straight onto a domain that works
-deplo recover panel-address deplo.example.com
-```
-
-Then restart Deplo. It makes the move as it starts, so nothing changes until you do:
+If the domain breaks, restore the address from the machine Deplo runs on, then restart so Deplo makes
+the move:
 
 ```bash
+deplo recover panel-address -                 # back to the generated address, backup address on
+deplo recover panel-address deplo.example.com # or straight onto a domain that works
 deplo restart
 ```
 
 See [Break-glass recovery](/operations/break-glass-recovery).
 
-<Callout type="info" title="It cannot be turned off while it IS the address">
-On an instance with no domain of its own, the generated host is what the panel
-answers on - turning it off there would leave no route at all, so Deplo refuses
-until you set a domain.
-</Callout>
-
-<Callout type="warn" title="The generated address uses a self-signed certificate">
-Your browser warns once because public certificate authorities do not issue for
-the generated hostname. Use a custom domain for a browser-trusted certificate.
+<Callout type="info" title="The generated address gets a real certificate too">
+Let's Encrypt issues for it when the server is reachable on port 80 from the internet. Behind NAT or
+a firewall, the browser gets Deplo's self-signed certificate instead and warns once.
 </Callout>
 
 ## The certificate account email
 
-**Certificate account email** is the address Let's Encrypt uses for this
-instance's ACME account and expiry warnings. The installer seeds it from
-`ACME_EMAIL`, or uses `admin@<panel-host>` when it is omitted.
-
-## Important details
-
-- **Changing the address invalidates passkeys and ends sessions.** Everyone must
-  register a new passkey on the new address.
-- **Re-point webhooks.** Existing servers remain enrolled and follow the new address
-  by themselves; new install commands use it too.
-- **An IP address is refused.** Use a hostname, or keep the generated address.
+The **Certificates** card holds the address Let's Encrypt uses for the ACME account and its expiry and
+revocation notices, on every server. The installer seeds it from `ACME_EMAIL`, or uses
+`admin@<panel-host>`. Changing it restarts the proxy on every server: sites blink for a few seconds.
 
 ## Troubleshooting
 
-A certificate warning on the new address, a panel unreachable after the
-change, or "No server accepted the change": see
-[Domains and TLS troubleshooting](/troubleshooting/domains-and-tls).
+A certificate warning on the new address, a panel unreachable after the change, or "No server accepted
+the change": see [Domains and TLS troubleshooting](/troubleshooting/domains-and-tls).
 
 ## Next steps
 

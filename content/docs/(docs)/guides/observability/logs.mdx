@@ -8,12 +8,11 @@ import { basePath } from "@/lib/base-path";
 
 import { Activity, Terminal, Bell } from "lucide-react";
 
-What your containers are printing, live, plus the output of every build. No
-`docker logs`, no SSH.
+What your containers print, live, plus the output of every build. No `docker logs`, no SSH.
 
-Runtime logs are streamed from the agent when you open the page. Build logs
-are saved, so they survive a page reload and a control plane restart. They are
-capped at 20,000 lines of 4,000 characters each.
+- **Runtime logs** stream from the agent while the page is open.
+- **Build logs** are saved, so they survive a reload and a panel restart. Capped at 20,000
+  lines of 4,000 characters each.
 
 ## Where to look
 
@@ -35,16 +34,12 @@ capped at 20,000 lines of 4,000 characters each.
 
 | Surface | What is there |
 | --- | --- |
-| **Logs** in the sidebar | A picker of every app and database you can read, arranged like the Overview. It remembers your last choice |
-| An app's **Logs** tab | That app's **runtime** output only. **View build logs** links to the last deployment |
-| A deployment's page | The build output for that one build |
+| **Logs** in the sidebar (on a phone, under **More**) | A picker of every app and database you can read. It remembers your last choice |
+| An app's **Logs** tab | Runtime output only. **View build logs** opens the last deployment |
+| A deployment's page | The output of that one build |
 | A database's **Logs** tab | The engine's output |
 
 ## The pane
-
-The stream's state is shown as a chip: `connecting`, `streaming`,
-`reattaching`, `ended` or `failed`. The pause button freezes **auto-scroll**,
-not the stream.
 
 <Image
   src={`${basePath}/screenshots/logs/02-app-logs.png`}
@@ -56,78 +51,59 @@ not the stream.
 
 | Control | What it does |
 | --- | --- |
-| Level | Filter to errors, warnings and so on, or **All levels** |
-| Search logs | Filter to lines containing text |
-| Time range | 30 minutes, 1 hour, a day, or 7 days (the default). **Show timestamps** and the **Format** switch are inside this popover |
-| Container | Which container of the stack you are watching. Shown only when the stack has more than one |
-| Pause | Stops auto-scrolling so you can read. New lines keep arriving |
+| Container | Which container of the stack you watch. Shown only when there is more than one |
+| Search logs | Keep lines containing a text |
+| Level | `info`, `warn`, `error`, `debug`, `success`, or **All levels**. Deplo detects the level of each line, so it works with any software. Build logs add `command` |
+| Time range | Last 30 minutes, hour, day or 7 days (the default). **Show timestamps** and **Format** live here too |
+| Pause | Stops **auto-scroll**, not the stream |
 | Clear, Copy, Download | Empty the pane, copy it, or save it as `<container>.log` |
-| Reconnect | Reopen a stream that ended |
-| Display | Wrapping, and the pane's height |
+| Reconnect | Reopen a stream that `ended` or `failed` |
+| Display | Text size and line spacing |
 
-Deplo detects a level for each runtime line (`info`, `warn`, `error`, `debug`
-and `success`) and colours it, so the level filter works with any software.
-Build logs add a sixth level, `command`.
-
-Above the pane, notices explain what the stream cannot: a restart loop, a
-failing healthcheck, a missing container, or "3 of 5 up".
+The stream's state sits next to the toolbar: `connecting`, `streaming`, `reattaching`,
+`ended` or `failed`. A chip explains what the stream cannot: **Stopped**, **No container**,
+**12 restarts**, **Unhealthy**, **Not running** or **3/5 up**. Click it for details.
 
 ## Retention
 
-The instance sets how far back the time range can go: **Settings -> Deplo ->
-Advanced**, the **Logs** card, field **Maximum range**. Default **7** days,
-minimum 1, maximum 90. Instance admins only.
+How far back the time range reaches is an instance setting: **Settings -> Deplo -> Advanced ->
+Log search range**. Default **7** days, from 1 to 90, instance admins only. Above 7, the range
+menu gains a **Last N days** entry.
 
-Raising it does not make the server keep more. Each container keeps its most
-recent **100 MB** of output, stored compressed, and the oldest lines make room
-for new ones. For long retention, send logs to a tool built for it.
-
-A Compose service that sets its own `logging:` keeps it, so an expert can raise
-or lower the limit for that service.
+It does not make the server keep more. Each container keeps its latest **100 MB** of output
+(five 20 MB files, compressed), and the oldest lines make room. A Compose service with its own
+`logging:` keeps it. For long retention, ship logs to a tool built for it.
 
 ## Restart loop protection
 
-A container that crashes on startup restarts forever, burning the server's CPU
-and filling its disk with logs. Deplo watches for that and stops it.
+**After 10 restarts in 30 minutes**, Deplo stops a crashing container so it cannot burn CPU and
+fill the disk. Then:
 
-**After 10 restarts in 30 minutes**, Deplo stops the container and the Logs page
-says so, with a **Start** button to bring it back once you have fixed it. The
-app's status turns red, an **App keeps restarting** alert goes out, and the stop
-is recorded in **Activity**.
+- the Logs page says **Stopped**, with a **Start** button for when you have fixed it;
+- the app or database turns red, **App keeps restarting** goes out, and **Activity** records it;
+- in a Compose stack, only the looping service stops. The others keep serving.
 
-Only what is looping stops. In a Compose stack with several services, the other
-services keep serving.
+A deploy resets the count, and restarts spread wider than 30 minutes never add up.
 
-<Callout type="info">
-  A deploy resets the count. Restarts spread further apart than the window never
-  add up, so an app that crashes once in a while is never stopped.
-</Callout>
-
-To let a container keep crashing instead, turn **Restart loop protection** off:
-**Settings -> Advanced** on the app, or on the database. It takes effect at
-once; there is nothing to redeploy.
+To let a container keep crashing, turn **Restart loop protection** off in the app's or
+database's **Settings -> Advanced**. It applies at once, with no redeploy.
 
 ## Good to know
 
-- **This is not a log search engine.** It is a live tail with filters, for
-  "what is it doing right now" and "why did that build fail".
-- **A crash loop still streams.** You see each attempt's output as the
-  container restarts.
-- **`view_logs` is its own capability**, and it can be granted per folder. An
-  app you cannot read logs for shows a closed state, not an empty pane.
-- **Build logs for a build server** belong to the app. You read them in the
-  same place.
+- **This is a live tail with filters, not a log search engine.**
+- **A crash loop still streams.** You see each attempt's output.
+- **`view_logs` is its own capability**, grantable per folder. Without it, an app shows a closed
+  state, not an empty pane.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| Empty pane, app running | The app writes to a file instead of stdout. Container logs only capture stdout and stderr. |
-| **No logs yet**, with a link to the build | There is no container: the app has never deployed, or the stack is gone. The build output is on the deployment's page. |
-| **Not running** notice | The container exists but is stopped. Start it, or read the last build. |
-| **Stopped** notice, after repeated crashes | Restart loop protection stopped it. Fix what the logs show, then press **Start**. |
-| The chip reads `ended` | The container was recreated. Press **Reconnect**. |
-| You want build output on the Logs tab | It is not there. Use **View build logs**, or open the deployment. |
+| Empty pane, app running | The app writes to a file. Only stdout and stderr are captured. |
+| **No logs yet**, with **View build logs** | No container: the app never deployed, or the stack is gone. Read the build. |
+| **Not running** | The container exists but is stopped. Start it, or read the last build. |
+| **Stopped**, after repeated crashes | Restart loop protection. Fix what the logs show, then **Start**. |
+| The state reads `ended` | The container was recreated. Press **Reconnect**. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

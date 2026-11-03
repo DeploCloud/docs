@@ -11,54 +11,27 @@ import { ArrowRightLeft, Layers, ServerCog, Database } from "lucide-react";
   GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-A wizard reads your Coolify installation over its API and recreates it here: projects,
-applications, one-click services, databases, domains, variables, volumes and backup destinations,
-with the data copied across. The configuration comes from the API. The data is read by a Deplo
-agent installed on each Coolify server.
-
-Pick the tab that matches where Deplo will run: on the machine Coolify already runs on, or on a
-machine of your own.
+A wizard reads your Coolify installation over its API and recreates it here: applications,
+one-click services, databases, domains, variables, volumes and backup destinations, data included.
+The data is read by a Deplo agent on each Coolify server.
 
 ## Before you start
 
-### Turn the API on and create a token
+- **Turn the API on** in Coolify's **Settings**. If it only accepts listed IPs, add the machine
+  Deplo runs on.
+- **A token per Coolify team.** In **Keys & Tokens**, **API tokens**, tick **`root`**, from an
+  account that is an **admin or owner** of the team. Without root, the token needs **`read`**,
+  **`read:sensitive`** and **`deploy`**: tick `deploy` first, because Coolify clears the list
+  when you tick it. Deplo checks at **Connect** and refuses a token that would import blanks.
 
-If Coolify's API is off, the scan says **API is disabled**. Turn it on under Coolify's
-**Settings**. If the API is limited to a list of addresses, add the machine Deplo runs on, or
-the scan says **You are not allowed to access the API**.
-
-Then go to **Keys & Tokens**, **API tokens**. Tick **`root`** and create the token from an
-account that is an **admin or owner** of the team. Root covers both things a migration needs:
-reading your values and stopping a service before its data is copied.
-
-If you do not want to grant root, tick **`deploy`** first, then **`read`** and
-**`read:sensitive`**, in that order (Coolify clears the list when `deploy` is ticked). Without
-`read:sensitive` every variable, database password and one-click compose file would arrive
-empty. Deplo checks this at **Connect** and refuses to import blanks.
-
-### One run per source team
-
-A Coolify token only sees the team it was created in. For each extra team, switch team in
-Coolify, create a token, paste it here and press **Add**. It joins the **Teams to bring over**
-list with the Deplo team it lands in. Two Coolify teams may land in the same Deplo team, or each
-in its own.
-
-Each team is one run. The runs are queued on the server and done one after another, so you can
-close the page and come back later.
+A token only sees the team it was created in: switch team in Coolify for the next one. Each team is
+one run, queued on the server, so you can close the page.
 
 ### On every source machine
 
-A Coolify instance often has more than one server. The **Install** step lists every one.
-
-- **One shell command, as root, on each machine.** It installs the Deplo agent that reads the
-  disks. The agent connects to Deplo by itself, so there is no port to open.
-- **A snapshot of every machine, taken first.** It is the only way back.
-- **Free space on the destination disk.** Deplo warns under 10% free or under 5 GiB.
-
-### What the run stops
-
-Every service you tick is stopped on Coolify when its data copy starts. After a finished run it
-is not started again. Anything you leave unticked is not touched.
+- **A snapshot of every machine.** It is the only way back after a takeover.
+- **Root on each Coolify server**, to run one install command. The **Install** step lists every
+  server. The agent dials Deplo, so no port has to be open.
 
 ## Run the migration
 
@@ -68,59 +41,55 @@ is not started again. Anything you leave unticked is not touched.
 <Steps>
 <Step>
 
-**Snapshot the server.** The final step removes Coolify. The snapshot is your only way back
-after that.
+**Snapshot the server.** The final step removes Coolify.
 
 </Step>
 <Step>
 
-**Run the installer.** The same command as any other install:
+**Run the installer**, the same command as any install:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash
 ```
 
 It finds Coolify and asks whether Deplo may replace it. Answer no and nothing is installed.
-`--yes` does not answer this question. To skip it, set `DEPLO_TAKEOVER=coolify`.
+`--yes` does not answer this question; `DEPLO_TAKEOVER=coolify` does.
 
 </Step>
 <Step>
 
-**Open the address it prints.** Until the ports move, Deplo answers over plain http on port 80.
-After the takeover the same address answers over https. If the installer says Coolify has no
-dynamic config directory, use a tunnel instead: `ssh -L 3001:localhost:3001 root@203.0.113.10`.
+**Open the address it prints.** Until the ports move, Deplo answers over http through Coolify's
+own proxy on port 80. When that is not possible, the installer prints an `ssh -L` tunnel instead,
+for example `ssh -L 3000:localhost:3000 root@203.0.113.10`.
 
 </Step>
 <Step>
 
-**Create your account, then choose.** The first step of the wizard asks the one question that
-cannot be undone: **Bring your data over**, or **Start clean**. Start clean deletes Coolify and
-everything it runs, and goes straight to **Take over**.
+**Create your account, then choose.** **Bring your data over**, or **Start clean**. Start clean
+deletes Coolify and everything it runs, and cannot be undone.
 
 </Step>
 <Step>
 
-**Connect, Install, Review.** The panel is already filled in. Paste a token per Coolify team, run
-the printed command on any other machine behind the panel, tick what comes over, and press
-**Start migration**. Everything lands on this machine.
+**Connect, Install, Review.** The panel address is filled in. Paste a token per Coolify team, run
+the printed command on any other Coolify server, tick what comes over, and press **Start
+migration**. Everything lands on this machine.
 
 </Step>
 <Step>
 
-**Take over the machine.** This step opens once every team on the list has landed. Tick **I have
-no other teams on this panel**, tick again for any service whose data copy failed, and type
-`coolify` to confirm.
+**Take over the machine.** It opens once every team has landed. Tick **I have no other teams on
+this Coolify**, tick any service listed as losing its data, and type `coolify`.
 
-Deplo then stops Coolify and its apps, copies its certificates, moves Traefik onto ports 80 and
-443, removes Coolify's containers, networks, images and directory, and restarts Docker. Volumes
-and Coolify's own backups stay on the disk.
-
-The page moves to the https address by itself once the certificate is issued.
+Deplo stops Coolify, inherits its certificates, moves Traefik onto 80 and 443, removes Coolify's
+containers, networks, images, `/data/coolify` and its SSH key in root's `authorized_keys`, and
+restarts Docker. The apps' volumes and Coolify's database backups (`/data/coolify/backups`) stay
+on the disk. The page moves to https by itself.
 
 </Step>
 <Step>
 
-**Deploy your apps.** Nothing is deployed for you. Open each app, check it, and press **Deploy**.
+**Deploy your apps.** Open each app, check it, and press **Deploy**.
 
 </Step>
 </Steps>
@@ -131,214 +100,136 @@ The page moves to the https address by itself once the certificate is issued.
 <Steps>
 <Step>
 
-**Open Settings -> System -> Migrations**, then **Dokploy or Coolify**. You need to be an
-instance admin. Enter the **Panel address** and the **API token**. A private address also works, for
-example `http://172.17.0.1:8000` on the same machine.
+**Open Settings -> System -> Migrations**, then **Dokploy or Coolify**. Enter the **Panel
+address** and the token. A private address works too, for example `http://172.17.0.1:8000` on the
+same machine.
 
 </Step>
 <Step>
 
-**Add a token per team.** Each one joins the **Teams to bring over** list with the Deplo team it
-lands in: the team with the same name if there is one, otherwise a new team. A new team is created
-when its migration starts.
+**Add a token per team.** Each joins **Teams to bring over** with the team it lands in: the team
+with the same name, otherwise a new one.
 
 </Step>
 <Step>
 
-**Install the agent on every Coolify server.** The step prints one command per machine. Run it as
-root and wait. The row shows **Waiting for the agent**, then **Connected**.
-
-Behind a proxy or a CDN the row first says **Cannot connect**, then uses the machine's own IP. A
-machine Deplo already knows is reused and keeps its agent after the migration.
+**Install the agent on every Coolify server.** Run each printed command as root. The row goes from
+**Waiting for the agent** to **Connected**. A machine already in your fleet is reused.
 
 </Step>
 <Step>
 
-**Review and start.** Tick what comes over. Per item you can set **Expose publicly**, a **Host
-port** and the target server. **Place everything on** sets the whole tree at once. A row that
-cannot come over says why in its badge. Then press **Start migration**.
-
-The run happens on the server, so you can close the tab. A chip at the top of every page shows
-the progress. One migration runs at a time per team.
+**Review and start.** Tick what comes over, pick where each app runs and is built (**Build all
+on** sets every build at once), then press **Start migration**. You can close the tab: a chip on
+every page shows the progress.
 
 </Step>
 <Step>
 
-**People, then Done.** Instance admins get single-use registration links for the panel's members.
-Everyone arrives as a plain member, because Coolify does not report roles over its API. Somebody
-who already has a Deplo account is added to the team instead. Then the report shows what came
-over, one line per team, and everything that needs a look.
-
-</Step>
-<Step>
-
-**Remove the source.** **Remove from Deplo** removes the migration source from the fleet and
-uninstalls the agent from that machine first. It warns with **Agent still installed** if it could
-not. Past runs stay under **History** with their reports.
+**People, then Done.** Members get single-use registration links and join as plain members; the
+report names any other role they had. Someone with an account here is added to the team instead.
 
 </Step>
 </Steps>
 
+When the run ends, Deplo takes its agent back off the Coolify servers. Past runs stay under
+**History** with their reports.
+
 </Tab>
 </Tabs>
 
-## What comes across
-
-### What lands as what
+## What lands as what
 
 | On Coolify | Here |
 | --- | --- |
-| Application, `dockerfile` | App built from its git repository, with that Dockerfile |
-| Application, `nixpacks` / `static` | App built from its git repository with **Railpack**. A publish directory becomes its **Output directory**, single-page setting included |
+| Application, `dockerfile` | App built from its repository, with that Dockerfile |
+| Application, `nixpacks` / `static` | App built with **Railpack**. A publish directory becomes the **Output directory**, single-page setting included |
 | Application, `dockerimage` | App running that image |
 | Application, `dockercompose` | Compose stack |
 | Service (one-click) | Compose stack, from the compose its author wrote |
-| PostgreSQL, MySQL, MariaDB, MongoDB, Redis, ClickHouse | The same database engine |
-| KeyDB, Dragonfly | Nothing. Named in the report |
+| PostgreSQL, MySQL, MariaDB, MongoDB, Redis, ClickHouse | The same engine, with its data |
 | Persistent storage | Volume, with its data |
 | File storage | Config file under **Storage** |
-| Environment variables | The app's variables, magic `SERVICE_*` values already resolved |
+| Environment variables | The app's variables, magic `SERVICE_*` values resolved |
 | Preview-only variables | The app's preview variables |
-| Shared variables (team, project, environment, server) | Shared variables at the same level, linked to the apps that referenced them |
-| Domains, with their port and path | Domains |
+| Shared variables (team, project, environment) | Shared variables at the same level, linked to the apps that used them |
+| Domains, with port and path | Domains |
 | HTTP basic auth | **Access** |
 | Memory and CPU limits | **Resources** |
-| Health check | **Advanced -> Health check** |
-| Published host ports | **Advanced -> Published ports**, with the publish-ports permission |
+| Health check, published host ports | **Settings -> Advanced** |
 | Scheduled tasks | Cron jobs |
-| S3 storages | Backup destinations, tested on arrival |
-| Scheduled database backups to an S3 storage | Backup schedules, on the destination that came with them |
+| S3 storages and database backups to S3 | Backup destinations (tested on arrival) and schedules |
 
-### What changes on the way
+## What changes on the way
 
-- **Temporary hostnames get a new address.** A name on `sslip.io`, `traefik.me`, `deplo.site` or
-  `localhost` contains the old server's IP, so Deplo generates a new `deplo.site` address. The app's
-  **Domains** section shows which became which. Domains you own come across as they are.
-- **Connection strings are rewritten.** A database answers as `db-<name>` here, and every
-  variable that used the old hostname is updated. Values an app stores by itself (a saved
-  `trusted_domains` or `siteurl`) are not changed. Fix them from the app's **Console**.
-- **A volume keeps the name you gave it.** Coolify stores it as `<resource id>-<name>`. It arrives
-  as plain `<name>`.
-- **A volume pinned by name in the compose file is not the one that was running.** Coolify renames
-  every volume to `<resource id>_<key>` and ignores `external: true` and `name:`. Deplo copies
-  what was actually running. The report names the pinned volume so you can decide what to do with
-  it.
-- **The compose is the one its author wrote**, not the copy Coolify renders with its own labels
-  and networks. Deplo adds those itself.
-- **A middleware label in a compose file comes across** when its kind is supported. Router labels
-  never do. See [Middlewares in a compose file](/advanced/compose-apps#middlewares-in-a-compose-file).
-- **Security headers stay off on a moved app's domains.** The app answered without them before, so
-  nothing that embeds it breaks. Turn them on under
-  [Security](/guides/networking/domains-and-https#security-headers-and-cors).
-- **A published host port comes across** and needs the publish-ports permission. Without it the
-  app still arrives, and the report names the ports it left behind. A port under 1024 cannot be
-  published again; use a domain instead.
-- **A network you created yourself does not come across.** Apps in the same Environment share one
-  network, so put stacks that talk to each other in the same Environment.
-- **A service name already used by another stack is renamed.** The second `db` in one
-  Environment arrives as `<app>-db`, and its `depends_on`, variables and domain follow.
-- **A bind mount comes across with its contents, single files included.** A config file Coolify
-  keeps at a real path on the host lands in Deplo's own files directory. A bind that names a file
-  copies that file alone.
-- **A `{{team.KEY}}` reference becomes a real link.** A value that is exactly one reference to a
-  shared variable of the same name arrives linked to it. When the names differ, the resolved value
-  arrives instead and the report says so.
-- **A server-level shared variable is offered to the project.** Deplo has no server scope.
-- **A variable is a secret here only if Coolify marked it one.** Deplo never guesses from the name,
-  because a [secret](/guides/config/environment-variables) is write-only and cannot be read back.
-  Variables Coolify marks **shown once** arrive plain and empty, because its API returns no value
-  for them. The report names the keys. Fill them in under **Variables** before you deploy.
-- **An address stored without a scheme arrives on plain http.** The report names it. Add a
-  certificate under **Domains** when you want https.
-- **A template address recorded without a port still routes.** Deplo reads the port from the
-  service, and the report says which one it took.
-- **A `$` Coolify would have expanded is named.** The value arrives as it was written.
-- **Imported basic-auth credentials are flagged.** They never went through Deplo's password
-  policy or the breach check.
-- **Anything that needs a permission you do not hold goes in the report**, with who can turn it
-  on.
+- **Temporary hostnames** (`sslip.io`, `traefik.me`, `nip.io`, `deplo.site`, `localhost`) get a
+  new `deplo.site` address, unless the app lands on the same machine. Your own domains come
+  across as they are.
+- **Connection strings are rewritten** to the database's new host, `db-<name>`. Values an app
+  stored itself (a saved `siteurl`) are not: fix them from the app's **Console**.
+- **A volume keeps the name you gave it.** Coolify's `<resource id>-<name>` arrives as `<name>`.
+- **A volume pinned with `external: true` or `name:` was never the one running**: Coolify renames
+  every volume. Deplo copies what actually ran and names the pinned one in the report.
+- **The compose is the one its author wrote**, not Coolify's rendered copy. When Coolify only
+  returns the rendered one, the report says so.
+- **A variable Coolify shows once arrives as a secret.** When Coolify's API returns no value for
+  it, it arrives empty and the report names the key: fill it under **Environment**.
+- **A `{{team.KEY}}` reference** to a variable of the same name becomes a link to that shared
+  variable. A server-level shared variable is offered to the project; Deplo has no server scope.
+- **A `$` Coolify would have expanded** arrives as written, and the report names it.
+- **An address stored without `http://` or `https://`** arrives on plain http.
+- **A second service name in one Environment is renamed**: the second `db` becomes `<app>-db`,
+  and its `depends_on`, variables and domain follow.
+- **A network you created yourself is dropped.** Apps in the same Environment share one network.
+- **Security headers stay off** on a moved app's domains. Turn them on under
+  [Security headers](/guides/networking/domains-and-https#security-headers-and-cors).
+- **Compose middleware labels** come across when their kind is supported, router labels never.
+  See [Middlewares in a compose file](/advanced/compose-apps#middlewares-in-a-compose-file).
+- **Published ports and host binds** need their own permission. A port under 1024 cannot be
+  published; use a domain.
 
-### What is left behind
+## What is left behind
 
-- **KeyDB and Dragonfly.** There is no engine for either here. Both are named in the report.
-- **Coolify's own `COOLIFY_*` variables.** They name the panel you are leaving.
-- **Deploy keys and connected-source credentials.** Attach a [git connection](/guides/git-providers)
-  for a private repository. This also turns on auto-deploy.
-- **Private registry passwords.** Coolify never exposes them. Add the registry under
-  [Registries](/operations/servers/container-registries) before you deploy.
-- **A volume's own backup to an S3 storage.** Coolify's API never lists those schedules. Set it
-  again under **Backups**: one app backup here covers every volume of the app.
-- **A database backup saved only to the local disk.** There is no destination for it here. The
-  report names it.
-- **The machine's own files.** `/etc/localtime`, `/etc/resolv.conf` and similar belong to the
-  host. The destination already has its own.
+- **KeyDB and Dragonfly** databases, named in the report.
+- **Coolify's own `COOLIFY_*` variables.**
+- **Deploy keys and connected-source credentials.** Attach a [git connection](/guides/git-providers);
+  that also turns on auto-deploy.
+- **Registry passwords.** Add the registry under [Registries](/operations/servers/container-registries).
+- **A volume's own backup to S3.** Coolify's API does not list it. One app backup here covers
+  every volume.
+- **A database backup kept only on Coolify's disk.** Set a destination under **Backups**.
+- **Custom labels, docker run options, network aliases, pre- and post-deploy commands, www
+  redirects, CPU pinning and swap limits.** Each is named in the report.
 
 ## Backing out
 
-- **While the run is going, in any step.** **Stop and undo** removes everything the run created
-  here with its data, starts again what it stopped on Coolify, and removes the agent from the
-  source. Coolify keeps all of its data.
-- **A run that fails on its own during the data step.** Nothing is rolled back. A service whose
-  data did not arrive refuses to deploy. The agents stay, so the copy can run again.
-- **A takeover, before the ports move.** **Cancel and remove Deplo** starts every service the
-  migration stopped, starts Coolify's own containers again, removes everything Deplo created here,
-  and uninstalls Deplo. It asks for the token again.
-- **A takeover, after the ports move.** The snapshot is the only way back. If the port move
-  itself fails, Deplo puts the ports back, starts Coolify again and offers **Try again** with the
-  reason.
+The general rules are in [Migrations](/migrations#stopping-data-and-going-back). For a takeover:
 
-Running the migration again is safe. What is already here is kept, and its data is copied again
-when you tick it.
+- **Before the ports move:** **Cancel and remove Deplo** starts what the migration stopped, starts
+  Coolify again, removes what Deplo created and uninstalls Deplo. It asks for the token again.
+- **After the ports move:** only the snapshot. If the move itself fails, Deplo puts the ports
+  back, starts Coolify again and offers **Try again** with the reason.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| **API is disabled** | Turn the API on in Coolify's settings. |
-| **You are not allowed to access the API** | Coolify's IP allowlist does not include this machine. |
-| **This token cannot read values**, or **cannot read compose files** | The token is not `root` and has no `read:sensitive`, or its account is not an admin or owner of the team. |
-| **This token cannot stop a service** | The token is not `root` and has no `deploy`. Create a new one with `root` ticked. |
-| **Coolify refused the token** | The token expired or was revoked. |
-| **Rate limited** | Coolify allows 200 requests a minute. Wait and try again. |
-| The panel's certificate is not trusted | Deplo cannot accept an untrusted certificate. Use Coolify's plain http address. |
-| A 502, or a Cloudflare 521 | It comes from the proxy or CDN in front of the panel. Start it, or point Deplo at the panel's own address. |
-| Stuck on **Waiting for the agent** | The install command has not run on that machine, or the machine cannot reach this one. |
-| **The server agent did not install** during a takeover | Re-run `/opt/deplo/install.sh` on the machine, or use the command under **Settings -> Servers**. |
-| One source machine does not answer | Its services are named in the report and blocked from deploying. The other machines are still copied. Check that the machine is on and connected to the internet. |
-| A volume arrives empty | The app refuses to deploy until you decide. One volume has six hours to copy, so a very big volume over a slow link is better copied by hand. |
-| A shared-variable level is missing from the report | An older panel has no endpoint for it. Copy those in by hand. |
-| A single-file bind is refused by name | The **destination** server's agent is too old. Update that agent and copy the data again. |
-| The data step fails half way | Nothing is rolled back. Only **Stop and undo** does that. A second run skips what is already here and copies the data again, or use **Copy the data again** on the app. |
-| Two apps mount the same absolute path | The copy empties its target before writing, so Deplo refuses and names the other app. Give one of them its own directory. |
-| The port move failed | Deplo put the ports back and started Coolify again. The step names what is holding the port, next to **Try again**. |
+| **Coolify's API is turned off on that instance** | Turn it on in Coolify's **Settings**. |
+| **Coolify only accepts API calls from an allowed IP** | Add this Deplo's address to that list. |
+| **This token cannot read values**, or **cannot read compose files** | Create a token with `root`, from an admin or owner. |
+| **This token cannot stop a service** | The token has no `deploy`. Create one with `root`. |
+| **That token does not carry the permissions this needs** | Add `read` and `read:sensitive`, or use `root`. |
+| **Coolify refused the token** | It expired or was revoked. Create a new one under **Keys & Tokens**. |
+| **Coolify kept rate limiting Deplo** | Coolify allows 200 requests a minute. Wait for other API users to quieten down. |
+| **would not answer for the** team, project or environment **shared variables** | An older Coolify has no endpoint for that level. Copy those variables in by hand. |
 
-More in [Servers and agents](/troubleshooting/servers-and-agents).
+Agents, volumes and the takeover: see [Migrations](/migrations#troubleshooting).
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<ArrowRightLeft className="text-blue-400" />}
-    title="Migrations"
-    description="What comes across, and what needs a look"
-    href="/migrations"
-  />
-  <Card
-    icon={<Layers className="text-blue-400" />}
-    title="Move from Dokploy"
-    description="The same two routes, against a Dokploy panel"
-    href="/migrations/move-from-dokploy"
-  />
-  <Card
-    icon={<ServerCog className="text-blue-400" />}
-    title="Server roles"
-    description="What a migration source is, and is not"
-    href="/advanced/server-roles"
-  />
-  <Card
-    icon={<Database className="text-blue-400" />}
-    title="Domains and HTTPS"
-    description="Repointing DNS after a migration"
-    href="/guides/networking/domains-and-https"
-  />
+  <Card icon={<ArrowRightLeft className="text-blue-400" />} title="Migrations" description="What comes across, and what needs a look" href="/migrations" />
+  <Card icon={<Layers className="text-blue-400" />} title="Move from Dokploy" description="The same two routes, against a Dokploy panel" href="/migrations/move-from-dokploy" />
+  <Card icon={<ServerCog className="text-blue-400" />} title="Server roles" description="What a migration source is, and is not" href="/advanced/server-roles" />
+  <Card icon={<Database className="text-blue-400" />} title="Domains and HTTPS" description="Repointing DNS after a migration" href="/guides/networking/domains-and-https" />
 </Cards>

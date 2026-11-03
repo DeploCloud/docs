@@ -7,37 +7,38 @@ import { Database, Layers, ArrowUpCircle, FileCode } from "lucide-react";
 
 ## Keep these three things
 
-Three things, in order of how badly you want them.
+In order of how badly you want them.
 
 ### 1. `DEPLO_SECRET`
 
-It lives in `/opt/deplo/.env` on the panel's host.
+It lives in `/opt/deplo/.env` on the machine Deplo runs on.
 
 <Callout type="warn" title="Every secret this instance holds derives from it">
-Every encryption key, session signature, and agent certificate authority is
-derived from `DEPLO_SECRET`. Lose it and every stored secret becomes
-unreadable: environment variables, database passwords, S3 keys, registry and
-git credentials. Deplo will start, and it will not be able to open anything.
+Encryption keys, session signatures and the server agents' certificate authority all derive from
+`DEPLO_SECRET`. Lose it and every stored secret is unreadable: variables, database passwords, S3
+keys, registry and git credentials. Deplo still starts, and opens nothing.
 </Callout>
 
-Copy that file into a password manager today. It is five lines on a fresh install, seven once the setup key and the host bootstrap token are appended.
+Copy the whole `.env` into a password manager today. **It cannot be rotated**: treat it as permanent.
 
 ### 2. The Postgres database
 
-Every app, team, domain, role, token, deployment record, and encrypted secret is a row in it. It runs as a container on the panel's host, on a network that's deliberately not published.
+Every app, team, domain, role, token, deployment record and encrypted secret is a row in it.
 
 ```bash
 docker compose -f /opt/deplo/docker-compose.yml --env-file /opt/deplo/.env \
   exec -T postgres pg_dump -U deplo deplo | gzip > deplo-$(date +%F).sql.gz
 ```
 
-Keep those dumps somewhere that is not that machine.
+Keep the dumps off that machine. Each update also leaves one in `/opt/deplo/backups`, on the same disk.
 
 ### 3. Backup recovery keys
 
-Every backup destination has one, and it's what decrypts its artifacts. Deplo stores a copy, encrypted with `DEPLO_SECRET`, which is no help in the scenario where you lost both.
+Each backup destination has one, and it decrypts that destination's artifacts. Deplo's own copy is
+encrypted with `DEPLO_SECRET`, so it is no help once both are gone.
 
-Download each one from the destination's menu and keep them with the secret. With a recovery key, any artifact reads anywhere:
+Take each one with **Download recovery key** in the destination's menu, and keep it with the secret.
+With it, any artifact reads anywhere:
 
 ```bash
 age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
@@ -45,22 +46,21 @@ age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
 
 ## Your apps' data
 
-That's what [backups](/guides/data/backups-and-restore) are for. Two rules worth stating plainly:
+That's what [backups](/guides/data/backups-and-restore) are for. Two rules:
 
-- **A backup on the same server as the workload survives everything except losing that server**, which is the failure people actually have. Send at least one copy to a bucket or to a [backups-only server](/advanced/server-roles).
+- **A backup on the same server survives everything except losing that server**, which is the failure
+  people actually have. Send one copy to a bucket or a [backups-only server](/advanced/server-roles).
 - **An app's schedule does not include its databases.** Schedule both.
 
 ## If the control-plane machine is lost
 
 <Callout title="Is the old machine still running?">
-Then do not restore by hand: use [Move Deplo](/operations/move-deplo). It needs no shell, never
-copies `DEPLO_SECRET`, and keeps the old Deplo running until you switch. This section is for when
-the old machine is gone.
+Then use [Move Deplo](/operations/move-deplo) instead: no shell, no copying `DEPLO_SECRET`, and the old
+Deplo keeps running until you switch. This section is for when it is gone.
 </Callout>
 
-Your apps keep serving. The control plane is not in the request path: Traefik and your containers are on the servers, and they don't need Deplo to keep running. What you lose is deploying, logs, metrics, and the dashboard.
-
-To come back:
+Your apps keep serving: Traefik and your containers live on the servers and don't need the panel.
+You lose deploying, logs, metrics and the dashboard until you come back:
 
 <Steps>
 <Step>
@@ -76,102 +76,61 @@ Put the **old** `DEPLO_SECRET` into `/opt/deplo/.env`.
 </Step>
 
 <Step>
-### Restore the database
-Restore the Postgres dump into the new instance's database.
+### Restore the database, then start it
+Restore the dump into the new instance's Postgres. Migrations apply at boot.
 </Step>
 
 <Step>
-### Start it
-Migrations apply at boot.
-</Step>
-
-<Step>
-### Let the agents reconnect
-They pin the **old** control plane's certificate authority, which was
-derived from that same secret, so they trust the new one. Where an agent
-does not reconnect, re-run the agent installer on that host to re-enroll it.
+### Point the panel's domain at the new machine
+Your servers connect to the panel's address, so change its DNS record to the new IP, then check
+**Settings -> Deplo -> General -> Panel address**. They trust the restored panel, because their
+certificate authority derives from the same secret. A panel with no domain of its own has a new
+generated address: re-enroll each server from its **Advanced** tab, **Install command**.
 </Step>
 
 <Step>
 ### Re-enroll this machine's own server
-Its agent enrolled under the fresh install's secret, so it does not trust the
-restored one, and re-running `install.sh` keeps it as it is. It shows under
-**Settings -> Servers** as **Provisioning**: open it, then **Advanced -> Show
-install command**, and run that command on this machine.
+Its agent enrolled under the fresh install's secret, so it does not trust the restored one. It shows
+under **Settings -> Servers** as **Provisioning**: open it, **Advanced -> Show install command**, and
+run that command on this machine.
 </Step>
 
 <Step>
-### Fix the panel address
-Check **Settings -> Deplo** and set the panel address, then re-point any
-webhook that names the old address.
+### Re-point webhooks
+Any git webhook that names the old address.
 </Step>
 </Steps>
 
 <Callout type="warn" title="Order matters">
-Secret first, then the database. A restore under the wrong secret produces a
-working panel full of unreadable secrets.
+Secret first, then the database. A restore under the wrong secret gives a working panel full of
+unreadable secrets.
 </Callout>
 
 ## If an app server is lost
 
-<Steps>
-<Step>
-### Add a replacement server
-</Step>
+1. Add a replacement server.
+2. Recreate or move the apps onto it.
+3. Restore each app and database from its backups.
+4. [Remove the dead server](/operations/remove-a-server-or-uninstall). It does not need the machine to answer.
 
-<Step>
-### Recreate or move the apps onto it
-</Step>
+**Deplo pushes no images to a registry**, so an app built on the lost server is rebuilt from source.
+Keep the source somewhere else.
 
-<Step>
-### Restore each app and database from its backups
-</Step>
-
-<Step>
-### Remove the dead server
-That's [trust revocation](/operations/remove-a-server-or-uninstall), and it does not need the machine to answer.
-</Step>
-</Steps>
-
-If a database refuses to start with a data-copy error after a move, that
-block is protecting you: an engine started on an emptied volume does not
-fail, it initializes a brand-new empty database over your data.
+A database that refuses to start with a data-copy error after a move is protecting you: an engine
+started on an emptied volume initializes a brand-new empty database over your data.
 
 ## Test recovery before you need it
 
-Once, before you need it:
+1. Restore one backup into a scratch app or database, and check the data.
+2. Decrypt one artifact by hand with its recovery key.
+3. Open `/opt/deplo/.env` from wherever you filed it.
 
-<Steps>
-<Step>
-### Restore one backup
-Into a scratch app or database, and confirm the data is there.
-</Step>
-
-<Step>
-### Decrypt one artifact by hand
-```bash
-age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
-```
-</Step>
-
-<Step>
-### Confirm you can read `/opt/deplo/.env`
-From wherever you filed it.
-</Step>
-</Steps>
-
-An untested backup is a hope, not a plan.
-
-## Important details
-
-- **`DEPLO_SECRET` cannot be rotated.** There is no key versioning. Treat it as permanent.
-- **Deplo pushes no images to a registry**, so rebuilding an app after losing its server means rebuilding from source. Keep the source somewhere that is not that machine.
-- **Backup artifacts survive their target's deletion** for 30 days, so a deleted-by-mistake app is usually still recoverable. Deleting the schedule alone keeps them indefinitely instead - see [backups](/guides/data/backups-and-restore).
+**Deleting an app or database deletes its backups too.** Keep a copy elsewhere for anything you could
+delete by mistake. See [backups](/guides/data/backups-and-restore).
 
 ## Troubleshooting
 
-A restore fails, a backup won't decrypt, or a database won't start after a
-move: see
+A restore fails, a backup won't decrypt, or a database won't start after a move: see
 [Databases and backups troubleshooting](/troubleshooting/databases-and-backups).
 
 ## Next steps

@@ -11,89 +11,18 @@ import { Lock, Layers, HardDrive, Globe } from "lucide-react";
 Paste a `docker-compose.yml` to run several containers as one app. Deplo adds
 routing, TLS, variables, volumes and backups on top.
 
-Use it for software that ships as a Compose stack or for your own
-multi-service setup. For a single image, [Deploy a Docker image](/guides/deploy/docker-image) is simpler.
-Is the Compose file in your own repository? Deploy the repository and Deplo reads the file on every
-deploy: see the [Docker Compose build method](/guides/releases/build-settings#docker-compose).
-
-Your YAML is treated as **authored input, not a trusted document**. Deplo
-parses it, checks it, folds in what it must, and ships the result to the
-agent.
-
-**What it folds in:**
-
-- **Your environment's own network**, added to **every** service on top of the
-  networks your file already declares, so they reach the other apps and managed
-  databases *in that environment* by name - and nothing outside it. A service
-  stays off it only if it sets `network_mode:`, if its name is one the platform
-  answers to, or if you marked all its networks `internal: true`.
-- **Traefik labels** for each domain you add, pointing at the service you
-  named on that domain.
-- **Your environment variables**, injected into every service as
-  pass-through entries. Values ride in a `0600` env file next to the stack.
-- **Your storage rows**, mounted into the service you named.
-
-**What it drops or refuses:**
-
-- **`aliases:` on a network Deplo owns are dropped.** Every container already registers its
-  service name there, and Docker round-robins a name two containers both claim. Aliases on your
-  own private networks are yours and are kept.
-- **`networks: [deplo]` is rewritten, not refused.** Whatever you wrote lands
-  on your environment's network. Copy-pasted compose files and imports from
-  other platforms keep working. The same is true of a network you point
-  somewhere else on purpose, `default` included: any key naming a network Deplo
-  manages ends up on your own environment's, under the single key `deplo`.
-- **Do not call a network of your own `deplo`.** That key is Deplo's, so a network
-  you declare under it is replaced by your environment's - and if you had marked it
-  `internal: true`, the seal goes with it. Any other name is yours and is kept.
-- **`network_mode:` may not name a network.** Anything but `none` and `default`
-  needs the host permission, because every other value is a docker network name -
-  `bridge` included, which is the one docker shares between everything that asks
-  for it. One naming a network Deplo manages is refused outright, and so is one
-  filled in from a variable (`$NET` as much as `${NET}`), since the value only
-  exists at `compose up` and nothing can inspect it before then. `network_mode: container:<name>`
-  is refused before either check: it hands your container another container's whole stack.
-- **Six names belong to the platform:** `deplo`, `postgres`, `traefik`, `deplo-traefik`,
-  `deplo-socket-proxy` and `docker-socket-proxy`. The proxy resolves two of those by name from
-  inside your network, so claiming one collects the panel's traffic or the proxy's routing config.
-  The editor warns about them; a service actually joining the shared network under one of these
-  names is refused, and one that would not have joined is simply left off it and keeps a private
-  `default` instead.
-- **A service claims more than its own name.** The refusal also covers
-  `hostname:`, which Docker registers in DNS exactly like a service name,
-  and it ignores capitalisation, because DNS does: `Postgres` answers a
-  `postgres` lookup. The network is resolved by name too, so referencing it
-  under a different key does not get around any of this.
-- **A service cannot be named after a managed database that shares its network.**
-  A database answers to `db-<name>`, so a service of that name would collect
-  its connections. One in another environment is not a clash - your stack never
-  joins its network.
-- **Images under `deplo/` are Deplo's.** Every app Deplo builds is tagged
-  `deplo/<app>:<deployment>` on its server, so `image: deplo/shop:dpl_0a1b2c3d` would run another
-  app's build and is refused. So is an image whose name comes from a variable (`image: ${IMAGE}`),
-  because Deplo cannot see where it points; a variable in the tag (`image: nginx:${TAG}`) is fine.
-- **Two of your own stacks CAN claim one name, and the deploy warns.** Inside
-  one environment nothing refuses a second `web` or `api`; Docker would split
-  the lookups between them, so the deploy log names the other stack and you
-  rename one. Only the services you route, or attach to the network yourself,
-  take a name there.
+- **One image?** [Deploy a Docker image](/guides/deploy/docker-image) is simpler.
+- **The file is in your repository?** Deploy the repository and Deplo reads the file on every
+  deploy: see the [Docker Compose build method](/guides/releases/build-settings#docker-compose).
 
 ## Create a Compose app
 
 <Steps>
 <Step>
 
-### Start from scratch
-
-**Add new**, then **Application**. The wizard's first step is where you pick the source - or
-**Template**, to start from the catalogue instead.
-
-</Step>
-<Step>
-
 ### Pick Compose
 
-Pick the **Compose** tile, then **Next**.
+**Add New -> Application**, then the **Compose** tile and **Next**.
 
 <Image
   src={`${basePath}/screenshots/compose-apps/01-wizard-compose.png`}
@@ -108,63 +37,93 @@ Pick the **Compose** tile, then **Next**.
 
 ### Paste and lint
 
-Click **Write compose** and paste your file. The editor lints as you type and
-tells you what will be rewritten, what needs a permission, and what gets
-refused. Save, and the card reports how many services the stack has.
+Click **Write compose** and paste your file. The editor lints as you type: what Deplo will
+rewrite, what needs a permission, what it refuses.
 
 </Step>
 <Step>
 
 ### Pick what gets a domain
 
-The card below lists every service in the stack. The one Deplo picked as the
-front door is ticked and marked **Primary**; tick any other service that needs
-an address of its own. Databases are listed but never pre-selected.
+The service Deplo picked as the front door is ticked and marked **Primary**. Tick any other
+service that needs an address of its own.
 
 </Step>
 <Step>
 
 ### Deploy
 
-**App name** is filled in from the first service. The server and the extra
-`docker compose up` flags are under **Advanced**. Click **Deploy**.
+**App name** comes from the first service. The server and extra `docker compose up` flags are
+under **Advanced**. Click **Deploy**. Edit the file later in **Settings -> Deployments**.
 
 </Step>
 </Steps>
 
-Edit the file later in **Settings -> Deployments**.
+## What Deplo changes in your file
+
+**It adds:**
+
+- **Your environment's network** on every service, next to your own networks, so it reaches
+  that environment's apps and databases by name. Some services
+  [stay off it](/advanced/network-isolation#services-that-stay-off-the-network).
+- **Traefik labels** for each domain, pointing at the service the domain names.
+- **Your variables**, as bare `- KEY` entries. The values ride in a `0600` env file next to the
+  stack, never in the YAML.
+- **Your storage rows**, mounted into the service each row names.
+
+**It removes** `version:`, `container_name:`, and `aliases:` on a network Deplo owns (aliases on
+your own networks stay). A network key that points at a network Deplo manages, `deplo` and
+`default` included, is rewritten onto your environment's. So never call your own network
+`deplo`: it is replaced, `internal: true` and all.
+
+**It refuses:**
+
+- **`network_mode: container:<name>`**, one naming a network Deplo manages, and one filled in
+  from a variable (`$NET` or `${NET}`). Any value but `none` and `default`, `bridge` included,
+  needs [host access](/advanced/host-access-and-privileges).
+- **A network `name:` or a `hostname:` from a variable.** Write the value.
+- **A platform name joining Deplo's network**: `deplo`, `postgres`, `traefik`, `deplo-traefik`,
+  `deplo-socket-proxy`, `docker-socket-proxy`, as a service name or `hostname:`, in any case. A
+  service with one of these names that does not ask for the network is just kept off it.
+- **A name another stack or database already answers to** in that environment, on that server.
+  See [Two stacks, one name](/advanced/network-isolation#two-stacks-one-name).
+- **An image under `deplo/`** (`deplo/shop:dpl_0a1b2c3d`), where Deplo tags the apps it builds,
+  or named by a variable (`image: ${IMAGE}`). A variable in the tag (`nginx:${TAG}`) is fine.
+- **`extends:` from another file, `include:` and `label_file:`.** Inline what they bring in.
+- **A file over 256 KiB**, or with more than 20,000 entries.
 
 ## Which service gets the address
 
-A stack has several containers, but only one of them is the front door. Deplo
-picks it when you save the file, and the wizard shows you the choice:
+Deplo picks the front door when you save the file:
 
-- The candidates are the services that **publish or expose a port** - your file
-  saying "here" - or all of them when none does.
-- Among those, it is the one **nothing else waits on** in `depends_on`: the
-  service sitting in front of the others.
-- **A database is never picked.** Postgres, MySQL, MariaDB, MongoDB, Redis and
-  ClickHouse are skipped, unless the stack is nothing but databases.
+- Only services that **publish or expose a port** qualify. If none does, nothing is picked.
+- Among those, the one **nothing else waits on** in `depends_on`.
+- **Never a database** (the official Postgres, MySQL, MariaDB, MongoDB, Redis and ClickHouse
+  images), unless the stack has nothing else, and never a platform name.
 
-Everything stays editable in **Domains**, where each row names the service it
-routes to.
+Change it in **Domains**, where each row names the service it routes to.
 
 <Callout type="info" title="One address, two services">
-Some stacks want the UI on `/` and its API on `/api` of the **same** hostname,
-because they only take one base URL. Add the second row in **Domains** with the
-same hostname and a **Path** of `/api`.
+For a UI on `/` and its API on `/api` of the **same** hostname, add a second row in
+**Domains** with the same hostname and a **Path** of `/api`.
 </Callout>
 
 ## How Compose apps differ
 
 | Field | What changes |
 | --- | --- |
-| **Domains name a container** | A domain routes to one Compose service. This field replaces the port override, because your file already declares the ports. |
-| **No rollbacks** | There is no single image Deplo built, so there is nothing to re-run. The app header carries **Stop** and **Reload** in that slot instead. |
+| **Domains name a service** | A domain routes to one Compose service, by default on the first port your file lists for it. |
+| **No rollbacks** | Deplo built no image, so there is nothing to re-run. The header shows **Stop** and **Reload** instead. |
 | **No build server** | Same reason. |
-| **Storage names a service** | Every storage row says which service to mount into. A name your file does not contain is a hard error, never a silent remount. |
-| **Cron jobs name a service** | Blank means the stack's main container. |
-| **Redeploy pulls every image** | A redeploy fetches what each service's tag points at now, so a stack on `:latest` updates when you click **Redeploy**. Nothing watches the registry for you. |
+| **Storage names a service** | A service your file does not contain fails the deploy, never a silent remount. |
+| **Cron jobs name a service** | Blank means the routed service, or the first one. |
+| **Redeploy pulls every image** | Each tag is pulled again, so a stack on `:latest` updates on **Redeploy**. Nothing watches the registry for you. |
+| **Ports live in the file** | Write `ports:`, which needs the Publish ports grant. The **Published ports** section is not offered. |
+
+<Callout type="warn" title="Publish a port on an address">
+`- "53:53/udp"` claims every address on the machine, its own DNS resolver included, and every
+other app stops resolving names. Write `- "203.0.113.10:53:53/udp"`. The editor warns about 53.
+</Callout>
 
 ### Your file is read as you wrote it
 
@@ -176,21 +135,29 @@ same hostname and a **Path** of `/api`.
   className="w-full rounded-lg"
 />
 
-- **Anchors and merge keys work**, in both spellings: `x-common: &common`
-  with `<<: *common`, and the explicitly tagged `!!merge <<: *common` that
-  large stacks use.
-- **An `environment:` value keeps its text.** `UMASK: 022` reaches the
-  container as `022`, not as `22`, and `VERSION: 1.10` stays `1.10`. YAML
-  would read both as numbers; a variable is text by the time a container
-  reads it.
+- **Anchors and merge keys work**: `x-common: &common` with `<<: *common`, and the tagged
+  `!!merge <<: *common` too.
+- **An `environment:` value keeps its text.** `UMASK: 022` reaches the container as `022`, and
+  `VERSION: 1.10` stays `1.10`.
+- **A `./` mount** lands in the app's own files directory on the server, created if missing.
+- **The rendered stack is masked** when shown back to you: values and the basic-auth hash.
 
 ## Middlewares in a compose file
 
-Routes come from **Domains**, never from labels. A `traefik.http.routers.*` or
-`traefik.http.services.*` label is dropped, and both the editor and the deploy log name it.
+Routes come from **Domains**. Saving a pasted file with any `traefik.*` label needs the
+**Configure Traefik** [grant](/advanced/host-access-and-privileges#how-to-grant-it), which
+instance admins hold. Your labels then go on top of Deplo's routing:
 
-A **middleware** label of a supported kind is kept, and applied to every domain of the service that
-declares it, in the order written:
+- A key Deplo also writes takes your value. A middleware attaches to the service's domains.
+- A complete router (a rule and a service with its port) replaces Deplo's routes for that
+  container.
+- Values are literal: no variables, `$$` for a `$`. At most 256 labels and 64 KiB per service.
+- If the author loses the grant, the next deploy fails until someone who holds it saves the
+  file again.
+
+**A Compose file read from a repository, and every pull request preview,** keep only a
+middleware of a supported kind, applied to every domain of its service in the order written.
+Router and service labels are dropped, and the deploy log names them.
 
 ```yaml
 services:
@@ -201,18 +168,16 @@ services:
       - traefik.http.middlewares.gz.compress=true
 ```
 
-- **No router label is needed.** Deplo attaches the middleware to the service's domains itself.
-- **The name belongs to the stack.** Deplo renames `gz` when it deploys, so another app can neither
-  collide with it nor use it.
-- **Supported kinds:** `headers`, `compress`, `ratelimit`, `inflightreq`, `ipallowlist`,
-  `redirectscheme`, `redirectregex`, `addprefix`, `stripprefix`, `stripprefixregex`, `replacepath`,
+- **Kept:** `headers`, `compress`, `ratelimit`, `inflightreq`, `ipallowlist`, `redirectscheme`,
+  `redirectregex`, `addprefix`, `stripprefix`, `stripprefixregex`, `replacepath`,
   `replacepathregex`, `buffering`, `retry`, `circuitbreaker`, `contenttype`, `grpcweb`, and
   `basicauth` / `digestauth` with `users`.
 - **Dropped:** `forwardauth`, `errors`, `chain`, `plugin`, a `usersfile` and a Redis-backed
-  `ratelimit`. Each one makes the proxy reach something outside your app.
-- **The common security headers need no YAML.** A domain's
-  [Security headers](/guides/networking/domains-and-https#security-headers-and-cors) switch sends
-  them.
+  `ratelimit`. Each one makes the proxy reach outside your app.
+- **The name belongs to the stack.** Deplo renames `gz` on deploy, so another app can neither
+  collide with it nor use it.
+- **The common security headers need no YAML.** Turn on a domain's
+  [Security headers](/guides/networking/domains-and-https#security-headers-and-cors).
 
 ## Extra flags
 
@@ -224,65 +189,33 @@ services:
   className="w-full rounded-lg"
 />
 
-**Settings -> Deployments -> Advanced settings -> Extra compose flags**
-passes additional flags to `docker compose up`, exactly as typed.
+**Settings -> Advanced -> Extra compose flags** adds flags to `docker compose up`. The page
+shows the whole command the server will run.
 
-It is additive only: anything that would change the project name, the stack
-file, the project directory or the env file is refused, because those are how Deplo finds your
-stack again. The page shows the whole command as the server will run it.
-
-Deplo's own part already ends in `--pull always`, which is what makes a
-redeploy pick up a moved tag. A `--pull` of your own replaces it:
-
-- **`--pull missing`** keeps an image that exists only on the server, for
-  example one you loaded by hand. Without it, a redeploy fails with
-  `pull access denied`.
+- **Only `compose up`'s own flags**, written in full (`--wait`, `--timeout=60`), at most 24, no
+  quotes and no shell syntax.
+- **Refused:** `-p` / `--project-name`, `-f` / `--file`, `--env-file` and
+  `--project-directory`. They are how Deplo finds your stack again.
+- **`--pull always` is Deplo's default**, which is what makes a redeploy pick up a moved tag. A
+  `--pull` of your own replaces it: `--pull missing` keeps an image that exists only on the
+  server.
 - **`--wait`** makes the deploy wait for every service's health check.
-
-## Important behavior
-
-- **`version:` and `ports:` are usually noise here.** Deplo routes through
-  Traefik, so publishing a host port is rarely what you want, and it needs
-  the port-exposure grant.
-- **When you do publish one, name an address.** `- "53:53/udp"` claims every
-  address on the machine, the private ones included, and on port 53 that takes
-  over the machine's own DNS - every other app then stops resolving names. Write
-  the public address instead: `- "203.0.113.10:53:53/udp"`. The editor warns you
-  when port 53 is published without one.
-- **Variable values do not appear in the file.** They ride in the env file,
-  which is why a rendered stack shown back to you has bare `- KEY` entries.
-- **A rendered stack is masked on display**, values and the basic-auth hash
-  alike.
-- **Everything that reaches out of a container is gated.** See
-  [Host access](/advanced/host-access-and-privileges) for the
-  full list, which is longer than most people expect.
-- **The agent does not re-validate your YAML.** The checks that matter
-  happen on save and on deploy, not on the agent.
 
 ## Troubleshooting
 
-- **The editor flags or refuses a service name** - it is a name the platform or a managed
-  database answers to. Rename the service, or its `hostname:` if that is what the message names.
-- **`cannot resolve host`, and the name is another app** - that app is in a
-  different environment, and nothing crosses an environment boundary. Move one
-  of them so both sit in the same one. The deploy log names it before the
-  container ever tries. See [Network isolation](/advanced/network-isolation).
-- **Two services in the same stack cannot see each other** - they must be in
-  the same stack with distinct names.
-- **A domain points at a service and nothing answers** - check whether that
-  service sets `network_mode`. Any form of it (`host`, `service:vpn`,
-  `container:x`) keeps the container off its own network, so Traefik cannot reach
-  it and no router is written. The editor warns about this. Route a service that
-  has its own network instead - with a VPN sidecar, that is usually a small proxy
-  in front of it.
-- **`compose up` fails on a flag** - your extra flags are passed verbatim.
-  Check them.
-- **`pull access denied` on a redeploy, and the image was never in a
-  registry** - it exists only on the server. Add `--pull missing` to the
-  extra flags. A private registry image wants a credential instead, see
-  [Container registries](/operations/servers/container-registries).
-- **Domains show no container to pick** - the file did not parse. Fix the
-  lint errors first.
+- **The editor refuses a service name**: a platform name, or one another stack or database
+  there already answers to. Rename the service, or its `hostname:`.
+- **`cannot resolve host`, and the name is another app**: it is in another environment or on
+  another server. See [Network isolation](/advanced/network-isolation#cannot-resolve-host).
+- **A domain points at a service and nothing answers**: it sets `network_mode` (`host`,
+  `service:vpn`), so Traefik cannot reach it. Route a service with its own network; with a VPN
+  sidecar, a small proxy in front of it.
+- **`pull access denied` on a redeploy**, for an image that was never in a registry: add
+  `--pull missing`. A private image needs a
+  [registry credential](/operations/servers/container-registries).
+- **The account that saved these Traefik labels no longer has permission**: someone with
+  Configure Traefik saves the file again.
+- **Domains show no service to pick**: the file did not parse. Fix the lint errors first.
 
 <Callout type="info">
 Still stuck? See [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).

@@ -9,107 +9,80 @@ import { Database, DatabaseBackup, ShieldCheck } from "lucide-react";
 
 | Check | Why |
 | --- | --- |
-| Are they on the **same server**? | App-to-database name resolution works within one server |
-| Is the host the database's name? | Use the database name, not an IP or `localhost` |
+| Same server and same Environment? | Only then the app gets the private address. Otherwise the database needs **Expose publicly** |
+| `DATABASE_URL comes from db-main, which runs on another server and is not publicly reachable` | The deploy refuses it. Move one next to the other, or turn on **Expose publicly** |
+| Is the variable connected? | A connected variable picks up a new password or address at every deploy; a hand-typed one does not. Use **Connect app** on the database's **Connected apps** card |
 | Is the database running? | Its status badge |
-| Did the password change? | Rotating it does not update the app's variable. Update it and redeploy |
-| Did you redeploy after setting the variable? | Variables apply on the next deploy |
+| Redeployed after setting the variable? | Variables apply on the next deploy |
 
 ## A database does not start
 
-- **`provisioning`:** the agent could not pull the image, or the server is
-  unreachable. Redeploy and Rebuild cannot help until it is ready.
-- **After a version change:** a major version may reject the old data
-  directory. Dump, rebuild, and restore.
-- **After a custom command:** for Redis, keep `--requirepass` if clients use
-  a password.
-- **After a server move:** resolve the data-copy error before starting the
-  engine. An empty volume can initialise a new database over the old data.
+- `Database is still provisioning - wait for it to finish before redeploying it.`: wait.
+- **Error right after creating it:** the alert `Database db-main could not be set up` says why.
+- **After a version change:** a new major version may reject the old data directory. Dump,
+  rebuild, restore.
+- **After a custom command on Redis:** keep `--requirepass`, or password auth is off.
+- **After a server move:** `Moved db-main's data to edge-2, but its stack did not start there`.
+  Redeploy the database. A failed copy rolls the move back and leaves it on its original server.
 
 ## A Rebuild removed the data
 
-<Callout type="error" title="Rebuild deletes the volume">
-It tears down the stack and provisions a fresh database. The connection string
-can still work even when the old data is gone.
-</Callout>
-
-Use **Redeploy** for a data-preserving change. Restore a backup if data is
-missing.
+**Rebuild deletes the volume** and provisions a fresh database; the connection string still works.
+Use **Redeploy** for a change that keeps the data, and restore a backup if data is missing.
 
 ## Deleting a database is refused
 
-Deletion is refused until the host confirms that both the container and volume
-are gone.
-
-If the host is permanently gone, a `force` option appears after the refusal.
+`db-main was NOT deleted`: the host did not confirm that both the container and the volume are
+gone. Try again once the server is back. If the host is never coming back, **Delete anyway**
+removes it from Deplo and keeps retrying the teardown on that host.
 
 ## A backup destination test fails
 
-A failed probe is a result, not a platform error. Open **Connection log** in
-the destination's menu for the failed step and the equivalent commands.
+**Connection log** in the destination's menu shows the failed step and the equivalent commands.
 
-| Symptom | Usual cause |
+| Error | Usual cause |
 | --- | --- |
-| A bucket fails on write | The key is read-only. The probe writes a zero-byte object on purpose, so a read-only key correctly reads as failed |
-| A bucket fails on head | Wrong endpoint or region for that bucket |
+| `write probe to bucket "backups"` | The key is read-only. The test writes an empty object on purpose |
+| `reach bucket "backups"` | Wrong endpoint or region |
+| `bucket "backups" does not exist (or the credentials cannot see it)` | Wrong bucket name, or a key scoped to another bucket |
 | A folder fails to resolve | The path does not exist on that server, or the agent cannot write there |
-| Anything on a private address | The outbound guard refuses non-public endpoints unless an instance admin allowed it |
+| Anything on a private address | Refused unless an instance admin ticks **This bucket is on my own network** |
 
 ## A backup run fails
 
 - **No space** on the destination server.
 - **The workload is not running.** Backups read from the live target.
-- **"This server is offline."** Its connection to Deplo dropped during the run. Check that
-  the machine is on and connected to the internet, then run the backup again.
+- `This server is offline.`: it lost its connection to Deplo during the run. Bring it back online,
+  then run the backup again.
 
 ## The app's data was not in the backup
 
-An app schedule does not include its databases. Schedule the databases too.
+An app's schedule does not include its databases. Schedule the databases too.
 
 ## A restore fails
 
-- **Checksum mismatch:** the artifact is corrupt and was rejected.
-- **Wrong encryption key:** use **Restore from file** and paste the recovery key.
-- **Target name mismatch:** type the target name again. Restore is destructive.
+- `this backup is not the one Deplo wrote`: the artifact changed since the backup ran.
+- **Wrong encryption key:** use **Restore from file** and paste the destination's recovery key.
+- **Confirmation refused:** type the target's name exactly. A restore is destructive.
 
 ## A backup artifact will not decrypt
 
-Artifacts use `age`, with one key pair per destination.
+Artifacts use `age`, one key pair per destination. Take **Download recovery key** from the
+destination's menu and store it outside Deplo: without the control plane it is the only way in.
 
 ```bash
-age -d -i recovery-key.txt backup.sql.gz.age > backup.sql.gz
+age -d -i deplo-recovery-key.txt backup.tar.gz.age > backup.tar.gz
 ```
-
-<Callout type="warn" title="Keep the recovery key">
-Download the recovery key from the destination's menu and store it safely. If
-the control plane is gone, that copy is the only way to decrypt the artifact.
-</Callout>
 
 ## Old backups are disappearing
 
-**Keep is a count, not a number of days.** `Keep 7` retains the seven most
-recent successful artifacts; older ones are removed after a successful run.
-
+**Keep is a count, not days.** `Keep 7` keeps the seven most recent backups; older ones are removed
+after each successful run.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Database className="text-blue-400" />}
-    title="Databases"
-    description="Creating, connecting, versions and commands"
-    href="/guides/data/databases"
-  />
-  <Card
-    icon={<DatabaseBackup className="text-blue-400" />}
-    title="Backups and restore"
-    description="Destinations, schedules, restoring"
-    href="/guides/data/backups-and-restore"
-  />
-  <Card
-    icon={<ShieldCheck className="text-blue-400" />}
-    title="Disaster recovery"
-    description="Recovering the control plane itself"
-    href="/operations/disaster-recovery"
-  />
+  <Card icon={<Database className="text-blue-400" />} title="Databases" description="Creating, connecting, versions and commands" href="/guides/data/databases" />
+  <Card icon={<DatabaseBackup className="text-blue-400" />} title="Backups and restore" description="Destinations, schedules, restoring" href="/guides/data/backups-and-restore" />
+  <Card icon={<ShieldCheck className="text-blue-400" />} title="Disaster recovery" description="Recovering the control plane itself" href="/operations/disaster-recovery" />
 </Cards>

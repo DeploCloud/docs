@@ -8,43 +8,29 @@ import { basePath } from "@/lib/base-path";
 
 import { Share2, Database, GitPullRequest, ShieldCheck } from "lucide-react";
 
-API keys, database URLs, feature flags, `NODE_ENV`. Deplo stores them encrypted, injects them at
-build time and at run time, and never shows a secret back.
+API keys, database URLs, feature flags, `NODE_ENV`. Deplo stores them encrypted and injects them
+at build time and at run time.
 
 ## The four layers
 
-When the same name is defined in more than one layer, the highest layer wins:
+When a name is set in more than one layer, the highest one wins:
 
-1. **Instance-wide variables**, set by an instance admin for every team and app.
+1. **A shared variable added automatically**: one shared with two or more teams, or an
+   instance-wide one. It shows on the app, read-only.
 2. **The app's own variables.**
-3. **A shared variable** linked to the app.
+3. **A [shared variable](/guides/config/shared-variables)** the app has linked.
 4. **A preview override**, on previews only.
 
 ## Plain and secret
 
-<Tabs items={['Plain', 'Secret']}>
-<Tab value="Plain">
+| | Plain | Secret |
+| --- | --- | --- |
+| Shown again | Yes | Never, in the panel or the API |
+| Edit or rename | Yes | No: delete it and add it again |
+| Change the type | To secret: **Edit**, or **Make Secret** on selected rows | Never back to plain |
 
-Stored and shown back to you. Can be edited, and can be changed to secret at any time.
-
-</Tab>
-<Tab value="Secret">
-
-- **Write-only.** Never shown again, in the API or in the panel.
-- **Cannot be edited.** To change it, delete it and add it again.
-
-</Tab>
-</Tabs>
-
-A `plain` variable can become `secret`. The other direction is not allowed.
-
-**Deplo warns when a name looks like a credential.** A plain `PAYLOAD_SECRET`, `S3_ACCESS_KEY_ID`
-or `DB_PASSWORD` gets a **Secret?** badge. It is only a suggestion. Names containing `PUBLIC`,
-`FILE` or `VERSION` are not flagged.
-
-**Build time and run time get the same variables.** So `NEXT_PUBLIC_*` or `VITE_*` work with no
-extra setting. Docker keeps build arguments in the image history, so anyone with Docker access to
-the build server can read them.
+**A plain name that looks like a credential gets a warning icon**: `DB_PASSWORD`, `API_TOKEN`,
+`S3_ACCESS_KEY_ID`. A name holding `PUBLIC`, `FILE` or `VERSION` is not flagged.
 
 ## Set variables on one app
 
@@ -68,7 +54,7 @@ Open the app, then **Environment**, and click **Add**.
 
 ### Name it and set the type
 
-Type the name and the value, then pick **Plain** or **Secret**.
+A name and a value per row. Turn on **Secret** for a credential.
 
 <Image
   src={`${basePath}/screenshots/environment-variables/02-add-dialog.png`}
@@ -78,28 +64,31 @@ Type the name and the value, then pick **Plain** or **Secret**.
   className="w-full rounded-lg"
 />
 
-</Step>
-<Step>
-
-### Save and redeploy
-
-Save, then **Redeploy**. Variables apply on the next deploy.
+- **Paste a whole `.env` into the Key field** to add every line at once, as plain.
+- **Names** use letters, digits and underscores, and do not start with a digit.
+- **The other tabs:** **Shared** links a shared variable, **Database** a managed
+  [database's connection string](/guides/data/databases#connect-an-app-to-it).
 
 </Step>
 </Steps>
 
-To import a whole `.env` file, paste it into the add dialog. Each row shows who created it and who
-last changed it.
+Variables apply on the next deploy: use **Redeploy** on the **Changes not deployed yet** notice.
 
-To give the app a managed database's connection string, use the dialog's **Database** tab. See
-[Connect an app to a database](/guides/data/databases#connect-an-app-to-it).
+## Build time
+
+A Railpack build gets every variable, so `NEXT_PUBLIC_*` and `VITE_*` work as they are. Two limits:
+
+- **A Dockerfile build sees only the names it declares**, like `ARG NEXT_PUBLIC_API_URL`. Docker
+  keeps build arguments in the image history, readable with Docker access to the build server.
+- **Names that configure the build host never reach it:** `PATH`, `HOME`, and `DOCKER_*`,
+  `BUILDKIT_*`, `BUILDX_*`, `COMPOSE_*`, `LD_*`, `XDG_*`, among others.
 
 ## See everything at once
 
-The **Variables** page in the sidebar has two tabs:
+**Variables** in the sidebar has two tabs:
 
-- **All** lists every app's variables, grouped by app, with search and filters.
-- **Shared** lists the team's shared variables, plus the ones other teams share with it.
+- **All**: every app's variables, grouped by project and app, with search and filters.
+- **Shared**: the team's shared variables, plus the ones other teams share with it.
 
 <Image
   src={`${basePath}/screenshots/environment-variables/03-team-wide.png`}
@@ -111,35 +100,30 @@ The **Variables** page in the sidebar has two tabs:
 
 ## Preview overrides
 
-Once [pull request previews](/guides/networking/pull-request-previews) are enabled, the app's
-**Environment** page gets a **Preview overrides** section. A variable set there is used in previews
-only, and wins over every other layer. Typical use: point previews at a test database.
+With [pull request previews](/guides/networking/pull-request-previews) on, the app's
+**Environment** page gets a collapsed **Preview overrides** section: values used by previews only,
+above every other layer. Typical use: point previews at a test database.
 
 <Callout type="warn" title="A preview built from a fork inherits nothing">
-For security reasons, a fork preview gets only the plain preview overrides, never a secret. If
-your app needs `DATABASE_URL` to start, set it there as plain.
+For security reasons it gets only the plain preview overrides. If your app needs `DATABASE_URL` to
+start, set it there as plain.
 </Callout>
 
 ## Good to know
 
-- **Nothing applies until the next deploy.**
-- **A secret cannot be edited, only replaced.**
-- **`reveal_secrets` does not reveal secret variables.** It unmasks basic-auth passwords, backup
-  recovery keys, database connection strings and deploy hook URLs. Nothing unmasks a secret
-  variable.
-- **Names are not checked.** A typo becomes a missing variable at run time.
-- **A shared variable's scope does not inject it.** Only the per-app link does. See
-  [Shared variables](/guides/config/shared-variables).
-- **Compose apps get the variables in every service.**
+- **No secret variable can be revealed**, not even with `reveal_secrets`. That capability covers
+  database connection strings, backup recovery keys and app backup downloads.
+- **Deplo does not know which names your app reads.** A typo is a missing variable at run time.
+- **Compose apps get the variables in every service.** A key the compose file sets itself keeps
+  the compose value.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
 | The app cannot see a variable | It was added after the last deploy. Redeploy. |
-| The value is right in Deplo and wrong in the app | A higher layer defines the same name. Check the app's own variables, then its linked shared variables. |
-| A build-time variable is empty in the browser bundle | The framework only inlines prefixed names (`NEXT_PUBLIC_`, `VITE_`). |
-| A fork preview starts with no configuration | Expected. Set what it needs as a preview override. |
+| The value is right in Deplo and wrong in the app | A higher layer sets the same name: a linked shared variable, a preview override, or the compose file. |
+| A build-time variable is empty in the browser bundle | The framework only inlines prefixed names (`NEXT_PUBLIC_`, `VITE_`). With a Dockerfile, declare it with `ARG`. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
@@ -147,7 +131,7 @@ More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
 <Cards>
   <Card icon={<Share2 className="text-blue-400" />} title="Shared variables" description="One variable, several apps" href="/guides/config/shared-variables" />
-  <Card icon={<Database className="text-blue-400" />} title="Databases" description="The connection string is a variable you paste" href="/guides/data/databases" />
+  <Card icon={<Database className="text-blue-400" />} title="Databases" description="Connect a database's connection string" href="/guides/data/databases" />
   <Card icon={<GitPullRequest className="text-blue-400" />} title="Pull request previews" description="Preview overrides and the fork rule" href="/guides/networking/pull-request-previews" />
   <Card icon={<ShieldCheck className="text-blue-400" />} title="Capabilities" description="manage_env, reveal_secrets" href="/reference/capabilities" />
 </Cards>

@@ -6,36 +6,25 @@ description: Point an app at a repository and let Deplo build and deploy it on e
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-import { GitBranch, Hammer, Webhook, GitPullRequest, Upload } from "lucide-react";
+import { GitBranch, Hammer, Webhook, GitPullRequest } from "lucide-react";
 
-The source most apps use. The repository is cloned by the agent on the server that builds it.
+The source most apps use. The agent clones the repository on the server that builds it.
 
-What you get depends on the provider:
-
-| | GitHub App | GitLab, Bitbucket, Gitea (beta) | A bare Git URL |
+| | GitHub App | GitLab, Bitbucket, Gitea (beta) | Repository URL |
 | --- | --- | --- | --- |
-| Repository picker | yes | yes | no, you paste the URL |
-| Branch list | yes | yes | no, you type it |
-| Deploy on push | yes, the App's own webhook | yes, a webhook per repository | no, use the deploy hook |
+| Repository picker and branch list | yes | yes | no, you paste the URL and type the branch |
+| Deploy on push | yes | yes, a webhook per repository | no, use the [deploy hook](/guides/releases/automatic-deployments#the-deploy-hook) |
 | Pull request previews | yes | no | no |
-| Wizard prefill | yes | no | no |
-| Credential | short-lived installation token | a personal access token you store once | the URL, or a stored token |
+| Commands read before the first build | yes | no | only for a public `github.com` URL |
 
 ## Deploy one
 
 <Steps>
 <Step>
 
-### Start a new app
-
-On the Overview, open **Add new**, then **Application**.
-
-</Step>
-<Step>
-
 ### Pick the source
 
-Pick the **GitHub** or **Git** tile.
+On the Overview, open **Add New**, then **Application**, then the **GitHub** or **Git** tile.
 
 <Image
   src={`${basePath}/screenshots/from-git/01-git-source.png`}
@@ -48,15 +37,20 @@ Pick the **GitHub** or **Git** tile.
 <Tabs items={['GitHub', 'Git']}>
 <Tab value="GitHub">
 
-If nothing is connected yet, click **Connect GitHub**. Deplo creates the GitHub App for you, with
-nothing to copy and paste. Choose which repositories it can see, then pick the repository and the
-branch.
+Pick the repository and the branch. Nothing connected yet? **Connect GitHub**, then **Personal
+account** or **Organization**: Deplo creates the GitHub App, with nothing to copy, and
+you choose which repositories it sees. **Use a repository URL** switches to the Git tile.
 
 </Tab>
 <Tab value="Git">
 
-Pick the provider, paste the repository URL and set the production branch. If the repository is
-private, add the connection first in **Settings -> Git**.
+Pick the **Provider**:
+
+- **Repository URL**: a public repository. Paste the clone URL, like
+  `https://git.example.com/acme/site.git`, and the **Production branch**.
+- **A connected provider**: pick the repository from its list.
+- **Connect a git provider**: add a GitLab, Bitbucket or Gitea token right here. See
+  [Git connections](/guides/git-providers/git-connections).
 
 </Tab>
 </Tabs>
@@ -64,127 +58,83 @@ private, add the connection first in **Settings -> Git**.
 </Step>
 <Step>
 
-### Check what Deplo read
+### Set up the app and deploy
 
-**GitHub only.** The last card is already filled in: **App name**, the framework, and the
-**Build command** from your `package.json`. The **Deploy command** follows the framework's
-convention, not your `start` script. **Reset** empties a command and lets the builder decide.
+The **Set up the app** card shows the **App name**, the framework, the **Build command** and the
+**Deploy command**.
 
-A repository from the Git tab is not read ahead of time. Detection runs on the first build.
+- **A GitHub repository is read ahead.** The build command comes from your `package.json`, the
+  deploy command from the framework's convention, never your `start` script. **Reset** empties a
+  command and lets the builder decide.
+- **Any other repository** shows **Detected at build time**: detection runs on the first build.
 
-</Step>
-<Step>
-
-### Deploy
-
-Leave **Automatic deployments** on unless you want to release by hand. Click **Deploy**.
+**Advanced** holds the server, variables, **Root directory**, build server, deploy trigger,
+submodules and watch paths. Leave **Automatic deployments** on unless you release by hand, then
+click **Deploy**.
 
 </Step>
 </Steps>
 
 ## New repositories on the Overview
 
-Create a repository on a connected host, push a first commit, and it shows up on the Overview
-as a dashed, dimmed card, before your apps. It is a suggestion, not an app yet: one click on it
-deploys it.
+Push a first commit to a new repository on a connected host: a dashed **New repository
+detected** card appears on the Overview, before your apps. **Import** lists them, and **Import**
+on one opens the wizard with that repository picked.
 
-- **What is shown:** up to 3 repositories created in the last 7 days, newest first, that no app
-  of the team deploys yet. A repository with no commit stays hidden until its first push.
-- **When:** Deplo checks each host at most every 5 minutes, so a card can take that long to
-  appear.
-- **Where:** only on the top level of the Overview, not inside a folder or a project.
-- **Who sees it:** members who can both create and deploy apps for the whole team.
-
-On the card:
-
-| Action | What happens |
-| --- | --- |
-| Click the card | The app is created with the defaults (first server, build method detected, a domain) and its first deploy starts |
-| **Configure** | The new app wizard opens with the repository already picked, to change the name, server or build first |
-| **X**, then **Hide this repository** | That card goes away, in this browser only |
-| **X**, then **Stop suggesting repositories** | No more cards for you in this team. Your teammates keep theirs |
-
-Turn the cards back on in **Settings -> Git**, under **Suggest new repositories**.
+- **What:** up to 3 repositories created in the last 7 days, with at least one commit, that no
+  app of the team deploys yet.
+- **When:** Deplo checks each host at most every 5 minutes.
+- **Where and who:** the top level of the Overview only, for members who can both create and
+  deploy apps for the whole team.
+- **X**, then **Hide this repository**: gone, in this browser only. **Stop suggesting
+  repositories**: no more cards for you in this team. Turn them back on in **Settings -> Git**,
+  **Suggest new repositories**.
 
 <Callout type="info">
   A GitHub App installed on **Only select repositories** cannot see a new repository until you add
-  it to the installation. Use **Manage connected apps**, add it, and the card appears.
+  it to the App's selection on GitHub.
 </Callout>
 
 ## Change the source later
 
 <Image
   src={`${basePath}/screenshots/from-git/02-change-source-later.png`}
-  alt="Settings -> Deployment: repository, branch and root directory of a running app"
+  alt="Settings -> Deployments: the source of a running app"
   width={1728}
   height={1080}
   className="w-full rounded-lg"
 />
 
-**Settings -> Deployments**, the **Deploy Source** card. You can change the repository, the branch
-and even the source type. The app keeps its domains, variables and volumes.
-
-<TypeTable
-  type={{
-    "Repository, branch": {
-      type: "text",
-      description: "What gets cloned. On the Deploy Source card",
-    },
-    "Root directory": {
-      type: "path",
-      description: "Subdirectory to build from. On the Deploy Source card, under Additional options",
-    },
-    Server: {
-      type: "select",
-      description: "Which server runs it. Same drawer. Shown only when you have more than one server",
-    },
-    "Build method": {
-      type: "select",
-      description: "Detect automatically, Railpack, Dockerfile or Docker Compose. On the Build & output card",
-    },
-    "Deploy trigger": {
-      type: "select",
-      description: "On push to branch, or On new tag. In the Deploy on push card's Trigger drawer",
-    },
-    "Include submodules": {
-      type: "boolean",
-      description: "Clone with --recurse-submodules. Same drawer",
-    },
-    "Watch paths": {
-      type: "text",
-      description: "Only auto-deploy when a push changed these globs. Same drawer",
-    },
-  }}
-/>
+**Settings -> Deployments**, the **Source** card. Change the repository, the branch, the **Root
+directory**, or the source type itself. The app keeps its domains, variables and volumes.
 
 **Save source** does not deploy. Click **Redeploy** when you are ready.
 
-## Private repositories
+The rest lives nearby:
 
-Credentials live on the connection, and every app using that host reuses them. See
-[Git providers](/guides/git-providers).
+| Setting | Where |
+| --- | --- |
+| Build method | The **Build** card, below. See [Build settings](/guides/releases/build-settings#build-methods) |
+| Deploy trigger, Include submodules, Watch paths | The **Releases** card, **Trigger** drawer. See [Automatic deployments](/guides/releases/automatic-deployments) |
+| Server | **Settings -> General**, **Move**. Shown only when you have more than one server |
 
 ## Good to know
 
-- **A `Dockerfile` or a Compose file in the repository is used.** That is what Detect
-  automatically, the default build method, does. See
-  [Build methods](/guides/releases/build-settings#build-methods).
-- **Only a GitHub App can have pull request previews.**
-- **A bare Git URL cannot register a webhook.** Use the
-  [deploy hook](/guides/releases/automatic-deployments) instead.
-- **Watch paths fail open.** A push with no file list, like some tag pushes, always deploys.
+- **A `Dockerfile` or a Compose file in the repository is used.** That is what **Automatic**,
+  the default build method, does. See [Build methods](/guides/releases/build-settings#build-methods).
+- **A private repository needs a connection.** Its credentials are reused by every app on that
+  host. See [Git providers](/guides/git-providers).
 - **Two apps can track two branches of the same repository.** A normal way to run staging.
-- **Changing the repository does not clear the volumes.**
-- **With a build server set, the clone happens there.**
+- **With a [build server](/advanced/build-servers) set, the clone happens there.**
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The repository picker is empty | The GitHub App cannot see it. Use **Manage connected apps** and grant the repository on GitHub. |
+| The picker says **No repositories accessible to this App.** | Click **Configure repository access on GitHub** and add the repository. |
 | `Authentication failed` in the clone step | The stored token expired or was revoked. **Settings -> Git**, then **Test connection**. |
-| Pushes do not deploy | For a non-GitHub connection, check the webhook status on **Settings -> Deployments**. |
-| The wizard's last card is empty | That is a Git-tab repository. Detection runs on the first build. |
+| Pushes do not deploy | On the **Source** card, look for **Deplo could not add the push webhook**: it lists what the token is missing and the webhook address to add by hand. |
+| The build and deploy commands are empty in the wizard | The repository is not on GitHub. Detection runs on the first build. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
@@ -195,5 +145,4 @@ More in [Deploys and builds](/troubleshooting/deploys-and-builds).
   <Card icon={<Hammer className="text-blue-400" />} title="Build settings" description="Builders, commands and ports" href="/guides/releases/build-settings" />
   <Card icon={<Webhook className="text-blue-400" />} title="Automatic deployments" description="Webhooks and the deploy hook" href="/guides/releases/automatic-deployments" />
   <Card icon={<GitPullRequest className="text-blue-400" />} title="Pull request previews" description="A hostname per pull request" href="/guides/networking/pull-request-previews" />
-  <Card icon={<Upload className="text-blue-400" />} title="Upload your code" description="The same build, without a repository" href="/guides/deploy/upload-code" />
 </Cards>

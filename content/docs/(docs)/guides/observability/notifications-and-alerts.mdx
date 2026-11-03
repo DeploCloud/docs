@@ -8,17 +8,15 @@ import { basePath } from "@/lib/base-path";
 
 import { Activity, Users, ShieldCheck } from "lucide-react";
 
-Get told when something happens: a deploy failed, a backup did not run, a
-server went offline, somebody created an API token.
+Get told when something happens: a deploy failed, a backup did not run, a server went offline,
+somebody created an API token.
 
-Two parts, configured separately:
+- **A channel** is where a message goes. Twelve kinds, as many of each as you like.
+- **Each channel has its own alert selection.** A team chat room can get every deploy result
+  while an on-call phone gets only failures. A new channel starts with sensible defaults.
 
-- **A channel** is where a message is sent. There are twelve kinds, and you
-  can have as many of each as you like.
-- **Each channel has its own alert selection.** A team chat room can receive
-  every deployment result while an on-call phone receives only failures.
-
-A new channel starts with sensible defaults.
+Notifications are per team: another team's failures go to its own channels. The capability is
+`manage_notifications`.
 
 ## Channels
 
@@ -38,85 +36,98 @@ A new channel starts with sensible defaults.
   className="w-full rounded-lg"
 />
 
-**Settings -> Notifications**, then add a channel.
+**Settings -> Notifications -> Add channel.**
 
 | Kind | What it needs |
 | --- | --- |
-| **Discord**, **Webhook** | An incoming webhook URL |
-| **Slack**, **Mattermost**, **Microsoft Teams**, **Lark** | An incoming webhook URL. Beta |
-| **Telegram** | A bot token and a chat id. Beta |
-| **Email** | Your own SMTP server, or a Resend API key |
-| **ntfy**, **Gotify**, **Pushover** | The service's URL and token. Beta |
-| **Browser push** | Permission from your browser. Beta |
+| **Discord**, **Webhook** | A webhook URL |
+| **Slack**, **Mattermost**, **Lark** (beta) | An incoming webhook URL |
+| **Microsoft Teams** (beta) | A Power Automate workflow URL |
+| **Telegram** (beta) | A bot token and a chat id |
+| **Email** | A recipient, a from address, and your SMTP server or a Resend API key |
+| **ntfy** (beta) | A server URL (`https://ntfy.sh` or your own), a topic, and a token for a protected topic |
+| **Gotify** (beta) | Your server URL and an application token |
+| **Pushover** (beta) | An application token and a user or group key |
+| **Browser push** | Nothing: turning it on asks the browser for permission, once per device |
 
-Each channel has a test button. Credentials are write-only: a field left blank
-when you save keeps what is already stored.
+Save, then **Send a test**. Secrets are write-only: a field left blank keeps what is stored.
+
+**Every URL must be public HTTPS, and the SMTP host public too.** Private and internal addresses
+are refused, so a Gotify or ntfy on your LAN does not work.
+
+## Alerts on your phone
+
+Browser push needs the panel on HTTPS. On a phone, install Deplo first:
+
+<Steps>
+<Step>
+
+### Install Deplo
+
+Open Deplo in the phone's browser, tap **More** in the tab bar, then **Install Deplo** under
+**This phone**. On an iPhone: Safari's **Share** button, **Add to Home Screen**, then open Deplo
+from the home screen.
+
+</Step>
+<Step>
+
+### Turn on Notifications on this phone
+
+Same place: **More -> This phone -> Notifications on this phone**. It covers the team you are in.
+
+</Step>
+</Steps>
+
+- **The first device creates the team's Browser push channel** with the default alerts. That
+  takes `manage_notifications`; without it the row reads **Ask an admin to turn on phone alerts**.
+- **Every member turns it on per device**, up to 10 browsers each. A member limited to some apps
+  only gets alerts about those.
+- **Turned off in Notifications settings** means the channel exists but is off.
 
 ## Pick what each channel is told about
 
-Open the channel's alert picker. It has a search box and a category list,
-like the role editor. The 39 alerts are grouped in nine categories:
+Open the channel and use its alert picker: a search box, a category list, **Reset to defaults**
+and **Unselect all**. The 40 alerts:
 
-| Category | Examples |
+| Category | Alerts |
 | --- | --- |
-| **Deployments** | Deployment failed, Deployment succeeded, Deployment interrupted, Git connection stopped working, Deplo lost access to a repository |
+| **Deployments** | Deployment failed, Deployment succeeded, Deployment interrupted, Git connection stopped working, Git provider is missing access |
 | **Apps** | App keeps restarting, App ran out of memory, [Security update available](/guides/observability/security-updates#alerts) |
 | **Cron jobs** | Cron job failed, Cron job finished |
 | **Databases** | Database ready, Database setup failed, Database rebuilt, Database deleted |
 | **Backups & restore** | Backup failed, Backup finished, Restore finished, Restore failed |
-| **Servers** | Server offline, Server back online, Server running hot, Server disk almost full, Server cannot run apps, Server identity changed, Server agent certificate not renewed, Cleanup failed, Leftover containers |
-| **This Deplo instance** | A new Deplo version is available |
-| **Security & team** | API token created, API token revoked, Member joined, Member removed, Member access changed, Team owner changed, Two-factor requirement changed, Repeated failed sign-ins |
+| **Servers** | Server offline, Server back online, Server cannot run apps, Server identity changed, Server unusable until it updates, Server running hot, Server disk almost full, Server agent certificate not renewed, Cleanup failed, Leftover containers |
+| **This Deplo instance** | Deplo update available, Deplo security fix |
+| **Security & team** | Member joined, Member removed, Member access changed, API token created, API token revoked, Two-factor requirement changed, Team owner changed, Repeated failed sign-ins |
 | **Domains & TLS** | Certificate expiring, Domain points elsewhere |
 
-**Unselect all** and **Reset to defaults** are both available.
+**This Deplo instance** alerts reach every team. **Deplo security fix** repeats every 3 days
+until the instance is [updated](/operations/update#when-a-new-version-is-out), **Deplo update
+available** every week.
+
+A condition that lasts is announced once, then again only after a cooldown: 30 minutes for most,
+an hour for **Server running hot** and **Server disk almost full**.
 
 ## Alerts are not the activity trail
 
-- **An alert interrupts.** It goes to a channel right away, because somebody
-  should look.
-- **The activity trail is looked up later.** It answers "who did this and
-  when" in the **Activity** page. It is never delivered anywhere.
-
-## Good to know
-
-- **Every webhook URL must be public HTTPS.** Addresses inside your own
-  network are refused, for security reasons. A Gotify or ntfy on the LAN does
-  not work.
-- **Every alert in the list is real.** None of them is a switch that never
-  fires.
-- **Notification settings are per team.** Another team's failures go to their
-  channels.
-- **`manage_notifications`** is the capability.
+- **An alert interrupts.** It goes to a channel right away, because somebody should look.
+- **[Activity](/guides/team/activity) is looked up later**: who did what, and when. It is never
+  delivered anywhere.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The test succeeds and real alerts never arrive | That channel's alert selection does not include them. Open its picker. |
+| The test works, real alerts never arrive | The channel's alert selection does not include them, or it reads **No alerts picked**. |
+| **Needs setup** on a channel | A required field is empty. Open it and fill it in. |
 | The test fails | The message names the cause: a rejected certificate, a refused connection, a name that does not resolve. |
-| Saving a channel is refused | The URL is not public HTTPS, or it resolves to a private address. |
-| Email never arrives | Check the SMTP host, port and credentials, and whether your provider requires a verified sender address. |
+| Saving is refused | The URL is not public HTTPS, or it resolves to a private address. |
+| Email never arrives | Check the SMTP host, port and credentials, and whether your provider needs a verified sender. |
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Activity className="text-blue-400" />}
-    title="Monitoring"
-    description="Where the server alerts come from"
-    href="/guides/observability/monitoring"
-  />
-  <Card
-    icon={<Users className="text-blue-400" />}
-    title="Team members"
-    description="The Activity trail"
-    href="/guides/team/members"
-  />
-  <Card
-    icon={<ShieldCheck className="text-blue-400" />}
-    title="Capabilities"
-    description="All 45, including manage_notifications"
-    href="/reference/capabilities"
-  />
+  <Card icon={<Activity className="text-blue-400" />} title="Monitoring" description="Where the server alerts come from" href="/guides/observability/monitoring" />
+  <Card icon={<Users className="text-blue-400" />} title="Activity" description="The audit trail of the team" href="/guides/team/activity" />
+  <Card icon={<ShieldCheck className="text-blue-400" />} title="Capabilities" description="The full list, including manage_notifications" href="/reference/capabilities" />
 </Cards>

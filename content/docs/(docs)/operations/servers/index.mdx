@@ -1,38 +1,43 @@
 ---
 title: Servers
-description: Add and manage servers, access, cleanup, maintenance, and registries.
+description: Add and manage servers, team access, cleanup, maintenance, and registries.
 ---
 
-**Settings -> Servers**, then open a server. The list and everything on a server's own page is
-instance-admin only; container registries are the exception, being team-scoped.
+**Settings -> Servers**, then open a server. Servers belong to the instance, so these pages are for
+instance admins; container registries are the exception, being per team.
 
-Each page here talks to that server's agent. Nothing reaches into the host any other way, and the
-control plane never opens a shell.
+Every action here goes through that server's agent. The control plane never opens a shell on a host.
 
-A server's own page has these tabs:
+A server's page has these tabs:
 
-- **Overview**: the CPU, memory, disk and Docker tiles, the display name, the **Build concurrency**
-  card and the Agent card. **Concurrent deployments** defaults to `1`, so deploys to one host
-  run one at a time. The Agent card shows its version, where its update stands, a **Retry now**
-  button once an update has failed (see [Update](/operations/update#retry-an-update-by-hand)),
-  and **Check readiness**.
-- **Apps**: every app and database on this server, from every team, refreshed every 5 seconds.
-  Each row shows its team, project, live status, CPU, memory, restarts and domain. Open a row
-  to see its containers. Search and the status and type filters narrow the list.
-- **Access**: which teams may use the machine.
+- **Overview**: CPU, memory, disk and Docker; the **Server agent** card with its version, where its
+  update stands, **Retry now** once an update has failed (see
+  [Update](/operations/update#retry-an-update-by-hand)) and **Check readiness**; **Display name**;
+  **Concurrent deployments**; and **Team access**.
+- **Apps**: every app and database on this server, from every team, refreshed every 5 seconds, with
+  team, project, status, CPU, memory, restarts and domain. A row links to its app only if you are in
+  that team.
 - **Certificates**, **Maintenance**, **Cleanup** and **Advanced**: see the pages below.
 
-A row links to its app or database only when you are a member of that team.
+**Concurrent deployments** defaults to `1`: deploys to one server run one at a time, and the rest wait
+in a queue. Raising it past what the machine can take makes every deploy slower, not faster.
 
-Raising concurrency past what the machine can take makes every deploy slower, not faster. One is a
-sane default for a small VPS.
+## Team access
+
+A new server is open to **All teams**, so any team adding an app can pick it. On the **Team access**
+card, **Who can deploy** is **All teams** or **Specific teams**: pick the teams, then **Save
+access**. The same choice is in the **Add a server** dialog, where **Specific teams** with none
+ticked is refused.
+
+- **Narrowing access moves nothing.** Apps already on the server keep running; only new placements
+  are affected.
+- **A team only sees the servers it may use** when adding an app.
 
 ## Server operations
 
 <Cards>
   <Card title="Add a server" description="Enrollment, roles, and the bootstrap command" href="/operations/servers/add-a-server" />
-  <Card title="Server access" description="Choose which teams may use a server" href="/operations/servers/access" />
   <Card title="Server cleanup" description="Reclaim disk and protect what must stay" href="/operations/servers/cleanup" />
-  <Card title="Maintenance and advanced" description="Restarts, address, time, and removal" href="/operations/servers/maintenance-and-advanced" />
+  <Card title="Maintenance and advanced" description="Restarts, role, address, time, and removal" href="/operations/servers/maintenance-and-advanced" />
   <Card title="Container registries" description="Pull private images with team credentials" href="/operations/servers/container-registries" />
 </Cards>

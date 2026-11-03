@@ -7,10 +7,9 @@ import { Globe, LifeBuoy, Server } from "lucide-react";
 
 **Settings -> Deplo -> Advanced -> Panel access**, instance admins only.
 
-Use it when the server running Deplo sits behind a home or office router, or on a
-connection where port 443 cannot be opened. A small connector next to the panel
-dials out to Cloudflare, and Cloudflare serves the panel's address over that
-connection, HTTPS certificate included.
+For a panel behind a home or office router, or anywhere port 443 can't be opened. A connector next to
+the panel dials out to Cloudflare, and Cloudflare serves the panel's address over that connection,
+HTTPS certificate included.
 
 You need:
 
@@ -23,96 +22,85 @@ You need:
 | Zone    | DNS               | Edit       |
 | Zone    | Zone              | Read       |
 
-Deplo does the rest: it creates the tunnel, its routes and the DNS record, starts
-the connector, checks that the address answers, then moves the panel.
+Deplo does the rest: it creates the tunnel, its routes and the DNS record, starts the connector,
+checks that the address answers, then moves the panel.
 
 ## Turn it on
 
 <Steps>
 <Step>
-### Create the token
-Click **Create one** in Deplo's dialog: it opens Cloudflare's token form with all
-three permissions filled in. Create the token and copy it.
+### Turn on **Cloudflare Tunnel**
+**Settings -> Deplo -> Advanced**. The dialog **Serve the panel through Cloudflare** opens.
 </Step>
 
 <Step>
-### Open the setting
-**Settings -> Deplo -> Advanced**, turn on **Cloudflare Tunnel**.
+### Create the token
+**Create one** opens Cloudflare's token form with all three permissions filled in. Create it and copy it.
 </Step>
 
 <Step>
 ### Enter the address and the token
-For example `deplo.example.com`. **Continue** shows what the move affects
-(passkeys, sessions, deploy hooks), like any change of the panel address.
+For example `deplo.example.com`. **Continue** shows what the move affects (passkeys, sessions, deploy
+hooks), like any [change of the panel address](/operations/panel-address-and-certificates).
 </Step>
 
 <Step>
 ### Confirm
-It usually takes under a minute. If the address does not answer through the
-tunnel, Deplo undoes every step, in Cloudflare too, and the panel stays where it
-was.
+It usually takes under a minute. If the address does not answer through the tunnel, Deplo undoes every
+step, in Cloudflare too, and the panel stays where it was.
 </Step>
 </Steps>
 
 ## What Deplo creates
 
-| Where      | What                                                                                      |
-| ---------- | ----------------------------------------------------------------------------------------- |
-| Cloudflare | A tunnel named like `deplo-deplo.example.com-3f9a1c`                                      |
+| Where      | What |
+| ---------- | ---- |
+| Cloudflare | A tunnel named like `deplo-deplo.example.com-3f9a1c` |
 | Cloudflare | Its routes: `deplo.example.com/api/agent/link` for your servers, `deplo.example.com` for the panel |
-| Cloudflare | A proxied CNAME record `deplo.example.com -> <tunnel id>.cfargotunnel.com`                |
-| Your server | A `deplo-tunnel` container next to the panel's proxy                                     |
+| Cloudflare | A proxied CNAME `deplo.example.com -> <tunnel id>.cfargotunnel.com` |
+| Your server | A `deplo-tunnel` container next to the panel's proxy |
 
-Deplo touches no other DNS record. If the address already has a record that points
-somewhere else, it refuses and names that record. A record that points at this
-server, like the panel's own domain, is replaced.
+Deplo touches no other DNS record. If the address already points somewhere else, it refuses and names
+that record. A record that points at this server, like the panel's own domain, is replaced.
 
-## Your other servers
-
-Servers you add connect to the panel through the tunnel too, so nothing has to be
-opened on them either. The [backup address](/operations/panel-address-and-certificates#turn-the-backup-address-off)
-stays as it is.
+Servers you add connect through the tunnel too, so nothing is opened on them either. The
+[backup address](/operations/panel-address-and-certificates#turn-the-backup-address-off) stays as it is.
 
 ## While it is on
 
-- **The panel address on the General tab is read-only.** Change it with
-  **Cloudflare Tunnel -> Change address**: Deplo keeps the tunnel and moves its
-  DNS record.
+- **The panel address on the General tab is read-only.** Use **Cloudflare Tunnel -> Change address**:
+  Deplo keeps the tunnel and moves its DNS record.
 - **The HTTPS switch is locked.** Cloudflare serves the certificate.
-- **The status is live.** **Connected** comes straight from Cloudflare. **Not
-  connected** means the server cannot reach Cloudflare: check that it can reach the
-  internet.
-- **The token stays encrypted** and is never shown again. To replace it, use
-  **Change address** with the same address and the new token.
+- **The status is live.** **Connected** comes from Cloudflare. **Not connected** means this server
+  lost its link to Cloudflare: check its internet connection.
+- **The token stays encrypted** and is never shown again. To replace it, use **Change address** with the
+  same address and the new token.
 - **Updates keep the tunnel.**
 
 ## Turn it off
 
-Turn off **Cloudflare Tunnel**. Deplo moves the panel to its backup address, or to
-an address you type, checks that it answers, removes the connector, then deletes
-the tunnel and its DNS record in Cloudflare.
-
-If Cloudflare refuses the deletion, for example because the token was revoked, the
-panel still moves and Deplo tells you what is left to delete by hand.
+Turn off **Cloudflare Tunnel**. Deplo moves the panel to its backup address, or one you type, checks
+that it answers, removes the connector, then deletes the tunnel and its DNS record in Cloudflare. If
+Cloudflare refuses the deletion, for example because the token was revoked, the panel still moves and
+Deplo tells you what is left to delete by hand.
 
 <Callout type="warn" title="Behind a router, the backup address may not answer">
-If the internet cannot reach the server, the new address cannot answer either.
-Turning the tunnel off then fails safely: the panel stays on the tunnel.
+If the server is not reachable from the internet, the new address can't answer either. Turning the tunnel off
+then fails safely: the panel stays on the tunnel.
 </Callout>
 
 ## If the tunnel breaks
 
-On the server running Deplo:
+On the machine Deplo runs on:
 
 ```bash
-# Move the panel to the generated address, then restart so Deplo makes the move
 deplo recover panel-address -
 deplo restart
 ```
 
-As it starts, Deplo moves the panel, removes the connector and deletes the tunnel
-and its DNS record in Cloudflare. If the saved token no longer works, **Activity**
-says what is left to delete under **Zero Trust -> Networks -> Tunnels**. See
+As it starts, Deplo moves the panel to the generated address, removes the connector and deletes the
+tunnel and its DNS record in Cloudflare. If the saved token no longer works, **Activity** says what is
+left to delete under **Zero Trust -> Networks -> Tunnels**. See
 [Break-glass recovery](/operations/break-glass-recovery).
 
 ## Next steps

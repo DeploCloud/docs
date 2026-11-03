@@ -5,22 +5,20 @@ description: Check that an app is really working, not just running.
 
 import { Gauge, Bell, Terminal } from "lucide-react";
 
-A running container is not always a working app. A health check asks the app
-on a schedule, and shows the answer on the app's status.
+A running container is not always a working app. A health check asks the app on a schedule and
+shows the answer on its status.
 
-There are two kinds:
+| Kind | What it asks | Who asks | Applies |
+| --- | --- | --- | --- |
+| **HTTP request** | A path, over the server's own network. Under 400 is healthy | Deplo, through the agent | At once |
+| **Command** | A shell line inside the container. Exit 0 is healthy | Docker, as a Compose `healthcheck:` | On the next deploy |
 
-| Kind | What it asks | Who asks it |
-| --- | --- | --- |
-| **HTTP** | A path on the app, over the server's own network | Deplo, through the agent |
-| **Command** | A shell line inside the container, read as an exit code | Docker, as a Compose `healthcheck:` |
-
-**The HTTP check works on any image.** It is asked from outside the container,
-so nothing needs to be installed inside. A status under 400 is healthy.
+**The HTTP check works on any image**: it asks from outside the container, so nothing needs to
+be installed inside.
 
 <Callout type="info">
-  An HTTP check never changes routing. The app keeps serving while it is
-  unhealthy, so you can see the problem instead of losing the app.
+  A health check never changes routing. An unhealthy app keeps serving, so you see the problem
+  instead of losing the app.
 </Callout>
 
 ## Turn one on
@@ -30,94 +28,63 @@ so nothing needs to be installed inside. A status under 400 is healthy.
 
 ### Open the app's Advanced settings
 
-Open the app, then **Settings -> Advanced**, and find **Health check**.
+Open the app, then **Settings -> Advanced**, and turn on **Health check**.
 
 </Step>
 <Step>
 
-### Pick the kind
+### Pick the kind and fill it in
 
-**HTTP request** asks for a path. **Command** runs a shell line inside the
-container and reads its exit code: `pg_isready -U app`, `test -f /tmp/ready`,
-anything that exits 0 when things are fine.
-
-</Step>
-<Step>
-
-### Fill it in
-
-For an HTTP check: the **Path** (`/healthz`, or `/`), and a **Port** if the
-check is answered on a port different from the one its domains route to.
+- **HTTP request**: the **Path** (`/healthz`, or `/`), and a **Port** only if the check answers
+  on a port other than the app's own.
+- **Command**: anything that exits 0 when things are fine, such as `pg_isready -U app` or
+  `test -f /tmp/ready`. Pipes and fallbacks work.
 
 </Step>
 <Step>
 
-### Set the timings
+### Set the timings, then Save
 
 All optional:
 
 | Field | What it means | Default |
 | --- | --- | --- |
-| **Interval** | How often the app is asked | 30s |
-| **Timeout** | How long one answer may take. Must be shorter than the interval | 5s |
-| **Retries** | Failures in a row before the app counts as unhealthy | 3 |
-| **Start period** | Time after the container starts where a failure reads as `starting` | 10s |
+| **Interval** | Seconds between checks | 30 |
+| **Timeout** | Seconds one check may take. Must be shorter than the interval | 5 |
+| **Retries** | Failures in a row before the app is unhealthy | 3 |
+| **Start period** | Seconds of grace while the app boots, when a failure does not count | 10 |
 
 </Step>
 </Steps>
 
-A command check applies on the next deploy. An HTTP check applies immediately.
-
 ## Reading the result
 
-The result shows in two places: the app's status badge, and the container
-breakdown on **Monitoring**.
+The answer shows on the app's status badge and in the container breakdown on
+[Monitoring](/guides/observability/monitoring).
 
-- **Healthy** - the last answer was good, or the failures so far are still
-  under **Retries**.
-- **Unhealthy** - **Retries** failures in a row. The app is running but not
-  working.
-- **Starting** - inside the start period, so a failure means the app is still
-  booting.
-
-One good answer resets the failure count.
+- **Healthy**: the last answer was good, or the failures so far are under **Retries**. One good
+  answer resets the count.
+- **Unhealthy**: **Retries** failures in a row. Running, but not working.
+- **Starting**: inside the start period, so a failure means the app is still booting.
 
 <Callout type="warn">
-  **Error is not unhealthy.** Error means the last deploy failed. An app can be
-  Error and healthy at the same time, because the previous version is still
-  serving.
+  **Error is not unhealthy.** Error means the last deploy failed. An app can be Error and healthy
+  at once, because the previous version is still serving.
 </Callout>
 
 ## Good to know
 
-- **Results are kept in memory**, like the monitoring history. Restarting
-  Deplo clears them and the next check starts again.
+- **HTTP results live in the panel's memory.** Restarting Deplo clears them; the next check
+  starts again.
 - **A stopped app has no result.** There is nothing to ask.
-- **`app_crash_loop` is a different alert.** It fires when a container
-  restarts over and over, not on a failed check. See
-  [Notifications and alerts](/guides/observability/notifications-and-alerts).
-- **A database's health check is the engine's own**, written by Deplo when it
-  creates the database. It is not editable here.
+- **A failed check sends no alert.** **App keeps restarting** fires on a restart loop, not on a
+  check. See [Notifications and alerts](/guides/observability/notifications-and-alerts).
+- **A database's health check is the engine's own**, written by Deplo. It is not editable.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Gauge className="text-blue-400" />}
-    title="Monitoring"
-    description="Where the container breakdown lives"
-    href="/guides/observability/monitoring"
-  />
-  <Card
-    icon={<Bell className="text-blue-400" />}
-    title="Notifications and alerts"
-    description="Get told when an app starts misbehaving"
-    href="/guides/observability/notifications-and-alerts"
-  />
-  <Card
-    icon={<Terminal className="text-blue-400" />}
-    title="Console"
-    description="Look inside the container yourself"
-    href="/guides/observability/console"
-  />
+  <Card icon={<Gauge className="text-blue-400" />} title="Monitoring" description="Where the container breakdown lives" href="/guides/observability/monitoring" />
+  <Card icon={<Bell className="text-blue-400" />} title="Notifications and alerts" description="Get told when an app starts misbehaving" href="/guides/observability/notifications-and-alerts" />
+  <Card icon={<Terminal className="text-blue-400" />} title="Console" description="Look inside the container yourself" href="/guides/observability/console" />
 </Cards>

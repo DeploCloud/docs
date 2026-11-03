@@ -11,33 +11,29 @@ import { ArrowRightLeft, LifeBuoy, Server, Globe } from "lucide-react";
   GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-**Move Deplo** copies your whole Deplo onto another machine: a bigger box, a different provider, or
-your own machine instead of a hosted one.
-
-Everything comes across exactly as it was:
+**Move Deplo** copies your whole Deplo onto another machine: a bigger box, another provider, or your
+own hardware. Everything comes across as it was:
 
 - every team, account, role, app, database, variable, domain and backup
 - each app's data, and the exact version it runs, with no rebuild
-- folders an app mounts from its server, except system and read-only ones, which the progress page
-  lists
+- folders an app mounts from its server, except system and read-only ones (the progress page lists them)
 - API tokens and deploy hooks, which keep working
 
-**The old Deplo keeps running, untouched.** It keeps its servers and its apps keep serving. You
-switch over when you are ready, one domain at a time, and retire the old one whenever you choose.
+**The old Deplo keeps running, untouched.** You switch over when you are ready, one domain at a time.
 
 <Callout title="Bringing only some teams?">
-Use [Move from another Deplo](/migrations/move-from-another-deplo) instead. It brings teams into a
-Deplo that already runs other teams.
+Use [Move from another Deplo](/migrations/move-from-another-deplo): it brings teams into a Deplo that
+already runs others.
 </Callout>
 
 ## Before you start
 
 | Check | Why |
 | --- | --- |
-| The new Deplo is a **fresh install** | The copy replaces everything on it. One account, no apps or databases. Servers you added are fine. |
+| The new Deplo is a **fresh install** | The copy replaces everything on it: one account, no apps or databases. Servers you added are fine. |
 | Both run the **same version** | Update the older one under **Settings -> Deplo -> Updates**. |
 | The old Deplo has an **https** address | The copy carries every secret, so it never runs over plain http. |
-| The new Deplo has an address | Set it under **Settings -> Deplo**. |
+| The new Deplo has an address | **Settings -> Deplo -> General -> Panel address**. |
 | The new Deplo has room | Every app and database runs there too. Add servers to it first if one machine is not enough. |
 
 ## Move it
@@ -48,101 +44,88 @@ Deplo that already runs other teams.
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash
 ```
-Sign in, then leave it empty. Add servers now if you want the apps spread over several.
+Sign in and leave it empty. Add servers now if you want the apps spread over several.
 </Step>
 
 <Step>
 ### Create a move code on the old Deplo
-**Settings -> Migrations**, then **Moving this Deplo to another machine? Create a move code**
-under the two choices. Press **Create move code**.
-
-The code starts with `dmove_`, is shown once, and works for one hour until the new Deplo uses it.
+**Settings -> Migrations -> Between Deplo -> This Deplo to another Deplo**, then **Create move code**.
+The code starts with `dmove_`, is shown once, and expires after one hour if unused.
 </Step>
 
 <Step>
 ### Connect from the new Deplo
-**Settings -> Migrations**, then **Another Deplo -> Everything**. Enter the old Deplo's address, for
-example `https://deplo.example.com`, and the `dmove_...` code.
+**Settings -> Migrations -> Between Deplo -> Another Deplo to this Deplo -> Everything**. Enter the old
+Deplo's address, like `https://deplo.example.com`, and the `dmove_` code.
 </Step>
 
 <Step>
 ### Choose where everything lands
-You see what comes across, and every server of the old Deplo with a server here to land on. Each
-one defaults to this machine; pick another server to spread the load.
-
-Two databases with the same name on different old servers cannot land on the same server here: the
-review says so, and you put one of them elsewhere.
+Every server of the old Deplo gets a server here to land on, this machine by default. Pick others to
+spread the load. Two databases with the same name on different old servers can't land on the same
+server: the review says so.
 </Step>
 
 <Step>
 ### Start the move
-Press **Start move** and confirm. You land on the progress page:
-
-1. **Copy everything**: the old Deplo's data is copied here.
-2. **Deploy and copy data**: each app and database starts here, and its data is copied in.
-3. **Finish**.
+Press **Start move** and confirm. The progress page shows **Copy everything**, then **Deploy and copy
+data**, then **Finish**.
 </Step>
 
 <Step>
 ### Sign in again
-The copy signs everyone out of the new Deplo. Press **Sign in** and use the account you had on the
-old one. Everyone else does the same.
+The copy signs everyone out of the new Deplo. Sign in with your account from the old one; everyone
+else does the same.
 </Step>
 </Steps>
 
 <Callout type="warn" title="Keep the progress page to yourself">
-Its address works without signing in, because the copy signs everyone out. Whoever has it can
-follow and retry the move. Once the copy is in, cancelling or finishing early needs an instance admin.
+Its address works without signing in, because the copy signs everyone out. Whoever has it can follow
+and retry the move. Once the copy is in, cancelling or finishing early needs an instance admin.
 </Callout>
 
 ## What the old Deplo notices
 
-Almost nothing. It never pauses as a whole, and stays fully usable the whole time.
+Almost nothing: it stays fully usable.
 
-An app or database **with data** stops on the old Deplo for as long as its own data copies, then
-starts again. One without data never stops. While it is paused, the old Deplo will not deploy or
-restart it. If the new Deplo stops answering mid-copy, the old one starts what it paused on its own
-after a couple of minutes.
-
-Changes made on the old Deplo after the copy started do not come across. Make them on the new one
-once it is done.
+- An app or database **with data** stops there only while its own data copies, then starts again.
+  Meanwhile it can't be deployed or restarted. One without data never stops.
+- If the new Deplo stops answering mid-copy, the old one starts what it paused after a couple of minutes.
+- Changes made on the old Deplo after the copy started do not come across.
 
 ## Switch over
 
-The new Deplo runs a full copy, but your domains still point at the old servers, so the old Deplo
-keeps serving your traffic until you move them.
+Your domains still point at the old servers, so the old Deplo serves your traffic until you move them.
 
 <Steps>
 <Step>
 ### Point each domain at its new server
-For example, change the `A` record of `shop.example.com` to the IP of the server it landed on.
-Deplo issues the certificate as soon as the domain answers there.
+For example, change the `A` record of `shop.example.com` to the IP of the server it landed on. Deplo
+issues the certificate once the domain answers there.
 </Step>
 
 <Step>
 ### Turn on schedules
-The new Deplo starts with **crons and scheduled backups paused**, so nothing runs twice while both
-Deplos are up. A banner offers **Turn on**: press it once the new Deplo is the one you use.
+The new Deplo starts with **crons and scheduled backups paused**, so nothing runs twice. Press
+**Turn on** in the banner once the new Deplo is the one you use.
 </Step>
 
 <Step>
 ### Keep the panel's address, if you want
-Point the old panel domain at the new machine and set it under **Settings -> Deplo**. Passkeys and
-webhook addresses are tied to that address: with a new one, people sign in with their password and
-set passkeys up again, and webhooks have to be changed.
+Point the old panel domain at the new machine and set it as the
+[panel address](/operations/panel-address-and-certificates). With a new address instead, passkeys
+must be set up again and webhooks changed.
 </Step>
 </Steps>
 
 ## Two Deplos, from now on
 
-After the move the two live independently. Anything you change on one stays there.
+After the move, a change on one stays there.
 
-- **API tokens, deploy hooks and members** exist on both. Revoking a token on one leaves it working on
-  the other, until you retire the old Deplo.
-- **Backups made before the move** show on both. The new Deplo never deletes them, because the old
-  one still lists them. Backups kept on a server's disk stay on the old server.
-- **Pushes** keep deploying on the old Deplo, because your git provider still calls it. Deploy the new
-  one by hand, or point the webhooks at it when you switch.
+- **API tokens, deploy hooks and members** exist on both. A token revoked on one still works on the other.
+- **Backups made before the move** show on both, and the new Deplo never deletes them. Backups on a
+  server's disk stay on the old server.
+- **Pushes** keep deploying on the old Deplo until you point the webhooks at the new one.
 
 When you no longer need the old Deplo, [uninstall it](/operations/remove-a-server-or-uninstall).
 
@@ -150,15 +133,10 @@ When you no longer need the old Deplo, [uninstall it](/operations/remove-a-serve
 
 | What you see | What to do |
 | --- | --- |
-| Some apps failed with a reason | Fix what it names, then press **Try again**. Only the failed and waiting ones run again. |
+| Some apps failed with a reason | Fix it, then **Try again**. Only the failed and waiting ones run again. |
 | One app keeps failing | **Skip** it. The move finishes without it; add it again by hand. |
-| You want to stop | **Cancel move**. The old Deplo starts anything it paused, and the new one goes back to setup. |
+| You want to stop | **Cancel move**. The old Deplo starts what it paused; everything copied here is deleted and this Deplo goes back to setup. |
 | The old Deplo is gone mid-move | **Finish without the old Deplo**. Apps whose data never came across are left out. |
-
-## Common messages
-
-| Message | Fix |
-| --- | --- |
 | **Needs an empty Deplo** | Move into a fresh install, or bring only some teams instead. |
 | **The old Deplo runs an older version** | Update it, then connect again. |
 | **This move code expired** | Create a new one on the old Deplo. |

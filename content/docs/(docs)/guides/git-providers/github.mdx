@@ -3,10 +3,9 @@ title: GitHub
 description: Connect GitHub as a GitHub App, with nothing to copy and paste.
 ---
 
-**GitHub** connects as a **GitHub App**. You click, approve on GitHub, and
-Deplo receives the credentials. There is no client id or private key to copy.
-The App is installed on the accounts and organisations that hold your
-repositories, and creates short-lived tokens to list and clone them.
+**GitHub** connects as a **GitHub App**. Deplo creates the App on GitHub for you, so there is no
+client id or private key to copy. The App is installed where your repositories live, and mints
+short-lived tokens to list and clone them.
 
 ## Connect it
 
@@ -15,31 +14,34 @@ repositories, and creates short-lived tokens to list and clone them.
 
 ### Start the connection
 
-**Settings -> Git**, then **Connect**.
+**Settings -> Git**, then **Connect**, then **GitHub**. The new-app wizard's **Connect GitHub**
+button opens the same menu.
 
 </Step>
 <Step>
 
 ### Choose account or organization
 
-Choose **Personal account** or **Connect an organization**.
+Pick **Personal account**, or **Organization** and type its name as in `github.com/acme`. Each
+account or organization gets its own App: connect again for the next one.
 
 </Step>
 <Step>
 
 ### Approve and pick repositories
 
-Approve on GitHub and pick which repositories the App may see.
+GitHub asks you to create the App, then to install it. Pick **All repositories** or **Only
+select repositories**.
 
 </Step>
 </Steps>
 
-**Manage** takes you back to GitHub to change that selection later.
+To change the selection later, click **Manage** in the App's menu on **Settings -> Git**. With
+**Only select repositories**, a new repository stays invisible until you add it there.
 
 ## What the App needs
 
-A new App already has all of this. It matters only if someone narrows the App
-later on GitHub:
+A new App already has all of this. It matters only if someone narrows it later on GitHub:
 
 | On GitHub | What it unlocks |
 | --- | --- |
@@ -49,30 +51,24 @@ later on GitHub:
 | **Pull requests: Read and write** | Post the preview address on the pull request |
 | **Subscribe to event: Pull request** | Build a preview when a pull request opens |
 
-The last two are only needed for
-[pull request previews](/guides/networking/pull-request-previews).
+The last two matter only for [pull request previews](/guides/networking/pull-request-previews).
 
-When something is missing, Deplo shows **Deplo is missing access on GitHub**
-with the exact list, on **Settings -> Git**, on the app's **Deploy source**
-settings and on its **Pull requests** page. **Update on GitHub** opens the
-App's permissions page.
+When something is missing, **Deplo is missing access on GitHub** lists it on **Settings -> Git**,
+on the app's **Settings -> Deployments** and on its **Pull requests** page, and the **Git provider
+is missing access** alert fires. **Update on GitHub** opens the App's permissions page.
 
 <Callout type="info">
-When the App's permissions change, GitHub keeps them pending until someone
-accepts them on each installation. Approve there too, or Deplo keeps reporting
-them as missing.
+GitHub holds changed permissions as pending until someone accepts them on each installation.
+Accept them there too, or Deplo keeps reporting them as missing.
 </Callout>
 
 ## Troubleshooting
 
-- **The repository list is empty**: the GitHub App has no access. Use
-  **Manage** and grant it there.
-- **`Authentication failed` in a clone**: the token expired or was revoked.
-  **Test connection** confirms it.
-- **"Deplo is missing access on GitHub"**: the App no longer has everything
-  in the table above. Click **Update on GitHub**.
-- **"This repository will not clone"**: the repository is not in the App's
-  selection. Use **Manage** and add it.
+| Symptom | What to check |
+| --- | --- |
+| **No repositories accessible to this App.** | Click **Configure repository access on GitHub**, or **Manage** on **Settings -> Git**, and add the repository. |
+| **Deplo is missing access on GitHub** | The App lost a permission from the table above. Click **Update on GitHub**, then accept it. |
+| **This repository will not clone** | The repository left the App's selection. **Manage** and add it back, or pick another App on the app's **Source** card. |
 
 ## Next steps
 

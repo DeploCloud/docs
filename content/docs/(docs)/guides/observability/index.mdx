@@ -1,23 +1,18 @@
 ---
 title: Observability
-description: Logs, metrics, alerts, a shell into a container, and scheduled jobs.
+description: Logs, metrics, health checks, alerts, security updates, a shell into a container, and scheduled jobs.
 ---
 
-Five ways to see what your apps are doing right now. Everything comes from the
-agent on the server, over the same secure connection Deplo uses for everything
-else. No SSH, no exposed Docker socket.
+See what your apps are doing, and get told when something goes wrong. What runs on a server
+reaches Deplo through its agent, over the connection Deplo already uses: no SSH, no exposed Docker
+socket.
 
-**Logs** - live container output, and the output of every build.
-[Learn more ->](/guides/observability/logs)
-
-**Monitoring** - CPU, memory, disk and network, with a short history.
-[Learn more ->](/guides/observability/monitoring)
-
-**Notifications and alerts** - get told when something happens.
-[Learn more ->](/guides/observability/notifications-and-alerts)
-
-**Console** - look inside a running container.
-[Learn more ->](/guides/observability/console)
-
-**Cron jobs** - run a command on a schedule, inside a container.
-[Learn more ->](/guides/observability/cron-jobs)
+| Page | What it covers |
+| --- | --- |
+| [Logs](/guides/observability/logs) | Live container output, and the output of every build |
+| [Monitoring](/guides/observability/monitoring) | CPU, memory, disk and network, with a short history |
+| [Health checks](/guides/observability/health-checks) | Whether an app is really working, not just running |
+| [Notifications and alerts](/guides/observability/notifications-and-alerts) | Get told when something happens, in a chat, by email or on your phone |
+| [Security updates](/guides/observability/security-updates) | Known flaws in what your apps run, and how to fix them |
+| [Console](/guides/observability/console) | A terminal inside a running container |
+| [Cron jobs](/guides/observability/cron-jobs) | A command on a schedule, inside a container |

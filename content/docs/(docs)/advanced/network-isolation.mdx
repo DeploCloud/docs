@@ -6,15 +6,15 @@ description: Every environment gets its own private network, so a service name m
 import { Boxes, Database, FolderTree, Layers } from "lucide-react";
 import { IsolationDiagram } from "@/components/diagrams/network-isolation";
 
-An **environment** gets a private Docker network named
-`deplo-env-<environment id>`. Apps and managed databases there reach each
-other by name. Apps outside projects use the team's `deplo-team-<team id>`
-network instead. Pull request previews use an isolated
-`deplo-preview-<key>` network.
+Every **environment** gets a private Docker network, `deplo-env-<environment id>`. Apps and
+managed databases in it reach each other by name.
 
-Folders do not create a network boundary. To separate workloads, put them in
-different environments. Deplo derives the network from the app's location;
-you never create or select it.
+- **Apps outside any project** share the team's `deplo-team-<team id>` network.
+- **A pull request preview** gets its own `deplo-preview-<key>` network.
+- **Folders change nothing.** They are about permissions, not isolation. To separate
+  workloads, use different environments.
+
+Deplo derives the network from where the app lives. You never create or pick one.
 
 <IsolationDiagram />
 
@@ -33,59 +33,43 @@ you never create or select it.
 | An app | A **published port** on the same server | **Yes** - see below |
 
 <Callout type="warn" title="A preview cannot reach your database">
-A pull request preview uses its own network and cannot reach the managed
-database of the environment it came from.
-
-Give it a database inside the Compose file, or connect it to a database with a
-published port. There is no way to add a preview to an environment network.
+A preview has its own network, so it cannot reach the managed database of its environment, and
+it can never join an environment network. Put a database in the Compose file, or use one with
+a published port.
 </Callout>
 
-**Published ports bypass the boundary.** Any container on the same server can
-reach a published port, regardless of team or environment. A firewall does
-not change this because the traffic stays inside the host.
+What crosses the boundary anyway:
 
-Use a published port only when that reachability is intended. For app-to-app
-traffic, use the service name in the same environment.
+- **A published port answers every container on that server**, whatever its team or
+  environment. A firewall does not help: the traffic never leaves the host. Use one only when
+  that is the point; app to app, use the name.
+- **The proxy sits on every network.** A container can request any hostname that server serves,
+  other teams' domains included, and a domain is reachable from the internet anyway. Keep a
+  private service without a domain.
 
-**The proxy answers from every network.** Traefik joins each environment
-network, so a container can request any hostname served by that server,
-including domains belonging to other teams.
+What does not cross:
 
-Anything with a domain is reachable through the proxy. Keep private services
-without a domain.
-
-**A network does not span servers.** Apps in the same environment but on
-different servers cannot reach each other by name. Put them on one server, or
-publish a port and use the server address.
-
-Folders affect permissions, not isolation. Moving an app between folders does
-not change its network. Moving it from an environment into a folder moves it
-to the team's network and away from that environment's databases; Deplo
-redeploys it on the new network before the move completes.
-
-A domain is separate from network isolation: the proxy serves it from every
-network, so it remains reachable from other environments and from the internet.
+- **A network does not span servers.** Same environment on two servers: the names do not
+  resolve. Put both on one server, or publish a port and use the server's address.
+- **Moving an app out of an environment** (into a folder at the top level, for example) puts it
+  on the team network, away from that environment's databases. Deplo redeploys it on the new
+  network before the move completes. Moving between folders changes nothing.
 
 ## Services that stay off the network
 
-Deplo adds the environment network to every service, alongside any networks in
-the Compose file. A service keeps only the environment networks it is allowed
-to join.
+Every service of a stack joins the environment network, not only the routed ones: a worker
+with no domain still has to reach your database. Networks you declare yourself (`frontend`,
+`backend`) are kept, and the environment's is added. Four kinds stay off:
 
-Four kinds of service stay off it:
-
-- One with `network_mode:`. It joins no network of its own by definition, so
-  there is nothing to add it to - and a domain pointed at it will not answer.
-- One whose name, or `hostname:`, is one **the platform answers to** (`postgres`,
-  `traefik`, `deplo`, and the three others). It stays on the stack's own private
-  network, and Deplo keeps every other service on that network too, so the app
-  still reaches it by name.
-- One whose networks you **all** marked `internal: true`. That is a deliberate seal and Deplo
-  leaves it alone. A domain still wins: route to the service and it joins, because otherwise the
-  proxy cannot reach it.
-- One whose name is already answered by a neighbouring stack on that network. Two containers
-  claiming one name would round-robin, so the newcomer is left off with a warning rather than
-  quietly taking half the traffic.
+- **A service with `network_mode:`.** It joins no network at all, so a domain pointed at it
+  does not answer.
+- **A service whose name or `hostname:` is a platform name** (`postgres`, `traefik`, `deplo`
+  and three more). It keeps a private network with the rest of the stack, so your app still
+  reaches it by name.
+- **A service whose networks are all `internal: true`.** That is a deliberate seal. A domain
+  still wins: a routed service joins, or the proxy could not reach it.
+- **A service whose name another stack there already answers to.** It is left off with a
+  warning rather than taking half the traffic.
 
 ```yaml
 services:
@@ -103,36 +87,13 @@ networks:
     internal: true
 ```
 
-## Database placement
+## Two stacks, one name
 
-A managed database has a placement like an app. Choose it under
-**Storage -> New database**.
+Inside one environment, on one server, a name has to mean one container. Two stacks that both
+answer to `web` split the lookups, and half your requests reach the wrong container.
 
-- **In an environment** - the apps in that environment reach it at
-  `db-<name>`. This is what you want almost always.
-- **No environment** - it sits on the team's network, reachable from apps that
-  are not in a project.
-
-The **Networking** card shows its placement and offers **Move to environment**.
-Deplo restarts the database on the new network before the action completes.
-
-A database you stopped stays stopped: it follows the move the next time you
-start it.
-
-**A published port is outside the boundary.** Exposing a database on a host port takes it out of all of this. Docker binds
-the port on the machine, so it answers **every container on that server**,
-whatever network they are on - and the server's own firewall does not stop
-them, because Docker publishes below it. The password is the only thing in the
-way. Leave the port off unless something outside the server really needs it.
-
-## Name collisions
-
-Inside one environment the names have to be unique: two apps that both have a
-service called `web` both answer to `web` on that network, and Docker splits the
-lookups between them. Half your requests reach the wrong container.
-
-Saving a compose file that takes a name already answered there is refused, and
-the message names one that is free:
+Saving a Compose file that takes a name already answered there is refused, and the message
+names a free one:
 
 ```
 `web` is already answered by Shop on that network, and Docker would split the
@@ -140,149 +101,100 @@ connections between the two. Rename it on this app (the service, or its
 `hostname:`) - `web-2` is free - or pick another environment.
 ```
 
-An overlap that already exists - two stacks that landed there before the check,
-or arrived by different routes - is reported by the deploy instead:
+An overlap that already exists, from before the check or from another route, is reported by
+the deploy instead:
 
 ```
 `web` is also answered by a stack in Shop / Production, on the same network as
 this one. Docker splits the lookups between them, so half will reach the wrong
-container.
+container. Rename the service, or its `hostname:`.
 ```
 
-Rename the service, or give it a `hostname:` of its own. **Every** service of your
-stack takes a name on that network, not only the ones you route: a worker with no
-domain is still part of the app and still has to reach your database.
+Deplo also refuses a move that would create an overlap, for an app or a database.
 
-Declaring your own networks does not take a service off it - `frontend` and
-`backend` is organisation, not a request to be cut off, and your networks are kept
-alongside the environment's. Three things do stay off:
+**A stack Deplo wrote is renamed, not refused.** A template deployed twice into one
+environment gets `db-2` for its second `db`; an app a migration brings over gets its own name
+in front (`shop-db`). The route, variables and config files follow the new name, and the app's
+Activity (or the migration report) says what changed.
 
-| Stays off | Why |
-| --- | --- |
-| A network you marked `internal: true` | That IS the request to be cut off, and adding the environment's network would hand back the egress you removed |
-| `network_mode:` on a service | It replaces the network stack entirely, so there is nothing to join - and a domain pointing at such a service is reported in the deploy log |
-| A service named after Deplo's own infrastructure | Left off rather than refused, so an ordinary stack still deploys. It keeps a private network with the rest of your stack, so the two still talk |
+## Database placement
 
-Deplo also refuses a move that would create the overlap - putting an app into an
-environment where a database already answers to one of its names, or the reverse.
+- **In an environment**: its apps on the same server reach it at `db-<name>`. Almost always
+  what you want.
+- **No environment**: it sits on the team network, for apps outside every project.
 
-A stack **Deplo wrote** is renamed rather than refused: a template you deploy, or
-an app a migration brings over from another panel. Deploying the same template
-twice into one environment gives the second one `myapp-db` instead of `db`, and
-everything that named it moves with it - the route, the variables, the config
-files. The app's Activity says what was renamed; a migration puts it in the report
-too. A compose file you wrote yourself is yours, so it is refused with the free
-name instead of edited behind your back.
+Pick it in the **Environment** field of **Storage -> New Database**. Change it later in the
+database's **Connection** card, or with **Move to environment** in its menu on **Storage**.
+Deplo restarts it on the new network before the action completes; a stopped database moves the
+next time you start it.
+
+A database's **Host port** takes it outside all of this: every container on that server can
+reach it, and only the password is in the way. Leave it off unless something outside the
+server needs it.
 
 ## `cannot resolve host`
 
-The one thing that breaks: an app pointing at another app by name, when the two
-are in different environments.
+The one thing that breaks: an app pointing at another one by name, from another environment.
 
 ```
 could not translate host name "gamewatcher-db" to address:
 Name or service not known
 ```
 
-Deplo says so **before** the container tries. The deploy log carries a line
-naming what you pointed at and where it lives:
+The deploy log says so **before** the container tries:
 
 ```
-DATABASE_URL points at `gamewatcher-db`, which lives in GW / Production and
-is not reachable from here.
+DATABASE_URL points at `gamewatcher-db`, which lives in GW / Production and is
+not reachable from here. Move this app into the same environment, or use a
+managed database placed there.
 ```
 
-The other shape says the placement is right and the machine is not:
+Or, when the placement is right and the machine is not:
 
 ```
 DB_HOST points at `orders-db`, which is in Shop / Production with this app but
-runs on ANOTHER SERVER.
+runs on ANOTHER SERVER. A network only spans one machine, so the name will not
+resolve. Put both on the same server, or publish a port and use the server's
+address.
 ```
 
-Three ways out, best first:
+The ways out, best first:
 
-<Steps>
-<Step>
+1. **Same environment, same server.** Move the app or the database.
+2. **A managed database** created in the environment that needs it. Deplo writes the
+   connection string.
+3. **A published port**, only if the two must stay apart. Point at the server's address, and
+   treat the port as public: it answers every container on that server.
 
-### Put them in the same environment, on the same server
+## Out of Docker networks
 
-Move the app (or the database) so both sit in one environment **and on one
-server**. That is what the boundary is for - and the server part is not the
-boundary's doing, it is what a Docker network is.
-
-</Step>
-<Step>
-
-### Use a managed database
-
-Create it in the environment that needs it. Deplo writes the connection string
-and keeps it reachable.
-
-</Step>
-<Step>
-
-### Publish a port
-
-Only if the two genuinely must stay apart: expose the service on a host port
-and point at the server address instead of the container name. Treat that port
-as public - it answers every container on the server, not only the one you
-opened it for.
-
-</Step>
-</Steps>
+Every environment with apps on a server is one Docker network there. An older server can run
+out, at about 31 by default, and the deploy says so. Set `default-address-pools` in
+`/etc/docker/daemon.json` and restart Docker, or remove unused networks with
+[Docker cleanup](/operations/servers/cleanup).
 
 ## Migrate existing instances
 
-The first time a Deplo with this feature starts, it moves every existing app
-and database onto its environment's network, one server at a time.
+The first start of a Deplo with network isolation moves every app and database onto its
+environment's network, one server at a time.
 
-- A stack that cannot be reached **stays where it is** and keeps running. It is
-  a delay, not an outage.
-- The Overview shows how many the sweep could not reach, and Activity says which
-  ones and why. A stack it deliberately skipped - one you had stopped, one
-  mid-deploy - is not in that count.
-- Deploying one moves it. **Try again** on the notice re-runs the whole sweep, and
-  **Dismiss** - the cross on it - puts the notice away for good. Neither one touches
-  a stack that is already where it belongs.
-
-Databases that had no placement are given the environment that actually uses
-them, when exactly one place does. One used from two environments - or from an
-environment **and** from apps outside every project - stays at the team level
-for you to decide, because moving it would take it away from half its callers.
-
-Stopped apps and stopped databases are left alone and follow when you start
-them. So does anything that was mid-deploy, on its next deploy.
+- **A stack it cannot reach stays where it is** and keeps running: a delay, not an outage. The
+  Overview counts them and Activity says which and why. **Try again** re-runs the sweep,
+  **Dismiss** hides the notice for good.
+- **Stopped and mid-deploy stacks wait**, and are not counted. They move on their next start
+  or deploy, like any stack you deploy.
+- **A database with no placement** gets the environment that uses it, when exactly one place
+  does. One used from two places stays at the team level for you to decide.
 
 ## What does not change
 
-Domains, HTTPS, certificates, redirects and basic auth. Published ports, for
-apps and for databases. Logs, console, terminal, backups, cron, metrics and
-migrations - all of those reach a container through the server agent, never
-through the Docker network.
+Domains, HTTPS, certificates, redirects, basic auth and published ports. Logs, console,
+backups, cron, metrics and migrations reach a container through the server agent, never through
+the Docker network.
 
 <Cards>
-  <Card
-    icon={<Boxes />}
-    title="Compose apps"
-    href="/advanced/compose-apps"
-    description="What Deplo adds to your compose file, and the names it refuses."
-  />
-  <Card
-    icon={<FolderTree />}
-    title="Apps, projects and environments"
-    href="/concepts/apps-projects-and-environments"
-    description="Where an app lives, and what an environment is for."
-  />
-  <Card
-    icon={<Database />}
-    title="Databases"
-    href="/guides/data/databases"
-    description="Create one, connect to it, and place it where your apps are."
-  />
-  <Card
-    icon={<Layers />}
-    title="Host access"
-    href="/advanced/host-access-and-privileges"
-    description="The grant that gates everything reaching outside a container."
-  />
+  <Card icon={<Boxes />} title="Compose apps" href="/advanced/compose-apps" description="What Deplo adds to your compose file, and the names it refuses." />
+  <Card icon={<FolderTree />} title="Apps, projects and environments" href="/concepts/apps-projects-and-environments" description="Where an app lives, and what an environment is for." />
+  <Card icon={<Database />} title="Databases" href="/guides/data/databases" description="Create one, connect to it, and place it where your apps are." />
+  <Card icon={<Layers />} title="Host access" href="/advanced/host-access-and-privileges" description="The grant that gates everything reaching outside a container." />
 </Cards>

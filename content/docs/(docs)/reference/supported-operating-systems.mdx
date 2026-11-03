@@ -4,21 +4,20 @@ description: Which Linux distributions Deplo is tested on, which ones work, and 
 icon: HardDrive
 ---
 
-The same installer runs on the dashboard host and every server you add.
+`install.sh` sets up the dashboard host, then runs the same `install-agent.sh` every server you
+add runs.
 
 ## Requirements
 
 | Requirement | Why |
 | --- | --- |
 | Linux on `x86-64` or `arm64` | The agent binary and the control-plane image are published for these two only. |
-| `systemd` | Required for the agent. Without it, the control plane can start but the machine cannot run deployed apps. |
+| `systemd` | Runs the agent. Without it the control plane can start, but the machine cannot run deployed apps. |
 | Root, for the length of one command | It writes a system service and installs packages. |
-| `curl` and `sha256sum` | To download the agent and verify its checksum before running it. |
+| `curl` and `sha256sum` | To download the agent and verify its checksum. The dashboard host also needs `openssl` and Bash 4. |
 | Docker with Compose v2 | Installed for you when your distribution is one Docker publishes packages for. |
 
 ## Tested distributions
-
-These are the safest choices for a first install.
 
 | OS | Status | Notes |
 | --- | --- | --- |
@@ -41,14 +40,13 @@ The installer can set Docker up on these, but they are not tested choices.
 | <Os name="raspberrypi">Raspberry Pi OS 64-bit</Os> | Compatible | The 32-bit image will not work, see below. |
 
 <Callout type="info" title="Version 8 of the RHEL family">
-  Rocky, AlmaLinux, CentOS and RHEL 8 still install, but they boot on cgroup v1 and Deplo reads
-  container metrics from cgroup v2. Everything deploys, the Monitoring charts stay empty.
+  Rocky, AlmaLinux, CentOS and RHEL 8 still install, but they boot on cgroup v1. The agent then
+  samples container metrics through `docker stats`, which works but costs noticeably more CPU.
 </Callout>
 
 ## Bring your own Docker
 
-These work when Docker and Compose v2 are already installed. The installer
-does not install Docker for them.
+These work once Docker and Compose v2 are installed; the installer does not install Docker here.
 
 | OS | Status | Notes |
 | --- | --- | --- |
@@ -57,8 +55,7 @@ does not install Docker for them.
 | <Os name="arch">Arch Linux</Os> | Bring your own Docker | Docker and Compose v2 are in `extra`. |
 | <Os name="linux">Any other distribution with systemd</Os> | Bring your own Docker | `docker compose version` has to answer 2.x or newer. |
 
-Install Docker first, then run the Deplo command normally. It detects Docker
-and skips that step.
+Install Docker first, then run the Deplo command normally: it detects Docker and skips that step.
 
 <Tabs items={['AlmaLinux', 'openSUSE Leap', 'Arch Linux']}>
 <Tab value="AlmaLinux">
@@ -89,27 +86,26 @@ systemctl enable --now docker
 </Tab>
 </Tabs>
 
-The one thing to check afterwards is `docker compose version`. Deplo needs the Compose plugin,
-version 2 or newer, not the old standalone `docker-compose` binary.
+Then check `docker compose version`: Deplo needs the Compose plugin, version 2 or newer, not the
+old standalone `docker-compose` binary.
 
 ## Not supported
 
 | OS | Status | Why |
 | --- | --- | --- |
-| <Os name="alpine">Alpine Linux</Os> | **Not supported** | No `systemd`. The agent is a systemd unit, so the preflight refuses before anything is installed. |
+| <Os name="alpine">Alpine Linux</Os> | **Not supported** | No `systemd`. The agent is a systemd unit: `install-agent.sh` refuses before installing anything, and `install.sh` warns that the machine cannot become a server. |
 | <Os name="suse">SUSE Linux Enterprise</Os> | **Not supported** | Docker publishes `docker-ce` for SLES on IBM Z only. There is no `x86-64` or `arm64` package to install. |
 | <Os name="linux">32-bit Linux (`armhf`, `i386`)</Os> | **Not supported** | The agent binary is published for `amd64` and `arm64` only. This is the 32-bit Raspberry Pi OS image. |
 | Windows, macOS | **Not supported** | Deplo runs Linux containers on a Linux host. |
 
 <Callout type="warn" title="arm64 is published, not tested">
-  Deplo publishes an `arm64` agent and an `arm64` image, and the installer accepts the
-  architecture. Nothing in the platform is `x86-64`-specific, but we have not run a fleet on ARM,
-  so treat it as compatible rather than proven.
+  Deplo publishes an `arm64` agent and image, and both installers accept it. Nothing in the
+  platform is `x86-64`-specific, but no fleet has run on ARM yet: compatible, not proven.
 </Callout>
 
 ## Check before installing
 
-The preflight changes nothing and prints blocking problems and warnings:
+`--check` runs the preflight, prints blocking problems and warnings, and changes nothing:
 
 <Tabs items={['The dashboard host', 'A server you are adding']}>
 <Tab value="The dashboard host">
@@ -121,10 +117,10 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- --check
 </Tab>
 <Tab value="A server you are adding">
 
-Take the command the dashboard gives you under **Servers - Add server** and append `--check`:
+Take the command from **Settings -> Servers -> Add server** and append `--check`:
 
 ```bash
-curl -fsSL https://deplo.example.com/install-agent.sh | sudo bash -s -- <TOKEN> <URL> --check
+curl -fsSL 'https://deplo.example.com/install-agent.sh' --output /tmp/deplo-agent-install.sh && echo '<token>' | sudo bash /tmp/deplo-agent-install.sh - 'https://deplo.example.com' '<fingerprint>' --check
 ```
 
 </Tab>

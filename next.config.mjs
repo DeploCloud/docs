@@ -87,7 +87,8 @@ const config = {
       // 2026-09: the server pages moved under Operations.
       { source: "/guides/server/certificates", destination: "/advanced/custom-certificates", permanent: true },
       { source: "/guides/server/add-a-server", destination: "/operations/servers/add-a-server", permanent: true },
-      { source: "/guides/server/access", destination: "/operations/servers/access", permanent: true },
+      { source: "/guides/server/access", destination: "/operations/servers", permanent: true },
+      { source: "/operations/servers/access", destination: "/operations/servers", permanent: true },
       { source: "/guides/server/cleanup", destination: "/operations/servers/cleanup", permanent: true },
       { source: "/guides/server/maintenance-and-advanced", destination: "/operations/servers/maintenance-and-advanced", permanent: true },
       { source: "/guides/server/container-registries", destination: "/operations/servers/container-registries", permanent: true },

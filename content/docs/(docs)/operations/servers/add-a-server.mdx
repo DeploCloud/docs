@@ -5,191 +5,124 @@ description: Bring another machine into the fleet with one command pasted on tha
 
 import { ServerCog, Layers, Network, HardDrive } from "lucide-react";
 
-The control plane prints a command containing a **one-time bootstrap token**.
-Run it as root on the new server. It installs and enrolls the agent; Deplo
-never connects to the host over SSH.
+Deplo prints a command with a **one-time token**. Run it as root on the new server: it installs the
+agent, which connects to Deplo by itself. Deplo never connects to the host, over SSH or otherwise.
 
 ## What the machine needs
 
 | What | Requirement |
 | --- | --- |
-| A server | A [supported distribution](/reference/supported-operating-systems) on `linux/amd64` or `arm64`, `systemd`, and root for the length of one command. Docker is installed for you if it is missing, except for a [migration source](/advanced/server-roles), which needs the Docker it is importing from. |
+| System | A [supported distribution](/reference/supported-operating-systems) on `linux/amd64` or `linux/arm64`, with `systemd` and root for one command. Docker is installed if missing, except on a [migration source](/advanced/server-roles), which keeps the Docker it imports from. |
 | Tools | `curl` and `sha256sum`, to download the agent and verify it. |
-| Disk | 30 GB free on `/` is the recommended minimum. **The installer refuses below 5 GB**, since images and build caches grow fast. |
-| Network | It must reach the panel's address, the one in the install command. Deplo needs no open port on this machine. |
+| Disk | 30 GB free on `/` recommended. **The installer refuses below 5 GB.** |
+| Network | It must reach the panel's address, the one in the command. No open port is needed for Deplo. |
 
-Nothing here checks memory or CPU: the agent is a small Go binary, and
-what needs them is whatever you deploy on this machine. Size it like the
-first one, **2 cores and 4 GB** at the least, unless it is a storage-only
-server, which does nothing but hold backups.
+Nothing checks memory or CPU: what needs them is what you deploy. Size it like the first one, **2 cores
+and 4 GB** at least, unless it only holds backups.
 
 ## Add one
 
-You need to be an instance admin.
+Instance admins only.
 
 <Steps>
 <Step>
-
-### Open servers settings
-
-Open **Settings -> Servers**.
-
-</Step>
-<Step>
-
 ### Open the dialog
-
-Click **Add**. The dialog is titled **Add a server**.
-
+**Settings -> Servers**, then **Add**. The dialog is **Add a server**.
 </Step>
-<Step>
 
+<Step>
 ### Name it and set the address
-
-Give it a **Name**, then fill in **Host or IP**: the address your apps on this server are reached
-at, like `203.0.113.24`. Their generated addresses and DNS checks use it. Deplo never connects to it.
-
+A **Display name**, then **Host or IP**: the address your apps on this server are reached at, like
+`203.0.113.24`. Their generated addresses and DNS checks use it; Deplo never connects to it. A private
+IP like `10.0.0.7` works, but generated addresses then answer only inside that network.
 </Step>
-<Step>
 
+<Step>
+### Let teams use it
+**Team access** defaults to **All teams**. **Specific teams** with none ticked is refused. You can
+change it later: see [Team access](/operations/servers#team-access).
+</Step>
+
+<Step>
 ### Choose what it's for
+**What this server is for**:
 
-Choose **What this server is for**:
+- **Everything**: runs apps and builds them.
+- **Build** (beta): builds for other servers. It needs the same CPU architecture as the servers it
+  builds for; mismatched pairs show but are disabled.
+- **Backups**: holds backup files and runs nothing.
 
-- **Everything** for a normal deploy target
-- **Build**, which builds for other servers. Beta
-- **Backups**, for a storage box that holds backup files and runs nothing
-
-Once enrolled, the server card shows these as the badges **Build only** and **Backups only**.
-
+The server list shows the last two as **Build only** and **Backups only**. You can change it later
+under **Advanced**.
 </Step>
+
 <Step>
-
-### Choose which teams may use it
-
-**Team access** defaults to **All teams**. Picking **Specific teams** and ticking none is refused.
-
-</Step>
-<Step>
-
-### Add it
-
-Click **Add server**. Deplo prints the command.
-
-</Step>
-<Step>
-
 ### Run the command
-
-Paste it on the server, as root:
+Click **Add server**, then paste the command on the server:
 
 ```bash
-curl -fsSL 'https://deplo.example.com/install-agent.sh' --output '/tmp/deplo-agent-install.sh' && sudo bash /tmp/deplo-agent-install.sh '<TOKEN>' '<URL>' '<FINGERPRINT>'
+curl -fsSL 'https://deplo.example.com/install-agent.sh' --output /tmp/deplo-agent-install.sh && echo '<token>' | sudo bash /tmp/deplo-agent-install.sh - 'https://deplo.example.com' '<fingerprint>'
 ```
 
-It downloads the script first and runs it second, so an address that does not
-answer fails out loud instead of running an empty script.
-
-Watch the card. It goes from **provisioning** to **online** on its own.
-
+It downloads the script before running it, so an address that does not answer fails out loud, and the
+token goes in on stdin, out of the process list. The server goes from **Provisioning** to online by
+itself.
 </Step>
 </Steps>
 
-The token is single-use and expires in about an hour. If enrollment
-fails, open the server, then **Advanced -> Install command**, for a fresh one.
+The command is shown once, and its token works once, for about an hour. For a new one, open the
+server, **Advanced -> Install command**.
 
 <Callout type="info" title="Deplo pins its own certificate in that command">
-Over https, the command carries the fingerprint of the certificate your
-panel serves, and the agent refuses to start without it. If Deplo cannot
-read that certificate from its own address, **Add** is refused with the
-reason instead of printing a command that could never work. Make the
-panel's address reachable from the panel itself, then add the server
-again.
+Over https, the command carries the fingerprint of the certificate the panel serves, and the agent
+refuses to start without it. If Deplo can't read that certificate from its own address, **Add server**
+is refused with the reason. Make the panel's address reachable from the panel itself, then try again.
 </Callout>
 
 ## Ports for your apps
 
-Deplo needs no open port on the server: the agent connects to the panel by
-itself. Only your apps do:
+Deplo needs no open port: the agent connects to the panel. Only your apps do:
 
 | Port | Why |
 | --- | --- |
 | `80`, `443` | Traefik serves your apps, and answers the HTTP certificate challenge |
 
-A build-only or backups-only server runs no apps, so it needs neither. No
-installer opens a firewall for you: if the machine or its provider has one,
-allow these two.
+A build or backups server runs no apps and needs neither. No installer opens a firewall: if the machine
+or its provider has one, allow these two.
 
 ## Check it before you trust it
 
-The server's menu has **Check readiness**. It checks the server once and reports rows
-grouped as agent, docker, routing, capacity, build methods and Deplo
-configuration, each `pass`, `info`, `warn`, `fail` or `skip`.
-
-`skip` means it could not be evaluated, which is deliberately different
-from `pass`. Nothing gates on this report: it is for you.
-
-## Let teams use it
-
-New servers are usable by every team by default. Narrowing that is a
-separate setting. See [Access](/operations/servers/access).
+**Check readiness**, on the **Server agent** card of the server's **Overview**, checks the server once
+and groups the results as **Agent**, **Docker**, **Routing**, **Host capacity**, **Build methods** and
+**Deplo configuration**, and counts them as failed, warnings, skipped and passed. Skipped means it
+could not be evaluated, which is not a pass. Nothing gates on it: it is for you.
 
 ## Before you add more servers
 
-- **Only `linux/amd64` and `linux/arm64`.** Nothing else is published.
-- **An app and its database must be on the same server to reach each
-  other by name.** The shared `deplo` network is per host.
-- **A build server needs the same CPU architecture** as the machine that
-  will run the image. Mismatched pairs are shown but disabled.
-- **The address is for your apps.** A private IP like `10.0.0.7` works,
-  but your apps' generated addresses then answer only inside that network.
-- **If containers are already running when the address pools change**,
-  the installer skips the Docker restart and tells you to do it in a
-  maintenance window.
+- **An app and its database must be on the same server to reach each other by name.** The `deplo`
+  network is per host.
+- **If containers are already running when the address pools change**, the installer skips the Docker
+  restart and tells you to do it in a maintenance window.
 
 ## Troubleshooting
 
-- **Stuck on provisioning**: the agent never called home. On the server,
-  check `systemctl status deplo-agent` and `journalctl -u deplo-agent -f`.
-- **Offline**: the server is not connected to Deplo. Its card says what to
-  check: that the machine is on and connected to the internet, or that it
-  can reach Deplo at the panel's address. See
+- **Stuck on Provisioning**: the agent never called home. On the server, check
+  `systemctl status deplo-agent` and `journalctl -u deplo-agent -f`.
+- **Offline**: the server is not connected to Deplo, and its card says what to check. See
   [A server is offline](/troubleshooting/servers-and-agents#a-server-is-offline).
-- **`Refusing to run an unverified binary`**: the download did not match
-  its checksum. Retry; if it persists, something is intercepting the
-  download.
-- **The token is expired**: issue a new one from the server's **Advanced** tab, under **Install command**.
-- **`Deplo could not read the certificate its own address serves`**: the
-  panel cannot dial its own public address, so it has no fingerprint to
-  pin. Check DNS and egress from the panel's machine to that address.
+- **`Refusing to run an unverified binary`**: the download did not match its checksum. Retry; if it
+  persists, something is intercepting the download.
+- **The token expired**: get a new command from the server's **Advanced** tab, **Install command**.
+- **`Deplo could not read the certificate its own address (https://deplo.example.com) serves`**: the panel can't reach its own
+  public address, so it has nothing to pin. Check DNS and outbound access from the panel's machine.
 
-See [Servers and agents](/troubleshooting/servers-and-agents) for more.
+More in [Servers and agents](/troubleshooting/servers-and-agents).
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<ServerCog className="text-blue-400" />}
-    title="Server"
-    description="Access, cleanup, certificates, maintenance"
-    href="/operations/servers"
-  />
-  <Card
-    icon={<Layers className="text-blue-400" />}
-    title="Server roles"
-    description="Everything, build only, backups only"
-    href="/advanced/server-roles"
-  />
-  <Card
-    icon={<Network className="text-blue-400" />}
-    title="Servers and agents"
-    description="Enrollment, health, readiness"
-    href="/concepts/servers-and-the-agent"
-  />
-  <Card
-    icon={<HardDrive className="text-blue-400" />}
-    title="Ports, networks, files"
-    description="Reference for the file layout on a host"
-    href="/reference/ports-networks-and-files"
-  />
+  <Card icon={<ServerCog className="text-blue-400" />} title="Servers" description="Access, cleanup, certificates, maintenance" href="/operations/servers" />
+  <Card icon={<Layers className="text-blue-400" />} title="Server roles" description="Everything, build only, backups only" href="/advanced/server-roles" />
+  <Card icon={<Network className="text-blue-400" />} title="Servers and agents" description="Enrollment, health, readiness" href="/concepts/servers-and-the-agent" />
+  <Card icon={<HardDrive className="text-blue-400" />} title="Ports, networks, files" description="Reference for the file layout on a host" href="/reference/ports-networks-and-files" />
 </Cards>

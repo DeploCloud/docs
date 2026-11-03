@@ -3,9 +3,6 @@
   "icon": "BookOpen",
   "pages": [
     "deploy",
-    "hosting-providers",
-    "search",
-    "mcp-server",
     "git-providers",
     "releases",
     "networking",
@@ -13,6 +10,9 @@
     "data",
     "observability",
     "team",
-    "roles-and-permissions"
+    "roles-and-permissions",
+    "mcp-server",
+    "search",
+    "hosting-providers"
   ]
 }

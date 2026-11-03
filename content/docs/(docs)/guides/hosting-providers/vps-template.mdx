@@ -31,37 +31,7 @@ More in [what you need](/getting-started/install#what-you-need).
 
 ### Run the installer on first boot
 
-Chain the installer to your provisioning, right after the operating system install finishes.
-`--owner-email` and `--owner-password` create the customer's account during the install:
-
-- **The email** is the customer's, the one on their order.
-- **The password** is a temporary one you already send them, at least 8 characters: a random
-  one generated for each order, like the service password your billing (WHMCS, for example)
-  already creates.
-- **At the first sign-in** Deplo makes the customer replace it with a password of their own.
-  Until then the account cannot do anything else, so the temporary password gives no access
-  to the panel.
-
-<Callout type="warn" title="Treat the temporary password as seen">
-  The install transcript hides it, but on the command line it is readable in the server's
-  process list while the install runs, and cloud-init keeps it in the user data your provider
-  stores. Use a new one for every order and tell the customer to sign in right away: the first
-  sign-in replaces it.
-</Callout>
-
-<Callout type="warn" title="The root password only as a fallback">
-  Some panels can pass nothing but the root password (Virtualizor recipes, for example). It
-  works, but until the customer's first sign-in the panel's sign-in page also accepts the root
-  password, so it can be tried there too. Tell the customer to sign in right away.
-</Callout>
-
-The command depends on the address the customer's panel starts on:
-
-<Tabs groupId="panel-domain" persist items={['Temporary domain', 'Custom domain']}>
-<Tab value="Temporary domain">
-
-The panel starts on an automatic wildcard address, with no DNS to set up and nothing to ask
-the customer:
+Chain the installer to your provisioning, right after the operating system install:
 
 <Tabs groupId="provisioning" persist items={['Using cloud-init', 'Provisioning script']}>
 <Tab value="Using cloud-init">
@@ -83,57 +53,31 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- \
 </Tab>
 </Tabs>
 
-By default that address is on `deplo.site`, Deplo's own wildcard domain. You can use yours
-instead: see [Use your own wildcard domain](#use-your-own-wildcard-domain).
+- **`--owner-email`** is the customer's, the one on their order.
+- **`--owner-password`** is a temporary one, at least 8 characters, new for every order: the
+  service password your billing (WHMCS, for example) already generates.
+- **At the first sign-in** Deplo makes the customer replace it. Until then the account can do
+  nothing else.
+- **`--domain panel.customer-domain.com`** (optional) starts the panel on the customer's own
+  domain, with a Let's Encrypt certificate. If your order form asks for a domain, pass it: the
+  customer never has to move the panel later. Its DNS must point at the VM; until it does, the
+  generated `deplo.site` address answers.
 
-</Tab>
-<Tab value="Custom domain">
-
-If your order form already asks the customer for a domain, pass it to the installer with
-`--domain`. The panel starts directly on that domain, with a Let's Encrypt certificate:
-
-<Tabs groupId="provisioning" persist items={['Using cloud-init', 'Provisioning script']}>
-<Tab value="Using cloud-init">
-
-```yaml
-#cloud-config
-runcmd:
-  - curl -fsSL https://deplo.build/install.sh | bash -s -- --yes --owner-email ada@acme.com --owner-password '<temporary password>' --domain panel.customer-domain.com
-```
-
-</Tab>
-<Tab value="Provisioning script">
-
-```bash
-curl -fsSL https://deplo.build/install.sh | bash -s -- \
-  --yes --owner-email ada@acme.com --owner-password '<temporary password>' \
-  --domain panel.customer-domain.com
-```
-
-</Tab>
-</Tabs>
-
-<Callout type="info" title="The flow we recommend">
-  When you can pass the domain at install time, do it. The customer lands on their own address
-  from the very first login, and never has to move the panel later.
+<Callout type="warn" title="Treat the temporary password as seen">
+  The install transcript hides it, but it is readable in the process list while the install
+  runs, and cloud-init keeps it in the stored user data. Tell the customer to sign in right away:
+  the first sign-in replaces it.
 </Callout>
 
-The domain's DNS has to point at the VM's IP: the certificate is issued on the first request
-to the domain. If DNS is not ready yet, the generated `deplo.site` address still works as a
-backup.
+The cloud-init version works as is on any panel that accepts cloud-init user data: Proxmox VE,
+SolusVM 2, Convoy, OpenStack, CloudStack. On VirtFusion, add it as a server provisioner, in Bash
+or cloud-init YAML.
 
-</Tab>
-</Tabs>
-
-The cloud-init version works as is on any panel that accepts cloud-init user-data: Proxmox VE,
-SolusVM 2, Convoy, OpenStack, CloudStack. On VirtFusion, add it as a server provisioner, in
-Bash or cloud-init YAML.
-
-<Callout type="info" title="On Virtualizor">
-  In a recipe, `{{username}}` is the customer's email and `{{root_pass}}` their root password.
-  It is the only password a recipe can pass, so it is the
-  [fallback](#run-the-installer-on-first-boot) case:
-  `--owner-email '{{username}}' --owner-password '{{root_pass}}'`.
+<Callout type="warn" title="On Virtualizor: the root password as a fallback">
+  A recipe can pass only the root password: `{{username}}` is the customer's email and
+  `{{root_pass}}` their root password, so use
+  `--owner-email '{{username}}' --owner-password '{{root_pass}}'`. It works, but until the first
+  sign-in the root password also opens the panel. Tell the customer to sign in right away.
 </Callout>
 
 </Step>
@@ -141,17 +85,10 @@ Bash or cloud-init YAML.
 
 ### Build the customer's address
 
-<Tabs groupId="panel-domain" persist items={['Temporary domain', 'Custom domain']}>
-<Tab value="Temporary domain">
+With `--domain`, the address is that domain: `https://panel.customer-domain.com`.
 
-`deplo.site` is wildcard DNS: a name that carries an IPv4 in hexadecimal resolves to that IP,
-with no DNS setup. So the panel address is predictable:
-
-```
-https://deplo-<ip-in-hex>.deplo.site
-```
-
-Each octet becomes two hex digits. `203.0.113.10` gives `cb00710a`:
+Without it, the panel answers on `deplo.site`, a wildcard DNS where a name carrying an IPv4 in
+hexadecimal resolves to that IP. Each octet becomes two hex digits, so `203.0.113.10` gives:
 
 ```
 https://deplo-cb00710a.deplo.site
@@ -183,19 +120,7 @@ $url = "https://deplo-" . bin2hex(inet_pton($ip)) . ".deplo.site";
 </Tab>
 </Tabs>
 
-With your own wildcard domain, replace `deplo.site` with it.
-
-</Tab>
-<Tab value="Custom domain">
-
-The address is the customer's domain, nothing to compute:
-
-```
-https://panel.customer-domain.com
-```
-
-</Tab>
-</Tabs>
+An IPv6-only VM gets its IPv6 instead: `2001:db8::10` gives `deplo-v6-2001-db8--10.deplo.site`.
 
 </Step>
 <Step>
@@ -203,13 +128,13 @@ https://panel.customer-domain.com
 ### Send it
 
 - **Where**: in the welcome email or the VPS detail page, next to the email and temporary
-  password they sign in with.
-- **When**: the install takes a few minutes after boot; until then the address does not answer.
+  password.
+- **When**: the install takes a few minutes after boot. Until then the address does not answer.
 - **What they see**: a sign-in page, then a short setup that replaces the temporary password and
   names their team.
 
-On a temporary domain, the customer can later move the panel to their own from
-**Settings -> Deplo**: see [the panel's own address](/operations/panel-address-and-certificates).
+The customer can later move the panel to their own domain from **Settings -> Deplo**: see
+[the panel's own address](/operations/panel-address-and-certificates).
 
 </Step>
 </Steps>
@@ -217,13 +142,7 @@ On a temporary domain, the customer can later move the panel to their own from
 ## Use your own wildcard domain
 
 `deplo.site` is optional. To put the panel under your brand, run wildcard DNS on a domain of
-yours and pass the hostname with `--domain`, filling in the VM's IP:
-
-<Callout type="warn" title="Use a dedicated domain">
-  Keep the wildcard on a domain separate from your main one, the way Deplo keeps `deplo.site`
-  apart from `deplo.build`. Customer servers answer on it, so abuse reports, blocklists and
-  cookies stay away from your website and your billing panel.
-</Callout>
+yours and pass the VM's hostname on it, built the same way, with `--domain`:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash -s -- \
@@ -231,16 +150,21 @@ curl -fsSL https://deplo.build/install.sh | bash -s -- \
   --domain deplo-cb00710a.example-vps.net
 ```
 
-The address becomes `https://deplo-cb00710a.example-vps.net`, with a Let's Encrypt
-certificate.
+The panel answers on `https://deplo-cb00710a.example-vps.net`, with a Let's Encrypt certificate.
+
+<Callout type="warn" title="Use a dedicated domain">
+  Keep the wildcard apart from your main domain, the way Deplo keeps `deplo.site` apart from
+  `deplo.build`. Customer servers answer on it, so abuse reports, blocklists and cookies stay
+  away from your website and your billing panel.
+</Callout>
 
 - **We recommend running your own [nip.io](https://github.com/exentriquesolutions/nip.io)**: it
-  resolves the hex form of the IP out of the box. Set it as the nameserver of
-  `example-vps.net` at your registrar.
-- **Even better, host it on Deplo itself** when you can, on a server of yours: it is a DNS
-  server, so that server needs port `53` open on UDP and TCP.
-- The generated `deplo.site` address stays on as a backup. The customer can turn it off from
-  **Settings -> Deplo**.
+  resolves the hex form of the IP out of the box. Set it as the nameserver of `example-vps.net`
+  at your registrar.
+- **Even better, host it on Deplo itself**, on a server of yours. It is a DNS server, so that
+  server needs port `53` open on UDP and TCP.
+- **The generated `deplo.site` address stays on as a backup.** The customer can turn it off in
+  **Settings -> Deplo -> Advanced**, **Backup address**.
 
 <Callout type="info" title="A different setup in mind?">
   Our technical team is happy to review it: write to [hello@deplo.build](mailto:hello@deplo.build).

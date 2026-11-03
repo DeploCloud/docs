@@ -5,84 +5,71 @@ description: Install a TLS certificate you already hold, instead of letting Let'
 
 import { Globe, Server, LifeBuoy } from "lucide-react";
 
-Use this for wildcards, a private certificate authority, or a hostname that
-cannot complete an HTTP challenge.
+Use this for a wildcard, a private certificate authority, or a hostname that cannot complete an
+HTTP challenge.
 
-**Settings -> Servers -> a server -> Certificates.** Instance admins only.
+**Settings -> Servers -> the server -> Certificates.** Instance admins only.
 
-The certificate is installed into that host's Traefik store, and **nowhere
-else**. Deplo keeps no copy: the list you see is read back off the host,
-and the private key has no read path anywhere in the product.
+- **It lives in that server's Traefik, and nowhere else.** Deplo keeps no copy: the list is read
+  back from the host, and the private key is never shown again.
+- **It needs the Traefik Deplo installed**, and Docker Compose 2.23.1 or newer on the server.
+- **Installing restarts the proxy**, so every site on that server blinks for a few seconds.
 
-A domain reaches it by setting its **Certificate** to **Installed on the
-server**. That renders a router with TLS on and **no ACME resolver
-named**, because naming one would make Traefik try to issue a certificate
-for a hostname whose whole point is that it already has one.
-
-A domain set to **Let's Encrypt** also picks it up, since Traefik will not issue for a name its
-store already covers, and so does one set to **Cloudflare**, which resolves the same way. A domain
-set to **None (no certificate)** never does: it is on plain HTTP by definition.
-
-Installing a certificate that fully supersedes one already on the host replaces it; one that
-merely overlaps is kept alongside.
-
-## Install a certificate
+## Install one
 
 <Steps>
 <Step>
 
-### Open Certificates
-
-**Settings -> Servers**, choose the server, then **Certificates**.
-
-</Step>
-<Step>
-
 ### Add the pair
 
-Add the certificate and its private key, both PEM.
+**Add certificate**, then paste both, as PEM:
+
+- **Certificate**: the full chain, your certificate first and then the intermediates. Usually
+  `fullchain.pem`.
+- **Private key**: without a passphrase.
+
+Then **Install certificate**. Deplo refuses an expired or not-yet-valid certificate, a key that
+does not match, and a chain in the wrong order.
 
 </Step>
 <Step>
 
 ### Point the domain at it
 
-Set the app's domain **Certificate** to **Installed on the server**.
-
-</Step>
-<Step>
-
-### Apply it
-
-Redeploy the app, or use **Reload** to re-apply routing.
+Set the domain's **Certificate** to **Installed on the server**, then redeploy the app or
+**Reload** it, which re-applies its domains without a rebuild.
 
 </Step>
 </Steps>
 
-**Refresh** re-reads the store from the host. **Remove** deletes it there.
+**Refresh** re-reads the list from the host. **Remove** deletes it there.
+
+## Which domains use it
+
+| Domain **Certificate** | Uses it? |
+| --- | --- |
+| **Installed on the server** | Yes. TLS on and no ACME resolver, so Traefik never tries to issue one. |
+| **Let's Encrypt** or **Cloudflare** | Yes, when it covers the hostname: Traefik does not issue for a name its store already covers. |
+| **None (no certificate)** | No. Plain HTTP. |
+
+A new certificate that covers every name of an installed one replaces it. One that only overlaps
+is kept alongside.
 
 ## Important limits
 
-- **Nothing renews it.** This is the big one. The page warns during the
-  last three weeks, and after that visitors get an expiry error. Put the
-  renewal in your own calendar.
+- **Nothing renews it.** The list counts down the last 21 days, then visitors get an expiry
+  error. Put the renewal in your own calendar.
 - **It is per server.** An app running on two machines needs it on both.
-- **Deplo cannot show you the key back.** Keep your own copy.
-- **A wildcard is the usual reason to be here.** Let's Encrypt can issue
-  wildcards, but only over a DNS challenge, which needs provider
-  credentials in Traefik's static configuration. Installing the
-  certificate yourself avoids that entirely.
 
 ## Troubleshooting
 
-- **The browser still sees a Let's Encrypt certificate** - the domain is
-  set to **Let's Encrypt** and Traefik already had one. Traefik prefers
-  the more specific match; check the hostname really is covered by yours.
-- **Traefik serves its own default certificate** - the pair did not load.
-  Usually a missing intermediate in the chain, or a key that does not
-  match the certificate.
-- **It works on one app and not another** - the other app runs on a
-  different server.
+- **"Deplo did not install the proxy"**: that server runs your own proxy. Install it there.
+- **Installing fails with a config error**: Docker Compose on the server is older than 2.23.1.
+- **The browser still sees a Let's Encrypt certificate**: the hostname is not in your
+  certificate's domains, or the domain is not set to **Installed on the server**.
+- **Traefik serves its own default certificate**: the certificate does not cover that hostname,
+  or the app was not redeployed or reloaded.
+- **It works on one app and not another**: the other app runs on a different server.
 
 More in [Domains and TLS troubleshooting](/troubleshooting/domains-and-tls).
 

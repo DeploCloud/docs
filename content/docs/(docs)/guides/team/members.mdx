@@ -8,14 +8,9 @@ import { basePath } from "@/lib/base-path";
 
 import { ShieldCheck, History, KeyRound, Settings } from "lucide-react";
 
-Everything in Deplo belongs to a team. A person joins a team as a **member** with a **role**,
-which is a named set of [capabilities](/reference/capabilities).
-
-There is **no email invite**, because Deplo does not send mail. There are two ways in:
-
-- The person **already has an account**: add them to your team directly.
-- The person **has no account**: an instance admin creates a **registration link** and sends
-  it to them.
+A person joins a team as a **member** with a **role**, a named set of
+[capabilities](/reference/capabilities). Deplo sends no email invites: you add somebody who
+already has an account, or an instance admin creates a **registration link** for them.
 
 ## Add somebody who already has an account
 
@@ -24,7 +19,7 @@ There is **no email invite**, because Deplo does not send mail. There are two wa
 
 ### Open members settings
 
-Open **Settings -> Members**.
+Open **Settings -> Members**, then **Add member**.
 
 <Image
   src={`${basePath}/screenshots/team-members/01-members-list.png`}
@@ -33,13 +28,6 @@ Open **Settings -> Members**.
   height={1080}
   className="w-full rounded-lg"
 />
-
-</Step>
-<Step>
-
-### Add a member
-
-Click **Add member**.
 
 </Step>
 <Step>
@@ -59,7 +47,7 @@ Search by username, pick them, choose the role, then **Add to team**.
 </Step>
 </Steps>
 
-They see your team in their team switcher immediately.
+Your team shows up in their team switcher immediately.
 
 ## Invite somebody new
 
@@ -68,43 +56,30 @@ This needs an instance admin.
 <Steps>
 <Step>
 
-### Open users settings
+### Start the registration
 
-Open **Settings -> Users**, in the system section.
+Click **Create a new user** in the **Add member** dialog, or **Register user** in
+**Settings -> Users**. Then choose where they land:
 
-</Step>
-<Step>
-
-### Create the user
-
-Start **Create a new user** and follow the wizard.
+- **They join your teams**: tick each team and pick **Member** or **Viewer**. From **Members**,
+  the current team is already ticked.
+- **They get their own team**: they name and own a new team when they open the link.
 
 </Step>
 <Step>
 
 ### Get the link
 
-Deplo creates a single-use link. **It works once and expires in 24 hours.**
-
-</Step>
-<Step>
-
-### Share it
-
-**Share this link** with them over a channel you trust.
+Click **Generate link**. **It works once and expires in 24 hours.** Send it over a channel you
+trust: they pick a username, an email and a password.
 
 </Step>
 </Steps>
 
-They open it, choose a username and a password, and land in **their own team**. Then add them
-to yours from **Settings -> Members**.
-
-Pending links are listed on the same page and can be revoked before use. An admin can copy a
-link again from the list during its 24 hours.
+Unused links wait under **Pending registration links** in **Settings -> Users**, where you can
+copy one again or revoke it.
 
 ## Roles and limited access
-
-Each member row shows their role. Two badges to know:
 
 <Image
   src={`${basePath}/screenshots/team-members/03-table-view.png`}
@@ -114,78 +89,68 @@ Each member row shows their role. Two badges to know:
   className="w-full rounded-lg"
 />
 
-- **Primary owner** is the team's founder. Nobody can remove, demote or edit them, not even
-  instance admins. Ownership is transferred only from
-  **Settings -> Members -> the member -> Advanced**, by the owner, to a member of that team,
-  after entering the password and second factor again.
-- **Limited access** means their real access is changed by
-  [folder shares](/guides/roles-and-permissions), so the role name alone does not say
-  everything.
+Each row shows the member's role and how many permissions they hold. The badges:
 
-Open a member to see **Permissions** (their role and the scope tree), **Advanced** (instance
-admin, transfer ownership, remove), and **[Activity](/guides/team/activity)** (what they did).
+| Badge | Meaning |
+| --- | --- |
+| **Primary owner** | The team's founder. Nobody can remove, demote or edit them, not even an instance admin. |
+| **Limited access** | Their role reaches only part of the team. See [Build a role](/guides/roles-and-permissions/roles#limit-where-it-works). |
+| **More than role** / **Less than role** | Somebody gave this one person extra access, or took some away, on top of their role. |
 
-A member whose permissions were edited by hand no longer follows their role. **Assign them a
-role again** from the member page or the API to put them back on it.
+Open a member to see three tabs:
+
+- **Role & permissions**: the role, then where they can work and what they can do. Untick
+  to take something away from this one person, tick to give them extra. The role and
+  everyone else holding it stay as they are. Picking a role again resets them to it.
+- **Activity**: what they did. See [Activity](/guides/team/activity#one-person).
+- **Advanced**: transfer team ownership, or remove them.
+
+Instance admin and the server grants belong to the account, not the team: an instance admin
+changes them with **Manage account**, which opens **Settings -> Users**.
+
+### Transfer ownership
+
+Only the primary owner can, to another member of the team: from that member's **Advanced**
+tab, or from **Settings -> General -> Danger zone**. Confirm with your password, your
+two-factor code if you have one, and their username. You stay an owner, and only the new
+primary owner can hand it back.
 
 ## Remove somebody
 
-From the member's **Advanced** tab. Their membership ends, their sessions in that team stop
-working, and their API tokens lose the access they got from them. Their account and their own
-team are not touched.
+From the member's **Advanced** tab, click **Remove**. Only an owner can remove another owner,
+and nobody can remove themselves or the primary owner.
 
-Two more things happen, so adding them back later starts clean:
-
-- **Every folder share and per-app grant they had** in this team is revoked.
-- **Folders they owned pass to the primary owner**, so they do not disappear from everyone's
-  Overview. This is written to [Activity](/guides/team/activity), and the primary owner can
-  share the folder again.
+- **They lose this team at once**: in the panel, over the API and through their tokens. Their
+  account and their other teams are not touched.
+- **Every folder share and per-project or per-app grant** they had here is revoked, so adding
+  them back later starts clean.
+- **Folders they owned pass to the primary owner**, so they do not vanish from the Overview.
+  [Activity](/guides/team/activity) records the hand-over.
 
 ## Good to know
 
 - **A team always keeps somebody who can manage it.** No role edit or removal can leave zero
   holders of `manage_members`, `manage_roles` or `manage_team`.
-- **Teams are isolated.** Adding somebody to this team gives them nothing elsewhere.
-- **Servers are shared between teams.** An instance admin decides on the server which teams
-  may deploy to it.
-- **Two-factor can be required for the whole team.** A member who has not set it up sees
-  nothing in that team. See [Account security](/guides/team/account-security).
+- **Teams are isolated.** Adding somebody here gives them nothing elsewhere.
+- **Servers are shared between teams.** An instance admin picks which teams may deploy to each
+  server.
 
 ## Troubleshooting
 
 - **The user search finds nobody**: they have no account on this instance yet. Use a
   registration link.
 - **A registration link says used or expired**: create a new one.
-- **They are in the team but see nothing**: the team requires two-factor and they have not set
-  it up, or their role has almost no capabilities.
+- **They are in the team but see nothing**: the team or their role
+  [requires two-factor](/guides/team/account-security#when-your-team-requires-two-factor) and
+  they have not set it up, or their role reaches almost nothing.
 
 See [Sign-in and access](/troubleshooting/sign-in-and-access) for more.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<ShieldCheck className="text-blue-400" />}
-    title="Roles and permissions"
-    description="Capabilities, folder shares, the owner role"
-    href="/guides/roles-and-permissions"
-  />
-  <Card
-    icon={<History className="text-blue-400" />}
-    title="Activity"
-    description="Who did what, and when"
-    href="/guides/team/activity"
-  />
-  <Card
-    icon={<KeyRound className="text-blue-400" />}
-    title="Account security"
-    description="Password, two-factor, passkeys"
-    href="/guides/team/account-security"
-  />
-  <Card
-    icon={<Settings className="text-blue-400" />}
-    title="Instance administration"
-    description="Users, registration links, servers"
-    href="/operations/instance-administration"
-  />
+  <Card icon={<ShieldCheck className="text-blue-400" />} title="Roles and permissions" description="Capabilities, folder shares, the owner role" href="/guides/roles-and-permissions" />
+  <Card icon={<History className="text-blue-400" />} title="Activity" description="Who did what, and when" href="/guides/team/activity" />
+  <Card icon={<KeyRound className="text-blue-400" />} title="Account security" description="Password, two-factor, passkeys" href="/guides/team/account-security" />
+  <Card icon={<Settings className="text-blue-400" />} title="Instance administration" description="Users, registration links, servers" href="/operations/instance-administration" />
 </Cards>

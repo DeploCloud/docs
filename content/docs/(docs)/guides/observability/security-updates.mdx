@@ -5,84 +5,73 @@ description: Deplo checks what your apps and databases run for known security fl
 
 import { Bell, Rocket, ShieldCheck } from "lucide-react";
 
-Deplo reads the packages inside every image it runs for your team and checks them
-against public lists of known security flaws. When there is something you can fix,
-the app says so, and tells you what to do.
+Deplo reads the packages inside every image it runs for your team and checks them against public
+lists of known security flaws. When there is something you can fix, the app says so and tells you
+what to do. Nothing to set up: it is on for every team.
 
-Nothing to set up: it is on for every team.
+One security update is one package to move, or one image to update. A package with 25 known flaws
+that one new version fixes is one update.
 
 ## What you see
 
-- **A banner on the app's Overview**: "2 security updates available". It appears only
-  when there is something critical to apply, and disappears once it is fixed.
-- **A shield on the app's card**, next to its status dot. Hover it for the count.
+- **A banner on the app's Overview**: "2 security updates available", with **Details**. Only when
+  something critical is there to apply; it goes away once fixed.
+- **A shield on the app's card**, next to its status dot. Hover it for the count. Databases get it
+  on **Storage**, pull request previews on their row.
 - **A notice at the top of the Overview** naming every app and database that needs updates, red
-  when one of them runs something already used in attacks. **Show these apps** filters the grid
-  to them.
-- **A notice at the top right**, next to your avatar, on every page. Click it for the list, or
-  **Dismiss** it: it comes back only when something new needs updating.
-- **Details**: every update, with what to do. Also in the app's menu (the three dots at the top right ->
-  **Security updates**), where it says "Up to date" when there is nothing. Each advisory shows its
-  scores and the advisory's own summary, which often names the condition it needs; click it to read
-  it on OSV.dev.
-- **Checking the new deploy**: right after a deploy, Details says so while the new image is read,
-  and the previous image's updates are left out. It takes about a minute.
+  when one runs something already used in attacks. **Show these apps** filters the grid.
+- **A notice next to your avatar**, on every page. **Dismiss** hides it until something new needs
+  updating.
+- **Details**: every update and what to do, also in the app's menu (three dots, top right) -> **Security updates**
+  ("Up to date" when there is nothing). Each advisory shows its scores and summary, and opens on
+  OSV.dev.
 
-Managed databases get the same banner and shield on **Storage**. Pull request previews
-get the shield on their row.
-
-One security update is one package of your app's to move, or one image to update. If a package
-has 25 known flaws and one new version fixes them all, that is one update. An image with ten
-flawed packages and a newer build that fixes them is one update too.
+Right after a deploy, Details reads **Checking the new deploy** for about a minute and leaves the
+previous image's updates out.
 
 ## How serious it is
 
 | Level | What it means |
 | --- | --- |
-| **Used in attacks** | The flaw is on CISA's list of flaws already exploited in real attacks |
-| **Critical** | A critical flaw (score 9.0 or more) that needs nothing special to be exploited |
-| **Important** | A high-severity flaw (score 7.0 to 8.9), or a critical one that works only when the package is set up a certain way |
+| **Used in attacks** | On CISA's list of flaws already exploited in real attacks |
+| **Critical** | Score 9.0 or more, and it needs nothing special to be exploited |
+| **Important** | Score 7.0 to 8.9, or a critical one that works only when the package is set up a certain way |
 
 Only **Used in attacks** and **Critical** count in the badge, the notices and the alerts.
-**Important** ones are listed in **Details** under **Less urgent**. Lower levels are not shown.
+**Important** ones are listed under **Less urgent**. Lower levels are not shown.
 
-A flaw that works only in a particular setup says **Only when the package is set up a certain
-way** next to its scores. For example, a critical DOMPurify flaw that needs `SAFE_FOR_TEMPLATES`
-together with `RETURN_DOM` is listed as **Important**. Deplo reads this from the advisory's CVSS
-score (attack complexity high), not from your code. A flaw on
+**Only when the package is set up a certain way** marks a flaw whose CVSS score says attack
+complexity high. For example, a critical DOMPurify flaw that needs `SAFE_FOR_TEMPLATES` with
+`RETURN_DOM` is **Important**. Deplo reads this from the advisory, not from your code. A flaw on
 CISA's list stays **Used in attacks** whatever its setup.
 
-Next to each advisory, **EPSS** is the chance it is exploited in the next 30 days, as
-[FIRST](https://www.first.org/epss/) estimates it: a high score is worth looking at first.
+**EPSS** is the chance of exploitation in the next 30 days, as [FIRST](https://www.first.org/epss/)
+estimates it. A high one is worth looking at first.
 
 ## How to fix it
 
-Each update says how you get the fix:
+Details groups updates under **To apply**, **Waiting on the image's maintainers**, **Less urgent**,
+**Build only** and **Ignored**. Each says how to get the fix:
 
 | What Details says | What to do |
 | --- | --- |
-| Update minimist to 1.2.6 in your code | Your `package.json` names it: bump it in your repository and push |
-| Pulled in by monaco-editor ← @payloadcms/ui: add an override for dompurify 3.4.17 | Another package pulls it in: [add an override](#add-an-override) and push |
-| Pulled in by another package: add an override for dompurify 3.4.17 | The same, when Deplo cannot tell which package pulls it in |
-| Update @payloadcms/richtext-lexical: the fix for happy-dom is a new major version, which an override could break | Update the package your app names to a version that brings the fix. Forcing a new major version under it could break it |
-| Only used to build the app: it never runs | Nothing urgent: it comes from your `devDependencies`, so it is listed and never counted |
-| A newer build of this image fixes 3 known flaws: update to get it | Press **Update** on the banner. An app redeploys and pulls its image again; a database asks first, then restarts on the new build with its data |
+| Update minimist to 1.2.6 in your code | Your `package.json` names it: bump it and push |
+| Pulled in by monaco-editor ← @payloadcms/ui: add an override for dompurify 3.4.17 | [Add an override](#add-an-override) and push. Without the chain, it reads **Pulled in by another package** |
+| Update @payloadcms/richtext-lexical: the fix for happy-dom is a new major version, which an override could break | Update the package your app names to a version that brings the fix |
+| Only used to build the app: it never runs | Nothing urgent: it comes from `devDependencies`, listed and never counted |
+| A newer build of this image fixes 3 known flaws: update to get it | Press **Update**. An app redeploys and pulls its image again; a database asks first, then restarts on the new build with its data |
 | Version 1.60.2 is available and fixes 2 known flaws | Change the image version in **Settings -> Deployments** |
 
 ### Add an override
 
 An override makes every package that pulls in a dependency use the version you pick. Add it to
-your `package.json`, run an install so the lockfile follows, and push:
+`package.json`, run an install so the lockfile follows, and push:
 
 <Tabs items={["bun", "pnpm", "npm"]}>
 <Tab value="bun">
 
 ```json title="package.json"
-{
-  "overrides": {
-    "dompurify": "3.4.17"
-  }
-}
+{ "overrides": { "dompurify": "3.4.17" } }
 ```
 
 Then run `bun install`.
@@ -91,13 +80,7 @@ Then run `bun install`.
 <Tab value="pnpm">
 
 ```json title="package.json"
-{
-  "pnpm": {
-    "overrides": {
-      "dompurify": "3.4.17"
-    }
-  }
-}
+{ "pnpm": { "overrides": { "dompurify": "3.4.17" } } }
 ```
 
 Then run `pnpm install`.
@@ -106,11 +89,7 @@ Then run `pnpm install`.
 <Tab value="npm">
 
 ```json title="package.json"
-{
-  "overrides": {
-    "dompurify": "3.4.17"
-  }
-}
+{ "overrides": { "dompurify": "3.4.17" } }
 ```
 
 Then run `npm install`.
@@ -120,93 +99,69 @@ Then run `npm install`.
 
 ### Update an image
 
-Deplo offers **Update** only after reading the newer build: the image's server downloads it,
-reads its packages like any other image, and removes it again. A newer build that still has the
-flaw is listed under **Waiting on the image's maintainers**, never counted; while it is being
-read, Details says Deplo is checking it.
+**Update** appears only after Deplo has read the newer build: the image's server downloads it,
+reads its packages, and removes it again. While that runs, Details says Deplo is checking it. A
+newer build that still has the flaw goes under **Waiting on the image's maintainers**, never
+counted.
 
 ## What is checked
 
-Deplo shows only what you chose:
+Only what you chose:
 
-- **An app Deplo builds from your code**: the dependencies your code installs, such as the
-  packages in `package.json`, `requirements.txt`, `Gemfile` or `go.mod`. A `RUN pip install`
-  in your `Dockerfile` counts too.
-- **An image you deploy as it is** (a database, a template, a Compose service with `image:`):
-  the software the image ships, when a newer build or version of that image exists. An image
-  pinned to an old version, like `grafana/grafana:8.3.0`, is compared with the newest release on
-  its line.
+- **An app Deplo builds from your code**: the dependencies it installs (`package.json`,
+  `requirements.txt`, `Gemfile`, `go.mod`), and a `RUN pip install` in your `Dockerfile`.
+- **An image you deploy as it is** (a database, a template, a Compose service with `image:`): its
+  software, when a newer build or version exists. A pinned `grafana/grafana:8.3.0` is compared with
+  the newest release on its line.
 
-It leaves out what you never picked:
+Every source counts: git, upload, Docker image, Compose, template, managed databases, pull request
+previews, and stopped apps (from the image they will start with).
 
-- the system packages under your app (glibc, openssl), including the Python packages the system
-  installs for itself;
-- the language toolchain: Go's standard library, pip, setuptools, wheel and npm itself;
-- tools a dependency carries inside it, and copies a package bundles inside itself (like
-  `next/dist/compiled`);
-- the client tools a database image bundles, such as MySQL Shell;
-- flaws nobody has fixed yet.
-
-Those come up to date with Deplo updates and new builds of the images.
-
-Every kind of app is checked:
-
-- Apps of every source: from git, an upload, a Docker image, a Compose file or a template.
-- Managed databases.
-- Stopped apps and databases, from the image they will start with.
-- Pull request previews.
-
-Deplo's own components are not listed here: their fixes come with Deplo updates.
+Left out, because you never picked them: system packages (glibc, openssl) and the Python packages
+the system installs for itself; the toolchain (Go's standard library, pip, setuptools, wheel, npm);
+copies a package bundles inside itself (like `next/dist/compiled`); the client tools a database
+image bundles (like MySQL Shell); flaws nobody has fixed yet; and Deplo's own components, fixed by
+Deplo updates.
 
 ## When it is checked
 
-- **After a deploy**: the new image is checked as soon as the deploy is live, usually within a
-  minute.
-- **Every 6 hours**: every image is matched again against the latest lists, because new
-  flaws are found in software that has not changed.
-- **Every day**: Deplo refreshes CISA's list of flaws used in attacks.
+- **After a deploy**, as soon as it is live, usually within a minute.
+- **Every 6 hours**, every image against the latest lists, since new flaws are found in software
+  that has not changed.
+- **Every day**, CISA's list of flaws used in attacks is refreshed.
 
 ## Alerts
 
-**Security update available** is on by default in every channel. It fires:
-
-- once per update, never again for the same one;
-- only for running apps and databases, never for a stopped app or a preview;
-- only for **Used in attacks** and **Critical** updates.
+**Security update available** is on by default in every channel. It fires once per update, only
+for running apps and databases (never a stopped app or a preview), and only for **Used in
+attacks** and **Critical**.
 
 ## What Deplo sends
 
-To match an image, Deplo sends [OSV.dev](https://osv.dev) the name and version of each
-package it checks, for example `npm minimist 1.2.5`. System packages are never sent, since they
-are never shown. Nothing else: no app name, no server, no domain, nothing that names this Deplo.
+- **To [OSV.dev](https://osv.dev)**: the name and version of each package it checks, for example
+  `npm minimist 1.2.5`, private registry names included. Never system packages, and nothing that
+  names this Deplo: no app, server or domain.
+- **To [FIRST](https://www.first.org/epss/)**, once a day: the CVE ids behind your updates (for
+  example `CVE-2021-44906`), to read their EPSS scores.
 
-Once a day it also sends [FIRST](https://www.first.org/epss/) the CVE ids behind your updates
-(for example `CVE-2021-44906`), to read their EPSS scores, and nothing more.
+Three read-only downloads also happen:
 
-Three more downloads happen, all read-only:
-
-- CISA's public list of exploited flaws, once a day, by the Deplo panel.
-- The package reader the servers use, once per server, from its official release, with
-  its checksum verified.
-- A newer build of an image you run, by its own server from the image's registry, to see
-  whether it has the fix before Update is offered. It is removed again afterwards.
-
-Package names from a private registry, such as an internal npm scope, are sent like any
-other name.
+- CISA's public list of exploited flaws, daily, by the panel.
+- The package reader, once per server, from its official release, checksum verified.
+- A newer build of an image you run, by its own server from its registry, then removed.
 
 ## Ignore an update
 
-Sometimes a team decides not to apply one: the flaw is not reachable, or the fix comes with the
-next release. In **Details**, press **Ignore** on the update, write why, and pick 30, 90 or 180
-days.
+When a flaw is not reachable, or the fix comes with the next release: in **Details**, press
+**Ignore**, write why, and pick 30, 90 or 180 days.
 
 - It moves to **Ignored**, stops counting and never alerts until then.
-- **Activity** records who ignored it, until when, and why.
+- **Activity** records who, until when, and why.
 - When the time is up it counts again. A **new** flaw in the same package shows right away.
 - **Stop ignoring** brings it back at once.
 
-Ignoring needs the **Ignore security updates** capability. Team owners have it; give it to a role
-in **Settings -> Roles**.
+It needs the **Ignore security updates** capability. Team owners have it; give it to a role in
+**Settings -> Roles**.
 
 ## When an image cannot be checked
 
@@ -214,56 +169,25 @@ Details says why:
 
 | Message | What happened |
 | --- | --- |
-| An image is too large to check on its server | Reading it needed more memory than Deplo allows itself on that server |
-| Its server is too low on disk space | Deplo needs about twice the image size free to read it |
-| Its server is too low on memory | Deplo waits until enough memory is free |
-| Its server cannot check images yet | The server cannot cap the reader's memory, so Deplo does not run it there |
+| An image is too large to check on its server | Reading it needed more memory than Deplo allows itself there |
+| Its server is too low on disk space | Deplo needs about twice the image size free |
+| Its server is too low on memory | Deplo waits until enough is free |
+| Checking an image took too long | Reading it hit its time limit |
+| Its server cannot check images yet | The server cannot cap the reader's memory, so Deplo does not run it |
 
-Your apps are never at risk: Deplo reads one image at a time per server, never during a
-deploy, at the lowest priority.
+Your apps are never at risk: one image at a time per server, never during a deploy, at the lowest
+priority.
 
 ## Turn it off
 
-An instance admin can turn checks off for the whole instance:
-
-<Steps>
-<Step>
-
-### Open Deplo settings
-
-Go to **Settings -> Deplo -> Advanced**.
-
-</Step>
-<Step>
-
-### Flip Security updates
-
-Under **Privacy**, turn **Security updates** off. Nothing is checked and nothing is sent
-from that moment. The line under the switch shows when the last check ran, or since when
-OSV.dev could not be reached.
-
-</Step>
-</Steps>
+An instance admin can turn checks off for the whole instance: **Settings -> Deplo -> Advanced**,
+under **Privacy**, switch **Security updates** off. Nothing is checked or sent from then on. The
+line under the switch shows when the last check ran, or since when OSV.dev could not be reached.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Bell className="text-blue-400" />}
-    title="Notifications and alerts"
-    description="Choose where security alerts go"
-    href="/guides/observability/notifications-and-alerts"
-  />
-  <Card
-    icon={<Rocket className="text-blue-400" />}
-    title="Build settings"
-    description="How an app is built, and its base image"
-    href="/guides/releases/build-settings"
-  />
-  <Card
-    icon={<ShieldCheck className="text-blue-400" />}
-    title="Anonymous usage statistics"
-    description="The other thing a Deplo instance can send"
-    href="/operations/anonymous-usage-statistics"
-  />
+  <Card icon={<Bell className="text-blue-400" />} title="Notifications and alerts" description="Choose where security alerts go" href="/guides/observability/notifications-and-alerts" />
+  <Card icon={<Rocket className="text-blue-400" />} title="Build settings" description="How an app is built, and its base image" href="/guides/releases/build-settings" />
+  <Card icon={<ShieldCheck className="text-blue-400" />} title="Anonymous usage statistics" description="The other thing a Deplo instance can send" href="/operations/anonymous-usage-statistics" />
 </Cards>

@@ -2,16 +2,16 @@
   "title": "Operations",
   "icon": "Server",
   "pages": [
+    "instance-administration",
+    "servers",
     "update",
     "verify-a-release",
-    "disaster-recovery",
-    "move-deplo",
-    "break-glass-recovery",
-    "instance-administration",
-    "anonymous-usage-statistics",
     "panel-address-and-certificates",
     "cloudflare-tunnel",
-    "remove-a-server-or-uninstall",
-    "servers"
+    "disaster-recovery",
+    "break-glass-recovery",
+    "move-deplo",
+    "anonymous-usage-statistics",
+    "remove-a-server-or-uninstall"
   ]
 }

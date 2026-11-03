@@ -5,11 +5,11 @@ description: What a server is, how it joins Deplo, and what it can be used for.
 
 import { PlusCircle, Settings, ListTree, Trash2, LifeBuoy } from "lucide-react";
 
-A **server** is a machine you own that Deplo can deploy to. It becomes one by running a small
-program, the **server agent**. The agent is the only part of Deplo that runs Docker.
+A **server** is a machine you own that Deplo deploys to. It becomes one by running a small
+program, the **server agent**, the only part of Deplo that runs Docker.
 
-Servers belong to the instance, not to a team. One server can serve several teams, and one team
-can use several servers.
+Servers belong to the instance, not to a team: one server can serve several teams, and one team
+can use several servers. Which teams may deploy to a server is a setting on the server.
 
 ## How a server joins
 
@@ -19,71 +19,52 @@ The control plane never connects to your machine. Your machine connects to it.
 <Step>
 ### Get an install command
 
-In **Settings -> Servers** click **Add server**. Deplo shows an install command with a
-**one-time token**.
+In **Settings -> Servers**, click **Add**, name the server and pick its role. Deplo shows an
+install command with a **one-time token** that expires after about an hour.
 </Step>
 <Step>
 ### Run it on the server
 
-Paste the command on the server. It installs Docker and git if missing, downloads the agent,
-checks its SHA-256, and starts it as a systemd service.
-
-<Callout title="git is needed to clone your repositories">
-The agent clones on the server, so a server without git cannot build an app from a repository.
-Backups-only and migration-only servers never build, so they do not need it.
-</Callout>
+The command installs Docker and git if missing, downloads the agent, checks its SHA-256, and
+starts it as a systemd service. git matters: the agent clones on the server, so without it a
+server cannot build from a repository.
 </Step>
 <Step>
-### The agent asks for a certificate
+### The agent gets its certificate
 
-The agent creates its own private key and sends a certificate request with the token.
-</Step>
-<Step>
-### The control plane signs and pins it
-
-The control plane signs the certificate and **pins its fingerprint**. From now on only that
-certificate is trusted.
-</Step>
-<Step>
-### Online
-
-The server turns online.
+The agent creates its own private key and sends a certificate request with the token. The
+control plane signs it and **pins its fingerprint**: from now on only that certificate is
+trusted, and the server turns **Online**.
 </Step>
 </Steps>
-
-The token works once and expires after about an hour.
 
 ## How Deplo reaches a server
 
 The agent keeps one encrypted connection (mutual TLS) open to the panel's address. Every deploy,
-log, console session and backup goes over it.
+log, console session and backup rides it.
 
-- **There is no port to open on the server.** It works behind a home or office router, on a
-  company network, or on a cloud server whose firewall is closed.
-- **A server is connected or offline.** When the connection drops, the agent reconnects by
-  itself within seconds.
-- **Servers follow the panel's address.** Change the panel's domain and every connected server
-  learns it on its own.
-- **Deplo never calls a server.** It only answers the connection the server agent opened.
-- **No server keeps a port open.** A new server agent opens none. One installed by an older
-  Deplo closes its old port for good once it has connected.
+- **No port to open on the server.** It works behind a home or office router, on a company
+  network, or on a cloud server with a closed firewall.
+- **Connected or offline.** When the connection drops, the agent reconnects within seconds.
+- **Servers follow the panel.** Change the panel's domain and every connected server learns it.
+  An agent installed by an older Deplo closes its old port once it has connected.
 
-**Every server agent must be `0.5.1-canary.10` or later**, the first that connects this way.
-An older one can't reach Deplo, and Deplo can't reach it to update it. That server is
-**unusable** until its server agent is
+**Every server agent must be `0.5.1-canary.10` or later**, the first that connects this way. An
+older one cannot reach Deplo, and Deplo cannot reach it to update it: the server is **unusable**
+until its agent is
 [reinstalled](/troubleshooting/servers-and-agents#a-server-agent-needs-to-be-reinstalled). Its
 apps keep running, and its apps and settings stay in Deplo.
 
 ## What a server can be used for
 
-You choose the role when you install it: Everything, Build only, Backups only, or the
-migration-only role created by the [migration wizard](/migrations). See
+You pick the role in the **Add** dialog: **Everything**, **Build** or **Backups**. The
+[migration wizard](/migrations) creates a fourth, migration-only kind. See
 [Server roles](/advanced/server-roles) for the comparison.
 
 ## Health is not readiness
 
 **Health** answers "can Deplo reach and trust this agent right now?". It comes from the last
-contact and has five values:
+contact:
 
 <TypeTable
   type={{
@@ -96,91 +77,58 @@ contact and has five values:
       type: "string",
     },
     warning: {
-      description: "The server agent answered, but Docker is not, so nothing can deploy there",
+      description: "The agent answered, but Docker did not, so nothing can deploy there",
       type: "string",
     },
     error: {
-      description: "Something answered, but the agent is wrong: untrusted certificate, unsupported version, or an application error",
+      description: "Something answered, but the agent is wrong: untrusted or expired certificate, unsupported version, or an application error",
       type: "string",
     },
     offline: {
-      description: "Not connected to Deplo for about 10 seconds. Its message says what brings it back: usually the machine is off or has lost its internet connection",
+      description: "Not connected for about 10 seconds. Usually the machine is off or has lost its internet connection",
       type: "string",
     },
   }}
 />
 
-<Callout type="info" title="The stored value is only a cache">
-When it is too old, the Servers page shows **Unknown**. A deploy never relies on it: it contacts
-the agent at that moment.
-</Callout>
+When the last contact is too old, the Servers page shows **Unknown**. A deploy never relies on
+the stored value: it contacts the agent at that moment.
 
-**Readiness** answers "is this server set up well enough to deploy apps to?". It is a live report
-you run from the server's menu. Rows are grouped as agent, docker, routing, capacity, build
-methods and Deplo configuration, and each row is `pass`, `info`, `warn`, `fail` or `skip`.
-**`skip` means it could not be checked**, which is not a pass.
+**Readiness** answers "is this server set up well enough to deploy apps to?". Run it live with
+**Check readiness** on the server's page. Rows are grouped as agent, docker, routing, capacity,
+build methods and Deplo configuration, each `pass`, `info`, `warn`, `fail` or `skip`. **`skip`
+means it could not be checked**, which is not a pass.
 
 ## The Deplo host is a server too
 
-The machine running the control plane adds itself during installation and appears in the list
-like any other server. Deploying to it uses the same path and the same code as any remote server.
-Its agent connects to Deplo on the machine itself, so it keeps working even when the panel's
-public address does not.
-
-The only difference: it cannot remove itself from the list.
+The machine running the control plane adds itself during installation and deploys through the
+same path as any remote server. Its agent connects over the machine itself, so it keeps working
+even when the panel's public address does not. It is the one server that cannot be removed.
 
 ## Removing a server
 
 Removal is **refused while anything still uses the machine**: an app, a managed database, or a
 backup destination on its disk. Each refusal names what is in the way.
 
-Once nothing uses it, removing a server **deletes the pinned certificate**, so Deplo will never
-talk to it again. Deplo does not uninstall anything on the machine itself.
-
-Deplo shows a one-line uninstall command to run on the machine if you want the agent, its Traefik
-and its data removed. A migration source is the exception: Deplo uninstalls itself from it once
+Removing a server **deletes the pinned certificate**, so Deplo never talks to it again. Nothing
+is uninstalled from the machine: Deplo shows a one-line command to remove the agent, its
+Traefik and its data. A migration source is the exception: Deplo uninstalls itself from it once
 you are done.
 
 ## Two behaviours to know
 
-**Deploy concurrency.** Each server has a slot count, default `1`, so deploys to one machine run
-one at a time. Other servers keep working in parallel. Two deploys of the same app never overlap.
-
-**Pending teardowns.** If Deplo tells a server to remove a stack and the server does not confirm,
-Deplo retries up to eight times, from one minute up to a day apart. If it gives up, it writes an
-activity entry and raises an alert.
+- **Deploy concurrency.** Each server runs `1` deploy at a time by default; other servers work in
+  parallel, and two deploys of the same app never overlap.
+- **Pending teardowns.** When a server does not confirm removing a stack, Deplo retries up to
+  eight times, from one minute to a day apart. If it gives up, it writes an activity entry and
+  raises the **Leftover containers** alert.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<PlusCircle className="text-blue-400" />}
-    title="Add a server"
-    description="The procedure"
-    href="/operations/servers/add-a-server"
-  />
-  <Card
-    icon={<Settings className="text-blue-400" />}
-    title="Server settings"
-    description="Access, cleanup, maintenance"
-    href="/operations/servers"
-  />
-  <Card
-    icon={<ListTree className="text-blue-400" />}
-    title="Server roles"
-    description="Everything, build, storage, migration source"
-    href="/advanced/server-roles"
-  />
-  <Card
-    icon={<Trash2 className="text-blue-400" />}
-    title="Remove or uninstall"
-    description="The host-side script"
-    href="/operations/remove-a-server-or-uninstall"
-  />
-  <Card
-    icon={<LifeBuoy className="text-blue-400" />}
-    title="Servers and agents troubleshooting"
-    description="When enrollment or health goes wrong"
-    href="/troubleshooting/servers-and-agents"
-  />
+  <Card icon={<PlusCircle className="text-blue-400" />} title="Add a server" description="The procedure" href="/operations/servers/add-a-server" />
+  <Card icon={<Settings className="text-blue-400" />} title="Server settings" description="Access, cleanup, maintenance" href="/operations/servers" />
+  <Card icon={<ListTree className="text-blue-400" />} title="Server roles" description="Everything, build, storage, migration source" href="/advanced/server-roles" />
+  <Card icon={<Trash2 className="text-blue-400" />} title="Remove or uninstall" description="The host-side script" href="/operations/remove-a-server-or-uninstall" />
+  <Card icon={<LifeBuoy className="text-blue-400" />} title="Servers and agents troubleshooting" description="When enrollment or health goes wrong" href="/troubleshooting/servers-and-agents" />
 </Cards>

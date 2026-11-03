@@ -11,41 +11,23 @@ import { ArrowRightLeft, Globe, ServerCog, Database } from "lucide-react";
   GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-A wizard reads your Dokploy installation over its API and recreates it here: projects, apps,
-domains, variables, volumes and databases, with the data copied across. The configuration comes
-from the API. The data is read by a Deplo agent installed on each Dokploy machine.
-
-Pick the tab that matches where Deplo will run: on the machine Dokploy already runs on, or on a
-machine of your own.
+A wizard reads your Dokploy installation over its API and recreates it here, data included. The
+configuration comes from the API; the data is read by a Deplo agent on each Dokploy machine.
 
 ## Before you start
 
-### Create the API key
+- **An API key per organization.** In Dokploy: **Settings**, **Profile**, **API/CLI**. Create it
+  in that dialog, not over Dokploy's API: a key created over the API allows 10 requests a day, and
+  an import needs hundreds. A key reads one organization only, so create one for each.
 
-In Dokploy: **Settings**, **Profile**, **API/CLI**. Create the key from that dialog, not through
-Dokploy's API. A key created over the API has a limit of 10 requests a day, and an import needs
-hundreds. It would stop part-way with a 401 error. Raise or disable the limit in the same place.
-
-### One run per source organization
-
-A Dokploy key only reads one organization. If your Dokploy has three, create a key for each.
-Paste the next one, press **Add**, and it joins the **Teams to bring over** list with the Deplo
-team it lands in. Two organizations may land in the same team, or each in its own.
-
-Each organization is one run. The runs are queued on the server and done one after another, so
-you can close the page and come back later.
+Each organization is one run. Runs are queued on the server, one after another, so you can close
+the page.
 
 ### On every source machine
 
-- **One shell command, as root, on each machine.** It installs the Deplo agent that reads the
-  disks. The agent connects to Deplo by itself, so there is no port to open.
-- **A snapshot of every machine, taken first.** It is the only way back.
-- **Free space on the destination disk.** Deplo warns under 10% free or under 5 GiB.
-
-### What the run stops
-
-Every service you tick is stopped on Dokploy when its data copy starts. After a finished run it
-is not started again. Anything you leave unticked is not touched.
+- **A snapshot of every machine.** It is the only way back after a takeover.
+- **Root on each Dokploy machine**, to run one install command. The agent dials Deplo, so no port
+  has to be open.
 
 ## Run the migration
 
@@ -55,59 +37,54 @@ is not started again. Anything you leave unticked is not touched.
 <Steps>
 <Step>
 
-**Snapshot the server.** The final step removes Dokploy. The snapshot is your only way back
-after that.
+**Snapshot the server.** The final step removes Dokploy.
 
 </Step>
 <Step>
 
-**Run the installer.** The same command as any other install:
+**Run the installer**, the same command as any install:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh | bash
 ```
 
 It finds Dokploy and asks whether Deplo may replace it. Answer no and nothing is installed.
-`--yes` does not answer this question. To skip it, set `DEPLO_TAKEOVER=dokploy`.
+`--yes` does not answer this question; `DEPLO_TAKEOVER=dokploy` does.
 
 </Step>
 <Step>
 
-**Open the address it prints.** Until the ports move, Deplo answers over plain http on port 80.
-After the takeover the same address answers over https. If the installer says Dokploy has no
-dynamic config directory, use a tunnel instead: `ssh -L 3001:localhost:3001 root@203.0.113.10`.
+**Open the address it prints.** Until the ports move, Deplo answers over http through Dokploy's
+own proxy on port 80. When that is not possible, the installer prints an `ssh -L` tunnel instead,
+for example `ssh -L 3001:localhost:3001 root@203.0.113.10`.
 
 </Step>
 <Step>
 
-**Create your account, then choose.** The first step of the wizard asks the one question that
-cannot be undone: **Bring your data over**, or **Start clean**. Start clean deletes Dokploy and
-everything it runs, and goes straight to **Take over**.
+**Create your account, then choose.** **Bring your data over**, or **Start clean**. Start clean
+deletes Dokploy and everything it runs, and cannot be undone.
 
 </Step>
 <Step>
 
-**Connect, Install, Review.** The panel is already filled in. Paste an API key per Dokploy
-organization, run the printed command on any other machine behind the panel, tick what comes
-over, and press **Start migration**. Everything lands on this machine.
+**Connect, Install, Review.** The panel address is filled in. Paste an API key per organization,
+run the printed command on any other machine behind the panel, tick what comes over, and press
+**Start migration**. Everything lands on this machine.
 
 </Step>
 <Step>
 
-**Take over the machine.** This step opens once every organization on the list has landed. Tick
-**I have no other teams on this panel**, tick again for any service whose data copy failed, and
-type `dokploy` to confirm.
+**Take over the machine.** It opens once every organization has landed. Tick **I have no other
+teams on this Dokploy**, tick any service listed as losing its data, and type `dokploy`.
 
-Deplo then stops Dokploy and its apps, copies its certificates, moves Traefik onto ports 80 and
-443, removes Dokploy's containers, networks, images and directory, and restarts Docker. Volumes
-and Dokploy's own backups stay on the disk.
-
-The page moves to the https address by itself once the certificate is issued.
+Deplo stops Dokploy, inherits its certificates, moves Traefik onto 80 and 443, removes Dokploy's
+containers, swarm, networks, images and `/etc/dokploy` (keeping files a Deplo app still mounts),
+and restarts Docker. The apps' volumes stay on the disk. The page moves to https by itself.
 
 </Step>
 <Step>
 
-**Deploy your apps.** Nothing is deployed for you. Open each app, check it, and press **Deploy**.
+**Deploy your apps.** Open each app, check it, and press **Deploy**.
 
 </Step>
 </Steps>
@@ -118,194 +95,121 @@ The page moves to the https address by itself once the certificate is issued.
 <Steps>
 <Step>
 
-**Open Settings -> System -> Migrations**, then **Dokploy or Coolify**. You need to be an
-instance admin. Enter the **Panel address** and the **API key**. A private address also works, for
-example `http://172.17.0.1:3000` on the same machine.
+**Open Settings -> System -> Migrations**, then **Dokploy or Coolify**. Enter the **Panel
+address** and the **API key**. A private address works too, for example `http://172.17.0.1:3000`
+on the same machine.
 
 </Step>
 <Step>
 
-**Add a key per organization.** Each one joins the **Teams to bring over** list with the Deplo
-team it lands in: the team with the same name if there is one, otherwise a new team. A new team
-is created when its migration starts.
+**Add a key per organization.** Each joins **Teams to bring over** with the team it lands in: the
+team with the same name, otherwise a new one.
 
 </Step>
 <Step>
 
-**Install the agent on every source machine.** The step prints one command per machine. Run it as
-root and wait. The row shows **Waiting for the agent**, then **Connected**.
-
-Behind a proxy or a CDN the row first says **Cannot connect**, then uses the machine's own IP. A
-machine Deplo already knows is reused and keeps its agent after the migration.
+**Install the agent on every Dokploy machine.** Run each printed command as root. The row goes
+from **Waiting for the agent** to **Connected**. A machine already in your fleet is reused.
 
 </Step>
 <Step>
 
-**Review and start.** Tick what comes over. Per item you can set **Expose publicly**, a **Host
-port** and the target server. **Place everything on** sets the whole tree at once. A row that
-cannot come over says why in its badge. Then press **Start migration**.
-
-The run happens on the server, so you can close the tab. A chip at the top of every page shows
-the progress. One migration runs at a time per team.
+**Review and start.** Tick what comes over, pick where each app runs and is built (**Build all
+on** sets every build at once), then press **Start migration**. You can close the tab: a chip on
+every page shows the progress.
 
 </Step>
 <Step>
 
-**People, then Done.** Instance admins get single-use registration links for the panel's members.
-Everyone arrives as a plain member. Somebody who already has a Deplo account is added to the team
-instead. Then the report shows what came over, one line per organization, and everything that
-needs a look.
-
-</Step>
-<Step>
-
-**Remove the source.** **Remove from Deplo** removes the migration source from the fleet and
-uninstalls the agent from that machine first. It warns with **Agent still installed** if it could
-not. Past runs stay under **History** with their reports.
+**People, then Done.** Members get single-use registration links and join as plain members; the
+report names any other role they had. Someone with an account here is added to the team instead.
 
 </Step>
 </Steps>
 
+When the run ends, Deplo takes its agent back off the Dokploy machines. Past runs stay under
+**History** with their reports.
+
 </Tab>
 </Tabs>
 
-## What comes across
-
-### What lands as what
+## What lands as what
 
 | On Dokploy | Here |
 | --- | --- |
-| Application built with a Dockerfile | App built from its git repository, with that Dockerfile |
-| Application built with Nixpacks, Railpack, buildpacks, or as a static site | App built from its git repository with **Railpack**. A publish directory becomes its **Output directory**, single-page setting included |
+| Application built with a Dockerfile | App built from its repository, with that Dockerfile |
+| Application built with Nixpacks, Railpack, buildpacks, or static | App built with **Railpack**. A publish directory becomes the **Output directory**, single-page setting included |
 | Application from a Docker image | App running that image |
 | Compose service | Compose stack |
-| PostgreSQL, MySQL, MariaDB, MongoDB, Redis | The same database engine |
-| LibSQL | Nothing. Named in the report |
-| Volumes and directory mounts | Volume, with its data |
-| File mounts | Config file under **Storage** |
-| Environment variables | The app's variables, every one plain |
+| PostgreSQL, MySQL, MariaDB, MongoDB, Redis | The same engine, with its data |
+| Volumes and directory mounts | Volumes, with their data |
+| File mounts | Config files under **Storage** |
+| Environment variables | The app's variables, all plain |
 | Preview-only variables | The app's preview variables |
 | Project and environment variables | Shared variables, linked to the apps that referenced them |
-| Domains, with their port and path | Domains |
+| Domains, with port and path | Domains |
 | HTTP basic auth | **Access** |
 | Memory and CPU limits | **Resources** |
-| Health check | **Advanced -> Health check** |
-| Published host ports | **Advanced -> Published ports**, with the publish-ports permission |
+| Health check, published host ports | **Settings -> Advanced** |
 | Schedules | Cron jobs |
-| S3 destinations | Backup destinations, tested on arrival |
-| Scheduled database backups to S3 | Backup schedules, on the destination that came with them |
-| Volume backups | App backups, one per schedule, covering every volume of the app |
+| S3 destinations and database backups to S3 | Backup destinations (tested on arrival) and schedules |
+| Volume backups | One app backup per schedule, covering every volume |
 
-### What changes on the way
+## What changes on the way
 
-- **Temporary hostnames get a new address.** A name on `traefik.me`, `sslip.io`, `deplo.site` or
-  `localhost` contains the old server's IP, so Deplo generates a new `deplo.site` address. The app's
-  **Domains** section shows which became which. Domains you own come across as they are.
-- **Connection strings are rewritten.** A database answers as `db-<name>` here, and every
-  variable that used the old hostname is updated. Values an app stores by itself (a saved
-  `trusted_domains` or `siteurl`) are not changed. Fix them from the app's **Console**.
-- **A published host port comes across** and needs the publish-ports permission. Without it the
-  app still arrives, and the report names the ports it left behind. A port under 1024 cannot be
-  published again; use a domain instead.
-- **A middleware label in a compose file comes across** when its kind is supported. Router labels
-  never do. See [Middlewares in a compose file](/advanced/compose-apps#middlewares-in-a-compose-file).
-- **Security headers stay off on a moved app's domains.** The app answered without them before, so
-  nothing that embeds it breaks. Turn them on under
-  [Security](/guides/networking/domains-and-https#security-headers-and-cors).
-- **A network you created yourself does not come across.** Apps in the same Environment share one
-  network, so put stacks that talk to each other in the same Environment.
-- **A service name already used by another stack is renamed.** The second `db` in one
-  Environment arrives as `<app>-db`, and its `depends_on`, variables and domain follow.
-- **A bind mount comes across with its contents, single files included.** A bind that names a
-  file copies that file alone, not the directory around it.
-- **A `${{project.KEY}}` reference becomes a real link.** A value that is exactly one reference to
-  a project or environment variable of the same name arrives linked to that shared variable. When
-  the names differ, the resolved value arrives instead and the report says so.
-- **Every variable arrives plain.** Dokploy has no secret variables, and Deplo never guesses from
-  the name, because a [secret](/guides/config/environment-variables) is write-only and cannot be
-  read back. Mark what you want **Secret** under **Variables** afterwards.
-- **Imported basic-auth credentials are flagged.** They never went through Deplo's password
-  policy or the breach check.
-- **Anything that needs a permission you do not hold goes in the report**, with who can turn it
-  on. For security reasons host bind mounts, `privileged`, published
-  ports and foreign networks or volumes each need their own permission.
+- **Temporary hostnames** (`traefik.me`, `sslip.io`, `nip.io`, `deplo.site`, `localhost`) get a
+  new `deplo.site` address, unless the app lands on the same machine. Your own domains come
+  across as they are.
+- **Connection strings are rewritten** to the database's new host, `db-<name>`. Values an app
+  stored itself (a saved `siteurl`) are not: fix them from the app's **Console**.
+- **Every variable arrives plain.** Dokploy has no secrets, and Deplo never guesses one from a
+  name. Mark them **Secret** under the app's **Environment**.
+- **A `${{project.KEY}}` reference** to a variable of the same name becomes a link to that shared
+  variable. Otherwise the resolved value arrives, and the report says so.
+- **A second service name in one Environment is renamed**: the second `db` becomes `<app>-db`,
+  and its `depends_on`, variables and domain follow.
+- **A network you created yourself is dropped.** Apps in the same Environment share one network.
+- **Security headers stay off** on a moved app's domains. Turn them on under
+  [Security headers](/guides/networking/domains-and-https#security-headers-and-cors).
+- **Compose middleware labels** come across when their kind is supported, router labels never.
+  See [Middlewares in a compose file](/advanced/compose-apps#middlewares-in-a-compose-file).
+- **Published ports, host binds, `privileged` and foreign networks or volumes** each need their
+  own permission. Without it the report names what stayed behind. A port under 1024 cannot be
+  published; use a domain.
 
-### What is left behind
+## What is left behind
 
-- **LibSQL.** There is no engine for it here.
-- **Deploy keys and connected-source credentials.** Attach a [git connection](/guides/git-providers)
-  for a private repository.
-- **Private registry passwords.** Dokploy never exposes them. Add the registry under
-  [Registries](/operations/servers/container-registries) before you deploy.
-- **A compose file kept in a git repository.** Dokploy does not return it over the API. The app
-  is created and the report tells you to paste the file in.
-- **A Traefik middleware written into an app's own file.** The report names it with its kind.
-  Define it in the proxy's configuration here, then add it to the domain.
-- **The machine's own files.** `/etc/localtime`, `/etc/hosts`, `/etc/resolv.conf` and similar
-  belong to the host. The destination already has its own.
+- **LibSQL databases**, named in the report.
+- **Deploy keys and connected-source credentials.** Attach a [git connection](/guides/git-providers).
+- **Registry passwords.** Add the registry under [Registries](/operations/servers/container-registries).
+- **A compose file kept in a git repository.** Dokploy does not return it; paste it in.
+- **A custom command on an image app**, and replicas beyond one.
+- **A Traefik middleware in an app's own file.** Define it in the proxy here, then add it to the
+  domain.
 
 ## Backing out
 
-- **While the run is going, in any step.** **Stop and undo** removes everything the run created
-  here with its data, starts again what it stopped on Dokploy, and removes the agent from the
-  source. Dokploy keeps all of its data.
-- **A run that fails on its own during the data step.** Nothing is rolled back. A service whose
-  data did not arrive refuses to deploy. The agents stay, so the copy can run again.
-- **A takeover, before the ports move.** **Cancel and remove Deplo** starts every service the
-  migration stopped, starts Dokploy's own containers again, removes everything Deplo created here,
-  and uninstalls Deplo. It asks for the API key again.
-- **A takeover, after the ports move.** The snapshot is the only way back. If the port move
-  itself fails, Deplo puts the ports back, starts Dokploy again and offers **Try again** with the
-  reason.
+The general rules are in [Migrations](/migrations#stopping-data-and-going-back). For a takeover:
 
-Running the migration again is safe. What is already here is kept, and its data is copied again
-when you tick it.
+- **Before the ports move:** **Cancel and remove Deplo** starts what the migration stopped, starts
+  Dokploy again, removes what Deplo created and uninstalls Deplo. It asks for the API key again.
+- **After the ports move:** only the snapshot. If the move itself fails, Deplo puts the ports
+  back, starts Dokploy again and offers **Try again** with the reason.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The scan finds nothing | Wrong panel address, or the key has no access. Dokploy keys are per organization. |
-| Dokploy stopped accepting the key part-way | The key hit its rate limit. Raise or disable it under Settings, Profile, API/CLI, then run the import again. Everything already here is skipped. |
-| The panel's certificate is not trusted | Deplo cannot accept an untrusted certificate. Use Dokploy's plain http address. |
-| A 502, or a Cloudflare 521 | It comes from the proxy or CDN in front of the panel. Start it, or point Deplo at the panel's own address. |
-| Stuck on **Waiting for the agent** | The install command has not run on that machine, or the machine cannot reach this one. |
-| **The server agent did not install** during a takeover | Re-run `/opt/deplo/install.sh` on the machine, or use the command under **Settings -> Servers**. |
-| One source machine does not answer | Its services are named in the report and blocked from deploying. The other machines are still copied. Check that the machine is on and connected to the internet. |
-| A volume arrives empty | The app refuses to deploy until you decide. One volume has six hours to copy, so a very big volume over a slow link is better copied by hand. |
-| A single-file bind is refused by name | The **destination** server's agent is too old. Update that agent and copy the data again. |
-| The data step fails half way | Nothing is rolled back. Only **Stop and undo** does that. A second run skips what is already here and copies the data again, or use **Copy the data again** on the app. |
-| Two apps mount the same absolute path | The copy empties its target before writing, so Deplo refuses and names the other app. Give one of them its own directory. |
-| The port move failed | Deplo put the ports back and started Dokploy again. The step names what is holding the port, next to **Try again**. |
-| Stuck on **Moving the ports** | The host part never ran. On the machine, `systemctl status deplo-takeover` and `/var/log/deplo-takeover.log` say why. Run `curl -fsSL https://deplo.build/install.sh \| bash` again and the takeover continues where it was. Until the ports move, stay on the http address: the https one still belongs to the old panel and answers 404. |
+| The scan finds nothing | Wrong panel address, or the key belongs to another organization. |
+| **Dokploy stopped accepting this API key** | It hit its rate limit or was revoked. Raise or disable the limit under **Settings**, **Profile**, **API/CLI**, then run again. What is already here is skipped. |
 
-More in [Servers and agents](/troubleshooting/servers-and-agents).
+Agents, volumes and the takeover: see [Migrations](/migrations#troubleshooting).
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<ArrowRightLeft className="text-blue-400" />}
-    title="Migrations"
-    description="What comes across, and what needs a look"
-    href="/migrations"
-  />
-  <Card
-    icon={<Globe className="text-blue-400" />}
-    title="Move from Coolify"
-    description="The same two routes, against a Coolify panel"
-    href="/migrations/move-from-coolify"
-  />
-  <Card
-    icon={<ServerCog className="text-blue-400" />}
-    title="Server roles"
-    description="What a migration source is, and is not"
-    href="/advanced/server-roles"
-  />
-  <Card
-    icon={<Database className="text-blue-400" />}
-    title="Domains and HTTPS"
-    description="Repointing DNS after a migration"
-    href="/guides/networking/domains-and-https"
-  />
+  <Card icon={<ArrowRightLeft className="text-blue-400" />} title="Migrations" description="What comes across, and what needs a look" href="/migrations" />
+  <Card icon={<Globe className="text-blue-400" />} title="Move from Coolify" description="The same two routes, against a Coolify panel" href="/migrations/move-from-coolify" />
+  <Card icon={<ServerCog className="text-blue-400" />} title="Server roles" description="What a migration source is, and is not" href="/advanced/server-roles" />
+  <Card icon={<Database className="text-blue-400" />} title="Domains and HTTPS" description="Repointing DNS after a migration" href="/guides/networking/domains-and-https" />
 </Cards>

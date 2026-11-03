@@ -7,128 +7,75 @@ description: Installs the whole platform, Docker, Traefik, Postgres, the control
 curl -fsSL https://deplo.build/install.sh | bash
 ```
 
-Configured by environment variables in front of the command. See
-[Environment variables](/reference/environment-variables) for the table. With
-none of them it asks nothing and generates a host like `deplo-cb00710a.deplo.site` for the
-dashboard. `--domain` is how you put it on a hostname of your own.
+With no flag it asks nothing and serves the dashboard on a generated host like
+`deplo-cb00710a.deplo.site`. `--domain` puts it on a hostname of your own. Environment
+variables the script reads: [Platform variables](/reference/environment-variables#variables-read-by-installsh).
 
 <Callout type="info" title="Requires">
-  Root, Bash 4, `curl`, `openssl`, and Docker Compose v2 when Docker is
-  already on the host. Docker itself is installed if missing. `systemd` is
-  what runs the agent: without it the panel still comes up, but the machine
-  cannot become a Deplo server.
+  Root (a downloaded copy re-runs itself through `sudo`), Bash 4, `curl`, `openssl`, and Docker
+  Compose v2 when Docker is already on the host. Docker and `git` are installed if missing.
+  Without `systemd` the panel still comes up, but the machine cannot become a Deplo server.
 </Callout>
 
 <TypeTable
   type={{
-    "--check": {
-      type: "flag",
-      description:
-        "Runs the preflight and exits, changing nothing. Exits non-zero when it found a blocking problem.",
-    },
-    "--domain <d>": {
-      type: "domain",
-      description: "Serve the dashboard on this domain over HTTPS.",
-    },
-    "--email <e>": {
-      type: "email",
-      default: "admin@ + your domain, like admin@deplo.example.com",
-      description: "Let's Encrypt contact address.",
-    },
-    "--version <v>": {
-      type: "version",
-      default: "latest",
-      description: "Install this Deplo version instead of the newest one.",
-    },
-    "--ipv4": {
-      type: "flag",
-      description:
-        "Serve the dashboard on the server's IPv4 address. The default whenever the server has one.",
-    },
-    "--ipv6": {
-      type: "flag",
-      description:
-        "Serve the dashboard on the server's IPv6 address, and give Docker IPv6. Automatic on an IPv6-only server. See [IPv6](#ipv6).",
-    },
-    "--owner-email <e>": {
-      type: "email",
-      description:
-        "Create the Owner account with this email during the install, instead of printing a setup link. Needs --owner-password. Ignored when an account already exists. See [Offer Deplo to your customers](/guides/hosting-providers/vps-template).",
-    },
-    "--owner-password <p>": {
-      type: "string",
-      description:
-        "The temporary password for --owner-email, at least 8 characters. The owner replaces it at the first sign-in, and until then the account can do nothing else. Never written to the transcript.",
-    },
-    "--yes": {
-      type: "flag",
-      description:
-        "Take every default. It deliberately does not answer the take-over question, which is the only one the installer asks.",
-    },
-    "--force": {
-      type: "flag",
-      description: "Install even though the preflight found a blocking problem.",
-    },
-    "--plain": {
-      type: "flag",
-      description: "ASCII output, no colour, no spinners. `--no-color` keeps the rest.",
-    },
-    "--quiet": {
-      type: "flag",
-      description: "Only warnings, errors and the summary.",
-    },
-    "--log-file <p>": {
-      type: "path",
-      default: "/var/log/deplo-install.log",
-      description: "Transcript location. It is written `0600`: it carries whatever the commands print.",
-    },
+    "--check": { type: "flag", description: "Runs the preflight and exits, changing nothing. Exits non-zero when it found a blocking problem." },
+    "--domain <d>": { type: "domain", description: "Serve the dashboard on this domain over HTTPS." },
+    "--email <e>": { type: "email", default: "admin@ + the panel's host, like admin@deplo.example.com", description: "Let's Encrypt contact address." },
+    "--version <v>": { type: "version", default: "latest", description: "Install this Deplo version instead of the newest one. v0.8.1 and 0.8.1 are the same." },
+    "--ipv4": { type: "flag", description: "Serve the dashboard on the server's IPv4 address. The default whenever the server has one." },
+    "--ipv6": { type: "flag", description: "Serve the dashboard on the server's IPv6 address, and give Docker IPv6. Automatic on an IPv6-only server." },
+    "--owner-email <e>": { type: "email", description: "Create the Owner account with this email during the install, instead of printing a setup link. Needs --owner-password. Ignored when an account already exists." },
+    "--owner-password <p>": { type: "string", description: "The temporary password for --owner-email, at least 8 characters. The owner replaces it at the first sign-in, and until then the account can do nothing else. Never written to the transcript." },
+    "--yes": { type: "flag", description: "Take every default. It deliberately does not answer the takeover question, the only one the installer asks." },
+    "--force": { type: "flag", description: "Install even though the preflight found a blocking problem." },
+    "--plain": { type: "flag", description: "ASCII output, no colour, no spinners. --no-color drops only the colour." },
+    "--quiet": { type: "flag", description: "Only warnings, errors and the summary." },
+    "--log-file <p>": { type: "path", default: "/var/log/deplo-install.log", description: "Transcript location. Written 0600: it carries whatever the commands print." },
   }}
 />
 
+`--owner-email` is how a hosting provider ships Deplo preinstalled: see
+[Offer Deplo to your customers](/guides/hosting-providers/vps-template).
+
 ## Preflight checks
 
-Everything knowable before the host is touched, so a server that cannot
-finish says so in ten seconds. **These stop the run**, unless you pass
-`--force`:
+**These stop the run**, unless you pass `--force`:
 
-- Architecture other than `x86-64` or `arm64`, Bash older than 4, or a
-  missing `curl` or `openssl`.
-- **Less than 8 GB free on `/`.** 30 GB is the recommended minimum.
-- Ports `80`, `443` or `3000` already held by something that is not Deplo, or
-  none of `3101` to `3104` free on `127.0.0.1`.
-- No outbound HTTPS to `ghcr.io`, or to `get.docker.com` when Docker has
-  to be installed. `DEPLO_SKIP_NET_CHECKS=1` skips the network checks on a
-  host that reaches its registry another way.
+- Architecture other than `x86-64` or `arm64`, Bash older than 4, no `curl` or `openssl`.
+- **Less than 8 GB free on `/`.**
+- Ports `80`, `443` or `3000` held by something that is not Deplo, or none of `3101` to `3104` free.
+- No outbound HTTPS to `ghcr.io`, or to `get.docker.com` when Docker has to be installed.
 - Docker present but its daemon not answering, or without Compose v2.
 
 **These only warn:**
 
-- **Less than 4 GB of RAM, fewer than 2 cores, or less than 30 GB free.**
-  That is the minimum, 4 cores and 8 GB is the comfortable size, and both
-  are about the apps: Deplo and Postgres fit in about 1 GB, so a 2 GB
-  server runs the platform and leaves nearly nothing to deploy on it. No
-  amount of memory or CPU blocks the install.
-- No `systemd`: the control plane runs, but this machine cannot become a
-  Deplo server.
-- The domain does not resolve here yet, or Let's Encrypt is unreachable,
-  so the certificate cannot issue yet.
+- **Less than 4 GB of RAM, fewer than 2 cores, or less than 30 GB free.** Deplo and Postgres
+  fit in about 1 GB; 4 cores and 8 GB is the comfortable size for your apps.
+- No `systemd`.
+- The domain does not resolve here yet, or Let's Encrypt is unreachable.
 
 ## What the installer does
 
-- Installs Docker when needed and configures address pools without
-  overwriting an existing pool.
-- Creates `/opt/deplo`, the `deplo` network, and the proxy configuration.
-- Generates `/opt/deplo/.env` once, with mode `0600`.
-- Starts Postgres, the control plane, and Traefik. The panel stays on
-  `127.0.0.1:3000`; Traefik serves it over HTTPS.
-- Keeps the first free of `3101` to `3104` on `127.0.0.1`, where this machine's
-  own server agent connects to Deplo. An update keeps the same one.
-- Enrolls the local machine as a server after the panel health check passes.
+- Installs Docker and `git` when needed, and sets Docker's address pools unless a pool exists.
+- Creates `/opt/deplo` (`.env` generated once, mode `0600`), the `deplo` network and the proxy.
+- Starts Postgres, the control plane on `127.0.0.1:3000`, and Traefik, which serves it over HTTPS.
+- Keeps the first free of `3101` to `3104` on `127.0.0.1` for this machine's own server agent.
+- Writes the host CLI `/usr/local/bin/deplo`: `recover`, `update`, `logs`, `restart`.
+- Once the panel answers, installs the server agent with the same
+  [`install-agent.sh`](/reference/installers/install-agent) every other server runs.
+
+On a machine that already runs another panel, the install is a **takeover**: Deplo waits
+on free ports while you migrate. See [Migrations](/migrations).
 
 <Callout type="info" title="Re-running it is the update path">
-  It detects `/opt/deplo/.env`, switches to update mode, and never rotates
-  a secret. The last step failing is a warning, not a fatal error: the
-  panel stays up and a re-run retries it.
+  On a machine with `/opt/deplo/.env`, it updates in place:
+  - Never rotates a secret; keeps the domain, the address kind and the agent link port.
+  - Dumps the panel's database to `/opt/deplo/backups/pre-update-<time>.sql.gz` first (3 kept).
+  - Rolls the image back if the new version does not answer within 2 minutes.
+  - Below an [update stop](/operations/update), installs the stop instead.
+
+  A failing agent step is only a warning: the panel stays up and a re-run retries it.
 </Callout>
 
 ## IPv6
@@ -145,27 +92,18 @@ The installer picks the kind of address the dashboard is served on:
 curl -fsSL https://deplo.build/install.sh | bash -s -- --ipv6
 ```
 
-The choice is kept in `/opt/deplo/.env` as `DEPLO_IP_FAMILY`, so an update
-keeps it. Pass the other flag on a re-run to switch. If the server lost the
-kind it was installed on (its IPv4 was removed), an update moves to the
-kind it still has.
+The choice is kept in `.env` as `DEPLO_IP_FAMILY`; pass the other flag on a re-run to switch.
+A server that lost its kind moves to the one it still has. On IPv6 the installer also:
 
-When the dashboard is served on IPv6, the installer also:
+- Gives every Docker network an IPv6 range (Docker 27 or newer). Existing Deplo networks move
+  across without restarting their apps.
+- IPv6-only: routes `ghcr.io` and `github.com` through public NAT64 resolvers
+  (`DEPLO_NAT64_DNS` picks your own), unless the network already translates.
+- IPv6-only: installs `deplo-clat` (464XLAT through `tayga`), so apps that dial IPv4 first
+  still reach IPv4-only sites.
 
-- Gives every Docker network an IPv6 range, so apps reach the internet over
-  IPv6. Networks Deplo created before are moved across without restarting
-  their apps.
-- On an IPv6-only server, routes `ghcr.io` and `github.com`, which have no
-  IPv6 address, through public NAT64 resolvers. Set `DEPLO_NAT64_DNS` to
-  your provider's DNS64 resolvers to use those instead. A server whose
-  network already translates is left alone.
-
-Docker is restarted for this only when no app is running. Otherwise the
-installer writes the setting and tells you to restart Docker in a
-maintenance window, then re-run it.
-
-Apps get their generated addresses from the server they run on. Move them
-between IPv4 and IPv6 under
+Docker is restarted only when no app is running; otherwise restart it in a maintenance window
+and re-run. Apps' own addresses are set per server, under
 [Generated addresses](/operations/servers/maintenance-and-advanced#generated-addresses).
 
 ## See also

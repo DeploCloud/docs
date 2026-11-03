@@ -5,16 +5,13 @@ description: A role is a named set of capabilities. A folder share gives access 
 
 import { Library, Users, KeyRound } from "lucide-react";
 
-What each person can do is decided by a
-**[role](/guides/roles-and-permissions/roles)** or a
-**[folder share](/guides/roles-and-permissions/folder-shares)**.
+What each person can do comes from their **[role](/guides/roles-and-permissions/roles)**, or,
+inside one folder, from a **[folder share](/guides/roles-and-permissions/folder-shares)**.
 
 A capability is **one action**: `deploy_apps`, `delete_apps`, `manage_domains`,
-`restore_backups`. There are 45: `view`, which every member has, and 44 you grant one by one,
-so you never give more than needed.
+`restore_backups`. There are 46: `view`, which every member has, and 45 you grant one by one.
 
-A role belongs to your team. Every team starts with three, which you can rename, change and
-later reset to the default:
+Every team starts with three roles:
 
 <TypeTable
   type={{
@@ -25,34 +22,38 @@ later reset to the default:
     },
     Member: {
       type: "editable",
-      description: "The normal working set.",
+      description: "Deploy and manage apps, domains and variables.",
     },
     Viewer: {
       type: "editable",
-      description: "Read-only.",
+      description: "Read-only access across the whole team.",
     },
   }}
 />
 
-Editing a role **updates everyone holding it** at once. There is no separate "apply" step.
+- **Editing a role updates everyone holding it** at once. Member and Viewer can be reset to
+  their defaults later.
+- **A role can be limited to part of the team**: some projects, environments, folders or apps.
+- **A folder share replaces the role** inside one folder, and can give more than it.
 
-A folder share does not edit a role: it **replaces** the role inside one folder. See
-[Folder shares](/guides/roles-and-permissions/folder-shares).
+## The floor and the ceiling
 
-## Special capabilities
-
-- **`view`** is always on. Every member has it.
-- **`instanceAdmin`** is not a team capability. It unlocks Servers, Users and the instance
-  settings. Another instance admin grants it from the member's **Advanced** tab.
-- **`canExposePorts`** and **`canMountHostVolumes`** are separate grants. The second one
-  covers every way out of a container, not only a bind mount. See
+- **`view` is the floor.** Every member has it, and it cannot be taken away.
+- **Your role is the ceiling.** A page it does not cover says so, for example **No access to
+  logs**, and names the capability to ask for.
+- **A limited role sees no team-wide page.** Members, Roles, team Settings, Storage and
+  Monitoring read **Outside your access**.
+- **A grant on one node replaces the ceiling there.** The most specific wins: app, then
+  environment, folder, project, and the role last.
+- **Some switches belong to the account, not the team.** An instance admin sets them in
+  **Settings -> Users**: **Instance admin**, **Publish ports** (`canExposePorts`), **Bind server
+  folders** (`canMountHostVolumes`) and **Configure Traefik** (`canConfigureTraefik`). See
   [Host access](/advanced/host-access-and-privileges).
 
 ## Good to know
 
 - **Hidden buttons are not the security check.** The server checks every action, and the API
   and the MCP server go through the same checks.
-- **A role edit applies immediately** to everyone holding it.
 - **A team can never lose its admins.** `manage_members`, `manage_roles` and `manage_team`
   must always have at least one holder.
 - **An id from another team gives no result**, for security reasons.
@@ -62,33 +63,20 @@ A folder share does not edit a role: it **replaces** the role inside one folder.
 
 ## Troubleshooting
 
-- **A capability is greyed out while editing a role**: you do not have it yourself.
-- **Somebody still cannot do something**: check for a folder share on that folder, which
-  replaces the team role there, and check whether the team requires two-factor.
-- **They can do more than their role says**: a folder share is granting it. Their member page
-  shows the scope tree.
+- **Saving a role fails with "You can only give a role permissions you hold yourself"**: you
+  ticked a capability you do not have. Untick it, or ask someone who holds it.
+- **A ticked capability is greyed out**: the role is limited to part of the team, and that
+  capability only works team-wide.
+- **Somebody can do more, or less, than their role says**: check for a folder share on that
+  folder, and the **More than role** / **Less than role** badge on their member page.
+- **Somebody cannot do anything**: the team or their role requires two-factor.
 
 See [Sign-in and access](/troubleshooting/sign-in-and-access) for more.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Library className="text-blue-400" />}
-    title="Capabilities"
-    description="All 45"
-    href="/reference/capabilities"
-  />
-  <Card
-    icon={<Users className="text-blue-400" />}
-    title="Teams and capabilities"
-    description="How roles and folder shares combine"
-    href="/concepts/teams-and-capabilities"
-  />
-  <Card
-    icon={<KeyRound className="text-blue-400" />}
-    title="API tokens"
-    description="Limited by their creator's current role"
-    href="/advanced/api-tokens-and-oauth"
-  />
+  <Card icon={<Library className="text-blue-400" />} title="Capabilities" description="All 46" href="/reference/capabilities" />
+  <Card icon={<Users className="text-blue-400" />} title="Teams and capabilities" description="How roles and folder shares combine" href="/concepts/teams-and-capabilities" />
+  <Card icon={<KeyRound className="text-blue-400" />} title="API tokens" description="Limited by their creator's current role" href="/advanced/api-tokens-and-oauth" />
 </Cards>

@@ -5,63 +5,36 @@ description: Everything Deplo listens on, connects over and writes to disk.
 
 import { SlidersHorizontal, Terminal, Server, Network } from "lucide-react";
 
-Use this page to check firewall rules, Docker networks, and host paths.
-
 <Callout type="info" title="At a glance">
-  Open **80 and 443** to the internet, on the panel's server and on every
-  server that runs apps. Nothing else: servers connect to Deplo by
-  themselves. Never publish **3000**, **3101**, **5432** or **2375**.
+  Open **80 and 443** to the internet, on the panel's server and on every server that runs
+  apps. Nothing else: servers connect to the panel's address by themselves. Never publish
+  **3000**, **3101**, **5432** or **2375**.
 </Callout>
 
 ## Ports
 
 <TypeTable
   type={{
-    "3000": {
-      type: "The control plane",
-      default: "bound to 127.0.0.1, never the server's address",
-      description: "Nothing outside the machine reaches it. Traefik serves the dashboard over HTTPS on 443 instead.",
-    },
-    "3101": {
-      type: "The control plane, for its own server",
-      default: "bound to 127.0.0.1, the first free of 3101 to 3104",
-      description: "Only the agent on the same machine connects here. Every other server connects to the panel's address, like a browser.",
-    },
-    "80": {
-      type: "Traefik, entry point web",
-      default: "published on every server that routes",
-      description: "Must be reachable from the internet, including for certificate challenges.",
-    },
-    "443": {
-      type: "Traefik, entry point websecure",
-      default: "published on every server that routes",
-      description: "Must be reachable from the internet.",
-    },
-    "5432": {
-      type: "Postgres",
-      default: "never published",
-      description: "Nothing reaches it. It is on an internal network.",
-    },
-    "2375": {
-      type: "The Docker socket proxy",
-      default: "never published",
-      description: "Nothing reaches it but Traefik, on an internal network.",
-    },
+    "3000": { type: "The control plane", default: "bound to 127.0.0.1, never the server's address", description: "Nothing outside the machine reaches it. Traefik serves the dashboard over HTTPS on 443 instead." },
+    "3101": { type: "The control plane, for its own server", default: "bound to 127.0.0.1, the first free of 3101 to 3104", description: "Only the agent on the same machine connects here. Every other server connects to the panel's address on 443, like a browser." },
+    "80": { type: "Traefik, entry point web", default: "published on every server that routes", description: "Must be reachable from the internet, including for certificate challenges. Redirects to HTTPS." },
+    "443": { type: "Traefik, entry point websecure", default: "published on every server that routes", description: "Must be reachable from the internet." },
+    "5432": { type: "Postgres", default: "never published", description: "Nothing reaches it. It is on an internal network." },
+    "2375": { type: "The Docker socket proxy", default: "never published", description: "Nothing reaches it but Traefik, on an internal network. Read-only: no POST." },
   }}
 />
 
 <Callout type="warn" title="Common mistakes">
-  - **Port 3000 is not open, on purpose.** A dashboard on an open port is
-    a login page on the internet with no TLS in front of it. It binds
-    `127.0.0.1`, so the way back in when the proxy is what broke is
-    `ssh -L 3000:localhost:3000 root@your-server`, then
-    `http://localhost:3000`. The generated address (like `deplo-cb00710a.deplo.site`)
-    covers everything short of that: it answers over HTTPS whatever your
-    domain is doing.
-  - **No server listens for Deplo.** Deplo never calls a server: the server
-    agent connects to Deplo and opens no port. One installed by an older
-    Deplo listened on 9443, and closes it for good once it has connected,
-    so a firewall rule kept for 9443 can go.
+  - **Port 3000 is not open, on purpose.** It binds `127.0.0.1`, so the way back in when the
+    proxy is what broke is `ssh -L 3000:localhost:3000 root@203.0.113.10`, then
+    `http://localhost:3000`. Short of that, the generated address (like
+    `deplo-cb00710a.deplo.site`) answers over HTTPS whatever your domain is doing.
+  - **No server listens for Deplo.** The server agent connects out and opens no port. One
+    installed by an older Deplo listened on 9443 and closes it for good once it connects, so a
+    firewall rule kept for 9443 can go.
+  - **Behind a router that cannot open 443?** A
+    [Cloudflare Tunnel](/operations/cloudflare-tunnel) carries the panel over an outgoing
+    connection instead.
 </Callout>
 
 ## Networks
@@ -70,53 +43,37 @@ These belong to the platform. Tenant stacks never join them:
 
 <TypeTable
   type={{
-    deplo: {
-      type: "platform",
-      description: "Traefik and the control plane. Not where apps go",
-    },
-    "deplo_deplo-internal": {
-      type: "internal",
-      description: "The control plane and its Postgres, and nothing else. Its compose key is deplo-internal",
-    },
-    "traefik_deplo-socket": {
-      type: "internal",
-      description: "Traefik and its read-only Docker socket proxy. Its compose key is deplo-socket",
-    },
+    deplo: { type: "platform", description: "Traefik and the control plane. Not where apps go" },
+    "deplo_deplo-internal": { type: "internal", description: "The control plane and its Postgres, and nothing else. Its compose key is deplo-internal" },
+    "traefik_deplo-socket": { type: "internal", description: "Traefik and its read-only Docker socket proxy. Its compose key is deplo-socket" },
   }}
 />
 
-Tenant networks are created per Environment:
+Tenant networks are created per Environment, and Traefik joins each one:
 
 <TypeTable
   type={{
-    "deplo-env-<environment id>": {
-      type: "tenant",
-      description: "Every app and managed database placed in that Environment",
-    },
-    "deplo-team-<team id>": {
-      type: "tenant",
-      description: "Apps that are in no Environment: the team's top level, and anything in a folder",
-    },
-    "deplo-preview-<deploy key>": {
-      type: "tenant",
-      description: "One pull request preview, isolated on its own",
-    },
+    "deplo-env-<environment id>": { type: "tenant", description: "Every app and managed database placed in that Environment" },
+    "deplo-team-<team id>": { type: "tenant", description: "Apps that are in no Environment: the team's top level, and anything in a folder" },
+    "deplo-preview-<deploy key>": { type: "tenant", description: "One pull request preview, isolated on its own" },
   }}
 />
 
-The separation prevents tenant containers from reaching platform services.
-Deplo also reserves platform service names on managed networks to avoid
-Docker DNS collisions.
+A stack's compose key stays `deplo`; Deplo points it at the right tenant network. Platform
+service names are reserved on these networks so no app can answer for them.
+[Network isolation](/advanced/network-isolation) has the details.
 
 ### Address pools
 
-Deplo uses one network per Environment. Both installers configure a `/13`
-pool with `size: 24` in `/etc/docker/daemon.json`.
+Docker's default pools hold about 31 networks. Both installers (not on a storage-only server or
+a migration source) write a larger one to `/etc/docker/daemon.json`:
 
-- An existing pool configuration is **never clobbered**.
-- The previous file is kept as `daemon.json.deplo-bak`.
-- The new one is validated with `dockerd --validate` before it is used.
-- If containers are already running, Docker is not restarted automatically.
+- A `10.x.0.0/13` that overlaps no route on the host (`10.200.0.0/13` when free), cut into
+  `/24` networks.
+- Container logs on the `local` driver, 20 MB x 5 files, unless a log setting exists.
+- An existing pool is **never clobbered**. The previous file is kept as `daemon.json.deplo-bak`.
+- The new file is validated with `dockerd --validate`. Docker is not restarted while containers
+  run, and is rolled back if it does not come back.
 
 ## Files on the panel's host
 
@@ -125,67 +82,56 @@ pool with `size: 24` in `/etc/docker/daemon.json`.
 /opt/deplo/docker-compose.yml       Postgres + the control plane
 /opt/deplo/traefik/                 the proxy stack
 /opt/deplo/traefik/certs/           the fallback certificate, created once
-/opt/deplo/data/                    build and upload staging
 /opt/deplo/acme/acme.json           issued certificates, chmod 600
+/opt/deplo/data/                    build and upload staging
+/opt/deplo/backups/                 pre-update database dumps, the 3 newest
+/opt/deplo/.install-state           ports and takeover state the installer keeps
+/opt/deplo/install.sh               the copy `deplo update` runs
+/usr/local/bin/deplo                the host CLI
+/var/log/deplo-install.log          the installer's transcript, chmod 600
 ```
+
+On this host `/var/lib/deplo-agent/traefik` is a **symlink** to `/opt/deplo/traefik`, so the
+agent manages the panel's proxy.
 
 ## Files on every server
 
 ```
 /usr/local/bin/deplo-agent          the agent binary
+/etc/systemd/system/deplo-agent.service
 /var/lib/deplo-agent/               chmod 700
   agent.crt, agent.key, ca.crt      its mutual TLS identity
   bootstrap.env                     first-run enrollment, chmod 600
   link-addresses.json               the panel's addresses, chmod 600
-  traefik/                          that host's proxy stack
-/etc/systemd/system/deplo-agent.service
+  traefik/                          that host's proxy stack, acme/acme.json included
+/data/stacks/                       one <deploy key>.yml per stack, chmod 600
+/data/stacks/files/<deploy key>/    the app's env file and File storage, chmod 700
 /data/backups/                      the agent's managed backup store, chmod 700
 /etc/docker/daemon.json             plus daemon.json.deplo-bak
+/var/log/deplo-agent-install.log    the installer's transcript
 ```
 
-On the control-plane host, `/var/lib/deplo-agent/traefik` is a **symlink** to
-`/opt/deplo/traefik`, so the agent manages the panel's proxy.
+IPv6-only servers also get `/usr/local/sbin/deplo-clat` and `deplo-clat.service`.
 
-`/var/lib/deplo-agent` holds Traefik's `acme.json`. Deleting it takes
-your issued certificates with it, and Let's Encrypt rate-limits
-reissuance.
+<Callout type="warn" title="Certificates live in the proxy's folder">
+  `acme.json` holds every issued certificate. Deleting `/var/lib/deplo-agent` (or `/opt/deplo`)
+  takes them with it, and Let's Encrypt rate-limits reissuance.
+</Callout>
 
 ## Common container names
 
 <TypeTable
   type={{
-    "deplo-traefik": {
-      type: "proxy",
-      description: "The proxy. Deplo identifies it by this name",
-    },
-    "deplo-deplo-1": {
-      type: "control plane",
-      description: "The panel container on the host that runs it. Compose names it, so there is no container_name",
-    },
-    "deplo-postgres-1": {
-      type: "control plane",
-      description: "The control plane's own Postgres",
-    },
-    "traefik-deplo-socket-proxy-1": {
-      type: "proxy",
-      description: "The read-only Docker socket proxy Traefik reads events through",
-    },
-    "deplo-<slug>": {
-      type: "app stack",
-      description: "An app's stack.",
-    },
-    "deplo-<slug>__pr-<n>": {
-      type: "preview stack",
-      description: "A pull request preview.",
-    },
-    "db-<name>": {
-      type: "database",
-      description: "A managed database.",
-    },
-    "deplo-<slug>-<volume>": {
-      type: "volume",
-      description: "An app's named volume.",
-    },
+    "deplo-traefik": { type: "proxy", description: "The proxy, traefik:v3.7.17. Deplo identifies it by this name, and moves it to that version on every server when it connects" },
+    "traefik-deplo-socket-proxy-1": { type: "proxy", description: "The read-only Docker socket proxy Traefik reads events through" },
+    "deplo-deplo-1": { type: "control plane", description: "The panel container on the host that runs it. Compose names it, so there is no container_name" },
+    "deplo-postgres-1": { type: "control plane", description: "The control plane's own Postgres, postgres:16-alpine" },
+    "deplo-tunnel": { type: "proxy", description: "The Cloudflare Tunnel connector for the panel, only while that tunnel is on" },
+    "deplo-dns-tunnel-<id>": { type: "proxy", description: "A Cloudflare Tunnel connector for app domains, one per Automatic DNS account on that server" },
+    "deplo-<slug>": { type: "app stack", description: "An app's stack" },
+    "deplo-<slug>__pr-<n>": { type: "preview stack", description: "A pull request preview" },
+    "db-<name>": { type: "database", description: "A managed database" },
+    "deplo-<slug>-<volume>": { type: "volume", description: "An app's named volume" },
   }}
 />
 

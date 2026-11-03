@@ -52,7 +52,7 @@ const CASES: [string, ...string[]][] = [
   ["why is my build failing", "/troubleshooting/deploys-and-builds#the-build-fails"],
   ["migrate from coolify", "/migrations/move-from-coolify"],
   ["health check", "/guides/observability/health-checks"],
-  ["memory limit", "/advanced/resource-limits#memory-and-cpu"],
+  ["memory limit", "/advanced/resource-limits#the-two-that-matter"],
   ["owner locked out", "/troubleshooting/sign-in-and-access#you-are-the-owner-and-locked-out"],
   ["recover owner", "/operations/break-glass-recovery#restore-ownership-or-access"],
   ["private registry", "/operations/servers/container-registries"],

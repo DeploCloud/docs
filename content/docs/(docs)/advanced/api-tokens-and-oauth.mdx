@@ -8,8 +8,8 @@ import { basePath } from "@/lib/base-path";
 
 import { Library, Bot, RefreshCw } from "lucide-react";
 
-Use tokens for scripts, CI, API clients, and
-[MCP agents](/guides/mcp-server) that access Deplo without a browser.
+Tokens let scripts, CI, API clients and [AI agents](/guides/mcp-server) use Deplo without a
+browser. They live in **Settings -> API tokens**, under **Account**.
 
 <Image
   src={`${basePath}/screenshots/api-tokens-and-oauth/01-tokens-list.png`}
@@ -19,49 +19,42 @@ Use tokens for scripts, CI, API clients, and
   className="w-full rounded-lg"
 />
 
-**Settings -> API tokens**, under your account. A token is **personal**: it
-belongs to the person who created it, and nobody else can see, edit or
-revoke it - not a team admin, not an instance admin.
+- **A token is personal.** Only the person who created it can see, edit or revoke it: not a
+  team admin, not an instance admin.
+- **It has its own capabilities**, which you can change later without reissuing it.
+- **The secret is shown once**, and only its hash is stored. Lost it? Revoke and create a new one.
 
-A token has its own capabilities, rather than impersonating its creator.
-You can change its capabilities later without reissuing it.
-
-Its **effective** power is the live intersection of two things:
+What a token can do is checked live, on every request:
 
 ```
 what the token was granted   AND   what its owner can still do
 ```
 
-Where it can act is decided by the team, per member, with two
-capabilities:
+Each team decides, per member, where their tokens may act:
 
 | Capability | What it allows |
 | --- | --- |
 | **Use API tokens** (`manage_tokens`) | The member's tokens can act in this team at all |
 | **Connect AI agents** (`manage_mcp`) | The member's tokens can drive this team over MCP |
 
-Both are checked live on every request. Removing a member from a team or
-taking away either capability immediately cuts off the relevant tokens.
+Removing the member, or either capability, cuts their tokens off at once. **Settings ->
+Members** shows how many tokens and agents each member has reaching the team: a number, never
+the credentials.
 
-**Settings -> Members** shows how many tokens and agents each member has
-reaching the team - a number, never the credentials.
-
-The secret is shown **once**, at creation. Only its hash is stored.
+<Callout type="info">
+  Connecting an AI agent? **Settings -> AI agents** creates its token for you. See
+  [MCP server](/guides/mcp-server).
+</Callout>
 
 ## Create an API token
 
 <Steps>
 <Step>
 
-### Start a new token
+### Start from a template
 
-**Settings -> API tokens**, then **New token**. Any member can, in the
-teams where they hold **Use API tokens**.
-
-</Step>
-<Step>
-
-### Pick a starting point
+**Settings -> API tokens -> New token**, then **Start from scratch** or a template, least
+powerful first:
 
 <Image
   src={`${basePath}/screenshots/api-tokens-and-oauth/02-new-token.png`}
@@ -70,9 +63,6 @@ teams where they hold **Use API tokens**.
   height={1080}
   className="w-full rounded-lg"
 />
-
-**Start from a template** or **Start from scratch**. Templates, least
-powerful first:
 
 | Template | For |
 | --- | --- |
@@ -83,127 +73,93 @@ powerful first:
 | **Agent setup** | An agent setting up a new Deplo: projects, apps, databases, Git |
 | **Root access** | Everything you can do |
 
-Everything stays editable on the next step.
-
 </Step>
 <Step>
 
-### Name it and set an expiry
+### Name, expiry, scope
 
-The picker offers **30 days**, **90 days**, **a year** and **Never**, and a new token defaults to
-90 days. A token created over the API without an expiry also gets 90 days.
-A token cannot create another token that expires later than itself.
+- **Expires**: see [Expiry](#expiry).
+- **Scope**: tick whole teams, projects, folders (subfolders included) or single apps. Nothing
+  ticked reaches every team where you may use API tokens, including ones you join later.
+- **Advanced -> Instance admin**, for instance admins only: the token may administer the whole
+  instance. Never combined with a scope, and never on unless you turn it on.
 
 </Step>
 <Step>
 
 ### Tick capabilities
 
-Sensitive ones are marked.
+Pick a **Template**, or tick them one by one. Sensitive ones are marked.
 
 </Step>
 <Step>
 
-### Set the scope
+### Copy it
 
-A tree: whole **Teams**, whole **Projects**, whole **Folders** (subtrees
-included), or individual **Apps**. Ticking nothing means every team where
-you may use API tokens, now and later: join a team tomorrow and the token
-reaches it without being edited.
-
-</Step>
-<Step>
-
-### Instance admin bit, optionally
-
-Instance admins may also set the **Instance admin** bit, mutually exclusive
-with a scope.
-
-</Step>
-<Step>
-
-### Copy the token
-
-You will not see it again.
+**Create token**, then copy it. You will not see it again.
 
 </Step>
 </Steps>
 
 ## Use the token
 
-Send it as a bearer token, and name the team you are acting in:
+Send it as a bearer token, and name the team with its slug (its id works too):
 
 ```bash
 curl -s https://deplo.example.com/api/graphql \
   -H "Authorization: Bearer deplo_xxxxxxxxxxxxxxxxxxxx" \
-  -H "X-Deplo-Team: team_1a2b3c" \
+  -H "X-Deplo-Team: acme" \
   -H "Content-Type: application/json" \
   -d '{"query":"{ apps { id name status } }"}'
 ```
 
-A bearer request acts in **one** team. Without the header it lands in the
-first team the token reaches. The full surface is in the
-[API reference](/api-reference).
+A request acts in **one** team. Without `X-Deplo-Team` it lands in the first team the token
+reaches. The full surface is in the [API reference](/api-reference).
 
-## Scope and effective access
+## Scope, and the rule that surprises people
 
 **Naming a project, a folder or an app clamps the token to the capabilities that mean something
-at that level**, and drops the rest. Managing the team's members is not one of them, so a token
-scoped to one app cannot do it. Naming a whole **team** does not clamp anything.
-
-If you need both, create two tokens.
-
-Two more limits. A token can edit or revoke **only itself**, never another
-token. Instance admin is opt-in **per token**: creating one as an instance admin does not make
-it one.
+there**, and drops the rest. Managing members is not one of them, so a token scoped to one app
+cannot do it. Naming a whole **team** clamps nothing. Need both? Create two tokens.
 
 ## Connected clients and OAuth
 
-A web AI application (claude.ai, chatgpt.com) cannot be handed a pasted
-token, so Deplo acts as an OAuth authorization server for exactly this one
-purpose.
+A web AI app (claude.ai, chatgpt.com) cannot take a pasted token, so Deplo acts as an OAuth
+server for it. Approving the consent screen **creates an ordinary API token**:
 
-Approving on the consent screen **creates an ordinary API token** with the
-capabilities and scope you picked there. The access token the client
-holds is only a pointer at that row:
-
-- It appears in **Settings -> API tokens**, marked as such.
-- Revoking it there stops the client immediately, in every team.
-- The OAuth scopes decide nothing. The token's capabilities do.
-
-By default the connection reaches every team where you hold **Connect AI
-agents** and MCP is on. Narrow it on the consent screen if the client
-should only see part of that.
+- **Permissions** start from the **MCP & AI agents** template. **Access** left empty reaches
+  every team where you hold **Connect AI agents** and **Allow AI agents** is on
+  (**Settings -> General**). Narrow either before **Authorize**.
+- The token shows in **Settings -> API tokens** under the client's name. Edit or revoke it
+  there; revoking stops the client in every team.
+- It expires in 90 days, like any new token. Connecting the same client again replaces it.
+- The OAuth scopes the client asks for decide nothing. The token's capabilities do.
 
 ## Expiry
 
-Expiry is checked before access, across GraphQL, MCP and deploy hooks.
-
-Expired tokens stay in the list, so you can see why a credential stopped
-working.
-
-Tokens created before expiry existed have none, until you edit them.
+- **Expires** offers **In 30 days**, **In 90 days** (the default), **In a year** and **Never**.
+  A token created over the API without a date also gets 90 days.
+- **It is checked first**, on the API, MCP and deploy hooks.
+- **An expired token stays in the list** marked **Expired**: edit it to move the date, or
+  revoke it.
 
 ## Important limits
 
-- **Shown once.** If you lose it, revoke it and create a new one.
-- **A token cannot transfer team ownership.** That action needs a human
-  with a password and a second factor.
-- **A token cannot reveal a secret** through MCP, whatever it holds.
-- **Two-factor policy applies.** If the team requires it and the token's
-  owner has not enrolled, the token resolves nothing there.
-- **Only its owner can revoke it.** A team takes the access away through
-  the member: remove them, or take away their **Use API tokens** or
-  **Connect AI agents** capability.
+- **A token can edit or revoke only itself**, never another token.
+- **A token created by a token** cannot expire later than it, reach outside its scope, or be
+  unscoped. A connected AI client cannot create or change tokens at all.
+- **Some actions need a signed-in person**: your password, two-factor, passkeys, devices, push
+  alerts, DNS providers, connecting an AI client and team ownership.
+- **No secret is revealed over MCP**, whatever the token holds.
+- **Two-factor applies.** If the team requires it and the owner has not set it up, the token
+  reaches nothing there.
 
 ## Troubleshooting
 
-- **401** - missing, revoked, or expired.
-- **403 on one field** - the token lacks that capability, or the scope
-  excludes that resource.
-- **It worked yesterday** - your capabilities changed (**Use API tokens**
-  gone means the token no longer reaches that team), it expired, or the
-  team turned on two-factor.
+- **401**: missing, revoked or expired.
+- **403 on one field**: the token lacks that capability, or the scope excludes that resource.
+- **It worked yesterday**: your capabilities changed (no **Use API tokens** means the token no
+  longer reaches that team), it expired, or the team turned on two-factor.
 
 More in [Sign-in and access troubleshooting](/troubleshooting/sign-in-and-access).
 

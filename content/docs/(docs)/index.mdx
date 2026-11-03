@@ -17,9 +17,8 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
     </h1>
 
     <div className="max-w-lg text-base leading-[1.85] text-fd-muted-foreground">
-      <strong className="text-fd-foreground">Deplo is an open-source alternative</strong> to
-      Vercel, Railway and Cloudflare: push a repo, pick a server, get a deployment, on your own
-      infrastructure.
+      <strong className="text-fd-foreground">Deplo is an open-source deploy platform</strong>:
+      push a repo, pick a server, get a deployment, on your own infrastructure.
     </div>
 
     <div className="flex flex-wrap items-center gap-2">
@@ -105,7 +104,7 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
 
 <div className="not-prose mx-auto grid max-w-4xl grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-3">
   <a
-    href="/guides/deploy/from-git"
+    href={`${basePath}/guides/deploy/from-git`}
     className="tile interact flex flex-col justify-between gap-8 p-6 lg:col-start-1 lg:row-span-3 lg:row-start-1"
   >
     <GitBranch className="size-6 text-blue-400" />
@@ -115,7 +114,7 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
     </div>
   </a>
   <a
-    href="/guides/networking/domains-and-https"
+    href={`${basePath}/guides/networking/domains-and-https`}
     className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-start-2 lg:row-start-1"
   >
     <Globe className="size-5 text-purple-400" />
@@ -125,7 +124,7 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
     </div>
   </a>
   <a
-    href="/guides/data/databases"
+    href={`${basePath}/guides/data/databases`}
     className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-start-3 lg:row-start-1"
   >
     <Database className="size-5 text-green-400" />
@@ -135,7 +134,7 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
     </div>
   </a>
   <a
-    href="/guides/data/backups-and-restore"
+    href={`${basePath}/guides/data/backups-and-restore`}
     className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-start-2 lg:row-start-2"
   >
     <Archive className="size-5 text-amber-400" />
@@ -145,7 +144,7 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
     </div>
   </a>
   <a
-    href="/guides/config/environment-variables"
+    href={`${basePath}/guides/config/environment-variables`}
     className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-start-3 lg:row-start-2"
   >
     <SlidersHorizontal className="size-5 text-cyan-400" />
@@ -155,7 +154,7 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
     </div>
   </a>
   <a
-    href="/concepts/teams-and-capabilities"
+    href={`${basePath}/concepts/teams-and-capabilities`}
     className="tile interact flex flex-col justify-between gap-6 p-5 lg:col-span-2 lg:col-start-2 lg:row-start-3 lg:flex-row lg:items-center"
   >
     <Users className="size-5 text-pink-400" />
@@ -192,7 +191,7 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
     <Route className="mt-0.5 size-5 shrink-0 text-fd-muted-foreground" />
     <div>
       <p className="font-medium text-fd-foreground">Traefik routes and issues certificates</p>
-      <p className="mt-1 text-sm text-fd-muted-foreground">Automatic HTTPS for every domain you add.</p>
+      <p className="mt-1 text-sm text-fd-muted-foreground">Let's Encrypt certificates, renewed on their own.</p>
     </div>
   </div>
   <div className="flex items-start gap-3">
@@ -215,7 +214,8 @@ import { primaryButton, secondaryButton } from "@/lib/button-styles";
 <div className="mx-auto max-w-2xl">
 
 - **Not a hosting provider.** You bring the server. Deplo never bills you for compute, seats or build minutes.
-- **Not a DNS provider.** You keep your registrar. Deplo tells you which record to create and checks that it resolves.
+- **Not a DNS provider.** You keep your registrar. Deplo tells you which record to create and checks it, or
+  creates it in your Cloudflare zone with [Automatic DNS](/guides/networking/automatic-dns).
 - **Not Kubernetes.** Apps run as Docker containers on a server you picked. There is no cluster to operate.
 - **Nothing is hidden.** The rendered Compose file, the routing labels and the build logs are all readable from the dashboard.
 

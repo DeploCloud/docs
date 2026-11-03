@@ -4,15 +4,14 @@ description: "One script, two jobs: pull the agent off a host, or remove Deplo i
 ---
 
 <Callout type="warn" title="Dry run first">
-Every command is a dry run unless you add `--yes`. **`--purge-data` is
-irreversible**: it deletes Deplo's volumes, secrets and data on that host.
+Without `--yes`, it only lists what it found and prints the commands it would run. **`--purge-data`
+is irreversible**: it deletes Deplo's volumes, secrets and data on that host.
 </Callout>
 
 <Tabs items={['Uninstall an agent from the host', 'Uninstall Deplo itself']}>
   <Tab value="Uninstall an agent from the host">
-    Use `--agent-only` for a server that should leave the control plane in
-    `/opt/deplo` untouched. On the control-plane host it also removes
-    Traefik, so the panel stops answering until you re-run `install.sh`.
+    `--agent-only` leaves the control plane in `/opt/deplo` alone. On the control-plane host it
+    still removes Traefik, so the panel stops answering until you re-run `install.sh`.
 
     ```bash
     # See what would happen (dry run, the default)
@@ -26,9 +25,8 @@ irreversible**: it deletes Deplo's volumes, secrets and data on that host.
     ```
   </Tab>
   <Tab value="Uninstall Deplo itself">
-    Without `--agent-only`, it removes the control plane in `/opt/deplo`,
-    its Postgres and Traefik, as well as the agent and Deplo-managed
-    containers.
+    Without `--agent-only`, it also removes the control plane in `/opt/deplo`, its Postgres and
+    its Traefik.
 
     ```bash
     # See what would happen (dry run, the default)
@@ -47,55 +45,38 @@ irreversible**: it deletes Deplo's volumes, secrets and data on that host.
 </Tabs>
 
 <Callout title="When the instance itself is unreachable">
-  If the panel or its DNS is unavailable, use `https://deplo.build/uninstall.sh`.
-  It serves the newest script, so always read the dry run before adding
-  `--yes` to an older installation.
+  Use `https://deplo.build/uninstall.sh`. It serves the newest script, so read the dry run
+  before adding `--yes` on an older installation.
 </Callout>
 
 <TypeTable
   type={{
-    "--yes": {
-      type: "flag",
-      description: "Actually do it. Without it, everything is a dry run.",
-    },
-    "--agent-only": {
-      type: "flag",
-      description:
-        "Leave the control plane in /opt/deplo alone. This is the flag in the command the dashboard prints for a server.",
-    },
-    "--purge-data": {
-      type: "flag",
-      description:
-        "Also delete Deplo volumes, images Deplo built, the stacks and dev directories and /opt/deplo itself, .env included. Irreversible.",
-    },
-    "--purge-backups": {
-      type: "flag",
-      description:
-        "Also delete /data/backups. Separate from --purge-data because everything else can be rebuilt from these. Irreversible.",
-    },
+    "--yes": { type: "flag", description: "Actually do it. Without it, everything is a dry run." },
+    "--agent-only": { type: "flag", description: "Leave the control plane in /opt/deplo alone. The dashboard's command for a removed server carries it." },
+    "--purge-data": { type: "flag", description: "Also delete Deplo volumes, the images Deplo built, /data/stacks and /data/dev. Without --agent-only, also the panel image and /opt/deplo itself, .env included. Irreversible." },
+    "--purge-backups": { type: "flag", description: "Also delete /data/backups. Separate from --purge-data because everything else can be rebuilt from these. Irreversible." },
+    "--plain / --no-color / --help": { type: "flag", description: "Output, as for install.sh. The transcript goes to /var/log/deplo-uninstall.log (DEPLO_LOG_FILE)." },
   }}
 />
 
 ## What it removes
 
-By default, it removes the panel, Postgres, Traefik, agent, Deplo-managed
-containers, the `deplo` network, and `/var/lib/deplo-agent`.
+In order: the control plane (unless `--agent-only`), the `deplo-agent` service and binary,
+`deplo-clat` and any NAT64 resolvers it set, Traefik and its socket proxy, every container
+labelled `deplo.managed=true`, the `deplo` networks, and `/var/lib/deplo-agent`.
 
-- `--agent-only` stops after removing the agent and host agent data.
-- It never removes Docker Engine, rewrites `/etc/docker/daemon.json`, or
-  touches containers without a Deplo label.
-- It is safe to run on a host that was never a Deplo host and safe to run
-  twice.
+- It never removes Docker Engine, rewrites `/etc/docker/daemon.json`, or touches a container
+  Deplo did not create.
+- If this Deplo took over another panel that is still on the machine, it starts that panel again.
+- It is safe to run on a host that was never a Deplo host, and safe to run twice.
 
 <Callout type="warn">
-  **`--purge-data` deletes `/opt/deplo/.env`, and that holds
-  `DEPLO_SECRET`.** Every backup artifact this instance wrote is encrypted
-  with a key derived from it. Copy the file first if you may ever want to
-  restore one.
+  **`--purge-data` deletes `/opt/deplo/.env`, and that holds `DEPLO_SECRET`.** Every backup
+  artifact this instance wrote is encrypted with a key derived from it. Copy the file first if
+  you may ever want to restore one.
 </Callout>
 
-The older `/uninstall-agent.sh` URL still works and applies
-`--agent-only` automatically.
+The older `/uninstall-agent.sh` URL still works and applies `--agent-only` automatically.
 
 ## See also
 

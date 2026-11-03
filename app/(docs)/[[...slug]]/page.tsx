@@ -17,6 +17,10 @@ import { IsoHero } from "@/components/iso-hero";
 
 const BETA_PAGES = new Set([
   "/guides/mcp-server",
+  "/reference/mcp-tools",
+  "/guides/observability/cron-jobs",
+  "/guides/networking/pull-request-previews",
+  "/guides/git-providers/git-connections",
   "/guides/networking/automatic-dns",
   "/advanced/build-servers",
   "/operations/servers/container-registries",

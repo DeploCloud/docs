@@ -6,35 +6,21 @@ description: Run an image that is already built, from any registry you can reach
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-import { Container, LayoutTemplate, Layers, HardDrive, Upload } from "lucide-react";
+import { Container, LayoutTemplate, Layers, HardDrive } from "lucide-react";
 
-Run an image that is already built, from Docker Hub, GitHub Container Registry, or any registry
-you can reach. There is no build step: you give a reference such as `nginx:1.27-alpine` or
-`ghcr.io/acme/api:v2.3.1`, and the agent pulls and starts it.
+Run an image that is already built, from Docker Hub, GitHub Container Registry or any registry
+you can reach, like `nginx:1.27-alpine` or `ghcr.io/acme/api:v2.3.1`. The agent pulls it and
+starts it.
 
-Use it for software you did not write, like a database viewer, a metrics dashboard or a game
-server, and for images your own CI already builds.
-
-Because nothing is built, there is no build log, no build cache, no build server, and **no
-rollback**. Changing the tag is your version control.
+Use it for software you did not write and for images your own CI builds. Nothing is built, so
+there is no build log, no build cache and **no rollback**: the tag is your version control.
 
 ## Deploy one
 
-<Steps>
-<Step>
-
-### Start a new app
-
-**Add new**, then **Application**.
-
-</Step>
-<Step>
-
-### Pick the image
-
-Pick the **Docker Image** tile and type the image reference. The name field autocompletes from
-Docker Hub, and tags are checked against any registry credentials you added. The **App name** is
-filled in from the image.
+1. **Add New**, then **Application**, then the **Docker Image** tile.
+2. Type the reference. Docker Hub names autocomplete, and a `:` lists the tags. **App name** is
+   filled in from the image.
+3. Click **Deploy**. The server and the port are under **Advanced**, already filled in.
 
 <Image
   src={`${basePath}/screenshots/docker-image/01-wizard-image.png`}
@@ -44,32 +30,25 @@ filled in from the image.
   className="w-full rounded-lg"
 />
 
-</Step>
-<Step>
-
-### Deploy
-
-There are no build settings for an image app. The server is under **Advanced**, already picked.
-Click **Deploy**.
-
-</Step>
-</Steps>
+A green check next to the reference means the image exists. A lock means it is private: the check
+runs without your registry credentials, but the deploy pulls with them.
 
 ## The port
 
-**Deplo reads the port from the image.** Most images declare one with `EXPOSE`: `nginx` and
-`traefik/whoami` use 80, `redis` uses 6379. An image that declares several ports, or none, gets
-**3000**.
+**Deplo reads the port from the image's `EXPOSE`**: `nginx` and `traefik/whoami` give 80. An
+image that declares several ports or none, or that is private, gets **3000**.
 
-Before the first deploy, the port is under **Advanced -> Port** in the wizard. After that, it lives
-on each hostname in the app's **Domains** tab, in the **Application port** field. Changing it
-applies in seconds without a redeploy. This is also how one image serves two hostnames on two
-different ports.
+- **Before the first deploy:** **Advanced**, **Container port**.
+- **After:** each hostname's **Application port** in the app's **Domains** tab. It applies
+  without a redeploy, and lets one image serve two hostnames on two ports.
+
+An official database image (`postgres`, `mysql`, `mariadb`, `mongo`, `redis`,
+`clickhouse/clickhouse-server`) gets no address. For a database, use
+[Databases](/guides/data/databases).
 
 ## Private registries
 
-Add credentials once in **Settings -> Registries** and every app on the team can pull from that
-registry. The password is encrypted and never returned. See
+Add credentials once in **Settings -> Registries** and every app of the team pulls with them. See
 [Container registries](/operations/servers/container-registries).
 
 <Image
@@ -84,23 +63,17 @@ registry. The password is encrypted and never returned. See
 
 | Setting | Where | Note |
 | --- | --- | --- |
-| Image reference | **Settings -> Deployments** | Change it and redeploy to change version |
-| Port | **Domains**, per hostname | An image app has no build settings card |
-| Environment variables | **Environment** | The normal way to configure this kind of software |
-| Volumes | **Settings -> Storage** | You must type the full mount path |
+| Image reference | **Settings -> Deployments**, **Source** card | Change the tag, **Save source**, then **Redeploy** |
+| Environment variables | **Environment** | The usual way to configure this kind of software |
+| Volumes | **Settings -> Storage** | Type the full path, like `/app/uploads`: it is not guessed |
 | Resource limits | **Settings -> Resources** | Useful for software you did not write |
 
 ## Good to know
 
-- **No rollback.** Pin a specific tag or a digest instead of `latest` if you want to go back to a
-  known version.
-- **`latest` does not re-pull by itself.** Redeploying pulls again. Nothing watches the registry
-  for you.
-- **The mount path is not guessed.** For a prebuilt image you type the full path, like
-  `/app/uploads`.
-- **Names under `deplo/` are refused.** That is where Deplo tags the apps it builds, so
-  `deplo/shop:dpl_0a1b2c3d` would be another app's image. The same goes for a database's custom
-  image.
+- **Pin a tag or a digest**, not `latest`. `latest` is pulled again only on a redeploy, and
+  [Security updates](/guides/observability/security-updates#update-an-image) offers **Update**
+  when a newer build fixes a flaw.
+- **Names under `deplo/` are refused.** That is where Deplo keeps the images it builds for apps.
 - **Multi-container software needs Compose.** If the vendor ships a `docker-compose.yml`, use
   [Compose apps](/advanced/compose-apps) or look in [Templates](/guides/deploy/from-template).
 
@@ -110,7 +83,7 @@ registry. The password is encrypted and never returned. See
 | --- | --- |
 | `pull access denied` | The image is private and no registry credential matches its host. Add one in **Settings -> Registries**. |
 | The container starts and exits immediately | It usually needs a variable or a volume. Read the [Logs](/guides/observability/logs). |
-| The URL answers 502 | Wrong port. Deplo could not read one from the image and used 3000. Set **Application port** on the domain. |
+| The URL answers 502 | Wrong port: Deplo could not read one from the image and used 3000. Set **Application port** on the domain. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 
@@ -121,5 +94,4 @@ More in [Deploys and builds](/troubleshooting/deploys-and-builds).
   <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="The same idea, preconfigured" href="/guides/deploy/from-template" />
   <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="More than one container" href="/advanced/compose-apps" />
   <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="Mount a path in a prebuilt image" href="/guides/data/persistent-storage" />
-  <Card icon={<Upload className="text-blue-400" />} title="Upload your code" description="When you have source but no repository" href="/guides/deploy/upload-code" />
 </Cards>

@@ -11,7 +11,7 @@ import { basePath } from "@/lib/base-path";
 
 ### Open roles settings
 
-Open **Settings -> Roles**.
+Open **Settings -> Roles**. Every role is on the left, with its permission count.
 
 <Image
   src={`${basePath}/screenshots/roles/01-roles-list.png`}
@@ -26,22 +26,29 @@ Open **Settings -> Roles**.
 
 ### Start a new role
 
-Click **New role**. Choose to start blank or from an existing role.
+Click **New role**, then **Start from scratch** (view access only) or a role under **Start
+from an existing role**. Give it a **Name** and, optionally, a **Description**.
 
 </Step>
 <Step>
 
-### Name it
+### Limit where it works
 
-Give it a **Name** and a **Description**.
+Under **Access**, everything is ticked. Untick what its holders should not reach, down to
+single projects, environments, folders or apps. Leave it all ticked for the whole team.
+
+A limited role loses the team-wide pages (Members, Roles, team Settings) and the capabilities
+that only work team-wide: they stay ticked but count as **Out of reach** in the summary.
 
 </Step>
 <Step>
 
 ### Tick capabilities
 
-Use the search box or browse by category. Each category header has a **Select all** /
-**Unselect all** toggle for the visible items. `view` is always ticked.
+Search, or browse by category. Each category has a **Select all** / **Unselect all** toggle for
+what is shown. `view` is always ticked.
+
+You can only grant capabilities you hold yourself: saving with one you lack is refused.
 
 <Image
   src={`${basePath}/screenshots/roles/02-role-detail.png`}
@@ -54,31 +61,25 @@ Use the search box or browse by category. Each category header has a **Select al
 </Step>
 <Step>
 
-### Check the sensitive ones
+### Mind the sensitive ones
 
-Capabilities marked **Sensitive** deserve a second look: deleting things, opening consoles,
-revealing secrets, managing tokens, managing roles.
-
-</Step>
-<Step>
-
-### Optionally require two-factor
-
-Turn on **Require two-factor authentication** for this role if needed.
+Capabilities marked **Sensitive** can destroy data or hand over access, for example deleting
+things, opening consoles, revealing secrets, restoring backups, managing tokens or roles, and
+connecting AI agents. The summary counts them.
 
 </Step>
 <Step>
 
-### Save
+### Require two-factor and save
 
-Save.
+Turn on **Require two-factor authentication** if needed: holders get no permissions until they
+set it up, in the panel and over the API. Then **Create role**, or **Save changes**.
 
 </Step>
 </Steps>
 
-**Reset to default** restores a built-in role. **Delete role** removes one you created.
-
-You cannot grant what you do not have: those capabilities show as **Out of reach**.
+- **Reset to default** restores Member or Viewer to what Deplo ships. Owner cannot be edited.
+- **Delete role** removes one you created, once nobody holds it.
 
 ## Next steps
 

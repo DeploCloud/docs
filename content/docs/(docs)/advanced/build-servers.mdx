@@ -12,109 +12,78 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-Use it when builds are competing with production for CPU, or when several
-small servers can share one larger builder.
+Use one when builds compete with production for CPU, or when several small servers can share one
+larger builder.
 
-A build server uses the **Build only** role. It gets Docker and address pools,
-but no Traefik and never appears as a deploy target.
-
-The builder sends the image to the target host through the control plane.
-The deploy uses a slot in the builder's queue.
+A build server has the [**Build only** role](/advanced/server-roles#build-only): Docker, no
+Traefik, never a deploy target. It sends the finished image to the target through the control
+plane, and the deploy takes a slot in the **builder's** queue. Build logs stay on the app.
 
 <BuildServerDiagram />
-
-Build logs still belong to the app. Read them where you always do.
-
-## When the builder is down
-
-A deploy still ships. Deplo tries, in order:
-
-1. The app's build server.
-2. Every server marked **Build as a fallback**, the Deplo host first.
-3. The server the app runs on.
-
-The first host that answers compiles it, and the deploy log names it.
-
-A host is only tried when Deplo can see it is **healthy**: one that is offline,
-one whose certificate Deplo no longer trusts, and one with **Docker down** are
-all skipped before anything is shipped to them, rather than tried and failed.
-
-**The Deplo host is a fallback out of the box** - it is the one machine every
-install has. Any other server can join the pool: open it in
-**Settings -> Servers**, then **Advanced -> Build as a fallback**. The same
-architecture rule applies, so a fallback that cannot produce a runnable image
-is skipped rather than tried.
-
-To take a host out of the pool, turn the same switch off. To stop **one app**
-from ever building anywhere else, turn off **Build somewhere else if that
-server is down** in that app's build settings: its deploy then fails instead,
-and the running version is left alone.
 
 ## Configure a build server
 
 <Steps>
 <Step>
 
-### Install a Build only server
+### Add a Build only server
 
-See [Add a server](/operations/servers/add-a-server).
-
-</Step>
-<Step>
-
-### Open build settings
-
-Open the app, then **Settings -> Deployments -> Advanced settings**.
+Pick the **Build** tile in [Add a server](/operations/servers/add-a-server).
 
 </Step>
 <Step>
 
-### Set where it builds
+### Choose where the app builds
 
-- **Automatic** lets Deplo choose, and it only ever picks a **Build only** host: the least busy, oldest first on a tie. On a fleet with no build-only server it simply builds locally
-- This app's own server
-- A named build server
+Open the app, then **Settings -> Advanced -> Build on**:
 
-</Step>
-<Step>
+- **Automatic**: the least busy online **Build only** server of the same architecture, oldest
+  first on a tie. With none in the fleet, it builds on the app's own server.
+- **The app's own server**: always build where it runs.
+- **Any other server** the team can use, Build only or not. One with a different CPU
+  architecture is listed but disabled.
 
-### Keep the fallback on
-
-So a build still happens if the builder is unreachable - on the Deplo host,
-or on any server you marked as a fallback.
-
-</Step>
-<Step>
-
-### Save and redeploy
+The choice saves at once and applies on the next deploy. Leave **Build somewhere else if that
+server is down** on, see below.
 
 </Step>
 </Steps>
 
+## When the builder is down
+
+A deploy still ships. Deplo tries, in order, and the deploy log names the host that built it:
+
+1. The app's build server.
+2. Every server marked **Build as a fallback**, the Deplo host first, then the least busy.
+3. The app's own server.
+
+Only **online** hosts of the same architecture are tried. One that is offline, has Docker down
+or a certificate Deplo no longer trusts is skipped before anything is shipped to it.
+
+- **The Deplo host is a fallback out of the box.** Add or remove any other server with
+  **Settings -> Servers -> the server -> Advanced -> Build as a fallback**. A Backups only server
+  cannot be one.
+- **To make one app fail instead**, turn off **Build somewhere else if that server is down** in
+  its **Build on** row. The running version is left alone.
+
 ## Important limits
 
-- **Both machines need the same CPU architecture.** An `arm64` builder
-  cannot produce an `amd64` image. Mismatched choices are shown but
-  disabled.
-- **A Compose app cannot use one**, pasted or built from its repository with
-  **Docker Compose**. There is no single image to build and move.
-- **The image crosses the network twice**, once to the control plane and
-  once out again. Cheap on a fast local network, can cost more than it
-  saves over a slow link.
-- **The build cache lives on the builder.** Moving an app to a different
-  builder starts cold.
-- **A build-only server is not a deploy target**, and never will be.
+- **Both machines need the same CPU architecture.** An `arm64` builder cannot build for an
+  `amd64` server.
+- **Only apps Deplo builds from source** (Git or an upload) can use one. A Docker image has
+  nothing to build, and a Compose app, pasted or from the repository, builds where it runs.
+- **The image crosses the network twice**: builder to control plane, then out to the target.
+  Cheap on a fast network, can cost more than it saves over a slow link.
+- **The build cache lives on the builder.** A different builder starts cold.
 
 ## Troubleshooting
 
-- **The builder does not appear in the list** - it is not in the Build
-  only role, or its architecture does not match the target.
-- **Builds happen on another host** - the builder was unreachable and the
-  fallback did its job. The deploy log names the host that took over; check
-  the builder's health.
-- **Deploys queue behind each other** - they share the builder's
-  concurrency. Raise it on that server's **Overview** tab if the machine can
-  take it.
+- **The server is not in the Build on list**: it is not shared with this team, or it is a
+  Backups only server. Listed but greyed out means a different architecture.
+- **Builds happen on another host**: the builder was down and the fallback took over. The
+  deploy log names the host; check the builder's health.
+- **Deploys queue behind each other**: they share the builder's **Concurrent deployments**.
+  Raise it on that server's **Overview** tab if the machine can take it.
 
 More in [Deploys and builds troubleshooting](/troubleshooting/deploys-and-builds).
 

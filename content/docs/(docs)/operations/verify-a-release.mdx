@@ -5,16 +5,12 @@ description: Verify a Deplo image before running it.
 
 import { Download, ShieldAlert, Server, Terminal } from "lucide-react";
 
-Every Deplo image published to `ghcr.io/deplocloud/deplo` is signed. Verification
-checks that the exact image came from Deplo's release workflow. It is optional,
-but useful before running an image in production.
-
-The signature uses [Sigstore](https://www.sigstore.dev/) and a short-lived
-certificate, not a long-lived signing key.
+Every Deplo image on `ghcr.io/deplocloud/deplo` is signed by Deplo's release workflow, with
+[Sigstore](https://www.sigstore.dev/) and a short-lived certificate, not a long-lived key. Checking
+it is optional, and proves the exact image came from that workflow.
 
 <Callout type="info">
-  Releases built from 31 August 2026 onward carry an attestation. Older tags predate it and will
-  report that none was found.
+  Releases built from 31 August 2026 onward carry an attestation. Older tags report that none was found.
 </Callout>
 
 ## Verify the image
@@ -22,52 +18,44 @@ certificate, not a long-lived signing key.
 <Steps>
 <Step>
 ### Install the GitHub CLI
-
-Use the [GitHub CLI](https://cli.github.com/), **version 2.49 or newer**. It can
-run on any machine; it only needs access to the registry.
+[GitHub CLI](https://cli.github.com/) **2.49 or newer**, on any machine that can reach the registry.
 </Step>
 
 <Step>
 ### Run the check
-
-Replace the version with the one you are about to install:
+With the version you are about to install:
 
 ```bash
-gh attestation verify oci://ghcr.io/deplocloud/deplo:0.1.0 --repo DeploCloud/deplo
+gh attestation verify oci://ghcr.io/deplocloud/deplo:0.8.1 --repo DeploCloud/deplo
 ```
 </Step>
 
 <Step>
 ### Read the result
-
-A good result names the checked digest and build workflow:
+A good result names the checked digest:
 
 ```
-Loaded digest sha256:<digest> for oci://ghcr.io/deplocloud/deplo:0.1.0
+Loaded digest sha256:<digest> for oci://ghcr.io/deplocloud/deplo:0.8.1
 Verification succeeded!
 ```
 
-Any other result is a failure.
+Anything else is a failure.
 </Step>
 </Steps>
 
 ## The server agent
 
-Nothing to do by hand. `install-agent.sh` compares the agent binary against its published
-SHA-256 before it runs it, and refuses to continue on a mismatch. That check is part of the
-installer, on every install and every update.
+Nothing to do by hand. `install-agent.sh` and every automatic agent update check the binary against
+its published SHA-256 and refuse to run it on a mismatch.
 
 ## If verification fails
 
-**Do not run the image.** A failure means the image is not the one Deplo published, or the tag
-now points at something else.
+**Do not run the image.** It is not the one Deplo published, or the tag now points elsewhere.
 
-- Re-run the command against a specific digest rather than a tag, in case a local mirror or a
-  proxy is serving something stale.
+- Re-run the check against a digest rather than a tag, in case a mirror or proxy serves something stale.
 - Pull again from `ghcr.io` directly.
-- If it still fails, report it privately through
-  [Deplo's security policy](https://github.com/DeploCloud/deplo/blob/main/SECURITY.md). Never in a
-  public issue.
+- Still failing? Report it privately through
+  [Deplo's security policy](https://github.com/DeploCloud/deplo/blob/main/SECURITY.md), never in a public issue.
 
 ## Next steps
 

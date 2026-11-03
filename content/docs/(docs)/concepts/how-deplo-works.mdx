@@ -11,73 +11,64 @@ import {
   SecretsDiagram,
 } from "@/components/diagrams/how-deplo-works";
 
-Deplo is two programs with one rule between them. This explains most of what you see in the
-product, including why a deploy fails when a server is unreachable and why the dashboard cannot
-show you a secret.
+Deplo is two programs with one rule between them.
 
 ## The two parts
 
-**The control plane decides.** It is the dashboard you log into. It stores the data, signs people
-in, prepares the Compose file and the routing rules, and decrypts the environment variables. Then
-it hands the result to a server.
-
-**The server agent executes.** One small program per server, `deplo-agent`. It is the only thing
-that runs Docker, touches the filesystem or opens a shell. Builds, deploys, logs, the web console,
-metrics, backups, restores and disk cleanup all go through it.
+- **The control plane decides.** It is the dashboard you log into. It stores the data, signs
+  people in, prepares the Compose file and the routing rules, and decrypts the environment
+  variables. Then it hands the result to a server.
+- **The server agent executes.** One small program per server, `deplo-agent`. It is the only
+  thing that runs Docker, touches the filesystem or opens a shell: builds, deploys, logs, the
+  console, metrics, backups, restores and disk cleanup all go through it.
 
 <PartsDiagram />
 
 ## The rule
 
-**The control plane never touches Docker or a server directly.**
+**The control plane never touches Docker or a server directly.** Every action goes through the
+agent, over mutual TLS, with the agent's certificate pinned when the server joins.
 
-Every action on a server goes through the agent, over an encrypted connection (mutual TLS). The
-agent's certificate is pinned when the server is added.
-
-What this means for you:
-
-- **The machine running Deplo is a normal server.** It runs the agent like every other server.
-- **An unreachable agent is an error.** Every deploy starts by contacting the agent. If it does
-  not answer, the deploy fails and says so. It never builds somewhere else instead.
-- **The control plane never gets the Docker socket.** It is the part reachable from the internet,
-  so for security reasons it cannot run Docker. Traefik reads container information through a
-  read-only proxy instead.
+- **The machine running Deplo is a normal server.** It runs the agent like every other one.
+- **An offline server is an error.** Every deploy starts by contacting the agent. If it does not
+  answer, the deploy fails and says so; nothing runs on the control plane instead.
+- **The control plane never gets the Docker socket.** It is the part reachable from the internet.
+  Traefik reads container labels through a read-only proxy instead.
 
 ## What Traefik does
 
-One reverse proxy per server, in a container called `deplo-traefik`, on ports `80` and `443`.
-Deplo writes its routing rules.
+One reverse proxy per server, the `deplo-traefik` container, on ports `80` and `443`. Every
+hostname you add becomes a route: rule, entry point, certificate provider, and extras such as
+basic auth, path stripping and redirects. Traefik renews Let's Encrypt certificates itself, and
+Deplo edits its configuration in place, so changes made by hand survive.
 
 <TraefikDiagram />
 
-Every hostname you add becomes a route with its rule, its entry point (HTTP or HTTPS), its
-certificate provider, and its extras: basic auth, path stripping, redirects. Certificates come
-from Let's Encrypt and Traefik renews them itself.
-
-Deplo edits the proxy's configuration file in place, so changes an operator made by hand survive.
-
 ## Where the data lives
 
-**Postgres stores all control plane data.** Apps, teams, domains, deployment history, encrypted
-secrets and activity. There is no other store.
-
-**Your application data lives on the servers**, in Docker volumes the agent manages. It is never
-copied into the control plane. The only exception is an encrypted backup passing through on its
-way to a destination on another server.
+- **Postgres holds all control plane data:** apps, teams, domains, deployment history, encrypted
+  secrets and activity.
+- **Your application data lives on the servers**, in Docker volumes the agent manages. It only
+  crosses the control plane encrypted, in transit between two servers (a backup sent to another
+  server, an app moved to another server), and is never stored there.
 
 <DataDiagram />
 
 ## How secrets move
 
-Secrets are encrypted at rest with a key derived from `DEPLO_SECRET`. They are **write-only**:
-the dashboard and the API never return them, and a rendered stack shows them masked.
+Secrets are encrypted at rest with a key derived from `DEPLO_SECRET`. A secret variable is
+**write-only**: nothing returns it, and changing one means deleting and adding it again. A few
+other values can be shown again, each behind a capability:
 
-Only four values can be read back, each behind the `reveal_secrets` capability and each recorded
-in Activity: a basic-auth password, a backup recovery key, a managed database's connection string,
-and an app's deploy hook URL. An environment variable never can.
+| Value | Capability |
+| --- | --- |
+| A managed database's connection string | `reveal_secrets` |
+| A backup destination's recovery key | `reveal_secrets` |
+| A basic-auth password | `manage_basic_auth` |
+| An app's deploy hook URL | `configure_apps` |
 
-**The agent never holds the encryption key.** The control plane decrypts at deploy time and sends
-the values inside the encrypted connection.
+**The agent never holds the encryption key.** The control plane decrypts at deploy time and
+sends the values inside the encrypted connection.
 
 <SecretsDiagram />
 
@@ -85,31 +76,14 @@ the values inside the encrypted connection.
 
 | If you see | It is because |
 | --- | --- |
-| A deploy failed with "agent unreachable" | The rule. Deplo never builds somewhere else instead. |
-| A server card says **warning** | The agent answers, but Docker does not, so nothing can deploy. |
-| A secret you set cannot be read back | Secrets are write-only. Delete and set it again to change one. |
-| The rendered Compose file shows `***` | Secrets are masked, including the basic-auth hash. |
-| Two apps reach each other by name | They are in the same Environment, so they share its network. Two apps in different Environments cannot, even on one server. |
+| A server shows **warning** | The agent answers, but Docker does not, so nothing can deploy. |
+| The rendered Compose file shows `••••••••` | Environment values, commands and secrets are masked. |
+| Two apps reach each other by name | They share an Environment, and so its network. Apps in different Environments cannot, even on one server. |
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Server className="text-blue-400" />}
-    title="Servers and agents"
-    description="Enrollment, health, readiness, roles"
-    href="/concepts/servers-and-the-agent"
-  />
-  <Card
-    icon={<Rocket className="text-blue-400" />}
-    title="The deploy trace"
-    description="One deploy, step by step"
-    href="/concepts/what-happens-on-a-deploy"
-  />
-  <Card
-    icon={<FolderTree className="text-blue-400" />}
-    title="Network isolation"
-    description="Which apps can reach which"
-    href="/advanced/network-isolation"
-  />
+  <Card icon={<Server className="text-blue-400" />} title="Servers and agents" description="Enrollment, health, readiness, roles" href="/concepts/servers-and-the-agent" />
+  <Card icon={<Rocket className="text-blue-400" />} title="The deploy trace" description="One deploy, step by step" href="/concepts/what-happens-on-a-deploy" />
+  <Card icon={<FolderTree className="text-blue-400" />} title="Network isolation" description="Which apps can reach which" href="/advanced/network-isolation" />
 </Cards>

@@ -6,18 +6,16 @@ description: "Give somebody access to one folder: a grant that replaces the team
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-A role applies to the whole team. A **folder share** applies inside one folder: it **replaces**
-the team role there, and it **can give more** than the role does.
-
-For example, somebody with the **Viewer** role can deploy, configure and restart everything
-inside `Marketing`, and nothing anywhere else.
+A **folder share** applies inside one folder and everything under it. It **replaces** the
+person's role there, and it **can give more** than the role does. For example, a **Viewer** can
+deploy, configure and restart everything inside `Marketing`, and nothing anywhere else.
 
 <Steps>
 <Step>
 
 ### Open the folder menu
 
-On the Overview, open the folder's menu and choose **Share**.
+On the Overview, open the folder's menu and choose **Share folder**.
 
 <Image
   src={`${basePath}/screenshots/folder-shares/01-folder-menu.png`}
@@ -32,7 +30,8 @@ On the Overview, open the folder's menu and choose **Share**.
 
 ### Pick the member
 
-Pick the member.
+Under **Add someone**, search by username and pick them. **People with access** above lists
+who already has it.
 
 <Image
   src={`${basePath}/screenshots/folder-shares/02-share-dialog.png`}
@@ -47,33 +46,34 @@ Pick the member.
 
 ### Choose the grant
 
-Choose what they get inside this folder.
-
-</Step>
-<Step>
-
-### Change or close
-
-**Change** edits an existing share, **Close** dismisses.
+Under **What can they do?** everything you may share is ticked. Untick what they should not
+get, then **Share**. **View the team** is always included.
 
 </Step>
 </Steps>
 
-The most specific grant wins: a grant on an **app** beats one on its **environment**, which
-beats one on its **folder**, which beats one on the **project**, which beats the team role.
-Members with such grants show a **Limited access** badge on the members list.
+To change a share, remove the person from **People with access**, then share again.
+
+## What a share can give
+
+- **Only what works on apps**: deploying, configuring, logs, variables, domains, backups, the
+  console and the like, plus moving apps and organizing or deleting folders.
+- **Never team-wide capabilities**: members, roles, tokens or databases.
+- **Only what you hold yourself** inside that folder.
+- **The most specific grant wins**: a grant on an **app** beats one on its **environment**,
+  which beats one on its **folder**, which beats one on the **project**, which beats the role.
 
 ## Who can share a folder
 
-Creating a folder needs the `create_folders` capability. Sharing one needs no capability: you
-can share a folder you own, or any folder if you are a team or instance administrator. You can
-only hand out what you have inside that folder yourself.
+The folder's owner, anyone holding **Manage team settings** (`manage_team`), and instance
+admins. A person a folder is shared with cannot share it again. Creating a folder needs
+`create_folders`.
 
 ## A folder is private
 
-A folder is visible to its **owner**, the people it is **shared** with, and team
-administrators. An app moved into a folder disappears from everyone else's Overview until the
-folder is shared with them.
+A folder is visible to its **owner**, the people it is **shared** with, members whose role is
+limited to it, and team administrators. An app moved into a folder disappears from everyone
+else's Overview until the folder is shared with them.
 
 Removing a member revokes their shares. Folders they owned pass to the primary owner.
 

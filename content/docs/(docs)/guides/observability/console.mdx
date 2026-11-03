@@ -8,8 +8,8 @@ import { basePath } from "@/lib/base-path";
 
 import { HardDrive, Timer, ScrollText } from "lucide-react";
 
-The console lets you look inside a running container. It goes through the
-agent on the server and is not required to use Deplo.
+A terminal inside a running container, through the agent on the server. Nothing to install,
+and you never need it to use Deplo.
 
 <Image
   src={`${basePath}/screenshots/console/03-terminal.png`}
@@ -19,26 +19,25 @@ agent on the server and is not required to use Deplo.
   className="w-full rounded-lg"
 />
 
-There are two tabs:
+Two tabs:
 
-- **Shell** runs one `docker exec` per line you type. Each line is a separate
-  process, so `cd` does not carry over to the next command, and interactive
-  programs like `top`, `vim`, `less` or `psql` do not work. Use it for `ls`,
+- **Shell** runs one `docker exec` per line. Each line is its own process, so `cd` does not carry
+  over and interactive programs (`top`, `vim`, `less`, `psql`) do not work. Use it for `ls`,
   `cat`, `env` or a one-off script.
-- **Attach** connects to the main process's input and output. This is a real
-  terminal, but only works for a container started with a TTY and an open
-  stdin.
+- **Attach** connects to the main process (PID 1): you watch it live and type to its stdin, and
+  Ctrl-C reaches the app. A container started without stdin open streams its output only.
 
 ## Open a console
-
-The console is hidden until you acknowledge it once.
 
 <Steps>
 <Step>
 
-### Open the app's Advanced settings
+### Turn the console on
 
-Open the app, then **Settings -> Advanced**, and click **Open console**.
+For an app: **Settings -> Advanced**, turn on **Console**, confirm with **Turn it on**, then
+click **Open console**. The app's sidebar shows **Console** while it runs.
+
+For a database there is no switch: **Settings -> Advanced -> Open console**.
 
 <Image
   src={`${basePath}/screenshots/console/01-turn-it-on.png`}
@@ -53,9 +52,8 @@ Open the app, then **Settings -> Advanced**, and click **Open console**.
 
 ### Acknowledge the warning
 
-Read the warning and click **I understand**. From then on the sidebar shows a
-**Console** entry whenever a container is running. The acknowledgement is
-stored in this browser only, so another browser asks again.
+The first time in a browser, Deplo asks **Open the container console?**. Click **I understand**.
+It is remembered in this browser only.
 
 <Image
   src={`${basePath}/screenshots/console/02-confirm.png`}
@@ -68,55 +66,38 @@ stored in this browser only, so another browser asks again.
 </Step>
 </Steps>
 
-Pick the container from the picker. Each row shows a running dot, the service
-name, and an **app** badge on the one your domains route to. The prompt shows
-the user as `user@service$`.
+Pick the container from the picker: each row has a running dot, the service name, and an **app**
+badge on the one your domains route to. The prompt reads `user@service$`.
 
-The **Shell** select offers `auto`, `/bin/sh`, `/bin/bash` and raw exec with no
-shell. An image with no shell at all (distroless or scratch) says so. You can
-still run a binary that exists in it.
+The **Shell** select offers `auto`, `/bin/sh` and `/bin/bash`. The last two run each line through
+that shell, so pipes and redirects work. With `auto` on an image that has no shell (distroless or
+scratch), lines run as raw exec: the first word is the binary, the rest are literal arguments.
 
 ## Good to know
 
-- **Changes inside a container do not survive a redeploy.** The container is
-  recreated from the image. Keep changes in a volume or in your repository.
-- **`open_app_console` and `open_database_console` are separate, sensitive
-  capabilities.** A console runs any code as that container's user.
-- **The console needs something running.** A stopped app has no container to
-  enter.
-- **This is not a way onto the host.** You are inside a container. Reaching
-  the server itself needs [host access](/advanced/host-access-and-privileges).
+- **Changes inside a container do not survive a redeploy.** Keep them in a volume or in your
+  repository.
+- **`open_app_console` and `open_database_console` are separate, sensitive capabilities.** A
+  console runs any code as the container's user.
+- **A stopped app has no container to enter.**
+- **This is not a way onto the host.** Reaching the server itself needs
+  [host access](/advanced/host-access-and-privileges).
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| No **Console** entry in the sidebar | The acknowledgement has not been given in this browser, nothing is running, or you lack the capability. |
-| `cd` has no effect on the next command | Expected in the **Shell** tab: every line is a separate `docker exec`. Chain commands on one line with `&&`. |
-| `top` or `vim` draws nothing | Same reason. Use **Attach**, and only on a container started with a TTY. |
-| Raw exec, no shell | A distroless or scratch image. Run a binary that exists in it. |
+| No **Console** in the app's sidebar | The **Console** switch is off, the app is not running, or you lack `open_app_console`. |
+| `cd` has no effect on the next command | Expected in **Shell**: every line is a separate exec. Chain with `&&`. |
+| `top` or `vim` draws nothing | Same reason. Use **Attach** on a container started with a TTY. |
+| **No shell in this container** | A distroless or scratch image. Run a binary that exists in it. |
 
 More in [Servers and agents](/troubleshooting/servers-and-agents).
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<HardDrive className="text-blue-400" />}
-    title="Persistent storage"
-    description="The disk an app keeps between deploys"
-    href="/guides/data/persistent-storage"
-  />
-  <Card
-    icon={<Timer className="text-blue-400" />}
-    title="Cron jobs"
-    description="The scheduled version of the same exec"
-    href="/guides/observability/cron-jobs"
-  />
-  <Card
-    icon={<ScrollText className="text-blue-400" />}
-    title="Logs"
-    description="Usually the answer, without a shell"
-    href="/guides/observability/logs"
-  />
+  <Card icon={<HardDrive className="text-blue-400" />} title="Persistent storage" description="The disk an app keeps between deploys" href="/guides/data/persistent-storage" />
+  <Card icon={<Timer className="text-blue-400" />} title="Cron jobs" description="The scheduled version of the same exec" href="/guides/observability/cron-jobs" />
+  <Card icon={<ScrollText className="text-blue-400" />} title="Logs" description="Usually the answer, without a shell" href="/guides/observability/logs" />
 </Cards>

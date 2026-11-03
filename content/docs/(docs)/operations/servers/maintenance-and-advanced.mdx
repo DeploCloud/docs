@@ -1,30 +1,30 @@
 ---
 title: Maintenance and advanced
-description: Restarts, the host clock, the server's address, and removing a server.
+description: Restarts, the server's role, the host clock, the server's address, and removing a server.
 ---
 
 import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
 
-**Settings -> Servers -> the server**, on the **Maintenance** and **Advanced** tabs.
+**Settings -> Servers**, the server, then the **Maintenance** or **Advanced** tab.
 
 ## Maintenance
 
 <TypeTable
   type={{
-    "Restart Traefik": {
-      type: "action",
+    "Apps and databases": {
+      type: "restart",
       description:
-        "Restarts the proxy on this host. Every site there is unreachable for the few seconds it takes to come back, and the containers keep running.",
+        "Restarts everything Deplo runs here, one at a time, so each is briefly unreachable. Anything stopped or mid-deploy is left alone.",
     },
-    "Restart all": {
-      type: "action",
+    "Traefik": {
+      type: "restart",
       description:
-        "Restarts the workloads, apps and databases, one at a time, so each is briefly unreachable. Anything already stopped stays stopped, and anything mid-deploy is left to finish.",
+        "Restarts the proxy. Every site on this server is unreachable for a few seconds; the containers keep running.",
     },
-    "Restart Deplo": {
-      type: "action",
+    "Deplo panel": {
+      type: "restart",
       description:
-        "Only on the host running the control plane. It restarts the panel itself, which goes away for a few seconds while your apps and databases keep serving traffic.",
+        "Only on the machine Deplo runs on. The panel goes away for a few seconds; your apps and databases keep serving.",
     },
   }}
 />
@@ -34,44 +34,52 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
 <TypeTable
   type={{
     "What this server is for": {
-      type: "read-only",
-      description: "The role the machine was enrolled with. Beta, and it cannot be changed in place",
+      type: "select",
+      description:
+        "Everything, Build or Backups, with Save. Beta. Leaving Everything needs the server emptied of apps and databases first.",
+    },
+    "Build as a fallback": {
+      type: "switch",
+      description:
+        "Compiles for apps whose own build server is down, when they have the same CPU architecture.",
     },
     "Generated addresses": {
       type: "select",
       default: "Automatic",
       description:
-        "Whether the free .deplo.site addresses of apps on this server point at its IPv4 or its IPv6. See below. Beta",
+        "Whether the free .deplo.site addresses of apps here point at the server's IPv4 or IPv6. See below. Beta, Everything servers only.",
     },
     "Host details": {
       type: "read-only",
-      description: "What the agent reports about the machine, including where Docker keeps its data",
+      description: "What the machine runs, read from the server just now, including where Docker keeps its data.",
     },
     "Server time": {
       type: "select",
       description:
-        "The host's timezone, with Save timezone. Cron jobs carry their own zone, so this is for the host's own clock",
+        "The host's timezone, with Save timezone. Backups and cleanup run on UTC, and cron jobs carry their own zone.",
     },
     "Install command": {
-      type: "text",
+      type: "action",
       description:
-        "The command to re-run on the host, for reinstalling or repairing the agent. This is also where a fresh bootstrap token is issued",
+        "A fresh one-time command, to finish a server still provisioning or to reinstall its agent.",
     },
     "Change address": {
       type: "text",
-      description: "In the Danger zone. The address your apps on this server are reached at, for when the IP changes. Beta",
+      description: "In the Danger zone. Where this server's apps are reached, for when its IP changes. Beta.",
     },
     "Remove server": {
       type: "danger",
-      description: "In the Danger zone. See below",
+      description: "In the Danger zone. See below.",
     },
   }}
 />
 
+A server installed as **Backups** has no Docker: to give it another role, re-run the install command
+on the host. One moved from **Build** to **Everything** has no proxy until you do the same.
+
 ## Generated addresses
 
-Every app gets a free address that needs no DNS, built from its server's
-address:
+Every app gets a free address that needs no DNS, built from its server's address:
 
 | Choice    | App address                                   | Points at       |
 | --------- | --------------------------------------------- | --------------- |
@@ -79,70 +87,41 @@ address:
 | IPv6      | `web-calm-fox-v6-2001-db8--10.deplo.site`     | `2001:db8::10`  |
 | Automatic | IPv4 when the server has one, IPv6 otherwise  |                 |
 
-On the server Deplo itself runs on, **Automatic** follows the kind the
-installer was run with (`--ipv4` or `--ipv6`).
+On the machine Deplo runs on, **Automatic** follows the installer's `--ipv4` or `--ipv6`.
 
-Pick IPv6 when visitors reach the server over IPv6 only. Changing it renames
-every generated address already on the server, keeping its words, so
-`web-calm-fox-cb00710a.deplo.site` becomes
-`web-calm-fox-v6-2001-db8--10.deplo.site`. Each app answers on its new name
-after its next deploy. Domains of your own are not touched.
-
-A kind the server has no address for is greyed out. Only an instance admin
-can change it.
+Pick IPv6 when visitors reach the server over IPv6 only. Changing it renames every generated address on
+the server, keeping its words: `web-calm-fox-cb00710a.deplo.site` becomes
+`web-calm-fox-v6-2001-db8--10.deplo.site`. Each app answers on its new name after its next deploy.
+Your own domains are not touched. A kind the server has no address for is greyed out.
 
 ## Removing a server
 
-**Removing is trust revocation, not an uninstall.** The pinned
-certificate is cleared and Deplo never talks to that machine again. It
-does not reach in and remove containers, because by then it may not be
-able to.
-
-Deplo prints a one-line uninstall command to run on the host if you want
-the agent, its Traefik and its state directory gone. See
-[Remove or uninstall](/operations/remove-a-server-or-uninstall).
-
-The machine running the control plane cannot remove itself.
+**Removing is trust revocation, not an uninstall.** Deplo forgets the server and never talks to it
+again. It does not remove containers, because by then it may not be able to reach them. It prints a
+one-line uninstall command to run on the host instead: see
+[Remove or uninstall](/operations/remove-a-server-or-uninstall). The machine Deplo runs on can't be
+removed.
 
 ## Before using maintenance
 
-- **Health is a cache, not a gate.** Past a staleness window the page
-  shows **Unknown** rather than a stale green. Deploys gate on a live
-  handshake.
-- **Restarting Traefik drops connections** for a moment on every app on
-  that host.
-- **Changing the address does not move anything.** Generated addresses
-  follow it at once. A domain of your own keeps pointing at the old IP until
-  you change its DNS record.
+- **Health is a cache, not a gate.** Past a staleness window the page shows **Unknown** rather than a
+  stale green. Deploys check the server live.
+- **Changing the address moves nothing.** Generated addresses follow at once; your own domain keeps
+  pointing at the old IP until you change its DNS record.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The card says **warning** | The agent is up, Docker is not answering there. Check the Docker service on the host. |
-| A restart action fails | The agent is unreachable. Health and readiness will say so. |
+| The server shows **Degraded** | The agent is up but Docker is not answering, or the server can't reach Deplo. Its tooltip says which. |
+| A restart fails | The agent is unreachable. Health and **Check readiness** say so. |
 
 More in [Servers and agents](/troubleshooting/servers-and-agents).
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<RotateCcw className="text-blue-400" />}
-    title="Server cleanup"
-    description="Reclaiming disk"
-    href="/operations/servers/cleanup"
-  />
-  <Card
-    icon={<ArrowLeftRight className="text-blue-400" />}
-    title="Update"
-    description="Agent updates"
-    href="/operations/update"
-  />
-  <Card
-    icon={<AlertTriangle className="text-blue-400" />}
-    title="Remove or uninstall"
-    description="The three different acts"
-    href="/operations/remove-a-server-or-uninstall"
-  />
+  <Card icon={<RotateCcw className="text-blue-400" />} title="Server cleanup" description="Reclaiming disk" href="/operations/servers/cleanup" />
+  <Card icon={<ArrowLeftRight className="text-blue-400" />} title="Update" description="Agent updates" href="/operations/update" />
+  <Card icon={<AlertTriangle className="text-blue-400" />} title="Remove or uninstall" description="The three different acts" href="/operations/remove-a-server-or-uninstall" />
 </Cards>

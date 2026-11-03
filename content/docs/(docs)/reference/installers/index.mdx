@@ -5,12 +5,6 @@ description: The three shell scripts, what each one does, and every flag.
 
 import { Rocket, Server, ShieldCheck, Trash2 } from "lucide-react";
 
-Choose the script that matches the host and action. Deplo has three shell
-scripts:
-[`install.sh`](/reference/installers/install),
-[`install-agent.sh`](/reference/installers/install-agent) and
-[`uninstall.sh`](/reference/installers/uninstall).
-
 | Script | Use it for |
 | --- | --- |
 | [`install.sh`](/reference/installers/install) | Install or update the control plane and its local server |
@@ -19,8 +13,8 @@ scripts:
 
 ## Inspect before running
 
-Each command downloads a script and pipes it to Bash. Download it first if
-you want to inspect the script or save it for review:
+The `install.sh` and `uninstall.sh` examples pipe the script straight to Bash. To read it
+first, download it:
 
 ```bash
 curl -fsSL https://deplo.build/install.sh -o install.sh
@@ -28,8 +22,8 @@ less install.sh
 sudo bash install.sh
 ```
 
-`install-agent.sh` also verifies the downloaded binary checksum before it
-runs it.
+The dashboard's `install-agent.sh` command already downloads before it runs, and the script
+refuses an agent binary whose SHA-256 checksum does not match.
 
 ## See also
 

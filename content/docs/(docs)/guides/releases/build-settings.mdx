@@ -8,197 +8,139 @@ import { basePath } from "@/lib/base-path";
 
 import { Workflow, Webhook, Globe, Gauge } from "lucide-react";
 
-These settings decide how your code becomes a running app: the build method, its commands, and
-the port the app listens on. Most apps never need to change them. A Docker image app, or a Compose
-app made by pasting YAML, has nothing to build, so this page does not apply to them.
+The **Build** card, in the app's **Settings -> Deployments**. Most apps never touch it. A Docker
+image app or a pasted Compose app has no Build card.
 
 ## Build methods
 
-Pick one under **Build method**, on the **Build & output** card in **Settings -> Deployments**.
+Three tabs at the top of the card. Switching keeps the app's domains, variables and volumes.
 
-| Method | What it does | Its own fields |
+| Tab | What it does | Its own fields |
 | --- | --- | --- |
-| **Detect automatically** (default) | Picks one of the three below, on every deploy | The Railpack ones |
-| **Railpack** | Works out how to build and start your app from its code, any common language | **Framework**, **Single-page application** |
-| **Dockerfile** | Builds your `Dockerfile` as it is | **Dockerfile path**, **Build context path**, **Build stage (target)** |
-| **Docker Compose** | Builds and starts the services of the Compose file in your repository | **Compose file** |
-
-Changing the build method keeps the app's domains, variables and volumes.
+| **Automatic** (default) | Your `Dockerfile` or Compose file if there is one, otherwise Railpack | **Framework**, **Port**, the **Advanced** drawer |
+| **Dockerfile** | Builds your `Dockerfile` as it is | **Dockerfile path**, **Build context**, **Build stage**, **Port** |
+| **Compose** | Builds and starts the services of the Compose file in your repository | **Compose file** |
 
 <Callout type="info" title="Nixpacks and Static are gone">
-  Apps that used them moved to **Railpack** when Deplo updated. A Static app keeps its output
-  folder and its **Single-page application** setting. A Nixpacks app that published a folder now
-  serves it as Railpack's **Output directory**. Railpack and Dockerfile apps keep what they had.
+  Nixpacks, Static, Heroku and Paketo apps moved to Railpack. A folder they published became
+  Railpack's **Output directory**.
 </Callout>
 
-### Detect automatically
+### Automatic
 
-New apps start here. On every deploy, Deplo looks in the app's folder (the **Root directory**):
+On every deploy, the server agent looks in the **Root directory**:
 
-1. A `Dockerfile`? Deplo builds it.
-2. Otherwise a Compose file (`compose.yaml`, `compose.yml`, `docker-compose.yaml` or
-   `docker-compose.yml`) that builds at least one service from the repository? Deplo deploys it
-   as a stack, like **Docker Compose** below. A Compose file that only runs images, for example
-   the databases you start on your laptop, builds none of your code, so Deplo skips it and says so
-   in the log. So does one that breaks a [rule](#docker-compose) for Compose files read from a
-   repository, with the rule it broke.
+1. A `Dockerfile`? It builds it.
+2. Otherwise a Compose file (`compose.yaml`, `compose.yml`, `docker-compose.yaml`,
+   `docker-compose.yml`) that builds a service from the repository? It deploys it as a
+   [stack](#docker-compose). One that only runs images, or breaks a rule, is skipped and the log
+   says why.
 3. Otherwise, Railpack builds the app.
 
-The deploy log says which one ran, and the card shows it, for example **Last deploy: Railpack**.
-Add a `Dockerfile` to the repository and the next deploy uses it, with nothing to change here.
-
-A Compose file kept for local development that also builds your app is deployed too. To stop
-that, pick **Railpack** or **Dockerfile**: a method you pick yourself sticks, and Deplo stops
-looking. To deploy a Compose file that only runs images, pick **Docker Compose** yourself.
+The card shows the result under the tabs, for example **Last deploy: Railpack**. To ignore a
+development `Dockerfile` or Compose file, tick **Always build with Railpack** in **Advanced**. To
+deploy a Compose file that only runs images, pick the **Compose** tab.
 
 ### Railpack
 
-Railpack reads your code, finds the language and the framework, and writes the build for you.
+Railpack reads your code, finds the language and the framework, and writes the build.
 
-- **No version to pick.** Deplo always uses the newest Railpack it has tested, `0.43.0` today, and
-  updates it with Deplo itself.
-- **Railpack's own settings are variables.** Add any `RAILPACK_*`
-  [variable](/guides/config/environment-variables) to the app, for example
+- **No version to pick:** Deplo uses the one it tested, `0.43.0` today, updated with the server agent.
+- **Its settings are [variables](/guides/config/environment-variables):** any `RAILPACK_*`, like
   `RAILPACK_PYTHON_VERSION=3.13` or `RAILPACK_DEPLOY_APT_PACKAGES=ffmpeg`.
-- **Java follows your Gradle build.** When `build.gradle` pins a Java version with a toolchain,
-  Deplo installs that version. `RAILPACK_JDK_VERSION` still wins when you set it.
+- **Java follows your Gradle toolchain.** `RAILPACK_JDK_VERSION` still wins.
 - **A `railpack.json` in the repository is used.**
-- **Single-page application** sends every unknown path to `index.html`, so a static site with
-  client-side routing works.
-- **GitHub downloads.** Railpack fetches language tools from GitHub. When the team has connected
-  the [GitHub App](/guides/git-providers/github), those downloads use a token that reads public
-  information only, so they stay clear of GitHub's limit of 60 anonymous requests an hour.
-  Without it they are anonymous, and a failure from that limit says so.
+- **GitHub downloads** of language tools use a read-only token when the team has the
+  [GitHub App](/guides/git-providers/github), past GitHub's 60 anonymous requests an hour.
 
 ### Dockerfile
 
-Deplo builds your `Dockerfile` as it is, and framework detection does not run.
-
-- **Dockerfile path** and **Build context path** are relative to the repository root.
-- **Build stage (target)** builds one stage of a multi-stage `Dockerfile`, for example `runtime`.
+No framework detection. **Dockerfile path** and **Build context** are relative to the repository
+root. **Build stage** picks one stage of a multi-stage `Dockerfile`, like `runtime`; empty builds
+the last.
 
 ### Docker Compose
 
-Deplo reads the Compose file in your repository on every deploy, builds its services, and starts
-them as one stack.
+The **Compose** tab: Deplo reads the Compose file in your repository on every deploy, builds its
+services and starts them as one stack.
 
-- **Compose file** picks a file other than the four default names. It is a path inside the
-  repository, for example `deploy/compose.prod.yaml`.
-- **Files stay between deploys.** Deplo keeps a working copy of the repository for the app and
-  runs the stack from it, so a folder a service mounts, like `./data`, survives a redeploy.
-  Deleting the app deletes it. Backups and moves to another server carry the stack's named
-  volumes, not those folders: keep data you want backed up in a named volume.
-- **Your variables reach the stack.**
-- **The domain goes to the service that declares a port**, under `ports:` or `expose:`. If none
-  does, the deploy log says to add `expose`.
-- **It builds on the app's own server**, never on a [build server](/advanced/build-servers).
-- **A pull request gets a [preview](/guides/networking/pull-request-previews)** built from its own
-  Compose file, with the same rules.
+- **Compose file** picks another path, like `deploy/compose.prod.yaml`.
+- **Your variables reach the stack.** The domain goes to the service with `ports:` or `expose:`.
+- **Folders a service mounts, like `./data`, survive a redeploy** in the server's copy of the
+  repository. Backups and moves carry named volumes only: keep data there.
+- **It builds on the app's own server**, never a [build server](/advanced/build-servers). A pull
+  request [preview](/guides/networking/pull-request-previews) uses its own Compose file.
 
-Anyone who can push to the repository writes this file, so Deplo always applies these rules:
+Anyone who can push writes this file, so these rules always apply:
 
 | In the file | What happens |
 | --- | --- |
-| `ports:` | Not opened on the server. The domain reaches the service on that port instead |
+| `ports:` | Not opened on the server. The domain reaches that port |
 | An `env_file` the repository does not ship | Skipped. Your Deplo variables arrive anyway |
-| `image:` on a service that has `build:` | The built image gets a name Deplo picks, so it never stands in for an image another app uses |
-| `privileged`, `cap_add`, `devices`, `network_mode: host`, `pid: host`, `ipc: host` | Refused |
-| A bind mount of a folder outside the repository, or of the Docker socket | Refused |
-| `include:`, `extends` of another file, or `label_file` | Refused. Put that content in this file |
-| `traefik.*` labels | Ignored. Deplo routes the app's domains itself |
-| A build that reads outside the repository | Refused |
-| An `env_file`, a build folder or a mounted path inside a folder that a service mounts writable | Refused: a container could swap it for a link. Mount that folder read-only (`:ro`) |
+| `image:` on a service with `build:` | Renamed, so it never stands in for another app's image |
+| `traefik.*` labels | Ignored. Deplo routes the domains |
+| `privileged`, `cap_add`, `devices`, `network_mode`, `pid: host`, `ipc: host`, `security_opt` and other host-level keys | Refused |
+| A bind mount outside the repository, or of the Docker socket | Refused |
+| An `external` volume or network, or one with a fixed `name` | Refused |
+| `include:`, `extends` of another file, `label_file` | Refused. Put the content in this file |
+| A build that reads outside the repository, forwards SSH keys, or runs privileged | Refused |
+| An `env_file`, build folder or mounted path inside a folder a service mounts writable | Refused. Mount that folder `:ro` |
 
-A refused file fails the deploy, and the log gives the reason.
-
-This is not the Compose app you make by pasting YAML in the new-app wizard. That one is separate
-and works as before: see [Compose apps](/advanced/compose-apps).
+A refused file fails the deploy with the reason in the log. Pasted YAML is a different thing:
+[Compose apps](/advanced/compose-apps).
 
 ## Framework detection
 
-For Railpack, and for Detect automatically when it ends on Railpack, Deplo detects the framework
-from `package.json` and the root configuration **on every deploy**. Upgrading your framework
-changes the build with no edits from you. The **Framework** select overrides detection: your
-choice is kept on every redeploy and sets the framework's default container port.
+With **Automatic**, the framework is read from `package.json` and the root configuration **on
+every deploy**. It fills in the build command (your `build` script), the port, and a start command
+only where there is one obvious answer (SvelteKit `adapter-node`, AdonisJS). Your `start` script is
+never used: it is usually the dev server.
 
-Detection fills in the build command, the container port, and a start command for the few
-frameworks that have only one. It never uses your `start` script, because in most projects that
-is the dev server.
-
-Anything you type wins over detection. Clearing a field gives it back to detection. The grey
-text in an empty field is the builder's generic default (`npm ci`, `npm run build`,
-`npm run start`, `dist`), not the detected value. An empty field means "let the builder
-decide".
+The **Framework** select, **Detect automatically** by default, overrides detection, sticks across
+redeploys and sets that framework's port. **Use** plus the detected name goes back.
 
 ## The fields
 
-Railpack and Detect automatically show all six. **Dockerfile** shows only **Container port**.
-**Docker Compose** shows none of them: each domain names the service and the port it reaches.
+**Port** is on the card for **Automatic** and **Dockerfile**. The rest are in the **Advanced**
+drawer of **Automatic**. A typed value wins over detection; empty goes back to detection (the grey
+text is a placeholder).
 
-<TypeTable
-  type={{
-    "Install command": {
-      type: "text",
-      description: "Overrides the detected install step, for example npm ci --include=dev",
-    },
-    "Build command": {
-      type: "text",
-      description: "Overrides the detected build step, for example npm run build:prod",
-    },
-    "Start command": {
-      type: "text",
-      description: "Overrides the detected start step, for example node dist/server.js",
-    },
-    "Output directory": {
-      type: "path",
-      description: "The folder your build writes, served as a static site, for example dist. Leave it empty for an app that runs its own server",
-    },
-    "Node.js version": {
-      type: "text",
-      description: "Pins the Node.js major. Empty reads it from your project. A combobox: type any major you need",
-    },
-    "Container port": {
-      type: "number",
-      description: "The port your app listens on inside the container. Defaults to 3000, or to the detected framework's own port",
-    },
-  }}
-/>
+| Field | What it does |
+| --- | --- |
+| **Install command** | Overrides the install step, like `npm ci --include=dev` |
+| **Build command** | Overrides the build step, like `npm run build:prod` |
+| **Start command** | Overrides the start step, like `node dist/server.js` |
+| **Output directory** | Serves this folder as a static site, like `dist`. Empty for an app with its own server |
+| **Node.js version** | Pins the Node.js major. Empty reads it from your project |
+| **Single-page application** | Sends unknown paths to `index.html`, for client-side routing |
+| **Always build with Railpack** | Skips your `Dockerfile` and Compose file |
+| **Port** | Where the app listens in its container. `3000`, or the framework's own |
 
-**Root directory** is on the **Deploy Source** card, inside **Additional options**. It is the
-subdirectory to build from in a monorepo, and the folder Detect automatically looks in.
-
-Click **Save build settings**. Saving does not deploy: click **Redeploy** to apply the change.
+**Root directory** is on the **Source** card of a repository app: the subfolder to build from, like
+`apps/web`. **Save build settings** does not deploy: **Redeploy** applies it.
 
 ## The port is the one people get wrong
 
-Deplo sends traffic to one port per app, and detection sets a default per framework. The ones
-that often surprise:
+Deplo sends traffic to one port per app. Framework defaults that surprise:
 
 | Framework | Port | | Framework | Port |
 | --- | --- | --- | --- | --- |
 | Vite, Preact, Svelte | `4173` | | Astro | `4321` |
 | Angular | `4200` | | AdonisJS | `3333` |
 | Gatsby | `9000` | | Strapi | `1337` |
-| Eleventy, Vue CLI | `8080` | | Everything else | `3000` |
+| Eleventy, Vue | `8080` | | Everything else | `3000` |
 
-**Deplo finds the real port for you.** When your app listens on another port, for example `8080`
-instead of `3000`, the deploy sends the domain's traffic to `8080`, saves `8080` as the app's
-**Container port**, and says so in the log:
+**Deplo finds the real port.** If the app listens on `8080` instead of `3000`, the deploy moves the
+traffic, saves `8080` as **Port**, records it in **Activity** and logs:
 
 ```text
 Your app listens on port 8080, not 3000: Deplo now sends its traffic to 8080.
 ```
 
-The app's **Activity** records the change too. The `PORT` variable is still set, for apps that
-read it. When the app opens several ports, for example a git server with its own SSH next to its
-website, Deplo picks the one that answers like a website.
+With several ports open, it picks the one that answers HTTP. `PORT` is still set. **It cannot fix
+`127.0.0.1`:** an app listening only there fails the deploy. Make it listen on `0.0.0.0`.
 
-**What it cannot fix is `127.0.0.1`.** An app that listens only on `127.0.0.1` inside its
-container cannot be reached from outside it, so the deploy fails and the log says why. Make it
-listen on `0.0.0.0`.
-
-A single hostname can override the port for itself. This is how one app serves an API on one
-domain and a dashboard on another. That setting is in **Domains**, not here.
+One hostname can override the port in **Domains**, to serve an API and a dashboard on two domains.
 
 ## Build cache
 
@@ -210,30 +152,30 @@ domain and a dashboard on another. That setting is in **Domains**, not here.
   className="w-full rounded-lg"
 />
 
-**Settings -> Advanced**, on the **Build & triggers** card. **Build cache** is on by default.
-The cache lives on the **server** and is shared by every app on it. This is why the first build
-is slow and the next ones are not.
+**Settings -> Advanced**, the **Build & triggers** card. **Build cache** is on by default. It lives
+on the **server**, shared by every app there: the first build is slow, the next ones are not.
 
-The switch turns the cache off for this app only. **Clear cache** clears it on the next build.
-It does not free disk: that is the job of [disk cleanup](/operations/servers/cleanup).
-
-The same card has **Build server** (beta: build on another machine), **Extra compose flags**
-(added to `docker compose up` as typed; flags that change the project name, the stack file or
-the env file are refused), and the **Deploy hook** URL.
-
-If the build server cannot take the job, Deplo uses another build server, then the app's own
-server.
+- **The switch** turns the cache off for this app only.
+- **Clear cache** makes the next deploy build from scratch. It frees no disk: that is
+  [Docker cleanup](/operations/servers/cleanup).
+- **Build on** (beta) builds on another server of the same CPU architecture. With **Build
+  somewhere else if that server is down** on (default), a failed build server hands over to a
+  build fallback server, then the app's own; off, the deploy fails.
+  [Build servers](/advanced/build-servers).
+- **Extra compose flags**, like `--wait`: [Compose apps](/advanced/compose-apps#extra-flags).
+- **Deploy hook**: [Automatic deployments](/guides/releases/automatic-deployments#the-deploy-hook).
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| `No start command detected` | Railpack found nothing to start. Set **Start command**. |
+| `No start command detected` | Set **Start command**. |
 | `Railpack does not recognise this folder` | Set **Root directory**, or add a `Dockerfile`. |
-| `command not found` during the build | Detection guessed wrong, or a dependency is missing. Set **Build command**, or pick the **Framework** by hand. |
-| The deploy fails with `listens only on 127.0.0.1` | Make the app listen on `0.0.0.0`. |
-| A Docker Compose app's domain answers nothing | No service declares a port. Add `expose: ["3000"]` to the one that serves the app. |
-| The build is slow every time | The cache is off for this app, or a cleanup is removing it. Check **Build cache** and the server's cleanup settings. |
+| `Node.js 25 is not available` (or another language) | Pin a released version: **Node.js version**, or the variable the message names. |
+| `command not found` during the build | Set **Build command**, or pick the **Framework**. |
+| `listens only on 127.0.0.1` | Make the app listen on `0.0.0.0`. |
+| A Compose app's domain answers nothing | Add `expose: ["3000"]` to the service that serves the app. |
+| Every build is slow | **Build cache** is off, or a cleanup removes it. |
 | A setting saved but nothing changed | Saving is not deploying. Redeploy. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).

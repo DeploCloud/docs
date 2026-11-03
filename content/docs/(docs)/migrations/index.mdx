@@ -11,160 +11,116 @@ import { Layers, Globe, Database, ServerCog, ArrowRightLeft } from "lucide-react
   GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-Deplo reads an existing Dokploy or Coolify installation through its API and recreates it here:
-projects, apps, databases, domains, variables and volumes, with the data copied across. It does
-not need SSH into the old panel, and it never deletes anything on the source.
-
-It reads [another Deplo](/migrations/move-from-another-deplo) the same way, one team at a time.
+Deplo reads a Dokploy or Coolify installation through its API and recreates it here: projects,
+apps, databases, domains, variables and volumes, data included. No SSH into the old panel, and
+nothing on it is deleted. [Another Deplo](/migrations/move-from-another-deplo) is read the same
+way, one team at a time.
 
 ## Two routes
 
 | | Take over this server | From another server |
 | --- | --- | --- |
-| Where Deplo runs | The machine the old panel already runs on | A machine of your own |
+| Where Deplo runs | The machine the old panel runs on | A machine of your own |
 | How you start it | The installer finds the panel and asks | **Settings -> System -> Migrations** |
 | Who can run it | Whoever installs Deplo | An instance admin |
 | Where apps land | This machine | A server you pick, per app |
 | Ports 80 and 443 | Deplo takes them at the end | Untouched |
-| The old panel afterwards | Removed from the machine | Still running, still yours |
+| The old panel afterwards | Removed from the machine | Still there, still yours |
 
-Both routes use the same wizard. The takeover adds one step at the start (bring data over or start
-clean) and one at the end (move the ports). Moving from another Deplo always takes the second
-route.
-
-On both routes a Deplo agent on the source machine reads the volumes. The data passes through the
-control plane, also when source and destination are the same machine. From another Deplo nothing
-is installed: the old Deplo hands its volumes over itself.
+Another Deplo always takes the second route. A Deplo agent on each source machine reads the
+volumes, and the data passes through the control plane. Another Deplo needs no agent: it hands its
+data over itself.
 
 ## The wizard
 
-Seven steps. A step opens only when the one before it is finished.
-
 | Step | What it asks for |
 | --- | --- |
-| **Choose** | Takeover only. Bring your data over, or start clean. |
 | **Connect** | The panel's address and a token, one per source team. |
-| **Install** | One shell command to run on each source machine. Skipped for another Deplo. |
-| **Review** | What comes over, where each item lands, then **Start migration**. |
-| **People** | Instance admins only. Single-use registration links for the panel's members. |
+| **Install** | One command to run as root on each source machine. Skipped for another Deplo. |
+| **Review** | What comes over and where it lands, then **Start migration**. |
+| **People** | Single-use registration links for the panel's members. |
 | **Take over** | Takeover only. The confirmation that moves ports 80 and 443. |
 | **Done** | The report. |
 
-After **Start migration** the review is locked until the run ends. A takeover with **Start clean**
-skips the middle steps and goes straight to **Take over** and **Done**.
+A takeover starts with one choice: **Bring your data over** or **Start clean**. Start clean jumps
+straight to **Take over**.
 
 ## What comes across
 
 | Shape | Notes |
 | --- | --- |
-| An app from a Docker image | Image, tag, command, environment, ports. |
+| An app from a Docker image | Image, tag, environment, ports. A custom command is named in the report. |
 | An app from a compose file | Rendered as written, with its named volumes. |
 | An app built from a git repository | Repository, branch, build settings. |
 | Managed databases | Postgres, MySQL, MariaDB, MongoDB, Redis and ClickHouse, with their data. |
-| Named volumes | Including deep trees, empty directories and zero-byte files. |
-| Bind mounts of a host directory | Copied to the destination and re-pointed. |
-| Bind mounts of a single file | Copied with its contents. |
-| Config files | The file contents travel, not only the mount path. |
-| A volume shared between services of one stack | Copied once, mounted where it was. |
+| Named volumes, bind mounts, single-file binds | Copied to the destination and re-pointed. |
 | Environment variables | Per app and shared, with their values. |
 | Domains and routes | Including a path prefix and a per-domain port. |
-| Basic auth | Users and passwords, re-hashed on arrival. |
+| Basic auth | Users and passwords, flagged because they skipped Deplo's password rules. |
 | Cron jobs | Schedule and command. |
-| Backup destinations and schedules | The store's credentials, tested on arrival. |
-| Preview-only variables | As the app's own preview variables here. |
+| Backup destinations and schedules | Tested on arrival. |
+| Preview-only variables | As the app's own preview variables. |
 
-Inside a volume, file contents, permissions, ownership, empty directories, zero-byte files,
-unicode and long paths, hard links and symbolic links inside the same volume are all preserved.
+Inside a volume, contents, permissions, ownership, empty directories, zero-byte files, long paths,
+hard links and symbolic links within the volume are preserved.
 
 ## What needs a look
 
-These are not failures. Deplo brings across what it can and lists the rest in the report.
+Deplo brings across what it can and lists the rest in the report.
 
 | Shape | What happens |
 | --- | --- |
-| A stack that reaches the host | `privileged`, `network_mode: host`, `cap_add`, device passthrough. For security reasons Deplo refuses it and says which key stopped it. |
-| An image from a private registry | The image reference comes across, the credentials do not. The report names the registry so you can add it. |
-| A compose file kept in a git repository | Dokploy does not return it over its API. The app is created and the report tells you to paste the file in. |
-| Device nodes, sockets and named pipes in a volume | Not copied. Each one is listed with its path. |
-| Symbolic links pointing outside their volume | Not copied. Listed with its path. |
-| State that lives outside the app | A cron entry on the host, a systemd unit, a file no mount points at. Deplo only knows what the app mounts. |
-| Data written outside a declared mount | It is lost on the next restart, on the old panel as much as here. |
-| A very large volume onto a small disk | Deplo checks the destination's free space first and warns before it starts. |
+| A stack that reaches the host | `privileged`, `network_mode: host`, `cap_add`, devices: needs the **Bind server folders** permission. Without it the stack stays behind and the report names the keys. |
+| An image from a private registry | The reference comes across, the credentials do not. The report names the registry. |
+| Device nodes, sockets, named pipes, symlinks leaving their volume | Not copied. Each is listed with its path. |
+| State outside the app | A host cron entry, a systemd unit, a file no mount points at. |
+| More replicas than one | Deplo runs one container per app. |
+| A small destination disk | Deplo warns when the receiving disk has under 5 GiB or 10% free. A copy needs room for both copies. |
 
-## What does not come across
-
-- Private registry credentials.
-- Git deploy keys and connected-source credentials. Add a git connection here instead.
-- Device nodes, sockets and named pipes inside a volume.
-- Symbolic links that leave their own volume.
-- Host files such as `/etc/localtime` and `/etc/resolv.conf`.
-- Networks you created by hand on the source machine.
-- Engines that do not exist here: `libsql` on Dokploy, `keydb` and `dragonfly` on Coolify.
+Never migrated: Dokploy and Coolify registry passwords and git deploy keys, host files such as
+`/etc/localtime`, networks you created by hand, and engines Deplo lacks (`libsql` on Dokploy,
+`keydb` and `dragonfly` on Coolify).
 
 ## Stopping, data, and going back
 
-Read this before you start.
-
-- **Every service you tick is stopped on the old panel when its data copy starts.** This keeps
-  the copy consistent.
-- **On a run that finishes, it stays stopped.** Deplo starts it again only when you stop the run
-  during the data step, or cancel a takeover.
-- **The source is only read.** Nothing on the old panel is deleted, except by the takeover's own
-  final confirmation.
+- **Every service you tick is stopped on the old panel when its data copy starts**, and stays
+  stopped after a finished run.
 - **The destination is emptied before it is written.** A second run does not merge two copies.
-- **Stop undoes the whole run, in any step.** Everything created here is removed with its data,
-  and the stopped services are started again on the old panel.
-- **A run that fails on its own is not rolled back.** What is already here stays. A service whose
-  data did not arrive refuses to deploy until you copy the data again or press **Deploy anyway**.
-- **Nothing is deployed for you.** Open each app, check it, and press **Deploy**.
+- **Stop and undo**, in any step, removes everything the run created here with its data and
+  starts the stopped services again on the old panel.
+- **A run that fails on its own is not rolled back.** A service whose data did not arrive refuses
+  to deploy until you copy the data again or press **Deploy anyway**.
+- **Nothing is deployed for you.** Open each app, check it, press **Deploy**.
 
-## How this is tested
+## Troubleshooting
 
-Every release, migrations run against a live Dokploy and a live Coolify installation with real
-apps and real data. Each app is checked before and after the move: data records, HTTP responses,
-database counts and checksums, and every file in every volume with its permissions and owner.
-The same tests also run behind a firewall, behind a CDN, with a source machine going offline
-during the run, onto a nearly full disk, and on a busy instance with several teams.
+| Symptom | What to check |
+| --- | --- |
+| The https certificate **is not one this machine trusts** | Deplo cannot be told to accept it. Use the panel's plain http address, for example `http://203.0.113.10:3000`. |
+| **but nothing is running behind it** (a 502, or a Cloudflare 521) | The panel behind the proxy or CDN is down. Start it, or point Deplo at the panel's own address. |
+| **This address is Cloudflare's, not the machine's** | The Install row needs the machine's own IP. Enter it there. |
+| Stuck on **Waiting for the agent** | The command has not run on that machine, or the machine cannot reach this Deplo. |
+| One source machine does not answer | Its services are named in the report and blocked from deploying. The other machines are still copied. |
+| A volume arrives empty | The app refuses to deploy until you decide. One volume copy stops after 7 hours, so copy a huge volume over a slow link by hand. |
+| **is also mounted by** another app | The copy empties its target first, so nothing was written. Give one app its own directory, then copy the data again. |
+| A single-file bind is refused | The destination server's agent is too old. Update it, then copy the data again. |
+| **already has a migration running in this team** | One run per team at a time. Wait, or stop it under **Settings -> System -> Migrations**. |
+| **Agent still installed** | Deplo removes its agent from source machines when the run ends and could not here. Press **Remove from Deplo**, or run the printed command as root. |
+| **The server agent did not install** during a takeover | Re-run `/opt/deplo/install.sh`, or use the command under **Settings -> Servers**. |
+| The port move failed | Deplo put the ports back and started the old panel again. The step names what holds the port, next to **Try again**. |
+| Stuck on **Moving the ports** | Read `systemctl status deplo-takeover` and `/var/log/deplo-takeover.log`. Re-run the installer and the takeover resumes. Stay on the http address until then. |
 
-Measured on 4 September 2026, each panel spread over two machines, the remote route landing on a
-third.
-
-| Source | Route | Apps that landed untouched | What did not |
-| --- | --- | --- | --- |
-| Dokploy | Both | **66 of 67** | One app on a private git repository: the deploy key never leaves the old panel, and the report names it. |
-| Coolify | Both | **60 of 62** | The same private repository, plus one app the token could not stop. |
+Measured on 4 September 2026, each panel on two machines, the remote route landing on a third:
+**66 of 67** Dokploy apps and **60 of 62** Coolify apps landed untouched. The misses were one
+private git repository (its deploy key never leaves the old panel) and, on Coolify, one app the
+token could not stop.
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<Layers className="text-blue-400" />}
-    title="Move from Dokploy"
-    description="Both routes, against a Dokploy panel"
-    href="/migrations/move-from-dokploy"
-  />
-  <Card
-    icon={<Globe className="text-blue-400" />}
-    title="Move from Coolify"
-    description="Both routes, against a Coolify panel"
-    href="/migrations/move-from-coolify"
-  />
-  <Card
-    icon={<ArrowRightLeft className="text-blue-400" />}
-    title="Move from another Deplo"
-    description="One team at a time, nothing installed on the old one"
-    href="/migrations/move-from-another-deplo"
-  />
-  <Card
-    icon={<ServerCog className="text-blue-400" />}
-    title="Server roles"
-    description="What a migration source is, and is not"
-    href="/advanced/server-roles"
-  />
-  <Card
-    icon={<Database className="text-blue-400" />}
-    title="Backups and restore"
-    description="What to take before you move anything"
-    href="/guides/data/backups-and-restore"
-  />
+  <Card icon={<Layers className="text-blue-400" />} title="Move from Dokploy" description="Both routes, against a Dokploy panel" href="/migrations/move-from-dokploy" />
+  <Card icon={<Globe className="text-blue-400" />} title="Move from Coolify" description="Both routes, against a Coolify panel" href="/migrations/move-from-coolify" />
+  <Card icon={<ArrowRightLeft className="text-blue-400" />} title="Move from another Deplo" description="One team at a time, nothing installed on the old one" href="/migrations/move-from-another-deplo" />
+  <Card icon={<ServerCog className="text-blue-400" />} title="Server roles" description="What a migration source is, and is not" href="/advanced/server-roles" />
+  <Card icon={<Database className="text-blue-400" />} title="Backups and restore" description="What to take before you move anything" href="/guides/data/backups-and-restore" />
 </Cards>

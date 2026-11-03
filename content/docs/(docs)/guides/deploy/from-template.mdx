@@ -9,34 +9,22 @@ import { basePath } from "@/lib/base-path";
 import { Layers, Database, SlidersHorizontal } from "lucide-react";
 
 A one-click deploy of software that is already configured: WordPress, Ghost, n8n, Plausible,
-Supabase, MinIO, Uptime Kuma, Postgres, Redis and a few hundred more. Pick it, name it, choose a
-server, and it starts with generated passwords.
+Supabase, MinIO, Uptime Kuma and a few hundred more. Pick it, name it, and it starts with
+generated passwords.
 
-The catalogue is an online service, so new entries appear without updating Deplo.
-
-A **Template** can have several **variants**. A variant is what you deploy: a
-`docker-compose.yml` plus its description and screenshots.
-
-Deploying creates a normal app from the variant. After that the app is yours: edit the Compose
-file, change the variables, add domains.
+The catalogue is an online service, so new entries appear without updating Deplo. A template has
+one or more **variants**: a `docker-compose.yml` plus its description and screenshots.
 
 ## Deploy one
 
 <Steps>
 <Step>
 
-### Open Templates
-
-Open **Templates** in the sidebar, or the **Template** button on the first step of the new-app
-wizard.
-
-</Step>
-<Step>
-
 ### Find what you want
 
-The page has **featured** templates, a search box, categories and collections. **All templates**
-lists the whole catalogue A to Z.
+Open **Templates** in the sidebar (on a phone, under **More**), or the **Template** tile in the
+new-app wizard. The page has **Featured** templates, **Search templates**, categories and
+collections. **All templates** lists the whole catalogue A to Z.
 
 <Image
   src={`${basePath}/screenshots/from-template/01-catalogue.png`}
@@ -51,7 +39,8 @@ lists the whole catalogue A to Z.
 
 ### Pick a variant
 
-If there are several variants, the dropdown next to **Deploy** switches between them.
+With several variants, **Choose a variant** next to **Deploy** switches between them. Click
+**Deploy**.
 
 <Image
   src={`${basePath}/screenshots/from-template/02-template-detail.png`}
@@ -66,34 +55,26 @@ If there are several variants, the dropdown next to **Deploy** switches between 
 
 ### Fill in the wizard
 
-**Deploy** opens the new-app wizard already filled in. Set the app name, pick the server, and
-check the **Environment variables** card: passwords are generated, and anything the template needs
-from you is listed there.
+The new-app wizard opens already filled in. Set the **App name**, read any notice at the top,
+then open **Advanced**:
 
-To change the stack before it runs, open **Advanced**, then **Compose**, and click **Edit
-compose**. Copy the original first if you need it: there is no way back.
+- **Deploy to**: the server.
+- **Environment variables**, **Edit variables**: passwords are generated, and anything the
+  template needs from you is listed here.
+- **Compose**, **Edit compose**: change the stack before it runs. Copy the original first: there
+  is no way back.
 
-</Step>
-<Step>
-
-### Deploy
-
-Click **Deploy**.
-
-To create the app without starting it, open the arrow next to **Deploy** and pick **Create
-without deploying**.
+Click **Deploy**, or open the arrow next to it for **Create without deploying**.
 
 </Step>
 </Steps>
 
 ## After it is running
 
-It is a normal app: [Domains](/guides/networking/domains-and-https),
-[volumes](/guides/data/persistent-storage), [Backups](/guides/data/backups-and-restore) and
-[Logs](/guides/observability/logs) all work.
-
-Most templates are [Compose apps](/advanced/compose-apps): a domain names which **Container** it
-routes to, and rollbacks are not available.
+It is a normal [Compose app](/advanced/compose-apps), and yours to change: edit the Compose file,
+the variables, the [domains](/guides/networking/domains-and-https). [Volumes](/guides/data/persistent-storage),
+[Backups](/guides/data/backups-and-restore) and [Logs](/guides/observability/logs) all work. A
+domain names the **Container** it routes to, and there is no rollback.
 
 ## Good to know
 
@@ -101,13 +82,12 @@ routes to, and rollbacks are not available.
 - **Read the variables before you deploy.** Some templates need a domain or an admin email at
   first start, and keep the first value they get.
 - **A template can include configuration files.** They show up under the app's storage.
-- **The same template twice in one Environment needs a change.** Two stacks cannot both use the
-  service name `db`. Rename the service, or use another Environment. See
+- **The same template twice in one Environment and server** clashes on service names like `db`.
+  The wizard shows **Names already in use** and offers **Rename and deploy**, which renames the
+  clashing services. To pick your own names, cancel and edit the stack under **Advanced**. See
   [Network isolation](/advanced/network-isolation).
 - **Browsing is open to anybody on the team. Deploying needs `create_apps`.**
 - **If the catalogue is unreachable**, apps you already deployed keep working.
-- **Your own project can get a Deploy button** that opens this same wizard from its README. See
-  [Deploy button](/guides/deploy/deploy-button).
 - **The names and logos in the catalogue belong to their owners.** Listing them is not an
   affiliation or an endorsement.
 
@@ -115,10 +95,8 @@ routes to, and rollbacks are not available.
 
 | Symptom | What to check |
 | --- | --- |
-| The store is empty or offline | The instance cannot reach the catalogue service. Check outbound network access, or point `DEPLO_TEMPLATES_API_URL` at your own mirror. |
+| **The template catalog is unreachable** | The instance cannot reach the catalogue service. Check its outbound network access, or point `DEPLO_TEMPLATES_API_URL` at your own mirror. |
 | One container keeps restarting | Usually a required variable was left blank. Read that container's logs. |
-| The deploy is refused over a service name | Another stack in this Environment already uses it. Rename the service, or deploy into a different Environment. |
-| Two templates want the same port | Only one app can hold a host port. Use a domain instead of publishing a port. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

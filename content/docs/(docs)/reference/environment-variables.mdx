@@ -10,195 +10,73 @@ These configure the **platform**. For variables your apps read at runtime, see
 
 ## Control-plane variables
 
-These configure the dashboard, API, database and control-plane defaults.
+Read by the panel container. `install.sh` sets them in `/opt/deplo/docker-compose.yml`.
 
 <TypeTable
   type={{
-    DEPLO_DATABASE_URL: {
-      type: "connection string",
-      required: true,
-      description:
-        "Postgres connection string, and the only control-plane store. Also backs the auth tables. The app fails at startup without it. DATABASE_URL is accepted as a fallback.",
-    },
-    DEPLO_SECRET: {
-      type: "string, 16+ chars",
-      required: true,
-      description:
-        "Root secret. Derives every session signature, every AES-256-GCM encryption key and the agent certificate authority. Rotating it is destructive and there is no key versioning. Required in production.",
-    },
-    DEPLO_PUBLIC_URL: {
-      type: "url",
-      description:
-        "The fallback public URL. The panel address stored in Settings -> Deplo wins where one is set; this is what git webhook URLs are built from either way. Sets the cookie secure flag, the auth layer's https mode, and the install command printed for new servers. Effectively required in production.",
-    },
-    DEPLO_SERVER_IP: {
-      type: "IPv4 or IPv6 address",
-      default: "the address in DEPLO_PUBLIC_URL when it carries one, else the first non-internal NIC IPv4, else 127.0.0.1",
-      description:
-        "The literal public address baked into generated deplo.site hostnames and their Traefik rules: an IPv4 like 203.0.113.10, or an IPv6 like 2001:db8::10 on an install made with --ipv6. Never a hostname.",
-    },
-    "DEPLO_SERVER_IPV4 / DEPLO_SERVER_IPV6": {
-      type: "address",
-      description:
-        "This server's address of each kind, written by the installer, so its generated addresses can move between IPv4 and IPv6 from Settings -> Servers.",
-    },
-    DEPLO_HOST_BOOTSTRAP_TOKEN: {
-      type: "string",
-      default: "unset, meaning do not enroll",
-      description:
-        "One-time token that lets the machine running Deplo enroll itself as a server. The installer generates it. A development run wants it unset.",
-    },
-    DEPLO_HOST_NAME: {
-      type: "string",
-      default: "falls back to DEPLO_SERVER_IP",
-      description:
-        "The name shown on that server's card. Deplo runs in a container and would otherwise read a random container id as its hostname.",
-    },
-    DEPLO_TEMPLATES_API_URL: {
-      type: "url",
-      default: "the public catalogue",
-      description:
-        "Where the template catalogue is fetched from. Point it at your own mirror to serve it yourself.",
-    },
-    DEPLO_CERT_RESOLVER: {
-      type: "string",
-      default: "letsencrypt",
-      description:
-        "The name of the Traefik ACME resolver put on every router. A deplo.site host needs an HTTP-01 resolver; point this at one if your default uses DNS-01.",
-    },
-    DEPLO_CLOUDFLARE_CERT_RESOLVER: {
-      type: "string",
-      default: "cloudflare",
-      description:
-        "The resolver put on routers whose certificate provider is Cloudflare. None exists by default, so they serve a self-signed certificate; point this at a DNS-01 resolver you added.",
-    },
-    DEPLO_DATABASE_POOL_MAX: {
-      type: "number",
-      default: "10",
-      description: "Cap on the Postgres connection pool.",
-    },
-    DEPLO_DATA_DIR: {
-      type: "path",
-      default: "/data",
-      description:
-        "Host-visible staging directory for builds and uploads. Not a data store.",
-    },
-    DEPLO_SETUP_KEY: {
-      type: "string",
-      description:
-        "The key the /setup link carries. The installer generates one into .env. Unset or empty, Deplo derives one from DEPLO_SECRET and prints the setup link in its log at boot.",
-    },
-    DEPLO_PANEL_PORT: {
-      type: "number",
-      default: "3000",
-      description:
-        "The port the panel container publishes on 127.0.0.1. A takeover install walks it to the first free of 3000 to 3003.",
-    },
-    DEPLO_LINK_PORT: {
-      type: "number",
-      default: "3101, set by the installer",
-      description:
-        "The port on 127.0.0.1 where this machine's own server agent connects to Deplo. The installer takes the first free of 3101 to 3104 and keeps it across updates.",
-    },
-    DEPLO_TAKEOVER: {
-      type: "dokploy | coolify",
-      description:
-        "Set by the installer when it is replacing an existing panel on this machine. Seeds the takeover wizard. See Migrations.",
-    },
-    DEPLO_MONITORING_FORCE_POLL: {
-      type: "1",
-      description:
-        "Forces the whole fleet onto polled metrics instead of the telemetry stream. A diagnostic, not a setting to leave on.",
-    },
-    NODE_ENV: {
-      type: "string",
-      description:
-        "Decides whether a missing DEPLO_SECRET is fatal. Production images set it; do not unset it.",
-    },
+    DEPLO_DATABASE_URL: { type: "connection string", required: true, description: "Postgres connection string, the only control-plane store (auth tables included). The panel fails at startup without it. DATABASE_URL is accepted as a fallback." },
+    DEPLO_SECRET: { type: "string, 16+ chars", required: true, description: "Root secret. Derives every session signature, every AES-256-GCM encryption key and the agent certificate authority. Rotating it is destructive and there is no key versioning. Required in production." },
+    DEPLO_PUBLIC_URL: { type: "url", description: "The fallback public URL. The panel address stored in Settings -> Deplo wins where one is set; git webhook URLs are built from this one either way. Sets the cookie secure flag, the auth layer's https mode, and the install command printed for new servers. Effectively required in production." },
+    DEPLO_SERVER_IP: { type: "IPv4 or IPv6 address", default: "the IP in DEPLO_PUBLIC_URL (a bare IP or a generated deplo.site host), else the first non-internal NIC IPv4, else 127.0.0.1", description: "The literal public address baked into generated deplo.site hostnames and their Traefik rules: an IPv4 like 203.0.113.10, or an IPv6 like 2001:db8::10 on an install made with --ipv6. Never a hostname." },
+    "DEPLO_SERVER_IPV4 / DEPLO_SERVER_IPV6": { type: "address", description: "This server's address of each kind, written by the installer, so its generated addresses can move between IPv4 and IPv6 from Settings -> Servers." },
+    DEPLO_HOST_BOOTSTRAP_TOKEN: { type: "string", default: "unset, meaning do not enroll", description: "One-time token that lets the machine running Deplo enroll itself as a server. The installer generates it. A development run wants it unset." },
+    DEPLO_HOST_NAME: { type: "string", default: "falls back to DEPLO_SERVER_IP", description: "The name shown on that server's card. Deplo runs in a container and would otherwise read a random container id as its hostname." },
+    DEPLO_SETUP_KEY: { type: "string", description: "The key the /setup link carries. The installer generates one into .env. Unset or empty, Deplo derives one from DEPLO_SECRET and prints the setup link in its log at boot." },
+    DEPLO_PANEL_PORT: { type: "number", default: "3000", description: "The port the panel container publishes on 127.0.0.1. A takeover install walks it to the first free of 3000 to 3003." },
+    DEPLO_LINK_PORT: { type: "number", default: "set by the installer, 3101 to 3104", description: "The port on 127.0.0.1 where this machine's own server agent connects to Deplo. The installer takes the first free one and keeps it across updates." },
+    DEPLO_TEMPLATES_API_URL: { type: "url", default: "https://templates.deplo.build", description: "Where the template catalogue is fetched from. Point it at your own mirror to serve it yourself." },
+    DEPLO_CERT_RESOLVER: { type: "string", default: "letsencrypt", description: "The Traefik ACME resolver put on every router whose certificate provider is Let's Encrypt. A deplo.site host needs an HTTP-01 resolver; point this at one if your default uses DNS-01." },
+    DEPLO_CLOUDFLARE_CERT_RESOLVER: { type: "string", default: "cloudflare", description: "The resolver put on routers whose certificate provider is Cloudflare. None exists by default, so they serve a self-signed certificate; point this at a DNS-01 resolver you added." },
+    DEPLO_DATABASE_POOL_MAX: { type: "number", default: "10", description: "Cap on the Postgres connection pool." },
+    DEPLO_DATA_DIR: { type: "path", default: "/data", description: "Staging directory for builds and uploads, /opt/deplo/data on the host. Not a data store." },
+    DEPLO_TAKEOVER: { type: "dokploy | coolify", description: "Set by the installer when it is replacing an existing panel on this machine. Seeds the takeover wizard once. See Migrations." },
+    DO_NOT_TRACK: { type: "string", description: "Any value but empty, 0 or false turns Anonymous usage statistics off for good; the switch then shows Turned off by the install. install.sh does not set it." },
+    DEPLO_MONITORING_FORCE_POLL: { type: "1", description: "Forces the whole fleet onto polled metrics instead of the telemetry stream. A diagnostic, not a setting to leave on." },
+    NODE_ENV: { type: "string", description: "Decides whether a missing DEPLO_SECRET is fatal. The image sets production; do not unset it." },
   }}
 />
+
+More on `DEPLO_TAKEOVER` in [Migrations](/migrations), on `DO_NOT_TRACK` in
+[Anonymous usage statistics](/operations/anonymous-usage-statistics).
 
 ## Variables read by `install.sh`
 
-Written into `/opt/deplo/.env` and read by `docker compose --env-file`. Set
-them before the install command.
+Set them in front of the command, like
+`curl -fsSL https://deplo.build/install.sh | DEPLO_DOMAIN=deplo.example.com bash`.
 
 <TypeTable
   type={{
-    DEPLO_DOMAIN: {
-      type: "domain",
-      default: "empty, meaning a generated host like deplo-cb00710a.deplo.site",
-      description:
-        "The domain the panel is served on. Must contain a dot, cannot be localhost, a .local name or an IP address. Either way the panel is served over HTTPS through Traefik, and the generated host stays routed alongside it.",
-    },
-    ACME_EMAIL: {
-      type: "email",
-      default: "admin@<the panel's own host>",
-      description:
-        "The Let's Encrypt registration email for that host's Traefik. Deplo reads the address back out of the running Traefik configuration, so there is no matching variable on the control-plane container.",
-    },
-    DEPLO_DB_PASSWORD: {
-      type: "string",
-      default: "generated, openssl rand -base64 24",
-      description: "The Postgres password. Feeds both the database and the connection string.",
-    },
-    DEPLO_IP_FAMILY: {
-      type: "ipv4 | ipv6",
-      default: "ipv4 when the server has an IPv4, else ipv6",
-      description:
-        "The kind of address the dashboard is served on. Same as --ipv4 / --ipv6, and kept in .env so an update keeps it. See [IPv6](/reference/installers/install#ipv6).",
-    },
-    DEPLO_NAT64_DNS: {
-      type: "addresses",
-      default: "2a00:1098:2b::1 2a01:4f8:c2c:123f::1 2001:67c:2960::64",
-      description:
-        "IPv6-only servers: the DNS64 resolvers used to reach ghcr.io and github.com, which have no IPv6 address. Space separated. Read by both installers.",
-    },
-    DEPLO_VERSION: {
-      type: "image tag",
-      default: "latest",
-      description: "The image tag pulled: ghcr.io/deplocloud/deplo:<version>.",
-    },
-    DEPLO_SECRET: {
-      type: "string",
-      default: "generated, openssl rand -base64 48",
-      description: "As above. Generated once and never rotated by a re-run.",
-    },
+    DEPLO_DOMAIN: { type: "domain", default: "empty, meaning a generated host like deplo-cb00710a.deplo.site", description: "The domain the panel is served on, same as --domain. Must contain a dot, cannot be localhost, a .local name or an IP address. The generated host stays routed alongside it." },
+    ACME_EMAIL: { type: "email", default: "admin@<the panel's own host>", description: "The Let's Encrypt contact for that host's Traefik, same as --email. An update keeps the one set from the panel. The panel reads it back from the running Traefik configuration, not from its own environment." },
+    DEPLO_VERSION: { type: "image tag", default: "latest", description: "The image pulled, ghcr.io/deplocloud/deplo:<version>, same as --version. latest is the newest release (the newest canary when this instance follows canary releases). An update never moves to an older one." },
+    DEPLO_IP_FAMILY: { type: "ipv4 | ipv6", default: "ipv4 when the server has an IPv4, else ipv6", description: "The kind of address the dashboard is served on. Same as --ipv4 / --ipv6, and kept in .env so an update keeps it. See IPv6 in the install.sh reference." },
+    DEPLO_NAT64_DNS: { type: "addresses", default: "2a00:1098:2b::1 2a01:4f8:c2c:123f::1 2001:67c:2960::64", description: "IPv6-only servers: the DNS64 resolvers used to reach ghcr.io and github.com, which have no IPv6 address. Space separated." },
+    DEPLO_TAKEOVER: { type: "dokploy | coolify", description: "Consents to replacing that panel without the prompt. --yes deliberately does not." },
+    DEPLO_IMAGE: { type: "image reference", description: "An image already on the host, for an air-gapped install or a registry mirror. Skips the version lookup and the pull." },
+    DEPLO_SKIP_NET_CHECKS: { type: "1", description: "Skips the outbound probes and the public IP lookup, for a host that reaches its registry another way." },
+    DEPLO_TRACE: { type: "0 | 1", default: "1", description: "0 keeps the command output in the transcript but drops the command trace." },
+    DEPLO_LOG_FILE: { type: "path", default: "/var/log/deplo-install.log", description: "Transcript location, same as --log-file." },
   }}
 />
 
-The installer also honours `DEPLO_SKIP_NET_CHECKS=1`, `DEPLO_IMAGE`,
-`DEPLO_TRACE`, `DEPLO_LOG_FILE`, and `DEPLO_DIR`. The agent installer accepts
-`DEPLO_TRACE` and `DEPLO_LOG_FILE` too.
+`DEPLO_SECRET`, `DEPLO_DB_PASSWORD`, `DEPLO_HOST_BOOTSTRAP_TOKEN` and `DEPLO_SETUP_KEY` are
+not read from your shell: the installer generates them into `/opt/deplo/.env` (mode `0600`)
+on the first run and never rotates them.
 
 ## Variables read by `install-agent.sh`
 
-Set in front of `install-agent.sh`. See [Server roles](/advanced/server-roles)
-for what each role changes on the host.
+Set after `sudo`, which drops the caller's environment. The dashboard command already does it
+for the role flags. See [Server roles](/advanced/server-roles) for what each role changes.
 
 <TypeTable
   type={{
-    DEPLO_STORAGE_ONLY: {
-      type: "0 | 1",
-      default: "0",
-      description: "Backups-only role: no Docker, no Traefik, no shared network.",
-    },
-    DEPLO_BUILD_ONLY: {
-      type: "0 | 1",
-      default: "0",
-      description: "Build-only role: Docker and address pools, no Traefik, never a deploy target.",
-    },
-    DEPLO_IMPORT_ONLY: {
-      type: "0 | 1",
-      default: "0",
-      description:
-        "Migration source: Docker must already exist, nothing else is set up. Created by the migration wizard, not by hand.",
-    },
-    "DEPLO_BOOTSTRAP_URL / DEPLO_BOOTSTRAP_TOKEN / DEPLO_BOOTSTRAP_FINGERPRINT": {
-      type: "written by the installer",
-      description:
-        "First-run enrollment, kept in a 0600 environment file rather than on the command line, where any user could read them from /proc.",
-    },
+    DEPLO_STORAGE_ONLY: { type: "0 | 1", default: "0", description: "Backups-only role: no Docker, no Traefik, no shared network." },
+    DEPLO_BUILD_ONLY: { type: "0 | 1", default: "0", description: "Build-only role: Docker and address pools, no Traefik, never a deploy target." },
+    DEPLO_IMPORT_ONLY: { type: "0 | 1", default: "0", description: "Migration source: Docker must already exist, nothing else is set up. Created by the migration wizard, not by hand." },
+    DEPLO_IP_FAMILY: { type: "ipv4 | ipv6", description: "How Docker is set up here, same as --ipv4 / --ipv6." },
+    DEPLO_NAT64_DNS: { type: "addresses", description: "As for install.sh." },
+    "DEPLO_TRACE / DEPLO_LOG_FILE": { type: "as for install.sh", default: "/var/log/deplo-agent-install.log", description: "The transcript. uninstall.sh reads both too, logging to /var/log/deplo-uninstall.log." },
+    "DEPLO_BOOTSTRAP_URL / DEPLO_BOOTSTRAP_TOKEN / DEPLO_BOOTSTRAP_FINGERPRINT": { type: "written by the installer", description: "First-run enrollment, kept in /var/lib/deplo-agent/bootstrap.env (0600) rather than on the command line, where any user could read them from /proc." },
   }}
 />
 
@@ -211,14 +89,10 @@ for what each role changes on the host.
 - **`DEPLO_SERVER_IP` must be a real, internet-reachable address.** Generated
   hostnames encode an IPv4 in hexadecimal and an IPv6 after `v6-`, so a
   private or loopback address produces URLs that only work from that machine.
-- **A hostname in `DEPLO_PUBLIC_URL` cannot seed a `deplo.site` name**, so
-  Deplo falls through to interface detection for the IP. Set
-  `DEPLO_SERVER_IP` explicitly on a multi-homed box.
-- **`DEPLO_DATA_DIR` is staging, not storage.** Nothing durable lives
-  there.
-- **Build-time placeholders exist in the Dockerfile** for the database URL
-  and the secret. They never reach the runtime image and are not usable
-  values.
+- **A custom domain in `DEPLO_PUBLIC_URL` carries no IP**, so Deplo falls through
+  to interface detection. Set `DEPLO_SERVER_IP` explicitly on a multi-homed box.
+- **Build-time placeholders in the Dockerfile** (database URL, secret) never
+  reach the runtime image and are not usable values.
 
 ## See also
 

@@ -5,16 +5,11 @@ description: Docker cleanup, reclaiming disk on a server. One schedule for the i
 
 import { RotateCcw, ServerCog } from "lucide-react";
 
-Reclaiming disk. This is the setting people wish they had found earlier.
+**Settings -> Servers**, the server, **Cleanup**. One **Scheduled cleanup** policy covers every server,
+including ones you add later; a server opts **out** with **Include this server**.
 
-**Settings -> Servers -> the server -> Cleanup.** One schedule for the whole instance, and
-individual hosts opt **out** of it with the **Scheduled cleanup** switch in that card's header, so
-a server you add tomorrow can never silently go unswept. The checkbox below it turns the whole
-thing off instance-wide.
-
-It ships **on**, with all seven scopes enabled, a nightly `0 4 * * *` schedule, a 24-hour minimum
-age and one image kept per app. A new scope added by a later release enables itself on a policy
-you have already saved.
+It ships **on**: every scope below, daily at `0 4 * * *` (UTC), a 24-hour minimum age and one image
+kept per app. A scope added by a later release turns itself on in a policy you already saved.
 
 ## What gets cleaned
 
@@ -22,54 +17,56 @@ you have already saved.
   type={{
     "Build cache": {
       type: "scope",
-      description: "BuildKit cache older than the minimum age.",
+      description: "Docker's BuildKit cache. Costs nothing but a slower next build.",
     },
     "Dangling images": {
       type: "scope",
-      description: "Untagged layers nothing references.",
+      description: "Untagged layers left by rebuilds.",
     },
     "Orphaned volumes": {
       type: "scope",
       description:
-        "Anonymous volumes no container references: the data dirs of removed containers and abandoned build caches. A named volume of one of your apps goes only when it is empty on disk; one holding bytes is never touched.",
+        "Unused anonymous volumes, abandoned build caches and empty Deplo volumes. A named volume holding data is never touched.",
     },
     "Unused app images": {
       type: "scope",
       description:
-        "Old images of your apps, past Images kept per app. An app that was deleted keeps none.",
+        "Old images of your apps no container references, past Images kept per app. A deleted app keeps none.",
     },
     "Unused pulled images": {
       type: "scope",
       description:
-        "Images Deplo did not build that no container uses: what a deleted stack pulled, or the tag a redeploy moved past. A deploy that needs one pulls it again.",
+        "Images Deplo did not build that no container uses. A deploy that needs one pulls it again.",
     },
     "Leftover app files": {
       type: "scope",
-      description: "Directories of apps that no longer exist.",
+      description: "The config files of apps and databases that were deleted.",
     },
     "Leftover networks": {
       type: "scope",
       description:
-        "Networks of environments, previews and stacks that are gone. They take no disk, but each one holds a slice of the server's address range.",
+        "Networks of environments, previews and stacks that are gone. No disk, but each holds a slice of the server's address range.",
     },
   }}
 />
 
-Every scope judges against what this Deplo still knows about, so a live app
-keeps its images, files and network even while it is moving between servers,
-and a stopped app keeps everything.
-
-**Unused app images** and the **build cache** are also swept right after every
-deploy, so a day of builds cannot fill the disk before the schedule fires.
-
-The build cache also has a ceiling: **a tenth of the server's disk**. Past that, the oldest cache
-is evicted even when it is younger than the minimum age. Without it, a host that builds all day
-never has a cache old enough to qualify, and the ceiling is the only thing that still bites.
+- **Live apps are safe.** Every scope judges against what this Deplo still knows about, so a stopped app,
+  or one moving between servers, keeps its images, files and network.
+- **Swept after every deploy too:** **Unused app images** and **Build cache**, so a day of builds can't
+  fill the disk before the schedule runs.
+- **The build cache has a ceiling:** a tenth of the server's disk, between 2 GB and 50 GB. Past it, the
+  oldest cache goes even when younger than the minimum age.
+- **Never run:** `system prune`, container, volume or network prune. A container, and anything a
+  container still uses, is never touched.
 
 ## Settings
 
 <TypeTable
   type={{
+    "Enable schedule": {
+      type: "switch",
+      description: "Off pauses the schedule on every server. To skip one server, turn off Include this server.",
+    },
     Schedule: {
       type: "cron",
       description: "In UTC.",
@@ -77,70 +74,47 @@ never has a cache old enough to qualify, and the ceiling is the only thing that 
     "Minimum age (hours)": {
       type: "number",
       description:
-        "Caches only: the build cache, dangling images and leaked build volumes. Everything else is count-based or reference-based, and the build-cache ceiling goes past it.",
+        "For caches, dangling images, orphaned volumes and unused pulled images. 0 turns the age filter off. App images follow rollback retention instead.",
     },
     "Images kept per app": {
       type: "number",
       description:
-        "The fallback for an app that cannot roll back. Where rollbacks are possible the app's own Keep wins, so a pruned image is never one a rollback needed.",
+        "For apps that can't roll back: a compose stack, a prebuilt image, a preview. An app that can uses its own rollback Keep.",
     },
-    "Reclaim disk now": {
+    "Clean up now": {
       type: "action",
-      description: "Runs immediately and ignores the opt-out list.",
+      description: "In Reclaim disk now. Runs the saved scopes on this server at once, even when it is not included in the schedule.",
     },
     "Recent cleanups": {
       type: "history",
-      description: "History, with what each run actually freed.",
+      description: "What each run actually freed.",
     },
   }}
 />
 
-What it deliberately never does: `system prune`, container prune, volume prune, network prune. A
-container and anything a container still uses are never touched, because on a Deplo host a
-*stopped* app is a live app. A **named** volume goes only when it is one of your apps' and is
-empty: no bytes, nothing to lose. Anything with data in it stays, whatever its name.
-
 ## What cleanup does not touch
 
-- **Cleanup and rollbacks fight over the same images.** If rollbacks stop
-  working, **Images kept per app** is too low for the app's **Keep**.
-- **This is not what frees the disk after you delete something.** Cleanup
-  reclaims images, caches and the directories of apps that are gone. It
-  never touches a named volume, and it never touches a server folder an app
-  reached through a
-  [Bind](/guides/data/persistent-storage#what-deleting-the-app-removes) -
-  those are yours to remove.
-- **A pulled image comes back with the next deploy.** Removing one costs a
-  pull, never data. Untick **Unused pulled images** on a server without
-  registry access.
-- **Backup files are not on this list either.** Deleting a backup schedule leaves the copies it
-  already made in the [destination](/guides/data/backups-and-restore).
-- **A migration source is never swept**, scheduled or on demand. That machine is somebody else's
-  platform until you are done with it.
+- **Named volumes with data, and server folders an app reached through a
+  [Bind](/guides/data/persistent-storage#what-deleting-the-app-removes).** Deleting an app does not free
+  them: they are yours to remove.
+- **Backup files.** Deleting a backup schedule leaves its copies in the
+  [destination](/guides/data/backups-and-restore).
+- **A migration source**, scheduled or on demand: that machine is somebody else's platform until you are
+  done with it.
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| Cleanup frees nothing | The build cache is already under its ceiling and the minimum age is protecting the rest, or the only large thing on disk is images your apps still use. |
-| **Reclaim disk now** ran on a host you opted out | It does: the manual run ignores the opt-out list. The schedule honours it. |
-| Rollbacks stopped working after a sweep | **Images kept per app** is too low for an app that cannot roll back. For apps that can, their own **Keep** governs. |
+| Cleanup frees nothing | The build cache is under its ceiling and the minimum age protects the rest, or what fills the disk is images your apps still use. |
+| Rollbacks stopped working after a sweep | An app that can roll back keeps what its own **Keep** says: raise it there. **Images kept per app** only covers apps that can't. |
+| A redeploy can't pull an image cleanup removed | The server has no access to that registry. Untick **Unused pulled images**, which applies to every server, or turn off **Include this server** there. |
 
 More in [Servers and agents](/troubleshooting/servers-and-agents).
 
 ## Next steps
 
 <Cards>
-  <Card
-    icon={<RotateCcw className="text-blue-400" />}
-    title="Rollbacks"
-    description="Images kept per app interacts with this"
-    href="/guides/releases/rollbacks"
-  />
-  <Card
-    icon={<ServerCog className="text-blue-400" />}
-    title="Server"
-    description="Everything else about one machine"
-    href="/operations/servers"
-  />
+  <Card icon={<RotateCcw className="text-blue-400" />} title="Rollbacks" description="Images kept per app interacts with this" href="/guides/releases/rollbacks" />
+  <Card icon={<ServerCog className="text-blue-400" />} title="Servers" description="Everything else about one machine" href="/operations/servers" />
 </Cards>

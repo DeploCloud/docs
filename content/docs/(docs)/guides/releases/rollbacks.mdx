@@ -8,15 +8,12 @@ import { basePath } from "@/lib/base-path";
 
 import { Hammer, Server, Workflow, Archive } from "lucide-react";
 
-Every build leaves an image on the server. A rollback runs that image again, so it takes seconds
-and rebuilds nothing. Once the server no longer keeps that image, an app deployed from a
-repository rebuilds the deployment's commit instead. It needs the `rollback_apps` capability.
+Every build leaves an image on the server. A rollback runs that image again: seconds, no rebuild.
+It needs the `rollback_apps` capability.
 
-- **No rebuild for a kept build.** No clone, no dependency install, no waiting.
-- **Only the code goes back.** Variables, domains, volumes and resource limits come from your
-  **current** settings.
-- **It is a normal deployment.** It has its own row, logs and activity entry, marked as a
-  rollback, and it does not use a retention slot.
+- **Only the code goes back.** Variables, domains, volumes and resource limits stay as they are now.
+- **It is a normal deployment**, with its own row, logs and activity entry, marked as a rollback.
+- **Only apps Deplo builds can roll back**: from a repository or an uploaded archive.
 
 ## Roll back
 
@@ -25,7 +22,7 @@ repository rebuilds the deployment's commit instead. It needs the `rollback_apps
 
 ### Open Deployments
 
-Open the app, then **Deployments**. The list shows the commit, the branch and when each ran.
+Open the app, then **Deployments**.
 
 <Image
   src={`${basePath}/screenshots/rollbacks/01-deployment-history.png`}
@@ -40,8 +37,7 @@ Open the app, then **Deployments**. The list shows the commit, the branch and wh
 
 ### Roll back
 
-Open the deployment's menu and click **Rollback**, or open the deployment and click **Rollback**
-there.
+Click **Rollback** in the deployment's menu, or on the deployment's page, and confirm.
 
 <Image
   src={`${basePath}/screenshots/rollbacks/02-deployment-actions.png`}
@@ -54,41 +50,29 @@ there.
 </Step>
 </Steps>
 
-The app serves the older image within seconds.
-
-<Callout type="info">
-The app header has a **Rollback** button too. It goes straight to the deployment before the live
-one, without opening the list.
-</Callout>
+The **Rollback** button in the app header goes straight to the newest deployment before the live
+one. With nothing left to go back to, it opens the app's **Backups**.
 
 ## When the build is no longer kept
 
-An app deployed from a repository can still go back to an older deployment, or to one that ran
-on another server:
+An app from a repository rebuilds that deployment's commit, for example `4abcdef`, then releases
+it. The confirmation says **rebuilt first - this takes a few minutes**. This also covers a
+deployment that ran on another server. The rebuild keeps its own image, so the next time is
+instant.
 
-1. Deplo fetches that deployment's commit, for example `4abcdef`.
-2. It builds it, as on a normal deploy. This takes a few minutes.
-3. It releases it. The confirmation says **rebuilt first** before you start.
-
-The rebuilt deployment keeps its own image, so going back to it again later takes seconds.
-
-An app from an **uploaded archive** has no commit to rebuild: it can only go back to the builds
-the server still keeps.
-
-Deplo refuses a rollback when the target belongs to a **preview** or **is itself a rollback**.
-The message says which.
+An **uploaded archive** has no commit: only builds still kept on its current server.
 
 ## Retention
 
 <Image
   src={`${basePath}/screenshots/rollbacks/03-retention.png`}
-  alt="Keep rollbacks, the number of old deployments kept ready to go back to"
+  alt="Rollbacks kept, the number of old deployments kept ready to go back to"
   width={1728}
   height={1080}
   className="w-full rounded-lg"
 />
 
-**Settings -> Deployments**, the **Rollbacks** card, field **Keep**.
+**Settings -> Deployments**, the **Releases** card, field **Rollbacks kept**.
 
 | | |
 | --- | --- |
@@ -96,36 +80,27 @@ The message says which.
 | Maximum | `20` |
 | `0` | No instant rollbacks. An app from a repository still rolls back by rebuilding |
 
-The server keeps `Keep + 1` images per app. Older ones are removed by the server's disk cleanup
-after a deploy. Kept images share layers, but they still use disk.
-
-Once an image is removed from the server, an app from a repository rebuilds that deployment's
-commit instead. An uploaded archive can no longer go back to it, even if its row is still in the
-list.
+The server keeps **Rollbacks kept** + 1 images per app, the live one included. A rollback that
+re-runs a kept image takes no slot. Older images go in the
+[Docker cleanup](/operations/servers/cleanup) after each deploy.
 
 ## Good to know
 
-- **Only sources Deplo builds can roll back.** A Docker image app and a Compose app do not have
-  the action.
-- **A rolled-back app still auto-deploys.** The next push replaces it. Turn off **Deploy on
-  push** first if the branch is broken.
-- **A rebuild uses today's build settings.** If you changed the build command or root
-  directory since, the old commit is built with the new ones.
-- **A rebuild needs a recent server agent.** An older one stops the rollback with a message to
-  update it.
-- **A database migration does not roll back with the code.** Your data stays as it is.
-- **Rolling back does not stop the app.** Use **Stop** for that.
+- **A rolled-back app still auto-deploys.** The next push replaces it: turn off **Deploy on push**
+  first if the branch is broken.
+- **A rebuild uses today's build settings**, root directory included.
+- **A database migration does not roll back with the code.** For data, use
+  [Backups](/guides/data/backups-and-restore).
 
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
-| The **Rollback** action is missing | The source is a Docker image or a Compose app, the app is an uploaded archive past **Keep**, or you do not have `rollback_apps`. |
-| Rollback is refused on a deployment | It is a preview or it is itself a rollback. On an uploaded archive, it also ran on another server. |
-| Rollback fails with an image not found | It was removed. Raise **Keep**, or exclude that server from unused-image cleanup. |
-| "too old to rebuild an earlier commit" | Update the server's agent from **Settings -> Servers**. |
+| **Rollback** is greyed out | You do not have `rollback_apps`, or no earlier build is left to go back to. |
+| **Rollback** is not in a deployment's menu | The deployment failed, is a pull request preview, is already live, or re-ran another one's image. On an uploaded archive, its build is past **Rollbacks kept** or stayed on another server. |
+| "too old to build a specific commit" | Update the server's agent from **Settings -> Servers**. |
 | "commit 4abcdef is no longer in the repository" | A force push or a repository change removed it. Pick another deployment. |
-| The bug is still there after the rollback | The bug is in configuration or data, not in the code. |
+| The bug is still there after the rollback | It is in configuration or data, not in the code. |
 
 More in [Deploys and builds](/troubleshooting/deploys-and-builds).
 

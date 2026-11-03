@@ -42,52 +42,20 @@ https://deplo.build/deploy?compose=https://github.com/acme/app/blob/v1.2.0/docke
 </Tab>
 </Tabs>
 
-That is the whole setup: one parameter, no account, nothing to register.
+`compose` is the only parameter: an `https` link to the file. A GitHub or GitLab page link works,
+Deplo turns it into the raw file. No account, nothing to register.
 
 ## What happens on click
 
-<Steps>
-<Step>
-
-### deplo.build finds their Deplo
-
-The first time, it asks for the address of their Deplo, like `deplo.acme.com`. After that, a
-3-second countdown and they are on their way, with **Change instance** and **Cancel** to stop it.
-
-</Step>
-<Step>
-
-### Their Deplo reads your files
-
-It fetches your `docker-compose.yml`, plus a `template.toml` and a logo if they sit next to it.
-They sign in if needed, and land in the new-app wizard of the last team they used.
-
-</Step>
-<Step>
-
-### They review and deploy
-
-The wizard is the one a [template](/guides/deploy/from-template) opens, marked **Not from the
-Deplo catalog**, with the compose file open to read. Nothing is created until they click
-**Deploy**.
-
-</Step>
-</Steps>
-
-## Parameters
-
-<TypeTable
-  type={{
-    compose: {
-      type: "https URL",
-      required: true,
-      description:
-        "Your docker-compose.yml. A GitHub or GitLab page link works: it is turned into the raw file.",
-    },
-  }}
-/>
-
-There is no other parameter. Everything else comes from the files next to the compose.
+1. **deplo.build finds their Deplo.** The first time, it asks for its address, like
+   `deplo.acme.com`. After that, a 3-second countdown, with **Deploy now**, **Change instance**
+   and **Cancel**.
+2. **Their Deplo reads your files**: your `docker-compose.yml`, plus a `template.toml` and a logo
+   if they sit next to it. They sign in if needed, and land in the new-app wizard of the last
+   team they used.
+3. **They review and deploy.** The wizard is the one a [template](/guides/deploy/from-template)
+   opens, with the warning **Not from the Deplo catalog. Review it before you deploy.** and **Edit
+   compose** to read the stack. Nothing is created until they click **Deploy**.
 
 ## Configure the deploy
 
@@ -130,31 +98,31 @@ in any variables.
 
 ## Pin a version
 
-The file is read when someone clicks, not when you write the link.
-
-| Link | Deploys |
-| --- | --- |
-| `.../blob/main/docker-compose.yml` | Whatever is on `main` that day |
-| `.../blob/v1.2.0/docker-compose.yml` | Always `v1.2.0` (recommended) |
+The file is read when someone clicks, not when you write the link. Link a tag, like
+`/blob/v1.2.0/docker-compose.yml`, and every reader gets `v1.2.0`. Link `/blob/main/` and they
+get whatever is on `main` that day.
 
 ## Limits
 
 - **A public https link.** Private repositories are not supported.
-- **Images only.** A service with `build:` needs the repository: deploy it
+- **Images only.** A service with `build:` and no `image:` needs the repository: deploy it
   [from Git](/guides/deploy/from-git) instead.
 - **Only the three files above are read.** An `env_file:` or a config file beside the compose is
   not: ship it as a `[[config.mounts]]` entry in `template.toml`.
-- **Sizes:** compose 256 KiB, `template.toml` 64 KiB, logo 2 MB.
+- **Sizes:** compose 256 KiB, `template.toml` 64 KiB, logo 2 MiB. All three within 10 seconds.
 - **Needs a Deplo newer than 0.3.0.** An older one opens an empty wizard.
 
 <Callout type="info" title="The reader's address stays in their browser">
   deplo.build keeps the address of their Deplo in their browser only, and never receives it. It
-  counts clicks per repository, and not even that once they turn analytics off on the
+  counts clicks per repository, and not even that once they turn statistics off on the
   [privacy page](https://deplo.build/privacy). **Forget** on
   [deplo.build/deploy](https://deplo.build/deploy) removes the address.
 </Callout>
 
 ## Troubleshooting
+
+Deplo shows these under **That compose file isn't available**. The first one comes from
+deplo.build itself.
 
 | Message | What to do |
 | --- | --- |
@@ -164,7 +132,7 @@ The file is read when someone clicks, not when you write the link.
 | The "web" service builds from source, which needs the repository. | Publish an image and use `image:`, or deploy from Git. |
 | The compose file is too large (256 KiB max). | Trim it, or split it into several apps. |
 | The compose URL must not point at a private or internal address | The file has to be on the public internet. |
-| `raw.githubusercontent.com` took too long to answer. | Try again; the file host is slow or down. |
+| `raw.githubusercontent.com` took too long to answer. | Try again: the file host is slow or down. |
 
 ## Next steps
 

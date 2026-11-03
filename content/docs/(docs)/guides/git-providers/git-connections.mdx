@@ -6,9 +6,15 @@ description: Connect a GitLab, Bitbucket or Gitea host, on their cloud or on you
 import Image from "next/image";
 import { basePath } from "@/lib/base-path";
 
-A git connection is one stored token per host, reused by every app that deploys
-from it. GitLab, Bitbucket and Gitea (Forgejo included) connect this way,
-on their cloud or on your own instance, and are marked **Beta**. GitHub is different, see
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+A git connection is one stored token per host, reused by every app that deploys from it. GitLab,
+Bitbucket, Gitea / Forgejo and plain Git connect this way, on their cloud or on your own
+instance, and are marked **Beta**. GitHub connects differently: see
 [GitHub](/guides/git-providers/github).
 
 ## Connect it
@@ -26,15 +32,16 @@ on their cloud or on your own instance, and are marked **Beta**. GitHub is diffe
   className="w-full rounded-lg"
 />
 
-**Settings -> Git**, then add a connection.
+**Settings -> Git**, then **Connect**. The new-app wizard has the same list under the Git tile's
+**Provider** menu, in **Connect a git provider**.
 
 </Step>
 <Step>
 
 ### Pick the type and fill in the details
 
-Pick the provider as the **Type**, then set the **Address**, **Username** and
-token:
+Pick the provider, then fill in **Address**, **Username** and **Access token**. **Name** is
+optional. The dialog prints the scopes the token needs.
 
 <Image
   src={`${basePath}/screenshots/git-connections/02-provider-menu.png`}
@@ -44,58 +51,51 @@ token:
   className="w-full rounded-lg"
 />
 
-<Tabs items={['GitLab', 'Bitbucket', 'Gitea']}>
+<Tabs items={['GitLab', 'Bitbucket', 'Gitea', 'Git']}>
 <Tab value="GitLab">
 
-- **Address**: leave the default for gitlab.com, or set your own
-  instance's base URL.
-- **Username**: **`oauth2`**, exactly. Not your account name.
-- **Token**: a GitLab personal or project access token with repository read
-  scope.
-
-GitLab reports token expiry, so you are warned before a token breaks a deploy.
+- **Address**: `https://gitlab.com`, prefilled, or your own instance, like
+  `https://gitlab.example.com`.
+- **Username**: `oauth2`, prefilled. Leave it.
+- **Access token**: a personal or project access token.
 
 </Tab>
 <Tab value="Bitbucket">
 
-- **Address**: Bitbucket's base URL.
-- **Username**: **`x-token-auth`**, exactly. Not your account name.
-- **Token**: a Bitbucket app password or repository access token.
+- **Address**: `https://bitbucket.org`, prefilled.
+- **Username**: `x-token-auth`, prefilled, for a repository, project or workspace access token.
+- **Access token**: that access token. An app password works too, with your Bitbucket username
+  instead.
 
 </Tab>
 <Tab value="Gitea">
 
-- **Address**: your instance's base URL (Forgejo included).
-- **Username**: your Gitea account name.
-- **Token**: a Gitea access token with repository read scope.
+- **Address**: your instance, like `https://git.example.com` (Forgejo included).
+- **Username**: your Gitea account name. Required.
+- **Access token**: a Gitea access token.
 
-Gitea does not report token expiry. **This connection stopped working** is the
-first signal you get.
+</Tab>
+<Tab value="Git">
+
+Any other git server, with the credentials you clone with. No repository list and no webhook:
+paste the **Repository URL** in the wizard, and deploy on push through the
+[deploy hook](/guides/releases/automatic-deployments#the-deploy-hook).
 
 </Tab>
 </Tabs>
 
-</Step>
-<Step>
-
-### Test and save
-
-Click **Test connection**, then **Save**.
+Click **Connect**. For GitLab, Bitbucket and Gitea, Deplo checks the token right away. A host on
+a private network needs **This git server is on my own network**, which only an instance admin
+can tick.
 
 </Step>
 </Steps>
 
-Later, **Replace the token** swaps it without recreating anything.
-**This connection stopped working** appears when a background check finds the
-connection broken.
-
-For an address on a private network, an instance admin can tick
-**This git server is on my own network**. Only an admin can do this, for
-security reasons.
+On the connection's card, **Test connection** checks the token again and **Edit** swaps in a
+**New access token** (empty keeps the current one). GitLab tokens also show **Token expires**;
+Bitbucket and Gitea do not report an expiry.
 
 ## What the token needs
-
-Tick these when you create the token:
 
 | Provider | On its token page | What it unlocks |
 | --- | --- | --- |
@@ -106,21 +106,18 @@ Tick these when you create the token:
 | Gitea | **`read:repository`** | List and clone your repositories |
 | Gitea | **`write:repository`** | Register the push webhook so a push deploys |
 
-GitLab reports what a token covers, so Deplo shows **This token is missing
-access** on the connection's card. Bitbucket and Gitea do not, so Deplo shows
-this list only when the host refuses something.
+GitLab reports a token's scopes, so a missing one shows **This token is missing access** on the
+card. Bitbucket and Gitea do not, so Deplo lists what the token needs only after the host refuses
+something.
 
 ## Troubleshooting
 
-- **`Authentication failed` in a clone**: the token expired or was revoked.
-  **Test connection** confirms it.
-- **"This token is missing access"**: a scope in the table above is not
-  ticked. Create a new token with it, then **Replace the token**.
-- **"Deplo could not add the push webhook"**: usually the same cause. The
-  notice lists what the token needs, and shows the webhook address to paste by
-  hand in the meantime.
-- **Saving the address is refused**: it resolves to a private
-  address. Only an instance admin can allow that.
+| Symptom | What to check |
+| --- | --- |
+| `Authentication failed` in a clone | The token expired or was revoked. **Test connection** confirms it. |
+| **This token is missing access** | A scope from the table above is not ticked. Create a token with it, then **Replace the token**. |
+| **Deplo could not add the push webhook** | Usually a missing scope. The notice lists what the token needs and the webhook URL to add by hand meanwhile. |
+| `Address must not point at a private or internal address` | Only an instance admin can connect a host on a private network. |
 
 ## Next steps
 
