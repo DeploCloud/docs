@@ -143,6 +143,14 @@ curl -X POST https://deplo.example.com/api/apps/prj_9f1c2ab7d3e4f5a6/attach \
 
 A body of `{ "sessionId": "...", "resize": { "cols": 120, "rows": 40 } }` resizes the terminal instead. Every write re-checks that the caller is the person who opened the session and still holds the capability, so a session id alone keeps nobody typing. For one command with no session, use `execConsole` on [Console and logs](/api-reference/console-and-logs).
 
+| Status | Meaning |
+| --- | --- |
+| `403` | Cross-site request, or missing `open_app_console` / `open_database_console`. |
+| `404` | No such app or database in this team, or the app's console is switched off. |
+| `409` | The container is stopped or not there yet. |
+| `429` | Too many consoles open at once. |
+| `503` | The owning agent could not be reached. |
+
 ---
 
 ## Backups
