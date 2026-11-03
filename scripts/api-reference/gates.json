@@ -1646,7 +1646,13 @@
  "Subscription.appStatus": {
   "kind": "loggedIn"
  },
+ "Subscription.appsStatus": {
+  "kind": "loggedIn"
+ },
  "Subscription.databaseStatus": {
+  "kind": "loggedIn"
+ },
+ "Subscription.databasesStatus": {
   "kind": "loggedIn"
  },
  "Subscription.dockerCleanupRuns": {

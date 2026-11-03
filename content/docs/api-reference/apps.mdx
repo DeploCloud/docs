@@ -626,6 +626,26 @@ subscription {
 }
 ```
 
+### `appsStatus`
+
+Any signed-in principal. Returns [`App`](/api-reference/types/objects#app).
+
+appStatus for a whole list on one stream: emits each app once, then again whenever one of them changes. A slug the caller cannot reach is skipped.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `slugs` | `[String!]!` |  |
+
+```graphql
+subscription {
+  appsStatus(slugs: ["shop", "api"]) {
+    id
+    status
+    latestDeployment { id status }
+  }
+}
+```
+
 ## See also
 
 <Cards>

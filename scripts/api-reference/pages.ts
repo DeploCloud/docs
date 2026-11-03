@@ -337,6 +337,19 @@ export const EXAMPLES: {
     status
   }
 }`,
+    appsStatus: `subscription {
+  appsStatus(slugs: ["shop", "api"]) {
+    id
+    status
+    latestDeployment { id status }
+  }
+}`,
+    databasesStatus: `subscription {
+  databasesStatus(ids: ["db_9f1c2ab7d3e4f5a6", "db_3c4d5e6f7a8b9c0d"]) {
+    id
+    status
+  }
+}`,
     setAppEnv: `mutation {
   setAppEnv(
     appId: "prj_9f1c2ab7d3e4f5a6"
@@ -994,7 +1007,7 @@ An app is one deployable unit: a repository, an uploaded archive, a Docker image
         ops: [m("renameApp"), m("reorderApps"), m("transferAppToTeam"), m("deleteApp"), m("deleteApps")],
       },
       { title: "Logo and framework", ops: [m("updateAppLogo"), m("detectAppLogo"), m("setAppFramework")] },
-      { title: "Subscription", ops: [s("appStatus")] },
+      { title: "Subscription", ops: [s("appStatus"), s("appsStatus")] },
     ],
     seeAlso: [
       { title: "App settings", description: "Source, build, resources, ports, volumes and files", href: "/api-reference/app-settings" },
@@ -1172,7 +1185,7 @@ A managed database is provisioned and versioned the same way an app is, and reac
         title: "Connected apps",
         ops: [q("databaseAppLinks"), q("appDatabaseOptions"), m("connectDatabase"), m("disconnectDatabase"), m("unlinkEnv")],
       },
-      { title: "Subscription", ops: [s("databaseStatus")] },
+      { title: "Subscription", ops: [s("databaseStatus"), s("databasesStatus")] },
     ],
     seeAlso: [
       { title: "Databases", description: "The dashboard guide", href: "/guides/data/databases" },

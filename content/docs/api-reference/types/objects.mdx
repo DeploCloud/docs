@@ -2243,9 +2243,11 @@ One known vulnerability in a package an app or database runs.
 | Field | Type | Description |
 | --- | --- | --- |
 | `actionable` | `Boolean` | Deprecated: Use `counted`, which it always equals. |
+| `conditional` | `Boolean` | True when the flaw needs the package set up a certain way: its CVSS attack complexity is high. A conditional critical flaw is listed as `high`. |
 | `counted` | `Boolean` | True when it is critical or already used in attacks, in the app's own dependencies or the software its image ships. Only these count in `count` and send alerts. |
 | `cve` | `String` |  |
 | `cvss` | `Float` |  |
+| `direct` | `Boolean` | True when the app's package.json names the package, false when another package pulls it in. Null when Deplo cannot tell. |
 | `ecosystem` | `String` |  |
 | `epss` | `Float` | FIRST's EPSS: the chance, from 0 to 1, that its CVE is exploited in the next 30 days. Null when it has no CVE or no score yet. |
 | `fix` | [`SecurityFix`](/api-reference/types/enums#securityfix) |  |
@@ -2261,7 +2263,7 @@ One known vulnerability in a package an app or database runs.
 | `packageName` | `String` |  |
 | `service` | `String` | The compose service it was found in; empty for a single-container app. |
 | `summary` | `String` |  |
-| `via` | `[String!]` | Who pulls the package in, from its parent up to the app's own dependency; empty for a direct one. An indirect one is fixed with an override. |
+| `via` | `[String!]` | Who pulls the package in, from its parent up to the app's own dependency; empty for a direct one or when Deplo cannot tell. An indirect one is fixed with an override. |
 | `vulnId` | `String` | The OSV id, for example GHSA-xvch-5gv4-984h or GO-2024-2687. |
 
 ### SecurityUpdateGroup
@@ -2272,6 +2274,7 @@ One security update as the dashboard lists it: a package of the app's own, or a 
 | --- | --- | --- |
 | `advisories` | [`[SecurityUpdate!]`](/api-reference/types/objects#securityupdate) |  |
 | `counted` | `Boolean` | True when it counts in `count`: critical or attacked, and not ignored. |
+| `direct` | `Boolean` | True when the app's package.json names the package; null for an image or when Deplo cannot tell. |
 | `exploited` | `Boolean` |  |
 | `fix` | [`SecurityFix`](/api-reference/types/enums#securityfix) |  |
 | `fixedVersion` | `String` | The version that closes every advisory of the package. |
@@ -2283,7 +2286,7 @@ One security update as the dashboard lists it: a package of the app's own, or a 
 | `level` | [`SecurityLevel`](/api-reference/types/enums#securitylevel) |  |
 | `packageName` | `String` |  |
 | `service` | `String` |  |
-| `via` | `[String!]` | Who pulls the package in, parent first; empty for a direct dependency or an image. |
+| `via` | `[String!]` | Who pulls the package in, parent first; empty for a direct dependency, an image, or when Deplo cannot tell. |
 
 ### SecurityUpdates
 
@@ -2714,6 +2717,7 @@ Result of checking the upstream GitHub repository for a newer Deplo release.
 | `next` | `String` | The version Update installs: `latest`, or the update stop this instance has to pass first. Null when there is nothing to install. |
 | `nextIsStop` | `Boolean` | `next` is an update stop on the way to `latest`. |
 | `publishedAt` | `String` |  |
+| `securityFix` | `String` | The release that fixes a known security flaw this instance has, as the newest release declares it. Null when this instance has none. |
 | `stop` | [`UpdateStop`](/api-reference/types/objects#updatestop) | The update stop between this instance and `latest`, while it has not passed it. Before any newer release requires it, this release itself while it is a stop not passed yet. |
 | `strandedServers` | [`[StrandedServer!]`](/api-reference/types/objects#strandedserver) | Offline servers whose agent is older than the minimum the `next` Deplo supports. They cannot update while offline, so they stay unusable until they come back and their agent updates. Empty when there is no update or the release does not say. |
 | `updateAvailable` | `Boolean` | Update installs something now: `next` is set. |

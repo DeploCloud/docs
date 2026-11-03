@@ -664,6 +664,25 @@ subscription {
 }
 ```
 
+### `databasesStatus`
+
+Any signed-in principal. Returns [`Database`](/api-reference/types/objects#database).
+
+databaseStatus for a whole list on one stream: emits each database once, then again whenever one of them changes. An id the caller cannot see is skipped.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `ids` | `[String!]!` |  |
+
+```graphql
+subscription {
+  databasesStatus(ids: ["db_9f1c2ab7d3e4f5a6", "db_3c4d5e6f7a8b9c0d"]) {
+    id
+    status
+  }
+}
+```
+
 ## See also
 
 <Cards>
