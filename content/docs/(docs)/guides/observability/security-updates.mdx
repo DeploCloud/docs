@@ -40,11 +40,17 @@ flawed packages and a newer build that fixes them is one update too.
 | Level | What it means |
 | --- | --- |
 | **Used in attacks** | The flaw is on CISA's list of flaws already exploited in real attacks |
-| **Critical** | A critical flaw (score 9.0 or more) |
-| **Important** | A high-severity flaw (score 7.0 to 8.9) |
+| **Critical** | A critical flaw (score 9.0 or more) that needs nothing special to be exploited |
+| **Important** | A high-severity flaw (score 7.0 to 8.9), or a critical one that works only when the package is set up a certain way |
 
 Only **Used in attacks** and **Critical** count in the badge, the notices and the alerts.
 **Important** ones are listed in **Details** under **Less urgent**. Lower levels are not shown.
+
+A flaw that works only in a particular setup says **Only when the package is set up a certain
+way** next to its scores. For example, a critical DOMPurify flaw that needs `SAFE_FOR_TEMPLATES`
+together with `RETURN_DOM` is listed as **Important**. Deplo reads this from the advisory's CVSS
+score (attack complexity high), not from your code. A flaw on
+CISA's list stays **Used in attacks** whatever its setup.
 
 Next to each advisory, **EPSS** is the chance it is exploited in the next 30 days, as
 [FIRST](https://www.first.org/epss/) estimates it: a high score is worth looking at first.
@@ -55,9 +61,64 @@ Each update says how you get the fix:
 
 | What Details says | What to do |
 | --- | --- |
-| Update minimist to 1.2.6 in your code | Bump the dependency in your repository and push |
+| Update minimist to 1.2.6 in your code | Your `package.json` names it: bump it in your repository and push |
+| Pulled in by monaco-editor ← @payloadcms/ui: add an override for dompurify 3.4.17 | Another package pulls it in: [add an override](#add-an-override) and push |
+| Pulled in by another package: add an override for dompurify 3.4.17 | The same, when Deplo cannot tell which package pulls it in |
+| Update @payloadcms/richtext-lexical: the fix for happy-dom is a new major version, which an override could break | Update the package your app names to a version that brings the fix. Forcing a new major version under it could break it |
+| Only used to build the app: it never runs | Nothing urgent: it comes from your `devDependencies`, so it is listed and never counted |
 | A newer build of this image fixes 3 known flaws: update to get it | Press **Update** on the banner. An app redeploys and pulls its image again; a database asks first, then restarts on the new build with its data |
 | Version 1.60.2 is available and fixes 2 known flaws | Change the image version in **Settings -> Deployments** |
+
+### Add an override
+
+An override makes every package that pulls in a dependency use the version you pick. Add it to
+your `package.json`, run an install so the lockfile follows, and push:
+
+<Tabs items={["bun", "pnpm", "npm"]}>
+<Tab value="bun">
+
+```json title="package.json"
+{
+  "overrides": {
+    "dompurify": "3.4.17"
+  }
+}
+```
+
+Then run `bun install`.
+
+</Tab>
+<Tab value="pnpm">
+
+```json title="package.json"
+{
+  "pnpm": {
+    "overrides": {
+      "dompurify": "3.4.17"
+    }
+  }
+}
+```
+
+Then run `pnpm install`.
+
+</Tab>
+<Tab value="npm">
+
+```json title="package.json"
+{
+  "overrides": {
+    "dompurify": "3.4.17"
+  }
+}
+```
+
+Then run `npm install`.
+
+</Tab>
+</Tabs>
+
+### Update an image
 
 Deplo offers **Update** only after reading the newer build: the image's server downloads it,
 reads its packages like any other image, and removes it again. A newer build that still has the
@@ -81,7 +142,8 @@ It leaves out what you never picked:
 - the system packages under your app (glibc, openssl), including the Python packages the system
   installs for itself;
 - the language toolchain: Go's standard library, pip, setuptools, wheel and npm itself;
-- tools a dependency carries inside it;
+- tools a dependency carries inside it, and copies a package bundles inside itself (like
+  `next/dist/compiled`);
 - the client tools a database image bundles, such as MySQL Shell;
 - flaws nobody has fixed yet.
 
