@@ -80,14 +80,16 @@ To manage Deplo's updates yourself, add `DEPLO_AUTO_UPDATE=off` to `/opt/deplo/.
 
 ## Update log
 
-**Update log**, next to **What changed** on the Updates tab, instance admins only. Every update of
-Deplo from the last 90 days, newest first and grouped by day, however it was started.
+**Update log**, next to **What changed** on the Updates tab, opens a window with every update of
+Deplo from the last 90 days, newest first, however it was started. Instance admins only.
 
+- **When:** `Today 03:01`, `Yesterday 14:20` or a date, on the clock of the automatic updates. The
+  window names the timezone.
 - **What happened:** `Updated to v0.9.1`, `v0.9.0 rolled back`, `v0.9.1 did not install`,
   `Waited on v0.9.1`, `v0.9.1 postponed` or `v0.9.1 needs you`, with the reason under it.
-- **Who:** the person who clicked **Update**, **Automatic**, or **Installer** when `deplo update`
+- **Version:** the one it ran and the one it went to, `v0.9.0 → v0.9.1`.
+- **By:** the person who clicked **Update**, **Automatic**, or **Installer** when `deplo update`
   ran on the machine.
-- **When:** on the clock of the automatic updates, the timezone the page names.
 
 ## When a new version is out
 
