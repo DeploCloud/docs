@@ -33,7 +33,7 @@ always wait for **Update**.
   where nothing is running.
 - **On the clock of the machine Deplo runs on.** If that machine says UTC, Deplo takes the timezone
   of the first admin who opens the Updates tab.
-- **Change** picks the first check and the timezone.
+- **Change schedule**, in the menu next to the switch, picks the first check and the timezone.
 
 ### What makes it wait
 
@@ -43,7 +43,7 @@ always wait for **Update**.
   a migration or a Deplo move. That check is skipped, and the [update log](#update-log) says why:
   `A deploy was running. Deplo tries again at 03:00.` A queued deploy does not count: it starts
   again once Deplo is back.
-- **Postpone one night** skips the next night. Click it again to skip one more. Each click is in the
+- **Postpone one night**, in the same menu, skips the next night. Pick it again to skip one more. Each click is in the
   update log, and the tab says `Postponed 2 times, last by Alice.`
 
 ### When it does not take
@@ -80,15 +80,14 @@ To manage Deplo's updates yourself, add `DEPLO_AUTO_UPDATE=off` to `/opt/deplo/.
 
 ## Update log
 
-**Settings -> Deplo -> Update log**, instance admins only. Every update of Deplo from the last 90
-days, newest first, however it was started:
+**Update log**, next to **What changed** on the Updates tab, instance admins only. Every update of
+Deplo from the last 90 days, newest first and grouped by day, however it was started.
 
-| Column | What it shows |
-| --- | --- |
-| **Version** | From and to, like `v0.9.0 -> v0.9.1` |
-| **By** | Who clicked **Update**, **Automatic**, or **Installer** when `deplo update` ran on the machine |
-| **Result** | **Updated**, **Rolled back**, **Failed**, **Skipped**, **Postponed** or **Needs you** |
-| **Details** | Why it rolled back, failed or waited |
+- **What happened:** `Updated to v0.9.1`, `v0.9.0 rolled back`, `v0.9.1 did not install`,
+  `Waited on v0.9.1`, `v0.9.1 postponed` or `v0.9.1 needs you`, with the reason under it.
+- **Who:** the person who clicked **Update**, **Automatic**, or **Installer** when `deplo update`
+  ran on the machine.
+- **When:** on the clock of the automatic updates, the timezone the page names.
 
 ## When a new version is out
 
