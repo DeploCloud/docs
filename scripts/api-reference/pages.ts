@@ -1414,7 +1414,12 @@ The panel publishes itself through its host's proxy, so the address it answers o
       { title: "Settings", ops: [q("instanceSettings"), m("setGravatarEnabled"), m("setLogMaxDays"), m("welcomeSeen"), m("finishSetup")] },
       { title: "Panel address and HTTPS", ops: [q("panelAddressImpact"), m("setPanelUrl"), m("panelDns"), m("panelHttps"), m("setPanelHttps"), m("setPanelFallback")] },
       { title: "Cloudflare Tunnel for the panel", ops: [m("panelTunnel"), m("setPanelTunnel"), m("disablePanelTunnel")] },
-      { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), m("checkForUpdates"), m("updateDeplo"), m("leaveServerBehind"), m("setCanaryReleases")] },
+      { title: "Updates", ops: [q("updateInfo"), q("deploChangelog"), q("deploUpdateLog"), m("checkForUpdates"), m("updateDeplo"), m("leaveServerBehind"), m("setCanaryReleases")] },
+      {
+        title: "Automatic updates",
+        intro: `On by default for stable releases: three checks an hour apart, from \`hour\` in \`timezone\`. \`updateInfo.automatic\` says when \`next\` installs itself, or why it waits.`,
+        ops: [m("setAutoUpdates"), m("postponeAutoUpdate"), m("adoptAutoUpdateTimezone")],
+      },
       { title: "Usage reports", ops: [q("usageReport"), m("setUsageReportsEnabled")] },
       {
         title: "Moving Deplo to another machine",

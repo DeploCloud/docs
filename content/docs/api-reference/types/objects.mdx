@@ -281,6 +281,24 @@ A team the viewer could hand this app to - one of their OWN other teams where th
 | `provider` | [`DnsProviderKind`](/api-reference/types/enums#dnsproviderkind) |  |
 | `zoneName` | `String` |  |
 
+### AutoUpdateStatus
+
+Deplo installs new stable versions by itself, at night, when nothing is running.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `blockedBy` | [`AutoUpdateBlock`](/api-reference/types/enums#autoupdateblock) |  |
+| `enabled` | `Boolean` | The admin's switch. On by default. |
+| `heldReason` | `String` | Why `UpdateInfo.next` waits for an admin: its own manual step, or nights it did not take. |
+| `hour` | `Int` | The first of the three hourly checks, 0-23, in `timezone`. |
+| `installsAt` | `String` | When `UpdateInfo.next` installs itself (ISO 8601). Null with nothing waiting, or with a version an admin has to install. |
+| `nextCheckAt` | `String` | The next hourly check (ISO 8601). |
+| `postponedBy` | `String` |  |
+| `postponedTimes` | `Int` | How often the waiting version has been postponed. |
+| `postponedUntil` | `String` |  |
+| `timezone` | `String` |  |
+| `timezoneSource` | [`AutoUpdateTimezoneSource`](/api-reference/types/enums#autoupdatetimezonesource) |  |
+
 ### Backup
 
 A scheduled backup of a database or project to a backup destination.
@@ -918,6 +936,22 @@ One published release of Deplo, as the changelog renders it.
 | `publishedAt` | `String` |  |
 | `tag` | `String` |  |
 | `url` | `String` |  |
+
+### DeploUpdateLogEntry
+
+One update of Deplo itself, however it was started.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `actor` | `String` | Who clicked Update. Null when no person did. |
+| `at` | `String` | When it started (ISO 8601). |
+| `finishedAt` | `String` |  |
+| `fromVersion` | `String` |  |
+| `id` | `ID` |  |
+| `outcome` | [`DeploUpdateOutcome`](/api-reference/types/enums#deploupdateoutcome) |  |
+| `reason` | `String` | Why it rolled back or failed, in one plain sentence. |
+| `toVersion` | `String` |  |
+| `trigger` | [`DeploUpdateTrigger`](/api-reference/types/enums#deploupdatetrigger) |  |
 
 ### DeploUpdateStarted
 
@@ -2707,12 +2741,14 @@ Result of checking the upstream GitHub repository for a newer Deplo release.
 
 | Field | Type | Description |
 | --- | --- | --- |
+| `automatic` | [`AutoUpdateStatus`](/api-reference/types/objects#autoupdatestatus) | The automatic updates, and when `next` installs itself. |
 | `canary` | `Boolean` | Whether canary (pre-release) versions count as updates. Off: only stable releases do. |
 | `checkedAt` | `String` |  |
 | `current` | `String` |  |
 | `error` | `String` |  |
 | `lastRefusedUpdate` | [`RefusedUpdate`](/api-reference/types/objects#refusedupdate) | The last update the installer rolled back, and why. Null once an update succeeds. |
 | `latest` | `String` | The newest release on this instance's channel. Update may install an update stop before it: see `next`. |
+| `manualUpdate` | `String` | Why `next` has to be installed by hand, in that release's own words. Null when nothing needs reading first. |
 | `name` | `String` |  |
 | `next` | `String` | The version Update installs: `latest`, or the update stop this instance has to pass first. Null when there is nothing to install. |
 | `nextIsStop` | `Boolean` | `next` is an update stop on the way to `latest`. |

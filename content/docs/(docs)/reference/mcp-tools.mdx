@@ -9,7 +9,7 @@ not recommended for production. Try it out and share your feedback on
 [our GitHub](https://github.com/DeploCloud/deplo/issues).
 </Callout>
 
-The tools an AI agent gets from the [MCP server](/guides/mcp-server): **192** today, the number
+The tools an AI agent gets from the [MCP server](/guides/mcp-server): **195** today, the number
 changes with the product. `graphql_query` and `graphql_mutate` cover anything no other tool does.
 
 - An agent sees only the tools its token can use.
@@ -270,6 +270,9 @@ changes with the product. `graphql_query` and `graphql_mutate` cover anything no
 | `check_for_updates` | Check for a Deplo update | instance admin | write |
 | `set_canary_releases` | Turn canary releases on or off | instance admin | write |
 | `read_changelog` | Read Deplo's changelog | instance admin | read |
+| `read_update_log` | Read Deplo's update log | instance admin | read |
+| `set_automatic_updates` | Change Deplo's automatic updates | instance admin | write |
+| `postpone_automatic_update` | Postpone Deplo's automatic update by one night | instance admin | write |
 | `set_panel_url` | Set the panel's public address | instance admin | write |
 | `set_panel_https` | Turn HTTPS for the panel on or off | instance admin | write |
 | `set_log_retention` | Set how many days of logs are kept | instance admin | write |

@@ -163,6 +163,9 @@
  "Query.deploMoveStatus": {
   "kind": "none"
  },
+ "Query.deploUpdateLog": {
+  "kind": "instanceAdmin"
+ },
  "Query.deployment": {
   "kind": "loggedIn"
  },
@@ -460,6 +463,9 @@
   "kind": "instanceAdmin"
  },
  "Mutation.addUserToTeam": {
+  "kind": "instanceAdmin"
+ },
+ "Mutation.adoptAutoUpdateTimezone": {
   "kind": "instanceAdmin"
  },
  "Mutation.approvePreview": {
@@ -900,6 +906,9 @@
   "cap": "create_projects",
   "orInstanceAdmin": false
  },
+ "Mutation.postponeAutoUpdate": {
+  "kind": "instanceAdmin"
+ },
  "Mutation.rebuildApp": {
   "kind": "capability",
   "cap": "deploy_apps",
@@ -1254,6 +1263,9 @@
   "kind": "capability",
   "cap": "configure_apps",
   "orInstanceAdmin": false
+ },
+ "Mutation.setAutoUpdates": {
+  "kind": "instanceAdmin"
  },
  "Mutation.setCanaryReleases": {
   "kind": "instanceAdmin"

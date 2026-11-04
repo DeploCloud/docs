@@ -1,6 +1,6 @@
 ---
 title: Update
-description: Update Deplo and its server agents in one click, pick stable or canary releases, and recover an update that did not take.
+description: Deplo updates itself at night, or in one click, with its server agents. Pick when, read the update log, choose stable or canary releases, and recover an update that did not take.
 ---
 
 import { Download, Server, ShieldAlert, ShieldCheck, Bell } from "lucide-react";
@@ -19,6 +19,57 @@ They are containers on your servers, not part of the panel. While the panel rest
 or read logs for about a minute; your sites stay up.
 </Callout>
 
+## Automatic updates
+
+**On by default.** Deplo installs each new **stable** version by itself, at night. Canary versions
+always wait for **Update**.
+
+**Settings -> Deplo -> Updates** says when, under the top card:
+`v0.9.1 installs itself tomorrow at 02:00 (Europe/Rome).`
+
+### When it runs
+
+- **Three checks, an hour apart:** 02:00, 03:00 and 04:00 by default. It installs at the first one
+  where nothing is running.
+- **On the clock of the machine Deplo runs on.** If that machine says UTC, Deplo takes the timezone
+  of the first admin who opens the Updates tab.
+- **Change** picks the first check and the timezone.
+
+### What makes it wait
+
+- **A new release waits 24 hours** after it is published. A release that fixes a security flaw goes
+  on the first night.
+- **Work a restart would break:** a deploy that is building, a backup, a restore, a server cleanup,
+  a migration or a Deplo move. That check is skipped, and the [update log](#update-log) says why:
+  `A deploy was running. Deplo tries again at 03:00.` A queued deploy does not count: it starts
+  again once Deplo is back.
+- **Postpone one night** skips the next night. Click it again to skip one more. Each click is in the
+  update log, and the tab says `Postponed 2 times, last by Alice.`
+
+### When it does not take
+
+The previous version comes back on its own, as with **Update**: see
+[An update was rolled back](#an-update-was-rolled-back). Deplo tries again the next night, for up to
+**3 nights**. Then it stops on that version and waits for a newer one. **Update** still installs it.
+
+### Releases you install yourself
+
+A release that needs a step from you never installs itself. The Updates tab names the step above
+**Update**, under **Before you update to v0.9.1**.
+
+### Turn it off
+
+Use the switch next to **Automatic updates**. Instance admins only, and **Activity** records it.
+Nothing is installed or reset.
+
+While [canary releases](#stable-or-canary-releases) are on, automatic updates pause, and they come
+back when you switch to stable.
+
+<Callout type="info" title="For hosting providers">
+To manage Deplo's updates yourself, add `DEPLO_AUTO_UPDATE=off` to `/opt/deplo/.env` and run
+`deplo update`. The switch is then locked and reads `Whoever runs this install manages Deplo's updates.`
+</Callout>
+
 ## Release history
 
 **Settings -> Deplo -> Updates**, instance admins only.
@@ -26,6 +77,18 @@ or read logs for about a minute; your sites stay up.
 - The top card says where things stand, like **Deplo is up to date** or **A server needs attention**.
   **Update** appears only when there is something to install; **Check now** asks GitHub again.
 - **What changed** lists the release notes, marked **Installed**, **Update available** or **Canary**.
+
+## Update log
+
+**Settings -> Deplo -> Update log**, instance admins only. Every update of Deplo from the last 90
+days, newest first, however it was started:
+
+| Column | What it shows |
+| --- | --- |
+| **Version** | From and to, like `v0.9.0 -> v0.9.1` |
+| **By** | Who clicked **Update**, **Automatic**, or **Installer** when `deplo update` ran on the machine |
+| **Result** | **Updated**, **Rolled back**, **Failed**, **Skipped**, **Postponed** or **Needs you** |
+| **Details** | Why it rolled back, failed or waited |
 
 ## When a new version is out
 
@@ -36,8 +99,11 @@ Instance admins see it without opening Settings:
   and reads **Security fix**, and the sidebar shows a **Deplo security fix** card with **Update now**.
   The card can't be dismissed: it goes away once you update.
 - **Alerts:** **Deplo update available** and **Deplo security fix** are on by default, under
-  **This Deplo instance**. The security alert repeats every 3 days until you update. See
+  **This Deplo instance**. The security alert repeats every 3 days until you update. A version that
+  will install itself sends no **Deplo update available**. See
   [Notifications and alerts](/guides/observability/notifications-and-alerts).
+- **Automatic updates** send **Automatic update stopped**, on by default, when an update did not
+  take or a release has to be installed by hand, and **Deplo updated itself**, off by default.
 
 ## Stable or canary releases
 
@@ -47,6 +113,7 @@ Instance admins see it without opening Settings:
 - **On:** every new version does, canaries included. They can have bugs: not for production.
 
 The switch installs nothing by itself, and turning it off never moves a canary panel back to stable.
+While it is on, [automatic updates](#automatic-updates) pause.
 **Activity** records the change.
 
 ## Update the control plane

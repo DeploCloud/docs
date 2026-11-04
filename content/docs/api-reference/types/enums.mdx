@@ -71,6 +71,26 @@ What this Deplo can do with a server's agent.
 | `starting` |  |
 | `stopping` |  |
 
+### AutoUpdateBlock
+
+Why the automatic updates are paused. The admin's choice is kept and comes back when this goes.
+
+| Value | Description |
+| --- | --- |
+| `canary` | Canary versions install only by hand. |
+| `host` | The machine Deplo runs on is not one of its servers, so it cannot update itself. |
+| `provider` | DEPLO_AUTO_UPDATE=off on this install: whoever runs it manages updates. |
+
+### AutoUpdateTimezoneSource
+
+Where the automatic updates' timezone comes from.
+
+| Value | Description |
+| --- | --- |
+| `default` | UTC: the machine reports UTC and nobody picked one. |
+| `server` | The machine Deplo runs on. |
+| `set` | An instance admin picked it. |
+
 ### BackupRunStatus
 
 | Value | Description |
@@ -272,6 +292,30 @@ skipped = left out: an instance admin skipped it after it failed, or the move fi
 | `failed` |  |
 | `skipped` |  |
 | `waiting` |  |
+
+### DeploUpdateOutcome
+
+How an update of Deplo ended.
+
+| Value | Description |
+| --- | --- |
+| `failed` | The update never started, or never finished. |
+| `held` | The automatic updates stopped on this version: it has to be installed by hand. |
+| `postponed` | An instance admin skipped a night. |
+| `rolled_back` | The new version did not start, so the installer put the previous one back. |
+| `running` | Started, and Deplo has not restarted yet. |
+| `skipped` | An automatic check found work a restart would break, and waited. |
+| `updated` | Deplo came back on the new version. |
+
+### DeploUpdateTrigger
+
+What started an update of Deplo.
+
+| Value | Description |
+| --- | --- |
+| `automatic` | Deplo installed it on its own schedule. |
+| `button` | An instance admin clicked Update. |
+| `host` | The installer ran on the machine Deplo runs on, outside the panel. |
 
 ### DeploymentEnvironment
 

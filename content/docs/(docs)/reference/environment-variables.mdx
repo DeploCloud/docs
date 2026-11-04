@@ -30,6 +30,7 @@ Read by the panel container. `install.sh` sets them in `/opt/deplo/docker-compos
     DEPLO_DATABASE_POOL_MAX: { type: "number", default: "10", description: "Cap on the Postgres connection pool." },
     DEPLO_DATA_DIR: { type: "path", default: "/data", description: "Staging directory for builds and uploads, /opt/deplo/data on the host. Not a data store." },
     DEPLO_TAKEOVER: { type: "dokploy | coolify", description: "Set by the installer when it is replacing an existing panel on this machine. Seeds the takeover wizard once. See Migrations." },
+    DEPLO_AUTO_UPDATE: { type: "off", description: "Turns the automatic updates off for this install and locks their switch in Settings -> Deplo -> Updates, for whoever manages Deplo's updates themselves. install.sh passes it from /opt/deplo/.env." },
     DO_NOT_TRACK: { type: "string", description: "Any value but empty, 0 or false turns Anonymous usage statistics off for good; the switch then shows Turned off by the install. install.sh does not set it." },
     DEPLO_MONITORING_FORCE_POLL: { type: "1", description: "Forces the whole fleet onto polled metrics instead of the telemetry stream. A diagnostic, not a setting to leave on." },
     NODE_ENV: { type: "string", description: "Decides whether a missing DEPLO_SECRET is fatal. The image sets production; do not unset it." },

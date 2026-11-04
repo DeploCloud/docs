@@ -333,6 +333,23 @@ query {
 }
 ```
 
+### `deploUpdateLog`
+
+Instance admin only. Returns [`[DeploUpdateLogEntry!]`](/api-reference/types/objects#deploupdatelogentry).
+
+Every update of Deplo in the last 90 days, newest first: who or what started it and how it ended.
+
+```graphql
+query {
+  deploUpdateLog {
+    id
+    actor
+    at
+    finishedAt
+  }
+}
+```
+
 ### `checkForUpdates`
 
 Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
@@ -401,6 +418,71 @@ Offer canary (pre-release) versions of Deplo as updates, or go back to stable on
 ```graphql
 mutation {
   setCanaryReleases(enabled: true) {
+    current
+    latest
+    next
+    updateAvailable
+  }
+}
+```
+
+## Automatic updates
+
+On by default for stable releases: three checks an hour apart, from `hour` in `timezone`. `updateInfo.automatic` says when `next` installs itself, or why it waits.
+
+### `setAutoUpdates`
+
+Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
+
+Turn the automatic updates on or off, or move their three hourly checks. Omitted arguments keep their value; an empty `timezone` follows the machine's own again.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `enabled` | `Boolean` |  |
+| `hour` | `Int` | 0-23, the first check. |
+| `timezone` | `String` | An IANA zone, like "Europe/Rome". |
+
+```graphql
+mutation {
+  setAutoUpdates(enabled: true) {
+    current
+    latest
+    next
+    updateAvailable
+  }
+}
+```
+
+### `postponeAutoUpdate`
+
+Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
+
+Skip the next night of automatic updates, or the one after a night already skipped. Recorded in the update log.
+
+```graphql
+mutation {
+  postponeAutoUpdate {
+    current
+    latest
+    next
+    updateAvailable
+  }
+}
+```
+
+### `adoptAutoUpdateTimezone`
+
+Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
+
+Offer the admin's own timezone for a machine that reports UTC. Changes nothing once a timezone is set or the machine names one.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `timezone` | `String!` |  |
+
+```graphql
+mutation {
+  adoptAutoUpdateTimezone(timezone: "Europe/Rome") {
     current
     latest
     next
