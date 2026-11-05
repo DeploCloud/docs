@@ -104,9 +104,10 @@ Deplo's GitHub App needs two more permissions to create a repository:
 | **Administration**: Read and write | Creating the new repository               |
 | **Contents**: Read and write       | Putting your code in it                   |
 
-A GitHub App connected from a recent Deplo asks for both. An older one shows a warning in the
-wizard with a link to its settings: add the two permissions there, then accept them on the
-account it is installed on.
+A GitHub App connected from a recent Deplo already has both. An older one shows **Recreate GitHub
+App** in the wizard: GitHub creates a new App with everything it needs, you install it on the same
+account, and your apps move to it on their own. The old App leaves that account, and you can delete
+it from your GitHub settings once nothing else uses it.
 
 Deplo only creates a repository and writes its first commit. It never deletes or changes another
 one, and the access it hands a server to build is read-only.
@@ -129,7 +130,7 @@ person who owns it. Organisations skip this step.
 | This Deploy button has to link to a public GitHub or GitLab repository.       | Check the link after `repo=` or `compose=`.                                  |
 | `acme/app` isn't a public GitHub repository, or it doesn't exist.             | Make the repository public, or fix the name.                                 |
 | `acme/app` has no `compose.yml` on `main`.                                    | The compose link names a file or branch that isn't there.                    |
-| Deplo's GitHub App can't create repositories on `acme` yet.                   | Add the two permissions above, then accept them on GitHub.                   |
+| Deplo's GitHub App on `acme` can't create repositories.                       | Click **Recreate GitHub App** in the wizard.                                 |
 | Sign in to GitHub as `jane` to create a repository there.                     | Click **Sign in with GitHub** in the wizard, as that account.                |
 | `acme` already has a repository called `app`. Pick another name.              | Change **Repository name**.                                                  |
 | Deplo created `https://github.com/acme/app` but couldn't copy the code into it. | Delete that empty repository on GitHub, then try again.                    |
