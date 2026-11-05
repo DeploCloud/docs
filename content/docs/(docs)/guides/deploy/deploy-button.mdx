@@ -1,33 +1,30 @@
 ---
 title: Deploy button
-description: One link in your README deploys your project on the reader's own Deplo.
+description: One link in your README copies your project into the reader's Git account and deploys it on their own Deplo.
 ---
 
-import { Layers, LayoutTemplate, Palette } from "lucide-react";
+import { Layers, GitBranch, Palette } from "lucide-react";
 
 The **Deploy on Deplo** button puts your project one click away from anyone who runs Deplo. It
-opens **their** Deplo, on **their** server, with your stack already filled in.
-
-<DeployButton compose="https://github.com/DeploCloud/templates/blob/main/src/templates/actual-budget/default/docker-compose.yml" />
-
-Try it: the button above deploys [Actual Budget](https://actualbudget.org) on your Deplo.
+opens **their** Deplo, copies your code into a new repository in **their** Git account, and puts it
+online on **their** server. Every push to that repository deploys again.
 
 ## Quick start
 
-Copy a snippet and put the link to your `docker-compose.yml` after `compose=`.
+Copy a snippet and put your repository's address after `repo=`.
 
 <Tabs items={["Markdown", "HTML", "URL"]}>
 <Tab value="Markdown">
 
 ```md
-[![Deploy on Deplo](https://deplo.build/button.svg)](https://deplo.build/deploy?compose=https://github.com/acme/app/blob/v1.2.0/docker-compose.yml)
+[![Deploy on Deplo](https://deplo.build/button.svg)](https://deplo.build/deploy?repo=https://github.com/acme/app)
 ```
 
 </Tab>
 <Tab value="HTML">
 
 ```html
-<a href="https://deplo.build/deploy?compose=https://github.com/acme/app/blob/v1.2.0/docker-compose.yml">
+<a href="https://deplo.build/deploy?repo=https://github.com/acme/app">
   <img src="https://deplo.build/button.svg" alt="Deploy on Deplo" height="40" />
 </a>
 ```
@@ -36,108 +33,107 @@ Copy a snippet and put the link to your `docker-compose.yml` after `compose=`.
 <Tab value="URL">
 
 ```
-https://deplo.build/deploy?compose=https://github.com/acme/app/blob/v1.2.0/docker-compose.yml
+https://deplo.build/deploy?repo=https://github.com/acme/app
 ```
 
 </Tab>
 </Tabs>
 
-`compose` is the only parameter: an `https` link to the file. A GitHub or GitLab page link works,
-Deplo turns it into the raw file. No account, nothing to register.
+The repository has to be **public**, on GitHub or GitLab. No account, nothing to register.
 
 ## What happens on click
 
-1. **deplo.build finds their Deplo.** The first time, it asks for its address, like
-   `deplo.acme.com`. After that, a 3-second countdown, with **Deploy now**, **Change instance**
-   and **Cancel**.
-2. **Their Deplo reads your files**: your `docker-compose.yml`, plus a `template.toml` and a logo
-   if they sit next to it. They sign in if needed, and land in the new-app wizard of the last
-   team they used.
-3. **They review and deploy.** The wizard is the one a [template](/guides/deploy/from-template)
-   opens, with the warning **Not from the Deplo catalog. Review it before you deploy.** and **Edit
-   compose** to read the stack. Nothing is created until they click **Deploy**.
+<Steps>
+<Step>
 
-## Configure the deploy
+**deplo.build finds their Deplo.** The first time, it asks for its address, like
+`deplo.acme.com`. After that, a 3-second countdown, with **Deploy now**, **Change instance** and
+**Cancel**.
 
-Put these in the same folder as the compose file:
+</Step>
+<Step>
 
-```
-acme-app/
-├── docker-compose.yml   the stack (required)
-├── template.toml        variables, secrets, which service gets the domain
-└── logo.svg             the icon (or logo.png)
-```
+**They pick where the copy goes.** The new-app screen shows **Cloning from GitHub**, then:
 
-`template.toml` is the format of the [template catalogue](https://github.com/DeploCloud/templates):
+- **Git account**: any GitHub account, or GitLab, Bitbucket or Gitea account or group, the team
+  has connected.
+- **Repository name**: your project's name to start with. The lock switch makes it private, and
+  it is on by default.
 
-```toml title="template.toml"
-[variables]
-db_password = "${password:32}"
+</Step>
+<Step>
 
-[config]
-mounts = []
+**They review and deploy.** App name, build and start commands, server and variables are the
+same as for any app [from Git](/guides/deploy/from-git). Nothing is created until they click
+**Deploy**.
 
-[[config.domains]]
-serviceName = "web"
-port = 3000
-host = "${domain}"
+</Step>
+</Steps>
 
-[config.env]
-DATABASE_PASSWORD = "${db_password}"
-```
+Deplo then creates the repository with your code in one commit, `Initial commit from
+https://github.com/acme/app (main)`, and builds it with Railpack, which works out most languages
+and frameworks on its own.
 
-| Helper | Becomes |
-| --- | --- |
-| `${password:32}` | A random secret of that length. `secret`, `jwt` and `base64` work too. |
-| `${hash:64}` | A random hex string of that length. |
-| `${uuid}` | A random UUID. |
-| `${domain}` | The address Deplo gives the app. |
+## Pick a branch or a compose file
 
-Without a `template.toml`, Deplo picks the web service and its port itself, and the reader fills
-in any variables.
+| Link                                                                           | Deploys                                            |
+| ------------------------------------------------------------------------------ | -------------------------------------------------- |
+| `?repo=https://github.com/acme/app`                                            | The default branch, built with Railpack            |
+| `?repo=https://github.com/acme/app/tree/v1.2.0`                                | The `v1.2.0` tag or branch                         |
+| `?repo=https://github.com/acme/app&compose=https://github.com/acme/app/blob/main/docker-compose.yml` | `main`, built with that compose file |
+| `?compose=https://github.com/acme/app/blob/v1.2.0/deploy/compose.yml`          | `v1.2.0`, built with `deploy/compose.yml`          |
 
-## Pin a version
+A `compose=` link alone names the repository too. When both are there, they must point at the
+same repository. GitLab links work the same way: `https://gitlab.com/acme/app/-/blob/main/compose.yml`.
 
-The file is read when someone clicks, not when you write the link. Link a tag, like
-`/blob/v1.2.0/docker-compose.yml`, and every reader gets `v1.2.0`. Link `/blob/main/` and they
-get whatever is on `main` that day.
+<Callout type="info" title="Older compose links">
+  A `compose=` link to a file anywhere other than GitHub or GitLab still opens the template wizard,
+  as before: Deplo reads that one file, plus a `template.toml` and a logo beside it.
+</Callout>
+
+## Before the first deploy from GitHub
+
+Deplo's GitHub App needs two more permissions to create a repository:
+
+| Permission                         | Used for                                  |
+| ---------------------------------- | ----------------------------------------- |
+| **Administration**: Read and write | Creating the new repository               |
+| **Contents**: Read and write       | Putting your code in it                   |
+
+A GitHub App connected from a recent Deplo asks for both. An older one shows a warning in the
+wizard with a link to its settings: add the two permissions there, then accept them on the
+account it is installed on.
+
+Deplo only creates a repository and writes its first commit. It never deletes or changes another
+one, and the access it hands a server to build is read-only.
+
+**A personal GitHub account** needs one more step: the first time, **Sign in with GitHub** in the
+wizard, as that account. GitHub only lets an app create a repository in a personal account for the
+person who owns it. Organisations skip this step.
 
 ## Limits
 
-- **A public https link.** Private repositories are not supported.
-- **Images only.** A service with `build:` and no `image:` needs the repository: deploy it
-  [from Git](/guides/deploy/from-git) instead.
-- **Only the three files above are read.** An `env_file:` or a config file beside the compose is
-  not: ship it as a `[[config.mounts]]` entry in `template.toml`.
-- **Sizes:** compose 256 KiB, `template.toml` 64 KiB, logo 2 MiB. All three within 10 seconds.
-- **Needs a Deplo newer than 0.3.0.** An older one opens an empty wizard.
-
-<Callout type="info" title="The reader's address stays in their browser">
-  deplo.build keeps the address of their Deplo in their browser only, and never receives it. It
-  counts clicks per repository, and not even that once they turn statistics off on the
-  [privacy page](https://deplo.build/privacy). **Forget** on
-  [deplo.build/deploy](https://deplo.build/deploy) removes the address.
-</Callout>
+- **Public GitHub or GitLab repositories.** Private ones, and other hosts, are not supported.
+- **Size:** 50 MiB download, 150 MiB of files, 5,000 files.
+- **Symbolic links** in the repository are left out of the copy.
+- **Needs Deplo 0.8.2 or later.** An older one opens an empty new-app screen.
 
 ## Troubleshooting
 
-Deplo shows these under **That compose file isn't available**. The first one comes from
-deplo.build itself.
-
-| Message | What to do |
-| --- | --- |
-| This button's link is broken: it has to point at an https compose file. | The link after `compose=` is missing or not `https://`. |
-| `raw.githubusercontent.com` has no file at this address. | Check the link, the tag and that the repository is public. |
-| This file isn't a Compose file: it has no services. | The link points at a web page, not at the file. Link the file itself. |
-| The "web" service builds from source, which needs the repository. | Publish an image and use `image:`, or deploy from Git. |
-| The compose file is too large (256 KiB max). | Trim it, or split it into several apps. |
-| The compose URL must not point at a private or internal address | The file has to be on the public internet. |
-| `raw.githubusercontent.com` took too long to answer. | Try again: the file host is slow or down. |
+| Message                                                                       | What to do                                                                   |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| This Deploy button has to link to a public GitHub or GitLab repository.       | Check the link after `repo=` or `compose=`.                                  |
+| `acme/app` isn't a public GitHub repository, or it doesn't exist.             | Make the repository public, or fix the name.                                 |
+| `acme/app` has no `compose.yml` on `main`.                                    | The compose link names a file or branch that isn't there.                    |
+| Deplo's GitHub App can't create repositories on `acme` yet.                   | Add the two permissions above, then accept them on GitHub.                   |
+| Sign in to GitHub as `jane` to create a repository there.                     | Click **Sign in with GitHub** in the wizard, as that account.                |
+| `acme` already has a repository called `app`. Pick another name.              | Change **Repository name**.                                                  |
+| Deplo created `https://github.com/acme/app` but couldn't copy the code into it. | Delete that empty repository on GitHub, then try again.                    |
 
 ## Next steps
 
 <Cards>
-  <Card icon={<LayoutTemplate className="text-blue-400" />} title="Deploy from a template" description="The catalogue this format comes from" href="/guides/deploy/from-template" />
-  <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="What happens after the stack is created" href="/advanced/compose-apps" />
+  <Card icon={<GitBranch className="text-blue-400" />} title="Deploy from Git" description="What happens after the app is created" href="/guides/deploy/from-git" />
+  <Card icon={<Layers className="text-blue-400" />} title="Compose apps" description="Building with a compose file" href="/advanced/compose-apps" />
   <Card icon={<Palette className="text-blue-400" />} title="Brand kit" description="The Deplo logo for your README, in every format" href="https://deplo.build/brand" />
 </Cards>
