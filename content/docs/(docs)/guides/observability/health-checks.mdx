@@ -17,8 +17,10 @@ shows the answer on its status.
 be installed inside.
 
 <Callout type="info">
-  A health check never changes routing. An unhealthy app keeps serving, so you see the problem
-  instead of losing the app.
+  An HTTP health check never changes routing. An unhealthy app keeps serving, so you see the
+  problem instead of losing the app. With
+  [zero-downtime deploys](/concepts/what-happens-on-a-deploy#zero-downtime-deploys) on, the proxy
+  sends traffic only to a container whose check passes.
 </Callout>
 
 ## Turn one on

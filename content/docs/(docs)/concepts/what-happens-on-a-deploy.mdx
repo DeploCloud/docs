@@ -168,8 +168,45 @@ ones.
   and volume names stay.
 - **It does not roll back on failure.** A failed build leaves the previous version running. An
   app that fails the start check has already replaced it: [roll back](/guides/releases/rollbacks)
-  to the last version that worked. See
+  to the last version that worked, or turn on [zero-downtime deploys](#zero-downtime-deploys). See
   [App status](/concepts/apps-projects-and-environments#app-status-is-intent-not-observation).
+
+## Zero-downtime deploys
+
+**Beta**, off by default. Turn it on per app in **Settings -> Advanced -> Zero-downtime deploys**.
+It applies from the next deploy.
+
+Normally the old container stops before the new one starts, so the app is offline while it boots.
+With zero-downtime deploys on, a redeploy keeps the old version online until the new one is ready:
+
+1. **A copy of the new version starts beside the old one.** It gets no traffic until it answers on
+   its port.
+2. **Traffic is shared** between the two once the copy is ready.
+3. **The old container is replaced** while the copy serves.
+4. **The copy is removed** once the new container is ready.
+
+Apps that reach this one by its name keep reaching a running copy the whole time.
+
+**If the new version never gets ready**, the copy is removed, the deploy fails, and the old version
+never stopped. One exception: an app with storage (a volume, a host folder or Files) may refuse a
+second copy, for example a lock file or an embedded database. Deplo then removes the copy and swaps
+in place, so the deploy still goes through, with the usual short outage.
+
+**It swaps in place instead**, and the log says why, when:
+
+- the app publishes ports on the server: two copies cannot hold the same port
+- the deploy changes the app's domains
+- nothing is running yet (the first deploy, or a stopped app)
+- the server's agent is too old, or its Docker is older than version 25
+
+Good to know:
+
+- **Compose stacks** always swap in place: the setting is shown only for single-image apps.
+- **The new version starts twice**, once as the copy and once as the container. A migration that
+  runs at startup runs twice, and the old version is still serving while it runs.
+- **Without a health check of its own**, the app gets one that checks its port is open. The proxy
+  sends traffic only to a container whose check passes.
+- **A second or two** of errors is still possible while a stopped container leaves the proxy.
 
 ## A rollback is much shorter
 
