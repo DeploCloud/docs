@@ -24,8 +24,11 @@ not.
 | A **Command** health check | Docker runs your command inside the container | Docker calls it unhealthy |
 | No domain, no health check | Nothing | Never. A crash still restarts it |
 
-- **Any HTTP answer counts as answering**, a `404` or a `500` included. No answer in time, or a
-  refused connection, is a failure. An app that answers `404` on `/` is never restarted for it.
+- **For the default check, any HTTP answer counts as answering**, a `404` or a `500` included. No
+  answer in time, or a refused connection, is a failure. An app that answers `404` on `/` is never
+  restarted for it.
+- **For your own HTTP request check, a status of 400 or above is a failure.** The **Path** field
+  says: "The path Deplo asks for. Anything under 400 is healthy."
 - **Nothing counts while the app boots**: 60 seconds after a start for the default check, your
   **Start period** for your own.
 - **Nothing counts during a deploy**, or while a
@@ -33,15 +36,18 @@ not.
   the new version running.
 - **Each replica is checked on its own.** One stuck [replica](/advanced/replicas) is restarted
   while the others keep serving.
-- **A Compose app** gets the default check on the service that has the domain. Its own
-  `healthcheck:` stays in its Compose file.
+- **A Compose app** gets the default check on the service that has the domain. When that service
+  declares a `healthcheck:` in the compose file you edit in Deplo, the app is restarted on that
+  check's verdict instead. A compose file that lives in the repository still gets `GET /`.
+- **A pull request preview** is checked and restarted the same way, on its own.
 
 ## When an app stops answering
 
 1. **The server restarts it.** Activity gets an entry by Deplo:
    `Restarted web: it stopped answering for 90 s`.
-2. **The alert "App stopped answering" goes out** at the first restart: "It was up but did not answer
-   for 90 s, so Deplo restarted it." When it answers again you get "It answers again."
+2. **The alert "App stopped answering" goes out** at the first restart, titled `web stopped
+   answering`: "It was up but did not answer for 90 s, so Deplo restarted it." When it answers
+   again you get `web is running again`: "It answers again."
 3. **After 5 restarts in 30 minutes, restarting pauses.** The app is **not stopped**: a half-working
    app still serves the visitors it can. Its status reads **Not answering · restarts paused**,
    Activity says `Paused restarts for web: it restarted 5 times in 30 minutes and still does not
@@ -51,6 +57,25 @@ not.
 
 Both alerts are on by default. See
 [Notifications and alerts](/guides/observability/notifications-and-alerts).
+
+### What you are told, and how often
+
+- **Every restart is an Activity entry.** The alert is quieter: after the first one, no second
+  "App stopped answering" for 30 minutes, however many restarts follow.
+- **"App still not answering" goes out once per pause**, titled `web is still not answering`. A
+  new pause after restarting resumed alerts again.
+- **`web is running again` is sent once**, when the app answers after either alert went out. It is
+  never sent for a restart nobody was alerted about.
+- **A restart or an update of Deplo loses none of this**: nothing is repeated, and a recovery is
+  still announced.
+
+| Activity says | For |
+| --- | --- |
+| `Restarted web: it stopped answering for 90 s` | An app with one replica |
+| `Restarted web replica web-2: it stopped answering for 90 s` | One of several [replicas](/advanced/replicas) |
+| `Restarted web replica web-1 on server-b: it stopped answering for 90 s` | A replica of an app spread over the servers of a [cluster](/operations/clusters/replicas-and-architectures) |
+| `Restarted the preview for pull request #7 of web: it stopped answering for 90 s` | A pull request preview |
+| `Paused restarts for the preview for pull request #7 of web: it restarted 5 times in 30 minutes and still does not answer` | A pull request preview. **A preview's restarts never alert** |
 
 <Callout type="info">
   This is not [restart loop protection](/guides/observability/logs#restart-loop-protection). That
@@ -66,7 +91,8 @@ Turn it off for an app that is meant to be slow to answer.
 
 | The row says | What it means |
 | --- | --- |
-| "Restarts the app after 3 failed checks in a row." | It is on |
+| "Restarts the app after 3 failed checks in a row. With no health check of its own, any answer on / counts." | It is on, with the default check |
+| "Restarts the app when it keeps failing its own health check." | It is on, for an app with its own health check |
 | "Not answering · restarts paused. It resumes after your next deploy, a manual restart, or 30 quiet minutes." | Restarting is paused for this app |
 | "Automatic restart needs a newer server agent. Deplo updates it on its own." | The server cannot do it yet. Nothing to do: wait for the update |
 
@@ -120,7 +146,9 @@ The answer shows on the app's status badge, on the Overview, and in the containe
 restart acts on.
 
 - **Healthy**: the last check was answered.
-- **Unhealthy**: enough failures in a row to restart it. Running, but not working.
+- **Unhealthy**: enough failures in a row to restart it. Running, but not working. An app the
+  server restarted for not answering reads unhealthy, on the Overview too, **until it answers
+  again**.
 - **Starting**: inside the start period, so a failure means the app is still booting.
 - **No result**: nothing checks this app, or the server has not checked it yet. It never reads as
   healthy by default.
