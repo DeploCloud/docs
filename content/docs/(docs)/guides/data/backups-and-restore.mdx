@@ -34,6 +34,10 @@ leaves that server, with one key pair per destination. Nothing in between can re
 A folder on any of your servers, including a [storage-only](/advanced/server-roles) one. Backups of
 apps on other servers are copied there.
 
+Inside a [cluster](/operations/clusters/failover#data-left-on-the-server), one kind of backup
+reaches that server without passing through Deplo: what a server still held when it came back
+after a failover. It is encrypted the same way before it leaves.
+
 Leave **Advanced -> Folder** empty and Deplo manages it. A custom folder (instance admins only) is
 an absolute path that already exists and is empty the first time.
 
