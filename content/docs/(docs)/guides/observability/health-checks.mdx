@@ -1,29 +1,81 @@
 ---
-title: Health checks
-description: Check that an app is really working, not just running.
+title: Health checks and automatic restarts
+description: Deplo checks that an app answers, restarts it when it stops, and tells you when a restart did not help.
 ---
 
 import { Gauge, Bell, Terminal } from "lucide-react";
 
-A running container is not always a working app. A health check asks the app on a schedule and
-shows the answer on its status.
+A running container is not always a working app. It can be up and answer nobody: a stuck process, a
+deadlock. Deplo asks every app with a domain whether it still answers, and restarts it when it does
+not.
 
-| Kind | What it asks | Who asks | Applies |
-| --- | --- | --- | --- |
-| **HTTP request** | A path, over the server's own network. Under 400 is healthy | Deplo, through the agent | At once |
-| **Command** | A shell line inside the container. Exit 0 is healthy | Docker, as a Compose `healthcheck:` | On the next deploy |
+- **On by default.** An app with a domain is checked even if nobody set a health check.
+- **The server does the asking**, not the panel. It keeps checking and restarting while Deplo
+  itself is down.
+- **You are told**: every restart is in [Activity](/guides/team/activity), and an alert goes out
+  at the first one.
 
-**The HTTP check works on any image**: it asks from outside the container, so nothing needs to
-be installed inside.
+## What gets checked
+
+| The app has | What the server asks | Restarted after |
+| --- | --- | --- |
+| A domain, no health check | `GET /` on the app's port every 30 seconds, 10 seconds to answer | 3 failures in a row |
+| An **HTTP request** health check | Your path and port, on your timings | **Retries** failures in a row |
+| A **Command** health check | Docker runs your command inside the container | Docker calls it unhealthy |
+| No domain, no health check | Nothing | Never. A crash still restarts it |
+
+- **Any HTTP answer counts as answering**, a `404` or a `500` included. No answer in time, or a
+  refused connection, is a failure. An app that answers `404` on `/` is never restarted for it.
+- **Nothing counts while the app boots**: 60 seconds after a start for the default check, your
+  **Start period** for your own.
+- **Nothing counts during a deploy**, or while a
+  [zero-downtime deploy](/concepts/what-happens-on-a-deploy#zero-downtime-deploys) has its copy of
+  the new version running.
+- **Each replica is checked on its own.** One stuck [replica](/advanced/replicas) is restarted
+  while the others keep serving.
+- **A Compose app** gets the default check on the service that has the domain. Its own
+  `healthcheck:` stays in its Compose file.
+
+## When an app stops answering
+
+1. **The server restarts it.** Activity gets an entry by Deplo:
+   `Restarted web: it stopped answering for 90 s`.
+2. **The alert "App stopped answering" goes out** at the first restart: "It was up but did not answer
+   for 90 s, so Deplo restarted it." When it answers again you get "It answers again."
+3. **After 5 restarts in 30 minutes, restarting pauses.** The app is **not stopped**: a half-working
+   app still serves the visitors it can. Its status reads **Not answering · restarts paused**,
+   Activity says `Paused restarts for web: it restarted 5 times in 30 minutes and still does not
+   answer`, and the alert **App still not answering** goes out. The logs have why.
+4. **Restarting resumes on its own** after your next deploy, a manual restart, or 30 quiet minutes
+   (no failed check). Activity says which: `Resumed restarts for web after a deploy`.
+
+Both alerts are on by default. See
+[Notifications and alerts](/guides/observability/notifications-and-alerts).
 
 <Callout type="info">
-  An HTTP health check never changes routing. An unhealthy app keeps serving, so you see the
-  problem instead of losing the app. With
-  [zero-downtime deploys](/concepts/what-happens-on-a-deploy#zero-downtime-deploys) on, the proxy
-  sends traffic only to a container whose check passes.
+  This is not [restart loop protection](/guides/observability/logs#restart-loop-protection). That
+  one stops an app that keeps **crashing**. This one restarts an app that is **up and silent**.
 </Callout>
 
-## Turn one on
+## Turn automatic restart off
+
+Open the app, then **Settings -> Advanced -> Restart when it stops answering**. It needs
+**Configure apps** and applies from the next deploy.
+
+Turn it off for an app that is meant to be slow to answer.
+
+| The row says | What it means |
+| --- | --- |
+| "Restarts the app after 3 failed checks in a row." | It is on |
+| "Not answering · restarts paused. It resumes after your next deploy, a manual restart, or 30 quiet minutes." | Restarting is paused for this app |
+| "Automatic restart needs a newer server agent. Deplo updates it on its own." | The server cannot do it yet. Nothing to do: wait for the update |
+
+Off, an **HTTP request** health check is no longer asked either, so the app shows no health result.
+
+## Set your own health check [#turn-one-on]
+
+Your own check replaces the default one, so "answering" means what you say it means. Single-image
+apps only.
 
 <Steps>
 <Step>
@@ -38,7 +90,7 @@ Open the app, then **Settings -> Advanced**, and turn on **Health check**.
 ### Pick the kind and fill it in
 
 - **HTTP request**: the **Path** (`/healthz`, or `/`), and a **Port** only if the check answers
-  on a port other than the app's own.
+  on a port other than the app's own. It asks from the server, so it works on any image.
 - **Command**: anything that exits 0 when things are fine, such as `pg_isready -U app` or
   `test -f /tmp/ready`. Pipes and fallbacks work.
 
@@ -53,21 +105,25 @@ All optional:
 | --- | --- | --- |
 | **Interval** | Seconds between checks | 30 |
 | **Timeout** | Seconds one check may take. Must be shorter than the interval | 5 |
-| **Retries** | Failures in a row before the app is unhealthy | 3 |
+| **Retries** | Failures in a row before the app is unhealthy, and restarted | 3 |
 | **Start period** | Seconds of grace while the app boots, when a failure does not count | 10 |
+
+The check reaches the server with the **next deploy**.
 
 </Step>
 </Steps>
 
 ## Reading the result
 
-The answer shows on the app's status badge and in the container breakdown on
-[Monitoring](/guides/observability/monitoring).
+The answer shows on the app's status badge, on the Overview, and in the container breakdown on
+[Monitoring](/guides/observability/monitoring). It is the server's own verdict, the same one the
+restart acts on.
 
-- **Healthy**: the last answer was good, or the failures so far are under **Retries**. One good
-  answer resets the count.
-- **Unhealthy**: **Retries** failures in a row. Running, but not working.
+- **Healthy**: the last check was answered.
+- **Unhealthy**: enough failures in a row to restart it. Running, but not working.
 - **Starting**: inside the start period, so a failure means the app is still booting.
+- **No result**: nothing checks this app, or the server has not checked it yet. It never reads as
+  healthy by default.
 
 <Callout type="warn">
   **Error is not unhealthy.** Error means the last deploy failed. An app can be Error and healthy
@@ -76,17 +132,20 @@ The answer shows on the app's status badge and in the container breakdown on
 
 ## Good to know
 
-- **HTTP results live in the panel's memory.** Restarting Deplo clears them; the next check
-  starts again.
+- **An unhealthy app keeps its traffic.** A check never changes routing. With zero-downtime deploys
+  on, the proxy sends traffic only to a container whose check passes.
 - **A stopped app has no result.** There is nothing to ask.
-- **A failed check sends no alert.** **App keeps restarting** fires on a restart loop, not on a
-  check. See [Notifications and alerts](/guides/observability/notifications-and-alerts).
-- **A database's health check is the engine's own**, written by Deplo. It is not editable.
+- **A worker with no domain** opens no port to ask, so only a crash restarts it. Give it a
+  **Command** health check to have it restarted when it hangs.
+- **A database's health check is the engine's own**, written by Deplo. It is not editable, and a
+  database is not restarted by this rule.
+- **Over the API**: `setAppRestartWhenUnresponsive`, or the MCP tool
+  `set_app_restart_when_unresponsive`.
 
 ## Next steps
 
 <Cards>
   <Card icon={<Gauge className="text-blue-400" />} title="Monitoring" description="Where the container breakdown lives" href="/guides/observability/monitoring" />
-  <Card icon={<Bell className="text-blue-400" />} title="Notifications and alerts" description="Get told when an app starts misbehaving" href="/guides/observability/notifications-and-alerts" />
+  <Card icon={<Bell className="text-blue-400" />} title="Notifications and alerts" description="Get told when an app stops answering" href="/guides/observability/notifications-and-alerts" />
   <Card icon={<Terminal className="text-blue-400" />} title="Console" description="Look inside the container yourself" href="/guides/observability/console" />
 </Cards>
