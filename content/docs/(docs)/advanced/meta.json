@@ -8,6 +8,7 @@
     "build-servers",
     "server-roles",
     "resource-limits",
+    "replicas",
     "published-ports",
     "host-access-and-privileges",
     "custom-certificates"

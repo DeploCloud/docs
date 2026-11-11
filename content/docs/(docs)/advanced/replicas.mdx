@@ -1,0 +1,98 @@
+---
+title: Replicas
+description: Run several copies of one app on its server, with visitors shared between them.
+---
+
+import { HeartPulse, Network, Gauge } from "lucide-react";
+
+A **replica** is one running copy of an app. An app has one unless you ask for more. With more,
+the proxy shares visitors between them, and a deploy never takes the app offline.
+
+- **For a busy app**, or one that must stay up through a deploy.
+- **All replicas run on the app's server.** To survive the loss of a server, put the app on a
+  [cluster](/operations/clusters/replicas-and-architectures).
+- **Replicas share everything but their disk**: the same version, variables, domains and database.
+
+## Set the number
+
+Open the app, then **Settings -> Advanced -> Replicas**, and pick 1 to 10. It needs **Configure
+apps** and applies from the **next deploy**.
+
+- The setting is shown for single-image apps. A Compose app sets it in its own file, see
+  [below](#in-a-compose-app).
+- **"A deploy briefly uses twice the memory while the new copies start."** Size the server for
+  that.
+- A pull request preview always runs one copy.
+
+## An app that keeps data runs one copy
+
+Two copies writing the same files overwrite each other. So more than one replica is refused, with
+the reason, when the app has:
+
+- a **Volume**
+- a **Bind**
+- a [published port](/advanced/published-ports): one copy holds it
+
+> An App that keeps data on its own disk runs one copy. Keep the data in a database to run more.
+
+**Files are fine.** A config file Deplo writes for the app is the same in every copy.
+
+## How a deploy goes
+
+An app with more than one replica always deploys the
+[zero-downtime](/concepts/what-happens-on-a-deploy#zero-downtime-deploys) way, whatever that
+switch says:
+
+1. Every new replica starts beside the old ones.
+2. **Each must be ready before any old one stops.**
+3. If one never gets ready, the deploy fails and the old version keeps serving.
+
+## Keep each visitor on the same replica
+
+By default each request goes to any replica. An app that remembers a visitor in its own memory (a
+session that is not in a database) needs the same replica every time.
+
+**Settings -> Advanced -> Keep each visitor on the same replica**. The switch shows only with more
+than one replica, uses a cookie, and applies from the next deploy.
+
+## In a Compose app
+
+Set `deploy.replicas` on the service, in your own file:
+
+```yaml
+services:
+  web:
+    image: ghcr.io/acme/web:1.4.0
+    deploy:
+      replicas: 3
+```
+
+The same rule applies, with the same message: a service with `replicas` above 1 may not mount a
+named volume or a host path, nor publish a port. It is checked when you save and again at the
+deploy.
+
+## Reading an app with replicas
+
+| Where | What changes |
+| --- | --- |
+| [Logs](/guides/observability/logs) | One stream for the app, each line tagged with its replica: `web-1`, `web-2` |
+| [Console](/guides/observability/console) | The container picker asks which replica to open |
+| [Monitoring](/guides/observability/monitoring) | The app's total, with every replica in the container breakdown |
+| [Automatic restart](/guides/observability/health-checks) | Per replica: one stuck copy is restarted while the others serve |
+
+## Good to know
+
+- **"This server's agent is too old to run more than one copy of an App. Deplo updates the agent
+  on its own."** Until then more than one cannot be picked, and a deploy that asks for more fails
+  instead of quietly running one.
+- **Replicas are not added under load.** The number is the one you set.
+- **Over the API**: `setAppReplicas` and `setAppStickySessions`, or the MCP tools
+  `set_app_replicas` and `set_app_sticky_sessions`.
+
+## Next steps
+
+<Cards>
+  <Card icon={<Network className="text-blue-400" />} title="Replicas across servers" description="On a cluster, replicas spread over its servers" href="/operations/clusters/replicas-and-architectures" />
+  <Card icon={<HeartPulse className="text-blue-400" />} title="Health checks and automatic restarts" description="What restarts a replica that stops answering" href="/guides/observability/health-checks" />
+  <Card icon={<Gauge className="text-blue-400" />} title="Resource limits" description="Cap the memory and CPU the app may take" href="/advanced/resource-limits" />
+</Cards>
