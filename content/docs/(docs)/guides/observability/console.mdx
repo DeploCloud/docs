@@ -80,6 +80,9 @@ scratch), lines run as raw exec: the first word is the binary, the rest are lite
 - **`open_app_console` and `open_database_console` are separate, sensitive capabilities.** A
   console runs any code as the container's user.
 - **A stopped app has no container to enter.**
+- **An app with [replicas](/advanced/replicas)** asks which one to open. On a cluster the picker
+  lists the copies on every server. See
+  [Console on a cluster](/operations/clusters/logs-metrics-and-previews#console-and-containers).
 - **This is not a way onto the host.** Reaching the server itself needs
   [host access](/advanced/host-access-and-privileges).
 

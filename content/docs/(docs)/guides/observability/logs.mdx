@@ -92,6 +92,9 @@ database's **Settings -> Advanced**. It applies at once, with no redeploy.
 
 - **This is a live tail with filters, not a log search engine.**
 - **A crash loop still streams.** You see each attempt's output.
+- **An app with [replicas](/advanced/replicas)** is one stream, each line tagged with its replica:
+  `web-1`, `web-2`. On a cluster the tag names the server too. See
+  [Logs on a cluster](/operations/clusters/logs-metrics-and-previews#logs).
 - **`view_logs` is its own capability**, grantable per folder. Without it, an app shows a closed
   state, not an empty pane.
 

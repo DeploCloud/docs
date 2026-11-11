@@ -112,12 +112,16 @@ The main fields, then **Advanced** for the rest:
 | **Timed out** | It hit the per-attempt timeout | Cron job failed |
 | **Skipped** | It never started: the container was stopped, or the previous run was still going | None |
 | **Unknown** | The agent could not report the result. Not retried, since the command may have finished | Cron job failed, "outcome unknown" |
+| **Lost: its server stopped** | Only on a [cluster](/operations/clusters/logs-metrics-and-previews#cron-jobs): the server stopped while the run was going, so the command may be half done. Never retried, whatever **attempts** says | Cron job lost with its server |
 
 - Retries share one row: three attempts are one run with an attempt counter.
 - The stored output is the last 16 KiB of the last attempt.
 - **Run now** starts a run marked with who triggered it. **Stop this run** stops the command and
   everything it started.
 - A job that keeps failing alerts once every 30 minutes, not on every run.
+- **Lost is not Unknown.** Unknown means Deplo lost track of a run on a server that is still there,
+  so the command most likely finished. A lost row has its own **Run now**, which starts a new run on
+  the server running the app now.
 
 ## Good to know
 

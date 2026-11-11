@@ -87,13 +87,13 @@ Same place: **More -> This phone -> Notifications on this phone**. It covers the
 ## Pick what each channel is told about
 
 Open the channel and use its alert picker: a search box, a category list, **Reset to defaults**
-and **Unselect all**. The 42 alerts:
+and **Unselect all**. The 47 alerts:
 
 | Category | Alerts |
 | --- | --- |
 | **Deployments** | Deployment failed, Deployment succeeded, Deployment interrupted, Git connection stopped working, Git provider is missing access |
-| **Apps** | App keeps restarting, App ran out of memory, [Security update available](/guides/observability/security-updates#alerts) |
-| **Cron jobs** | Cron job failed, Cron job finished |
+| **Apps** | App keeps restarting, [App stopped answering, App still not answering](/guides/observability/health-checks#when-an-app-stops-answering), [Apps waiting for room after a failover](/operations/clusters/failover#waiting-for-room), [Server back in its cluster](/operations/clusters/failover#when-a-server-comes-back), App ran out of memory, [Security update available](/guides/observability/security-updates#alerts) |
+| **Cron jobs** | Cron job failed, Cron job finished, [Cron job lost with its server](/operations/clusters/logs-metrics-and-previews#cron-jobs) |
 | **Databases** | Database ready, Database setup failed, Database rebuilt, Database deleted |
 | **Backups & restore** | Backup failed, Backup finished, Restore finished, Restore failed |
 | **Servers** | Server offline, Server back online, Server cannot run apps, Server identity changed, Server unusable until it updates, Server running hot, Server disk almost full, Server agent certificate not renewed, Cleanup failed, Leftover containers |

@@ -94,6 +94,14 @@ connection the server opens itself: no port to open, and HTTPS is Cloudflare's.
 **Updates keep the tunnel.** If a server's proxy loses the connector anyway, Deplo puts it back
 within ten minutes.
 
+**A tunnel-served domain needs no certificate.** Its editor shows no HTTPS fields and says:
+"Cloudflare serves this domain through a tunnel, HTTPS included: it needs no certificate of its
+own."
+
+**On a cluster, each app with a domain in a connected zone gets a tunnel of its own**, with or
+without this switch, so the domain keeps one address when the app moves to another server. See
+[Addresses and Cloudflare](/operations/clusters/addresses).
+
 ## What Deplo deletes
 
 Only the records it created. A record that was already there is never touched.

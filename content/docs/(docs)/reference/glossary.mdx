@@ -24,6 +24,8 @@ One line per term, spelled the way the dashboard and these docs spell it.
 | **Canary release** | A pre-release of the next Deplo version, `x.y.z-canary.n`. Off by default; an instance admin opts in under **Settings -> Deplo -> Advanced**. |
 | **Capability** | One action a member may take. There are 46, and `view` is the always-on floor. Never called a permission, a scope or a grant. |
 | **Certificate provider** | Where a domain's TLS certificate comes from: none, Let's Encrypt, Cloudflare, or one installed on the server. |
+| **Cluster** | Several servers that act as one. An app or database is placed on the cluster, never on one of its servers, and the cluster decides which server runs it. See [Clusters](/operations/clusters). |
+| **Cluster leader** | The part of a cluster that decides which server runs what and orders a failover. It runs on Deplo's own machine unless an admin runs it on another server. |
 | **Connected client** | A web AI application that reached Deplo through the OAuth consent screen. |
 | **Control plane** | The panel: the dashboard, the API, the database and the rendering. It never runs Docker. |
 | **Cloudflare Tunnel** | An optional way in to the panel for a machine that cannot accept incoming connections, set up under **Settings -> Deplo -> Advanced**. |
@@ -33,6 +35,7 @@ One line per term, spelled the way the dashboard and these docs spell it.
 | **Deployment** | One build and release, with its own logs, status and image. |
 | **Domain** | One routing row, keyed on hostname plus path. |
 | **Environment** | An isolated deploy target inside a Project, with its own apps, branch and variables. |
+| **Failover** | A cluster moving an app, unasked, off a server that stopped answering and onto another one. An app on a server outside a cluster never fails over. |
 | **Folder** | A team-wide grouping with an owner, which nests and can be shared. |
 | **Framework** | What Deplo detected in your repository. A fact about the code, never a setting: re-derived on every deploy. |
 | **Git connection** | Stored credentials for one git host, reused by every app deploying from it. |
@@ -50,6 +53,7 @@ One line per term, spelled the way the dashboard and these docs spell it.
 | **Pull request preview** | An ephemeral stack for one open pull request, at a deterministic URL, destroyed when it closes. |
 | **Recovery key** | The private half of a server backup destination's encryption key, which decrypts its artifacts with no Deplo involved. |
 | **Registration link** | A single-use link that lets a new person create an account and their own team. Valid 24 hours. |
+| **Replica** | One of several running copies of the same app, each able to answer its traffic. Set under **Settings -> Advanced -> Replicas**. |
 | **Role** | A named capability set owned by a team. Editing one rewrites its members' capabilities immediately. |
 | **Rollback** | Re-running a past deployment's exact image, with current configuration. |
 | **Secret variable** | A write-only, immutable environment value. There is no reveal path. |
@@ -60,6 +64,7 @@ One line per term, spelled the way the dashboard and these docs spell it.
 | **Server health** | An observation from the last handshake: **Provisioning**, **Online**, **Degraded** (`warning`), **Error**, **Offline**. A cache, never a gate. |
 | **Server readiness** | A live, never-stored report on whether a host is complete enough to deploy to. |
 | **Shared variable** | A variable apps opt into with a link; its scopes only suggest. One that reaches several teams is injected into all their apps. |
+| **Standby copy** | A second copy of a database on another server of its cluster, following every change. A failover promotes it. Nothing reads from it, so it is not a replica. |
 | **Storage-only server** | A server that holds backups and runs nothing. |
 | **Team** | An isolated workspace owning apps, databases, domains, variables and people. |
 | **Template** | A catalogue entry Deplo turns into an app. A family of one or more **variants**. |

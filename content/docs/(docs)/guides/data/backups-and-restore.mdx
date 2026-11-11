@@ -171,6 +171,10 @@ name, and checks the artifact's checksum first.
 **Back up -> Restore from file** (beta) restores a `.gz`, `.tgz` or `.age` file from your computer.
 For an encrypted one, paste the destination's recovery key.
 
+**A backup labelled "Left on server-a after the failover at 14:32"** is what a server of a
+[cluster](/operations/clusters/failover#data-left-on-the-server) still held when it came back. No
+schedule ever deletes it, and restoring it loses everything written since the failover.
+
 **Download** decrypts the artifact on the way out. It needs `restore_backups`; an **app** archive
 also needs `reveal_secrets`, because it contains the app's variables.
 
@@ -186,6 +190,11 @@ also needs `reveal_secrets`, because it contains the app's variables.
   delete is refused.
 - **A destination on the same server as the data is lost with that server.** Put at least one copy
   elsewhere.
+- **On a cluster, backups belong to the app or database, not to a server**: the list is the same
+  before and after a failover. See [Backups](/operations/clusters/logs-metrics-and-previews#backups).
+- **A PostgreSQL database on a cluster takes base backups**, files ending in `.base.tar.gz`, for
+  its **Failover backup** schedule. They restore from the Backups tab, not with `pg_restore`. See
+  [Databases on a cluster](/operations/clusters/databases#postgresql-loses-about-a-minute).
 
 ## Troubleshooting
 

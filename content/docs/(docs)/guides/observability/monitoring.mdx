@@ -108,6 +108,9 @@ The same stream raises these [alerts](/guides/observability/notifications-and-al
 - **The fleet page needs whole-team access.** A member limited to one folder sees **Outside your
   access**.
 - **A gap in a chart means no data arrived**, usually a reconnect. It never means zero.
+- **An app with [replicas](/advanced/replicas)** shows one total, with every replica in the
+  container breakdown. On a cluster the charts add a line per server and mark each failover. See
+  [Monitoring on a cluster](/operations/clusters/logs-metrics-and-previews#monitoring).
 - **`view_metrics`** (**View monitoring**) is its own capability, grantable per folder.
 
 ## Troubleshooting
