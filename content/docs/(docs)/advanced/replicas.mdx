@@ -19,10 +19,11 @@ Open the app, then **Settings -> Advanced -> Replicas**, and pick 1 to 10. It ne
 apps** and applies from the **next deploy**.
 
 - The setting is shown for single-image apps. A Compose app sets it in its own file, see
-  [below](#in-a-compose-app).
-- **"A deploy briefly uses twice the memory while the new copies start."** Size the server for
+  [Compose stacks](#compose-stacks).
+- **"A deploy briefly uses twice the memory while the new replicas start."** Size the server for
   that.
-- A pull request preview always runs one copy.
+- Saving answers "3 replicas from the next deploy", or "1 replica from the next deploy".
+- A pull request preview always runs one replica.
 
 ## An app that keeps data runs one copy
 
@@ -47,6 +48,10 @@ switch says:
 2. **Each must be ready before any old one stops.**
 3. If one never gets ready, the deploy fails and the old version keeps serving.
 
+**One deploy is the exception**: the one right after you changed how the app is reached. Its log
+says "How this app is reached changed (a domain, a header or sticky sessions), so it goes offline
+briefly while the new version starts."
+
 ## Keep each visitor on the same replica
 
 By default each request goes to any replica. An app that remembers a visitor in its own memory (a
@@ -55,9 +60,13 @@ session that is not in a database) needs the same replica every time.
 **Settings -> Advanced -> Keep each visitor on the same replica**. The switch shows only with more
 than one replica, uses a cookie, and applies from the next deploy.
 
-## In a Compose app
+A Compose app gets the switch once a service with a domain sets `deploy.replicas` above 1. The
+cookie goes on that service's routes. Without such a service it is refused: "Sticky sessions need
+more than one replica".
 
-Set `deploy.replicas` on the service, in your own file:
+## Compose stacks [#compose-stacks]
+
+A Compose app needs no Deplo setting. Set `deploy.replicas` on the service, in your own file:
 
 ```yaml
 services:
@@ -67,9 +76,91 @@ services:
       replicas: 3
 ```
 
-The same rule applies, with the same message: a service with `replicas` above 1 may not mount a
-named volume or a host path, nor publish a port. It is checked when you save and again at the
-deploy.
+That runs three replicas of `web`, with visitors shared between them.
+
+### The same one-copy rule
+
+A service with more than one replica may not mount a named volume or a host path, or publish a
+host port. Saving and deploying both refuse it, with the same sentence:
+
+> An App that keeps data on its own disk runs one copy. Keep the data in a database to run more.
+
+- **Fine**: a file (`./conf:/etc/conf`), an anonymous volume, a tmpfs.
+- **Refused the same way**: a replica count filled in by a variable (`replicas: ${N}`), and
+  `--scale web=3` in the extra compose flags, on a service that keeps data or opens a port.
+- **A Volume or Bind attached under Storage** to a service with replicas is refused at the deploy.
+
+### A stack with replicas deploys beside itself
+
+When any service asks for more than one replica, a deploy:
+
+1. Starts the **whole new version** next to the one that is online.
+2. Waits until every replica of every service is up and passes its health check.
+3. Only then replaces the old one.
+
+A replica that never becomes ready fails the deploy, and the old version keeps serving: "The new
+version did not start, so the old one is still online:", then the reason.
+
+<Callout type="warn">
+  **Every service starts twice during such a deploy**: once in the new version beside the old
+  one, and once more when the stack is replaced. A one-off job in the stack, such as database
+  migrations, runs both times, so it has to be safe to run twice. The deploy also briefly uses
+  twice the memory.
+</Callout>
+
+**Visitors only reach a replica once it listens.** A service with a domain and no `healthcheck:`
+of its own gets a small check from Deplo, which waits for the service's port to open. That check
+needs a shell (`sh`) in the image. For an image without one, write your own `healthcheck:` on the
+service, or `healthcheck: {disable: true}` to do without the wait.
+
+### When the stack goes offline briefly instead
+
+Deploying beside itself only happens when **every service of the stack can run twice**. Otherwise
+the stack deploys as it did before, going offline briefly while the new version starts, and the
+deploy log says why:
+
+| The deploy log says | The cause |
+| --- | --- |
+| "Service `cache` keeps data on the server's disk or opens a port on it, and two copies of the stack can't share that, so it goes offline briefly while the new version starts." | Any service with a named volume, a host path or `ports:`, whatever its replica count |
+| "This app has a Volume or a Bind, and two copies of the stack can't share it, so it goes offline briefly while the new version starts." | A Volume or Bind added under **Storage** |
+| "Service `web` sets `hostname`, which two copies of the stack can't both have, so it goes offline briefly while the new version starts." | Also `links`, `external_links`, `volumes_from`, `extends`, `network_mode`, `pid`, `ipc` and `mac_address` |
+| "The network `lan` sets `ipam`, which two copies of the stack can't both have, so it goes offline briefly while the new version starts." | A network of the stack with a fixed name, an address range, `external: true`, or a driver other than bridge |
+| "The new version of `web` starts as `web_next`, a name this environment already uses, so it goes offline briefly while the new version starts." | Another app or service in the environment is already called `web_next` |
+| "How this app is reached changed (a domain, a header or sticky sessions), so it goes offline briefly while the new version starts." | That one deploy only |
+
+The compose editor says the first one before you deploy, on the service that causes it: "Service
+`db` keeps data on the server's disk or opens a port on it, and two copies of the stack can't
+share that, so every deploy takes this stack offline briefly, its replicas included."
+
+**To keep a stack with replicas online through deploys**, keep its data in a database, or in a
+separate app, not in a service of the same stack.
+
+### Names during a deploy
+
+- The new version's services are called `<service>_next` while both run: `web_next`.
+- Other apps in the same environment that reach a service by its name (`http://api:3000`) keep
+  reaching the version that is online until it is replaced.
+- In Logs and in the Console the new version's replicas are tagged `web_next-1`, `web_next-2` for
+  the minutes they exist.
+
+### What the server needs
+
+Docker 25 or newer, and an up to date server agent. Otherwise the deploy **fails**. It never falls
+back to stopping every replica at once:
+
+- "Running 3 replicas needs the new version to start beside the old one. This server's agent is
+  too old to keep the app online during a deploy, so it goes offline briefly while the new version
+  starts. Deplo updates the agent on its own."
+- "Running 3 replicas needs the new version to start beside the old one. This server's Docker is
+  older than version 25, so it goes offline briefly while the new version starts."
+
+### What does not change
+
+- **Automatic restart** stays per replica, and is silent while the new version of a deploy runs.
+- **The app's Cloudflare connector** stays up through the deploy.
+- **Failover on a cluster**: the app starts on another server as an ordinary stack.
+- **A stack with no `deploy.replicas` above 1 deploys exactly as before.** The **Zero-downtime
+  deploys** switch is not shown for a Compose app: replicas are what turns this on.
 
 ## Reading an app with replicas
 
@@ -78,13 +169,13 @@ deploy.
 | [Logs](/guides/observability/logs) | One stream for the app, each line tagged with its replica: `web-1`, `web-2` |
 | [Console](/guides/observability/console) | The container picker asks which replica to open |
 | [Monitoring](/guides/observability/monitoring) | The app's total, with every replica in the container breakdown |
-| [Automatic restart](/guides/observability/health-checks) | Per replica: one stuck copy is restarted while the others serve |
+| [Automatic restart](/guides/observability/health-checks) | Per replica: one stuck replica is restarted while the others serve, and Activity names it: `Restarted web replica web-2: it stopped answering for 90 s` |
 
 ## Good to know
 
-- **"This server's agent is too old to run more than one copy of an App. Deplo updates the agent
-  on its own."** Until then more than one cannot be picked, and a deploy that asks for more fails
-  instead of quietly running one.
+- **"The server agent on this server is too old to run more than one replica of an App. Deplo
+  updates it on its own."** Until then more than one cannot be picked, and a deploy that asks for
+  more fails instead of quietly running one.
 - **Replicas are not added under load.** The number is the one you set.
 - **Over the API**: `setAppReplicas` and `setAppStickySessions`, or the MCP tools
   `set_app_replicas` and `set_app_sticky_sessions`.

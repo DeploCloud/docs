@@ -201,9 +201,11 @@ in place, so the deploy still goes through, with the usual short outage.
 
 Good to know:
 
-- **Compose stacks** always swap in place: the setting is shown only for single-image apps.
+- **Compose stacks** swap in place, and the setting is shown only for single-image apps. A stack
+  with a service that sets `deploy.replicas` above 1 deploys beside itself instead. See
+  [Compose stacks](/advanced/replicas#compose-stacks).
 - **An app with more than one [replica](/advanced/replicas)** always deploys this way, whatever
-  the switch says, and never falls back to a swap in place.
+  the switch says. See [How a deploy goes](/advanced/replicas#how-a-deploy-goes).
 - **The new version starts twice**, once as the copy and once as the container. A migration that
   runs at startup runs twice, and the old version is still serving while it runs.
 - **Without a health check of its own**, the app gets one that checks its port is open. The proxy
