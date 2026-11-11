@@ -12,7 +12,12 @@ On a [cluster](/operations/clusters) Deplo treats it like a database.
 | A **Volume**, a **File** written in Storage, or a Compose app's own volume | **It waits for its server**, unless you say otherwise |
 | A **Bind** | It never moves |
 
-The app's **Overview** has a **Failover** card that says which one applies.
+The app's **Overview** has a **Failover** card that says which one applies. For an app with a
+Volume, the card adds, under its sentence:
+
+- "Never two writers"
+- "A failover restores the latest backup, and says how old it was"
+- "Each backup pauses it for as long as its files take to copy."
 
 ## It gets a backup
 
@@ -49,6 +54,7 @@ then by Deplo `Restored web on server-b from the backup of 14:15`.
 | "web has no backup another server can read." | Its backups are on its own server, or on a server outside the cluster |
 | "No other server of the cluster has room for web." | Add a server or lower its memory |
 | "No other server of the cluster is online to take web." | Bring one back |
+| "The cluster's leader cannot reach its servers right now. Try again in a minute." | The leader cannot reach the servers, or too few of them answer it. See [When a cluster is cut in two](/operations/clusters/failover#when-a-cluster-is-cut-in-two) |
 
 A move that fails later is an Activity entry: `Could not bring web back on another server. web did
 not start on another server.`
@@ -76,8 +82,9 @@ Keep the data in a Volume, or in a database, to change that.
 
 ## When the server comes back
 
-What the old server still held is saved as a backup before its copy is removed, when the backups
-are in a bucket. See [Data left on the server](/operations/clusters/failover#data-left-on-the-server).
+What the old server still held is saved as a backup before its copy is removed, where the app's
+backups already go: a bucket, or another server of the cluster. See
+[Data left on the server](/operations/clusters/failover#data-left-on-the-server).
 
 **Over the API**: `setAppFailoverFromBackup`, `bringAppBack`, `App.failoverFromBackup` and
 `App.failover`. Over MCP: `set_app_failover_from_backup` and `bring_app_back`.

@@ -69,8 +69,8 @@ of a cluster.
 The dialog, **Remove this server**, says: "server-a leaves eu at once and is an ordinary server
 again." With two servers it warns: "With one server left, eu stops failing over."
 
-- **It is cut off at once.** The cluster stops naming it and its agent is told to leave. A renewed
-  or re-issued server certificate cuts the old one off the same way.
+- **It is cut off at once.** The cluster stops naming it and its server agent is told to leave. A
+  renewed or re-issued server certificate cuts the old one off the same way.
 - **A server that still runs work is refused**: "server-a still runs 2 Apps and 1 database. Empty
   it first."
 - **An offline server can be removed when it holds nothing.** Deplo tells it that it left as soon
@@ -103,8 +103,8 @@ The dialog lists what is on the cluster:
 - your team's apps and databases by name: "web stays on server-a"
 - every other team's as a count: "2 Apps and 1 database of Acme". An admin never reads another
   team's app names there
-- with failover on, a warning: "These stop failing over. If a server stops, what runs on it stays
-  down."
+- with failover on, a warning: "These stop failing over, and an App stops reaching a database on
+  another server by name. If a server stops, what runs on it stays down."
 - an empty cluster: "Nothing runs on it."
 
 What changes for what ran on it:
@@ -115,7 +115,7 @@ What changes for what ran on it:
 | An app waiting for room | Listed as "not running, stays on server-a". Start it by hand afterwards |
 | A domain on the app's own Cloudflare Tunnel | Points back at the server the app runs on, and the tunnel is deleted |
 | A **Failover backup** schedule | Kept as an ordinary schedule: still on, still every 15 minutes, with every backup it took. Edit or delete it under **Backups** |
-| A leader on another server | Removed from it, unless it leads another cluster |
+| A leader on another server | Removed from it, unless it leads another cluster. If that server is offline, it is removed once the server answers |
 
 **Deplo never deletes a backup or a schedule because a cluster went away.** The same holds for a
 last server kept with its apps.

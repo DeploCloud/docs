@@ -12,7 +12,9 @@ On a cluster with two servers or more, an app with **a Cloudflare domain** and m
 replica **spreads them across the servers**, from its next deploy. There is nothing to switch on.
 
 **Settings -> Advanced -> Replicas** then says: "Spread across 3 servers: if one stops, the
-others keep answering".
+others keep answering". Before the first deploy the number counts only the servers that could
+take a replica: not one being emptied, not one of another processor kind. When only one server
+could, the line is not shown.
 
 - **Each server runs its own share of the replicas**, with the app's Cloudflare connector beside
   them. Visitors reach every server.
@@ -48,7 +50,9 @@ Deplo: `Started a replica of web on server-a: server-c stopped answering`.
 - the app's page and the Replicas setting read **2 of 3 replicas running · waiting for room**
 - Activity: `web: 2 of 3 replicas running · waiting for room. server-c stopped answering and no
   other server has room for the rest yet`
-- the alert **Apps waiting for room after a failover** carries the same title
+- the alert **Apps waiting for room after a failover** carries the same title. See
+  [Waiting for room](/operations/clusters/failover#waiting-for-room) for the reasons other than
+  room
 - Deplo tries again every 30 seconds
 
 When the server comes back, it stops the replicas that now run elsewhere. Replicas return to an
@@ -84,6 +88,9 @@ cannot use every server:
 
 An app that can use every server shows no line.
 
+A database's page carries the same line and the same warning, under **Settings -> General ->
+Server**: "If server-a stops, main has nowhere to go. It is the only x86 server in eu."
+
 ### Refusals name the kind
 
 On a mixed cluster, creating, moving, emptying or a standby copy can answer:
@@ -92,6 +99,10 @@ On a mixed cluster, creating, moving, emptying or a standby copy can answer:
 - "web runs on ARM servers only, and none in cluster eu can take it. Add an ARM server."
 
 And after a server stops, Activity says: `web is waiting for room in eu: server-a stopped
-answering and no other x86 server has room yet`.
+answering and no other x86 server has room yet`. The alert names the kind too: "server-2 stopped
+answering. No other x86 server has room for web yet. Deplo tries again every 30 seconds."
 
 The words are always **x86** and **ARM**.
+
+**Over the API**: `App.failoverReach` and `Database.failoverReach`, each with `line` and
+`warning`. Over MCP: `get_app` and `get_database` return the same.

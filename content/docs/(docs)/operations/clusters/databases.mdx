@@ -108,7 +108,8 @@ Databases come back **first**, before the apps:
    read.
 3. Only then does it start the apps.
 
-It does this with Deplo itself stopped. Activity, by Deplo:
+It does this with Deplo itself stopped too, on a cluster of three servers or more. See
+[How many servers](/operations/clusters#how-many-servers). Activity, by Deplo:
 
 - `Restored db on server-b from the backup of 14:15`
 - PostgreSQL with an archived change log: `Restored main on server-b from the backup of 14:15 and
@@ -135,7 +136,7 @@ Activity says why, once a day:
 | --- | --- |
 | `db cannot fail over yet: its backups are kept on server-a, the server it runs on, so they would stop with it. Pick another destination for its backup. Cluster eu will not move it to another server until that is fixed.` | Move its backup to a bucket or to another server of the cluster |
 | `db cannot fail over yet: its backups are kept on server-x, which is not in the cluster, so no server of the cluster can read them on its own. Keep its backup on another server of the cluster, or in a bucket. Cluster eu will not move it to another server until that is fixed.` | Same |
-| `The agent on server-b is too old to restore a database when another server in cluster eu stops. Update the agent on server-b.` | Let the agent update |
+| `The server agent on server-b is too old to restore a database when another server in cluster eu stops. Deplo updates it on its own.` | Nothing to do: wait |
 
 Until its first backup has finished, a database waits for its server.
 
@@ -161,8 +162,13 @@ the cluster either of them runs**. No connection string changes after a move or 
 The database's page says when that happens: "web reaches this database through Deplo's relay. It
 is faster on the same server."
 
-An older agent is named in the deploy log: "The agent on this server is too old to keep names
-working across the servers of its cluster. Update the agent on this server, then try again."
+An older server agent is named in the deploy log: "The server agent on this server is too old to
+keep names working across the servers of its cluster. Deplo updates it on its own."
+
+The pickers say the same rule. On a cluster, the **Environment** field of **Create database**
+reads: "Apps reach this database by name only from the same environment, on any server of the
+cluster." And **Move to environment**: "Apps reach a database by name only from the same
+environment, on the same server or cluster".
 
 ## Over the API
 

@@ -40,6 +40,8 @@ The **Logs** tab reads every server the app runs on as **one stream**, in time o
   server-b: server-a stopped answering`. The history is the last 16 minutes.
 - **After a failover the history keeps what the old server measured**, so both servers' lines sit
   side by side with the marker between them.
+- **A database's charts carry the same markers**: its move (`Moved database main to server-3`), a
+  promoted standby copy, a failover that restored a backup, each in Activity's words.
 
 ## Console and containers [#console-and-containers]
 
@@ -101,7 +103,7 @@ The **Pull requests** table shows **Offline: its server stopped**, and the addre
 with the hint "Redeploy to run it on another server".
 
 It stays that way, even after the server is back, until the **next push** to the pull request or
-**Redeploy** in the row's menu. Either places it again, possibly on another server.
+**Redeploy preview** in the row's menu. Either places it again, possibly on another server.
 
 - The copy left on the old server is removed once that server answers.
 - Otherwise a preview stays on its server from one push to the next, while that server is in the
@@ -133,16 +135,21 @@ has 256 MB free. Add a server to it or lower web's memory."
 ### When a server is emptied or removed
 
 - **Empty**: every preview on it is deployed again on another server of the cluster. One that no
-  other server can take is taken down and reads **Offline: its server stopped**. Activity: `Took
-  down the preview for pull request #7 of web on server-b:`, followed by the refusal.
+  other server can take is taken down and reads **Offline: its server was emptied**. Activity:
+  `Took down the preview for pull request #7 of web on server-b:`, followed by the refusal.
 - **Remove** from the cluster does the same for the previews it still ran.
-- **Delete** the cluster leaves each preview where it runs. The next push or **Redeploy** brings
-  it to the app's own server.
+- **Delete** the cluster leaves each preview where it runs. The next push or **Redeploy preview**
+  brings it to the app's own server.
 - **Removing the server from Deplo altogether** leaves its previews **Offline: its server stopped**
-  until the next push or **Redeploy**.
+  until the next push or **Redeploy preview**.
+
+**Offline: its server stopped** is only for a server that stopped answering or was removed from
+Deplo.
 
 ## Over the API
 
-`appMetricsMarkers(appId)`, `CronRun.status` with the value `server_lost`, `AppPreview.status`
-with the value `offline`, and `AppPreviewsView.clusterName`. Over MCP: `logs` reads every server
-the same way, and `list_previews` returns `serverId` and `clusterName`.
+`appMetricsMarkers(appId)`, `databaseMetricsMarkers(databaseId)`, `CronRun.status` with the value
+`server_lost`, `AppPreview.status` with the value `offline`, `AppPreview.offlineReason`
+(`server_stopped` or `server_emptied`) and `AppPreviewsView.clusterName`. Over MCP: `logs` reads
+every server the same way, and `list_previews` returns `serverId`, `clusterName` and
+`offlineReason`.

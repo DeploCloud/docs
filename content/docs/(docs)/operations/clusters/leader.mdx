@@ -7,8 +7,12 @@ Every [cluster](/operations/clusters) has a **leader**: it decides which server 
 is what moves apps off a server that stopped. You never install or update it by hand.
 
 - **It starts on Deplo's own machine**, the moment the cluster is created.
-- **Failover works while Deplo is down only if the leader runs somewhere else.** With the leader
-  on Deplo's machine and that machine down, nothing fails over.
+- **With the leader on Deplo's machine and that machine down, nothing fails over.**
+- **Failover works while Deplo is down only when both hold**: the leader runs on a server of the
+  cluster, and the cluster has **three servers or more**, more than half of them up.
+- **The leader keeps leading only while enough servers answer it**: more than half of the
+  cluster's servers, or exactly half of them and Deplo itself. Otherwise it moves nothing. See
+  [When a cluster is cut in two](/operations/clusters/failover#when-a-cluster-is-cut-in-two).
 
 ## Reading the card
 
@@ -17,7 +21,8 @@ server-b**, then one of:
 
 | Badge | Meaning |
 | --- | --- |
-| **Answering** | Failover works |
+| **Answering** | The leader runs. With enough servers answering it, the line below reads "Failover would work right now." |
+| **Too few servers answer** | The leader runs but hears too few servers to move anything: "Only 1 of 3 servers answers this leader, so nothing moves. Failover works again once 2 do." |
 | **Not running**, **Not started** | **Try again** starts it |
 | **Not reachable** | Deplo cannot reach the server the leader runs on |
 | **Can't start** | Deplo's own machine is not connected as a server yet |
@@ -25,7 +30,16 @@ server-b**, then one of:
 
 ## Run the leader on another server [#run-the-leader-on-another-server]
 
-**Why**: so that failover keeps working while Deplo's own machine is down.
+**Why**: so that failover keeps working while Deplo's own machine is down. **That takes three
+servers or more.** The dialog says which case you are in:
+
+| Cluster | The dialog says |
+| --- | --- |
+| Three servers or more | "Failover keeps working while Deplo's own machine is down." |
+| One or two servers | "Under three servers, failover still needs Deplo up wherever the leader runs." |
+
+Even with three servers, a leader on another server keeps failover working only as long as it
+still reaches **more than half of the cluster's servers**.
 
 <Steps>
 <Step>
@@ -43,9 +57,14 @@ server**.
 The dialog, **Run the leader on another server**, has one field, **Server**. Deplo's own machine
 is listed as "(Deplo's own machine)", and the current one as "(runs here now)".
 
-Any server can take it, a server of the cluster included. An offline one is listed but cannot be
-picked: "server-b is offline. Bring it back online first." A server whose agent is too old is
-refused when picked.
+Any server can take it, a server of the cluster included.
+
+- An offline one is listed but cannot be picked: "server-b is offline. Bring it back online
+  first."
+- A server with no proxy carries a note: "server-b has no proxy, so a leader there still needs
+  Deplo's machine up to move anything."
+- A server that cannot run a leader yet is refused when picked: "The server agent on this server
+  is too old to run a cluster leader. Deplo updates it on its own: try again in a few minutes."
 
 </Step>
 <Step>
@@ -66,11 +85,13 @@ A server that runs Deplo's proxy (it answers on 443) also runs a second **cluste
 the leader. Every server of the cluster connects to it too, so the leader reaches them without
 Deplo's machine.
 
-A server with no proxy runs the leader alone. **Failover then still needs Deplo's machine.**
+A server with no proxy runs the leader alone. **Failover then still needs Deplo's machine**, and
+the dialog says so before you pick it.
 
 ### When the leader's server stops answering
 
-Deplo's own machine leads in its place, on its own, within about half a minute.
+Deplo's own machine leads in its place, on its own, **25 to 40 seconds** after the leader's
+server stopped answering.
 
 - The card says: "Deplo's own machine leads this cluster until server-b answers again."
 - Activity: `server-b stopped answering, so Deplo's machine leads cluster eu until it answers
@@ -82,10 +103,14 @@ Deplo's own machine leads in its place, on its own, within about half a minute.
   that server's databases and apps with a Volume elsewhere. See
   [The slower case](/operations/clusters/failover#the-slower-case).
 
+- **Anything that was waiting for room is not started a second time.** The new leader first hears
+  from every server, and leaves each app with the server that still has it.
+
 <Callout type="warn">
-  **The limit.** With the leader's server offline **and** Deplo's machine down at the same time,
+  **The limits.** With the leader's server offline **and** Deplo's machine down at the same time,
   nothing fails over. Apps keep running where they are. A server that stops in that window is not
-  replaced until either one is back.
+  replaced until either one is back. The same holds for a leader that reaches too few servers:
+  with half of them or fewer answering it and Deplo out of reach, it moves nothing.
 </Callout>
 
 ## When Deplo's own server is in the cluster [#when-deplos-own-server-is-in-the-cluster]
@@ -105,6 +130,12 @@ The leader is what moves apps off a server that stopped, and here it stops with 
 button beside the warning opens the same dialog. Picking any other server, a member included,
 makes the warning go away.
 
+On a cluster of **one or two servers** the warning reads differently, because moving the leader
+alone does not fix it:
+
+> If Deplo's own server stops, its Apps cannot move. Fixing this takes three servers, with the
+> leader on another one.
+
 Emptying or removing Deplo's own server leaves the leader and the relay running there.
 
 ## Updates [#updates]
@@ -116,7 +147,7 @@ own machine last. It only ever moves forward.
 - **A leader update costs no failover.** Before it restarts, the leader gives every server of its
   clusters five more minutes, so nothing stops and nothing moves while it is away. Five minutes is
   the most a server ever accepts.
-- **A server whose agent is still being updated** gets that update first, then the leader's.
+- **A server whose server agent is still being updated** gets that update first, then the leader's.
 - Activity, by Deplo: `Updated the cluster leader and relay on server-b to v0.3.0`.
 
 ### When an update fails
@@ -150,5 +181,8 @@ not running.
 - **What each leader needs to restart an app** (its last deployed version and variables) is kept
   sealed for that leader alone. Moving the leader hands it over to the new one.
 - **Deleting the last cluster** removes the leader and the relay from Deplo's own machine.
+- **A leader left on a server that was offline** when its cluster was deleted, or when the leader
+  moved away, is removed as soon as that server answers.
+- **A server of a cluster takes orders only from the leader Deplo named for that cluster.**
 - **Over the API**: `moveClusterLeader(id, serverId)`, `Cluster.leader` and
   `Cluster.leaderChoices`, instance admin only. There is no MCP tool for it.

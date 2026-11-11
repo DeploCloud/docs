@@ -53,8 +53,7 @@ the same.**
 - **Nothing is offline in between.** DNS switches only once the connector has connected.
 - **Deplo retries on its own** every 10 minutes.
 - **A domain added later** to an app that is already on a cluster uses the tunnel from the start.
-- **An app whose server joined a cluster** is switched by the same 10-minute check, with no
-  redeploy.
+- **An app whose server joined a cluster** is switched right away, with no redeploy.
 
 ## When an app leaves a cluster
 
@@ -105,7 +104,7 @@ address could not be updated yet`, followed by the reason, and Deplo tries again
 
 - **The tunnel's token is a secret.** It is never shown, it is masked wherever Deplo displays the
   app's stack, and it is deleted with the tunnel.
-- **A server whose agent is too old refuses the deploy**: "this server's agent is too old to start
-  the App's tunnel once it is ready - Deplo updates the agent on its own".
+- **A server whose server agent is too old refuses the deploy**: "the server agent on this server
+  is too old to start the App's tunnel once it is ready - Deplo updates it on its own".
 - **How fast Cloudflare stops sending visitors to a server that lost power is Cloudflare's to
   decide.** Deplo has not measured it and promises no figure.

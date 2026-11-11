@@ -4,9 +4,14 @@ description: Failover on a cluster - what moves, what waits, how long it takes, 
 ---
 
 When a server of a [cluster](/operations/clusters) stops answering, its apps start on another
-server of the cluster. Nobody clicks anything, and it keeps working while Deplo itself is down.
+server of the cluster. Nobody clicks anything.
 
-Failover starts at two servers. On a cluster of one, nothing moves.
+- **Failover starts at two servers.** On a cluster of one, nothing moves.
+- **With two servers, failover works only while Deplo is up.**
+- **With three or more, it also works while Deplo is down**, as long as more than half of the
+  cluster's servers are up and the [leader](/operations/clusters/leader) runs on one of them.
+
+See [When a cluster is cut in two](#when-a-cluster-is-cut-in-two) for what that means.
 
 ## When a server stops [#when-a-server-stops]
 
@@ -23,7 +28,8 @@ them somewhere else. That is the first promise, **"Never two writers"**.
 **Nothing moves at all** when the trouble looks like the cluster's own, not the server's:
 
 - the leader lost its own connection
-- more than half of the servers went silent at the same moment
+- too few servers answer the leader: half of them or fewer, unless it is exactly half and Deplo
+  answers too. See [When a cluster is cut in two](#when-a-cluster-is-cut-in-two)
 
 <Callout type="info">
   81 seconds is when moving **starts**, not when visitors are served again. That also takes the
@@ -57,12 +63,16 @@ Activity says why, once a day, until it is fixed:
   it from: `web cannot fail over yet: Deplo has no saved copy of its last deploy to give the
   cluster's leader. It is sent with the next deploy. Cluster eu will not move it to another server
   until that is fixed.` Deploy it once.
-- **A server whose agent is too old never takes work over**: `The agent on server-b is too old to
-  take over Apps when another server in cluster eu stops. Update the agent on server-b.`
+- **A server whose server agent is too old never takes work over**: `The server agent on server-b
+  is too old to take over Apps when another server in cluster eu stops. Deplo updates it on its
+  own.` Nothing to do: wait.
+- **A Compose app that builds its own images**: `web does not fail over yet: its compose file
+  builds images, and they exist only on the server that built them. A compose file that names
+  published images does.`
 
 ## Waiting for room [#waiting-for-room]
 
-What fits nowhere waits, and Deplo tries again **every 30 seconds**.
+What finds no server waits, and Deplo tries again **every 30 seconds**.
 
 - The app's header, its **Settings -> General -> Server** card and the cluster's card all say
   **Waiting for room in eu**. A database says it on its **Failover** card.
@@ -71,8 +81,20 @@ What fits nowhere waits, and Deplo tries again **every 30 seconds**.
 
 **One alert per failover that left something waiting**, on by default:
 **Apps waiting for room after a failover**. Its title is `web waiting for room in eu`, or
-`3 Apps waiting for room in eu`, and it says: "server-a stopped answering. web found no room on
-the other servers yet. Deplo tries again every 30 seconds."
+`3 Apps waiting for room in eu`, and it says: "server-a stopped answering. No other server has
+room for web yet. Deplo tries again every 30 seconds."
+
+**Room is not the only reason to wait.** Activity and the alert name the real one:
+
+| Activity says | The alert says |
+| --- | --- |
+| `web is waiting in eu: server-a stopped answering and it did not start on another server` | "web did not start on another server." |
+| `web is waiting in eu: server-a stopped answering and no other server has its image yet` | "No other server has the image of web yet." |
+| `web is waiting in eu: server-a stopped answering and no other server is online and ready` | "No other server is online and ready for web." |
+| `web is waiting in eu: server-a stopped answering and no other server has taken it yet` | "No other server has taken web yet." Read back after Deplo reconnected to the leader |
+
+With any of those the alert's title reads `web waiting to move in eu`, or `2 Apps waiting to move
+in eu`.
 
 ## What Activity says
 
@@ -83,7 +105,7 @@ Every entry is **by Deplo**, in the team that owns the app or database:
 | `Moved web to server-b: server-a stopped answering` | An app moved |
 | `Started a replica of web on server-b: server-c stopped answering` | A lost replica was replaced |
 | `Restored db on server-b from the backup of 14:15` | A database came back from a backup |
-| `web is waiting for room in eu: server-a stopped answering and no other server has room yet` | Nothing had room |
+| `web is waiting for room in eu: server-a stopped answering and no other server has room yet` | Nothing had room. See [Waiting for room](#waiting-for-room) for the other reasons |
 | `web moved to another server of its cluster, so its generated address is now web-calm-fox-cb007118.deplo.site` | Its `deplo.site` address changed |
 
 **If Deplo was down during the failover**, it catches up when it is back: the same entries, the
@@ -99,7 +121,7 @@ over as leader (see [The leader](/operations/clusters/leader)).
 
 | What ran on it | Starts elsewhere after |
 | --- | --- |
-| Apps without stored data | About 2 minutes: half a minute for Deplo to notice, then 81 seconds |
+| Apps without stored data | About 2 minutes: 25 to 40 seconds for Deplo's machine to take over, then 81 seconds |
 | Databases, and apps with a Volume | **6 minutes 21 seconds** after the new leader started leading, about 7 minutes in all |
 
 Why: just before a planned update, a leader gives every server 5 more minutes. A leader that
@@ -107,6 +129,60 @@ takes over cannot know whether that happened. So it waits those 5 minutes instea
 same database running on two servers. "Bring it back" from a backup is refused for the same time.
 
 A server that has answered the new leader even once is back on the usual 81 seconds.
+
+## When a cluster is cut in two [#when-a-cluster-is-cut-in-two]
+
+A network cut can split a cluster. Neither side can tell whether the other is down or only out of
+reach, so **only one side may go on**. That is how nothing ever runs twice.
+
+**The rule.** The leader keeps leading only while it is answered by:
+
+- **more than half** of the cluster's servers, or
+- **exactly half** of them **and Deplo itself**
+
+Otherwise it moves nothing, and the servers it still reaches stop their databases and their apps
+with a Volume after about a minute. The side that goes on is the one with more than half of the
+servers. When the sides are equal, it is the side Deplo is on.
+
+### What it means for your cluster
+
+| Cluster | What to expect |
+| --- | --- |
+| One server | Nothing changes |
+| Two servers | **Failover needs Deplo up.** If one server stops while Deplo is down too, or restarting for longer than about a minute and a half, the other server's databases and apps with a Volume stop as well. They start again by themselves within seconds of Deplo being back, and the stopped server's work moves then |
+| Three servers or more | Failover works with Deplo down as long as more than half of the servers are up: one of three may stop, two of five |
+| More than half of the servers lost at once (two of three) | With Deplo up or not, the servers that are left stop their databases and apps with a Volume after about a minute, until one of the others is back. If they are gone for good, the rest start again once those servers are [removed from the cluster](/operations/clusters/manage-servers#remove-a-server) |
+
+**Apps without a Volume keep running the whole time**, in every row.
+
+**For failover that does not depend on Deplo being up, use three servers or more.**
+
+### What a split looks like
+
+| Where | What happens |
+| --- | --- |
+| The smaller side | Its servers stop their databases and apps with a Volume about a minute in |
+| The larger side, its leader already leading | Brings them up from the latest backup, or promotes the standby copy, after **81 seconds** |
+| The larger side, when Deplo's machine had to take over as leader first | The same after **6 minutes 21 seconds**, about 7 minutes in all |
+| Both sides | Apps without a Volume keep running. The server that was cut off removes its copy when it is back |
+
+When the leader is on the larger side and Deplo on the smaller one, Deplo shows its own side's
+servers as not responding and cannot see the other side until the split heals.
+
+### What you read meanwhile
+
+- **On the leader's row**, the badge **Too few servers answer** and "Only 1 of 3 servers answers
+  this leader, so nothing moves. Failover works again once 2 do."
+- **Under a server's name**: "This server stopped its databases and Apps with files, so none of
+  them can run twice."
+- **Activity, one silent server**: `server-b is not responding in cluster eu.`, then `server-b has
+  not responded for a minute in cluster eu, so it stopped the databases and Apps with files that
+  must never run twice.`
+- **Activity, more than half of the servers silent**: `Too few servers answer in cluster eu, so
+  nothing moves and server-b no longer counts as answering.`, then `Too few servers answer in
+  cluster eu, so server-b stopped the databases and Apps with files that must never run twice.`
+- **Bringing an app back from a backup** is refused meanwhile: "The cluster's leader cannot reach
+  its servers right now. Try again in a minute."
 
 ## When a server comes back [#when-a-server-comes-back]
 
@@ -145,26 +221,56 @@ stopped** and that never reached a backup. Deplo does not throw it away silently
 **Before its copy is removed, what the server still held is saved as a backup.** This covers a
 database and an app with a Volume. The server does it by itself, also while Deplo is down.
 
-| Where the backups of that database or app are kept | What happens |
+It goes where the backups of that database or app already go, **a bucket or another server's
+disk**:
+
+| Where its backups are kept | What happens |
 | --- | --- |
 | A **bucket** | Saved, and listed with its backups as **Left on server-a after the failover at 14:32** |
-| **Another server's disk** | **Not saved.** The returning server cannot reach that disk on its own, so the data stays on the returning server |
+| **Another server of the cluster** | Saved the same way. The returning server sends it to that server directly |
+| A server that is **not in the cluster** | **Not saved.** The data stays on the returning server. Keep the backups in a bucket, or on a server of the cluster |
 | Nowhere (no backup schedule) | **Not saved.** The data stays on the returning server |
 
-<Callout type="warn">
-  Without a bucket, Deplo keeps a cluster's backups on another server of the cluster. That is the
-  case in the second row. Add a bucket as a
-  [backup destination](/guides/data/backups-and-restore#add-a-destination) to have this data saved.
-  Deplo does not try to save it again later.
-</Callout>
+Without a bucket, Deplo keeps a cluster's backups on another server of the cluster, so the default
+setup is covered.
 
-The Activity entry and the alert say which it was:
+- **It is encrypted before it leaves the returning server**, with the destination's key. The
+  server that stores it never sees the data in the clear and holds no key to open it.
+- **A server only accepts such a backup from a server of its own cluster**, and only the one file
+  the cluster expects from it.
+- **The data is removed from the returning server only once the destination has confirmed it
+  holds the whole backup**, and only while the database or app still runs on another server. One
+  that was moved back to that server meanwhile keeps its data there, untouched, and nothing is
+  saved.
 
-- Saved: `What it still held of db was saved as a backup, labelled "Left on server-a".`
-- Not saved: `What it still held of db could not be saved as a backup, so it stays on server-a:
-  its backups are kept on server-b, which server-a cannot reach on its own.` The other reasons are
-  `the backup failed`, with the server's own error, and `the cluster had no backup destination for
-  it.`
+### It keeps trying
+
+If the destination cannot be reached when the server comes back, the data stays on the server and
+the server tries again on its own: **after 1 minute, then 2, 4, 8 and so on, never more than an
+hour apart**, for as long as it holds the data. A restart of the server does not stop it. Nobody
+has to press anything.
+
+- **When a later try succeeds**, the backup appears with the same label, and Activity gets one
+  line by Deplo. There is no second alert.
+- **A repeat never leaves two files**: a try that was cut short is written over by the next one.
+
+### What Activity and the alert say
+
+| Sentence | When |
+| --- | --- |
+| `What it still held of db was saved as a backup, labelled "Left on server-a".` | Saved |
+| `What it still held of db could not be saved as a backup, so it stays on server-a: the backup failed`, then the server's own error in brackets | The try failed |
+| `What it still held of db could not be saved as a backup, so it stays on server-a: its backups are kept on server-b, and server-a could not send it there.` | The other server could not be reached |
+| `server-a tries again on its own, and Activity says when it is saved.` | Added once after either of the two above |
+| `What it still held of db could not be saved as a backup, so it stays on server-a: its backups are kept on server-x, which is not in cluster eu.` | Its backups are outside the cluster. Nothing is retried |
+| `What it still held of db could not be saved as a backup, so it stays on server-a: the cluster had no backup destination for it.` | No backup schedule. Nothing is retried |
+| `server-a saved what it still held of db as a backup, labelled "Left on server-a".` | A later try succeeded |
+| `server-a saved what it still held of db, but Deplo could not match the file to db's backups, so it is not listed.` | Saved, but not where that database's backups go |
+
+A failed try can name the other server: `reach the server that holds the backups`, `the server
+that holds the backups did not confirm it`, or `the server that holds the backups refused it: this
+server was not told to keep that`. The last one means the two servers have not both heard from the
+cluster yet. The next try passes.
 
 ### What you can do with it
 
@@ -183,7 +289,7 @@ The backup is in the **Backups** tab of the database or app, with **Download**, 
 - **Restore** needs **Restore backups**, **Delete** needs **Delete backups**, and downloading an
   app's also needs **Reveal secret values**.
 
-The row's date is when the server came back. The label carries when the failover happened: the
+The row's date is when it was saved. The label carries when the failover happened: the
 time alone when it was today, `3 Mar, 14:32` otherwise, and "Left on a removed server" once that
 server is gone.
 
