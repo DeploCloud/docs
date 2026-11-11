@@ -1,0 +1,148 @@
+---
+title: Logs, metrics, cron jobs and previews
+description: What changes in the everyday tools when an app runs on a cluster, or on several of its servers.
+---
+
+An app on a [cluster](/operations/clusters) can run on several servers, or change server after a
+failover. The everyday pages follow it. An app that runs on one server and never moved reads
+exactly as before.
+
+## Logs [#logs]
+
+The **Logs** tab reads every server the app runs on as **one stream**, in time order.
+
+- **Each line is tagged** with the replica and the server: `web-2 · server-b | <line>`. An app
+  with one copy per server is tagged with the server alone: `server-b | <line>`.
+- **After a failover the server the app left is read too**, until the app's next deploy. What it
+  logged before the move stays in the stream.
+- **A server that cannot be reached does not end the stream.** One line at the top says so:
+  "Earlier logs on server-a are unavailable: Deplo cannot reach that server right now."
+- **With every server out of reach**, the tab says the server is offline, as for an app on one
+  server.
+- **An open stream does not pick up a new server by itself** after a failover. Use **Reconnect**,
+  or reopen the tab.
+
+<Callout type="warn">
+  Logs live on the servers. Nothing is stored centrally, so a server that never comes back takes
+  its earlier logs with it.
+</Callout>
+
+## Monitoring [#monitoring]
+
+- **One total** for an app whose replicas run on several servers. The CPU and Memory charts add
+  one line per server beside **Total**, and the legend toggles each. Network and Disk I/O stay one
+  total.
+- **The containers table names every copy with its server**: `web-1 · server-b`.
+- **A server with no readings is named**, and the total goes on without it: "No readings from
+  server-b right now, so the totals leave it out."
+- **Every move or failover in the chart's history is marked**: a dashed line on each chart, and a
+  line above them with the time and Activity's own sentence, for example `14:02:11 Moved web to
+  server-b: server-a stopped answering`. The history is the last 16 minutes.
+- **After a failover the history keeps what the old server measured**, so both servers' lines sit
+  side by side with the marker between them.
+
+## Console and containers [#console-and-containers]
+
+- **Console**: the container picker lists the copies on every server, each as
+  `web-1 · server-b`, and the session opens on the server of the copy you pick. A server out of
+  reach is named beside the picker, "Can't reach server-a right now", and the other servers'
+  copies still open.
+- **Containers** (the strip on the app's page): it counts every server's containers and names
+  each with its server. The sheet says "Live from every server it runs on."
+
+## Backups [#backups]
+
+**Backups belong to the app or database, never to a server.**
+
+- The list is the same before and after a failover or a move.
+- The next scheduled backup is taken by the server it runs on now.
+- **Download** and **Restore** of an older backup work from there.
+- A backup kept on a server's disk is read from that server, whichever server the app runs on. It
+  is unavailable only while that one server is down.
+
+## Cron jobs [#cron-jobs]
+
+A [cron job](/guides/observability/cron-jobs) of an app on a cluster runs **once per scheduled
+time, on the server running the app now**. After a failover, the next run starts on the new
+server. Nothing runs while Deplo is down, as on one server.
+
+**A run that was going when its server stopped is lost**, and Deplo never runs it again on its
+own, whatever the job's **attempts** setting says: the command may be half done.
+
+- Its status is **Lost: its server stopped**, in the run history and as the job's last status.
+- The row says: "The command may be half done. Deplo never runs a lost run again on its own: use
+  Run now if it is safe to repeat." and "server-a stopped while this run was in flight."
+- **Run now** on that row starts a new run on the server running the app now.
+- The alert **Cron job lost with its server** goes out once per lost run, on by default.
+
+A server that has not heard from the cluster for 60 seconds stops every cron job it is running
+and starts none until it is back in touch. A job asked of it meanwhile fails with: "This server
+lost touch with its cluster, so it runs no cron jobs until it is back."
+
+A run that is still going when its app moves for another reason (emptying a server, a move you
+asked for) is **not** lost: it finishes on the server it started on.
+
+## Pull request previews [#pull-request-previews]
+
+A [pull request preview](/guides/networking/pull-request-previews) of an app on a cluster runs on
+**one server of the cluster**, picked by the cluster. It is not necessarily the app's server. There
+is nothing to set up.
+
+**Previews stay cheap**:
+
+- a preview **never fails over** and is never moved when a server stops
+- it is not served through the app's Cloudflare tunnel
+- it keeps a network of its own, exactly as off a cluster
+- a pull request from a fork gets none of the app's variables, as off a cluster
+
+### When its server stops
+
+The **Pull requests** table shows **Offline: its server stopped**, and the address is greyed out
+with the hint "Redeploy to run it on another server".
+
+It stays that way, even after the server is back, until the **next push** to the pull request or
+**Redeploy** in the row's menu. Either places it again, possibly on another server.
+
+- The copy left on the old server is removed once that server answers.
+- Otherwise a preview stays on its server from one push to the next, while that server is in the
+  cluster, answering and not being emptied.
+
+### Its address
+
+| Preview setting | On a cluster |
+| --- | --- |
+| No preview domain (the generated address) | The address **changes** when the preview lands on another server. The pull request comment is updated |
+| A **Preview domain** | The address stays, but its wildcard DNS record points at one server. A preview placed on another server is **not reachable** through it |
+
+On a cluster, leave the preview domain empty, or run previews on a server outside the cluster.
+
+### Where previews run
+
+**Settings -> Pull requests -> Server**: for an app on a cluster the first choice reads **Same as
+the app (eu)**, with a **Cluster** badge. The other choices are the team's servers that are not in
+a cluster. A server of a cluster is never listed, and the API refuses it: "That server is a member of
+cluster eu, so nothing can be placed on it directly."
+
+A team the cluster is not shared with does not see its name and gets no new preview placed on it.
+
+### When there is no room
+
+The pull request's deploy is refused with the same sentences as an app: "No server in cluster eu
+has 256 MB free. Add a server to it or lower web's memory."
+
+### When a server is emptied or removed
+
+- **Empty**: every preview on it is deployed again on another server of the cluster. One that no
+  other server can take is taken down and reads **Offline: its server stopped**. Activity: `Took
+  down the preview for pull request #7 of web on server-b:`, followed by the refusal.
+- **Remove** from the cluster does the same for the previews it still ran.
+- **Delete** the cluster leaves each preview where it runs. The next push or **Redeploy** brings
+  it to the app's own server.
+- **Removing the server from Deplo altogether** leaves its previews **Offline: its server stopped**
+  until the next push or **Redeploy**.
+
+## Over the API
+
+`appMetricsMarkers(appId)`, `CronRun.status` with the value `server_lost`, `AppPreview.status`
+with the value `offline`, and `AppPreviewsView.clusterName`. Over MCP: `logs` reads every server
+the same way, and `list_previews` returns `serverId` and `clusterName`.

@@ -1,0 +1,171 @@
+---
+title: Databases on a cluster
+description: The two promises, the backup every 15 minutes, how much a failover can lose, and names that work across servers.
+---
+
+A managed database on a [cluster](/operations/clusters) comes back on another server when its
+server stops. It comes back **from a backup**, so the page is honest about what that can lose.
+
+## The two promises [#the-two-promises]
+
+Wherever Deplo describes a database's failover, it makes two promises, in these words:
+
+1. **"Never two writers"**. A database never runs on two servers at once. The server that went
+   silent stops its own database before another one starts it.
+2. **"A failover restores the latest backup, and says how old it was"**. Whatever was written
+   after that backup is lost, and Activity names the backup.
+
+## Place a database on a cluster
+
+- **A new one**: **Create database**, and pick the cluster in the **Server** field. It needs
+  **Create databases**.
+- **One you have**: its **Settings -> General -> Server -> Move**. It needs **Configure
+  databases**.
+
+The cluster picks the server. Both dialogs show the two promises and what a failover can lose
+before you confirm.
+
+- **A database on a cluster cannot be published on a host port from the Create dialog.** The
+  option is hidden while a cluster is picked.
+- **To take it off the cluster**, **Move** it to a server. Its backup schedule stays.
+
+## The failover backup
+
+Placing a database on a cluster gives it a backup named **Failover backup**: **every 15 minutes,
+keeping the last 8**. Activity says `Backs up db every 15 minutes to server-b`.
+
+- **A database that already has a backup schedule keeps its own**, as it is, even when that
+  schedule is switched off. PostgreSQL is the exception, see
+  [below](#postgresql-loses-about-a-minute).
+- **A database that came with its server** (the server joined the cluster) gets it once the
+  cluster has two servers.
+
+### Where the backup goes
+
+**Never the server the database runs on.** Deplo picks, in this order:
+
+1. a bucket your team already has
+2. a destination on another server of the cluster
+3. a destination on a server outside the cluster
+
+A destination whose last test failed is skipped. **With none, Deplo creates one** on another
+server of the cluster, or on Deplo's own server when the cluster has no other. **No bucket is
+needed.**
+
+With no other server at all, Activity says: `db has no backup: there is no other server to keep
+one on. Add a server to its cluster or a backup destination.`
+
+<Callout type="warn">
+  A failover can only restore a backup that **another server of the cluster can read by itself**:
+  one in a bucket, or one kept on another server of the same cluster. The third choice above keeps
+  the data safe, but a failover cannot use it.
+</Callout>
+
+## What a failover can lose
+
+The database's **Overview** has a **Failover** card: "Runs on cluster eu, now on server-b. Backed
+up to server-c." Under the two promises it says how much can be lost and how long recovery takes.
+
+| The card says | When |
+| --- | --- |
+| "A failover can lose up to 15 minutes of writes: everything since the last backup." | The usual case. The span follows the database's own schedule, so it can read "24 hours" |
+| "A failover can lose about a minute of writes: its change log is archived continuously." | PostgreSQL, once its first backup on the cluster has finished |
+| "No backup is scheduled, so a failover has nothing recent to restore." | No schedule is switched on |
+| "Recovery takes a few minutes." | Until a restore of this database has been measured |
+| "Recovery takes about 4 minutes: the last backup is 1.2 GiB." | After one: the last backup's size and the speed of the last restore, a failover included |
+
+To lose about a second instead, see [Standby copy](/operations/clusters/standby-copy).
+
+### PostgreSQL loses about a minute [#postgresql-loses-about-a-minute]
+
+A PostgreSQL database on a cluster also **archives its change log continuously**, to the same
+destination as its backups. There is nothing to switch on: placing it on the cluster starts it,
+leaving stops it. Every other engine restores its latest backup only.
+
+- **Its Failover backup is a base backup**, a copy of the database's files (the file name ends in
+  `.base.tar.gz`), not a dump. It gets this schedule even when it already has schedules of its
+  own. Those, and a backup taken by hand, stay dumps.
+- **A base backup restores from the Backups tab** like any backup, to the moment it was taken. It
+  cannot be loaded with `pg_restore`, and uploading it is refused: "That is a base backup of a
+  Postgres database on a cluster, not a dump. Restore it from that database's Backups tab."
+- **The change log is kept beside the base backup it follows**, encrypted like the backups of that
+  destination, and deleted with it.
+- **If the destination cannot be reached for more than 30 minutes**, PostgreSQL drops what it
+  could not hand over, so the database's disk never fills. The card goes back to the 15-minute
+  sentence until the next base backup finishes.
+- **Not archived**: a PostgreSQL database with a custom start command, or with an image that is
+  not the official `postgres` one. It keeps the 15-minute promise.
+- **A database that came onto the cluster with its server is not restarted.** Activity says: `main
+  archives its change log once it is redeployed. Until then a failover restores its latest
+  backup.` **Redeploy** is the button on the database's page.
+
+## When its server stops
+
+Databases come back **first**, before the apps:
+
+1. The leader waits about 81 seconds. See [When a server stops](/operations/clusters/failover).
+2. It restores the database on another server from the newest finished backup that server can
+   read.
+3. Only then does it start the apps.
+
+It does this with Deplo itself stopped. Activity, by Deplo:
+
+- `Restored db on server-b from the backup of 14:15`
+- PostgreSQL with an archived change log: `Restored main on server-b from the backup of 14:15 and
+  its change log up to 14:27`
+
+The time is in the backup schedule's timezone. A backup of another day carries its date: `from
+the backup of 27 Feb, 03:00`.
+
+Good to know:
+
+- **A published database** (a port on its server) gets its connection address on the new server.
+  Apps linked to it show pending changes.
+- **No room**: `db is waiting for room in eu: server-a stopped answering and no other server has
+  room yet`. It is retried every 30 seconds, with the same alert as apps. The Failover card shows
+  **Waiting for room in eu**.
+- **A password or a setting you just changed** reaches the leader with the next backup. A failover
+  in that window restores with the previous ones.
+
+### When a database does not fail over
+
+Activity says why, once a day:
+
+| Activity says | Fix |
+| --- | --- |
+| `db cannot fail over yet: its backups are kept on server-a, the server it runs on, so they would stop with it. Pick another destination for its backup. Cluster eu will not move it to another server until that is fixed.` | Move its backup to a bucket or to another server of the cluster |
+| `db cannot fail over yet: its backups are kept on server-x, which is not in the cluster, so no server of the cluster can read them on its own. Keep its backup on another server of the cluster, or in a bucket. Cluster eu will not move it to another server until that is fixed.` | Same |
+| `The agent on server-b is too old to restore a database when another server in cluster eu stops. Update the agent on server-b.` | Let the agent update |
+
+Until its first backup has finished, a database waits for its server.
+
+**After a failover or a move onto the server that keeps its backups**, the database's page warns:
+"db now runs on server-b, the server its backups are kept on. If server-b stops, the backups go
+with it. Pick another destination for its backup." with a **Backups** link. It will not fail over
+again until its backup goes elsewhere.
+
+## Names across servers [#names-across-servers]
+
+An app reaches its environment's database by the same name, `db-<slug>`, on **whichever server of
+the cluster either of them runs**. No connection string changes after a move or a failover.
+
+- **Names never cross environments, teams or clusters.** An app with no environment shares names
+  with the team's other apps and databases that have none. See
+  [Network isolation](/advanced/network-isolation).
+- **Only single-image apps and databases are reachable by name from another server.** A Compose
+  app stays on one server: it reaches its environment's names, and its own service names stay on
+  that server.
+- **Between two servers the traffic goes through Deplo's relay**, so it is slower than on one
+  server. The cluster places an app next to its environment's database when it can.
+
+The database's page says when that happens: "web reaches this database through Deplo's relay. It
+is faster on the same server."
+
+An older agent is named in the deploy log: "The agent on this server is too old to keep names
+working across the servers of its cluster. Update the agent on this server, then try again."
+
+## Over the API
+
+`createDatabase(input: { clusterId })`, `moveDatabaseToCluster(id, clusterId)`, and
+`Database.clusterId` / `clusterName`. Over MCP: `create_database` takes `clusterId`, and
+`move_database_to_cluster` moves one.

@@ -1,0 +1,14 @@
+{
+  "title": "Clusters",
+  "pages": [
+    "failover",
+    "addresses",
+    "databases",
+    "standby-copy",
+    "apps-with-stored-data",
+    "replicas-and-architectures",
+    "logs-metrics-and-previews",
+    "manage-servers",
+    "leader"
+  ]
+}

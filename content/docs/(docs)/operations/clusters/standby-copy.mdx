@@ -1,0 +1,144 @@
+---
+title: Standby copy
+description: A second copy of a database on another server of the cluster. A failover promotes it in place of restoring a backup.
+---
+
+A **standby copy** is a second copy of a database, on another server of the
+[cluster](/operations/clusters), that follows every change. When the database's server stops, the
+copy takes over. No backup is restored.
+
+- **For experts, off by default.** It costs the database's memory and disk a second time.
+- **Nothing reads from it.** It is not a replica and it serves no queries.
+- **Only on a cluster.** Off a cluster the switch is not shown.
+
+## Turn it on
+
+Open the database, then **Settings -> Advanced -> Keep a standby copy**. It needs **Configure
+databases**.
+
+> A second server runs a copy that follows every change. When this one stops, the copy takes over
+> and about a second of writes is lost.
+
+The switch states its cost under the title before you flip it. Toast: "A standby copy is being
+made on another server".
+
+## Which databases can keep one
+
+| Engine | From version | Notes |
+| --- | --- | --- |
+| **PostgreSQL** | 13 | |
+| **MySQL** | 8.0.26 | The first copy is a full copy of the database: the larger it is, the longer it takes |
+| **MariaDB** | 11.4 | Same. **Turning it on or off restarts the database**, once each way |
+| **Redis** | 6 | |
+| **MongoDB** | 5 | **Only on a cluster of 3 servers or more** |
+| **ClickHouse** | never | See below |
+
+A version tag that names no minor (`8.0`, `11`) counts as the newest of its line. An older one is
+refused: "A standby copy needs MariaDB 11.4 or newer. main runs 10.11."
+
+**MongoDB under three servers.** The switch is off and says: "Deplo keeps a standby copy of a
+MongoDB database only on a cluster of 3 servers or more. Cluster eu has 2: add a server to it."
+
+**ClickHouse.** The switch is off and says: "ClickHouse keeps no standby copy: it copies data
+table by table through a coordination service Deplo does not run. A failover restores the latest
+backup."
+
+**Not offered** to a database that starts with its own command or runs an image of its own:
+
+- "main starts with its own command, which a standby copy cannot follow. Remove the custom command
+  first."
+- "main runs an image of its own, which a standby copy cannot follow. Use the PostgreSQL image
+  first."
+
+## What it costs
+
+The copy always runs on **another server** than the database.
+
+| Engine | The switch says |
+| --- | --- |
+| PostgreSQL, MariaDB | "Uses 512 MB of memory on a second server and a second copy of its data (2 GiB). Its own server keeps up to 1 GiB more." |
+| MySQL, MongoDB | "Uses 512 MB of memory on a second server and a second copy of its data (2 GiB)." |
+| Redis | The same, then "Its own server uses up to 64 MB more memory." |
+
+Without a memory limit it reads "Uses as much memory as the database on a second server". MariaDB
+adds "Turning it on or off restarts the database."
+
+When there is nowhere to run it, the switch says why:
+
+- "Cluster eu has one server, so a standby copy of main has nowhere to run. Add a server to the
+  cluster."
+- "No other server in cluster eu has 512 MB free for a standby copy of main. Add a server to it or
+  lower main's memory."
+- "No other server in cluster eu is online and ready right now, so a standby copy of main has
+  nowhere to run. Bring a server back or add one."
+- "No other server in cluster eu can keep a standby copy yet: their server agents need an update,
+  which Deplo does on its own."
+
+## What changes on the database's page
+
+While a copy follows, the switch says "The copy runs on server-b. A failover promotes it." and
+the **Failover** card adds "Its standby copy runs on server-b."
+
+The promises become:
+
+1. **"Never two writers"**
+2. **"A failover promotes the standby copy; a backup is restored only when the copy had stopped
+   following"**
+
+And the card reads: "A failover loses about a second of writes: the standby copy follows every
+change. Recovery takes about two minutes: the copy takes over and nothing is restored." The dialog
+that places the database on a cluster shows the same.
+
+<Callout type="info">
+  "About a second" and "about two minutes" are what the card says for every engine. They are the
+  expected figures, not yet measured on real servers.
+</Callout>
+
+## When the database's server stops
+
+1. **The copy is promoted after about 81 seconds**, never before the old server has stopped its
+   own database. See [When a server stops](/operations/clusters/failover).
+2. **Apps keep reaching the database under the same name.**
+3. Activity, by Deplo: `Promoted the standby copy of main on server-b: server-a stopped answering.
+   No backup was restored.`
+4. **Deplo makes a new copy** on another server when there is one: `Keeps a standby copy of main
+   on server-c`.
+
+When the old server comes back it removes its own copy of the database. It never runs as a second
+writer.
+
+## When there is no copy
+
+A copy that **had not followed its database for 15 minutes is never promoted**. The failover
+restores the latest backup, as for a database with no copy. So the 15-minute
+[failover backup](/operations/clusters/databases#the-failover-backup) stays: it is what a failover
+falls back to.
+
+- Deplo makes such a copy again on its own: `Made the standby copy of main on server-b again: it
+  had stopped following`.
+- With no server to put one on, the switch says "There is no standby copy right now. Deplo makes
+  one as soon as another server has room." and the card says "There is no standby copy right now,
+  so a failover restores the latest backup. Deplo makes a new copy as soon as another server has
+  room." Activity repeats it once a day: `main has no standby copy right now.`, followed by the
+  reason.
+
+**A MongoDB cluster that drops from three servers to two** (a server is removed): Deplo removes
+the copy with its data at once and the switch stays on. The page goes back to the backup promises
+and says why. When a third server joins, Deplo makes the copy again on its own. A server that is
+only offline does not count as removed.
+
+## Good to know
+
+- **Moving the database** to another server of the cluster moves the copy too.
+- **Turning the switch off, leaving the cluster or deleting the database** removes the copy and
+  its data. Toast: "The standby copy was removed".
+- **The copy's login is made by Deplo and never shown.** It can read and follow, never write.
+- **A MySQL or MariaDB database whose binary log is turned off in a config file** is refused: "The
+  standby copy of main could not be made: the database has its binary log turned off, which a
+  standby copy follows. Remove that setting from its configuration first."
+- **A MongoDB database created before Deplo kept its log** is refused with "the database does not
+  keep the log a standby copy reads yet. Redeploy it first."
+- Activity by you: `Turned on the standby copy of main, on server-b` and `Turned off the standby
+  copy of main`.
+- **Over the API**: `setDatabaseStandby(id, enabled)`, `Database.standby` and
+  `Database.standbyServerName`. Over MCP: `set_database_standby`.

@@ -4,6 +4,7 @@
   "pages": [
     "instance-administration",
     "servers",
+    "clusters",
     "update",
     "verify-a-release",
     "panel-address-and-certificates",

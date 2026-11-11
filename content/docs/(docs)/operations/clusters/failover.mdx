@@ -1,0 +1,194 @@
+---
+title: "Failover: when a server stops"
+description: Failover on a cluster - what moves, what waits, how long it takes, and what happens when the server comes back.
+---
+
+When a server of a [cluster](/operations/clusters) stops answering, its apps start on another
+server of the cluster. Nobody clicks anything, and it keeps working while Deplo itself is down.
+
+Failover starts at two servers. On a cluster of one, nothing moves.
+
+## When a server stops [#when-a-server-stops]
+
+| After | What happens |
+| --- | --- |
+| 15 seconds of silence | The cluster's card shows the server as **Not responding** |
+| 60 seconds | The silent server has stopped, by itself, everything that must never run twice: its databases, its apps with stored data and its running cron jobs |
+| About 81 seconds | The cluster's leader starts moving that server's work to the other servers |
+
+**Nothing moves earlier than that**, on purpose. A server that is only cut off from the network is
+still running. The leader waits until that server has stopped its own databases before it starts
+them somewhere else. That is the first promise, **"Never two writers"**.
+
+**Nothing moves at all** when the trouble looks like the cluster's own, not the server's:
+
+- the leader lost its own connection
+- more than half of the servers went silent at the same moment
+
+<Callout type="info">
+  81 seconds is when moving **starts**, not when visitors are served again. That also takes the
+  app's own start, a restore for anything with data, and, for a domain on Cloudflare, the time
+  Cloudflare needs to stop sending visitors to the server that stopped. Deplo does not promise a
+  figure for the whole.
+</Callout>
+
+## What moves, and what waits
+
+Order: **databases first, then apps with a domain, then the rest**, oldest first.
+
+| What ran on the server | What happens |
+| --- | --- |
+| An app with no stored data | Starts on another server, exactly as its last deploy left it: same version, variables, files, ready check and automatic restart |
+| Replicas of an app | Start on the other servers. See [Replicas across servers](/operations/clusters/replicas-and-architectures#replicas-across-servers) |
+| A database | Restored on another server from its latest backup, or its standby copy takes over. See [Databases](/operations/clusters/databases) |
+| An app with a Volume or Files | **Waits for its server** unless you chose otherwise. See [Apps with stored data](/operations/clusters/apps-with-stored-data) |
+| An app with a Bind | Never moves: the folder lives on that one machine |
+| A pull request preview | Never moves. See [Pull request previews](/operations/clusters/logs-metrics-and-previews#pull-request-previews) |
+| A cron job that was running | Marked **Lost: its server stopped**, and never run again on its own. See [Cron jobs](/operations/clusters/logs-metrics-and-previews#cron-jobs) |
+
+An app keeps answering under its domain only if the domain follows it. See
+[Addresses and Cloudflare](/operations/clusters/addresses).
+
+### What cannot move yet
+
+Activity says why, once a day, until it is fixed:
+
+- **An app that was never deployed since it joined the cluster.** The leader has nothing to start
+  it from: `web cannot fail over yet: Deplo has no saved copy of its last deploy to give the
+  cluster's leader. It is sent with the next deploy. Cluster eu will not move it to another server
+  until that is fixed.` Deploy it once.
+- **A server whose agent is too old never takes work over**: `The agent on server-b is too old to
+  take over Apps when another server in cluster eu stops. Update the agent on server-b.`
+
+## Waiting for room [#waiting-for-room]
+
+What fits nowhere waits, and Deplo tries again **every 30 seconds**.
+
+- The app's header, its **Settings -> General -> Server** card and the cluster's card all say
+  **Waiting for room in eu**. A database says it on its **Failover** card.
+- The cluster's card lists what waits, with "Deplo tries again every 30 seconds."
+- **The fix**: add a server to the cluster, or lower the app's memory.
+
+**One alert per failover that left something waiting**, on by default:
+**Apps waiting for room after a failover**. Its title is `web waiting for room in eu`, or
+`3 Apps waiting for room in eu`, and it says: "server-a stopped answering. web found no room on
+the other servers yet. Deplo tries again every 30 seconds."
+
+## What Activity says
+
+Every entry is **by Deplo**, in the team that owns the app or database:
+
+| Entry | When |
+| --- | --- |
+| `Moved web to server-b: server-a stopped answering` | An app moved |
+| `Started a replica of web on server-b: server-c stopped answering` | A lost replica was replaced |
+| `Restored db on server-b from the backup of 14:15` | A database came back from a backup |
+| `web is waiting for room in eu: server-a stopped answering and no other server has room yet` | Nothing had room |
+| `web moved to another server of its cluster, so its generated address is now web-calm-fox-cb007118.deplo.site` | Its `deplo.site` address changed |
+
+**If Deplo was down during the failover**, it catches up when it is back: the same entries, the
+new address and the alert.
+
+## The slower case [#the-slower-case]
+
+81 seconds is the usual case. One case is slower, and it is worth knowing before it happens.
+
+It applies when the server that stopped is one the current leader **has not heard from since it
+started leading**. Most often: the leader ran on that same server, so Deplo's own machine took
+over as leader (see [The leader](/operations/clusters/leader)).
+
+| What ran on it | Starts elsewhere after |
+| --- | --- |
+| Apps without stored data | About 2 minutes: half a minute for Deplo to notice, then 81 seconds |
+| Databases, and apps with a Volume | **6 minutes 21 seconds** after the new leader started leading, about 7 minutes in all |
+
+Why: just before a planned update, a leader gives every server 5 more minutes. A leader that
+takes over cannot know whether that happened. So it waits those 5 minutes instead of risking the
+same database running on two servers. "Bring it back" from a backup is refused for the same time.
+
+A server that has answered the new leader even once is back on the usual 81 seconds.
+
+## When a server comes back [#when-a-server-comes-back]
+
+A restart, or a network cut that healed. The server:
+
+1. **Starts nothing of the cluster's until it has heard from the leader.** Anything that started
+   by itself at boot is stopped again first.
+2. **Stops and removes its own copy** of every app and database that moved away while it was
+   gone, the app's Cloudflare connector included.
+3. **Starts again what is still its own.** Work that found no room elsewhere goes back to it.
+
+Until it has heard from the leader, a deploy or a start of a cluster app on it fails with: "this
+server has not heard from its cluster's leader, so it starts nothing of the cluster's yet".
+
+**One Activity entry and one alert per return**, per team, naming only that team's own apps and
+databases:
+
+- `server-a is back in cluster eu. Its copy of web was stopped: web runs on another server now.`
+- Several: `Its copies of api, web and worker were stopped: they run on other servers now.`
+- The alert is **Server back in its cluster**, on by default.
+- A return that stopped nothing only says `server-a answers again in cluster eu.`
+
+Replicas go back to an even spread at the app's next deploy, not at once.
+
+<Callout type="warn">
+  After a power loss, the old copies can run for a few seconds at boot, before the server stops
+  them. Nothing reaches the live database from there: what an old copy wrote in that window stays
+  with the data described below.
+</Callout>
+
+## Data left on the server [#data-left-on-the-server]
+
+A server that comes back may still hold data that the moved database or app wrote **before it
+stopped** and that never reached a backup. Deplo does not throw it away silently.
+
+**Before its copy is removed, what the server still held is saved as a backup.** This covers a
+database and an app with a Volume. The server does it by itself, also while Deplo is down.
+
+| Where the backups of that database or app are kept | What happens |
+| --- | --- |
+| A **bucket** | Saved, and listed with its backups as **Left on server-a after the failover at 14:32** |
+| **Another server's disk** | **Not saved.** The returning server cannot reach that disk on its own, so the data stays on the returning server |
+| Nowhere (no backup schedule) | **Not saved.** The data stays on the returning server |
+
+<Callout type="warn">
+  Without a bucket, Deplo keeps a cluster's backups on another server of the cluster. That is the
+  case in the second row. Add a bucket as a
+  [backup destination](/guides/data/backups-and-restore#add-a-destination) to have this data saved.
+  Deplo does not try to save it again later.
+</Callout>
+
+The Activity entry and the alert say which it was:
+
+- Saved: `What it still held of db was saved as a backup, labelled "Left on server-a".`
+- Not saved: `What it still held of db could not be saved as a backup, so it stays on server-a:
+  its backups are kept on server-b, which server-a cannot reach on its own.` The other reasons are
+  `the backup failed`, with the server's own error, and `the cluster had no backup destination for
+  it.`
+
+### What you can do with it
+
+The backup is in the **Backups** tab of the database or app, with **Download**, **Restore** and
+**Delete** in its menu.
+
+- **It is never deleted by "keep the last N"**, and it does not count towards N.
+- **Deplo never restores it on its own.** A later failover restores the newest ordinary backup.
+- **Restoring it costs everything written since the failover.** The dialog says: "This overwrites
+  db in place with what server-a still held when it came back." and "The database is stopped and
+  its current data is wiped: everything written since the failover is lost."
+- **Deplo does not merge it into the live data.** Download it to look at what is in it.
+- It is a copy of the data folder as the old server left it, not a dump. A PostgreSQL database
+  restored from it recovers by itself, as after a crash, and takes a new base backup before its
+  change log counts again.
+- **Restore** needs **Restore backups**, **Delete** needs **Delete backups**, and downloading an
+  app's also needs **Reveal secret values**.
+
+The row's date is when the server came back. The label carries when the failover happened: the
+time alone when it was today, `3 Mar, 14:32` otherwise, and "Left on a removed server" once that
+server is gone.
+
+An app with only a Bind, and an app that keeps nothing, have nothing to save.
+
+**Over the API**: `App.placementNote`, `Cluster.waiting`, `BackupRun.leftAt` and
+`BackupRun.leftOnServer`. Over MCP: `get_app`, `get_cluster` and `list_backup_runs` return the
+same.

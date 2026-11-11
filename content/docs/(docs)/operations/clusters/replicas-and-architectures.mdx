@@ -1,0 +1,97 @@
+---
+title: Replicas and mixed servers
+description: On a cluster, replicas spread across the servers, and ARM servers can sit next to x86 ones.
+---
+
+Two things decide which servers of a [cluster](/operations/clusters) run an app: how many
+[replicas](/advanced/replicas) it has, and which kind of processor its image runs on.
+
+## Replicas across servers [#replicas-across-servers]
+
+On a cluster with two servers or more, an app with **a Cloudflare domain** and more than one
+replica **spreads them across the servers**, from its next deploy. There is nothing to switch on.
+
+**Settings -> Advanced -> Replicas** then says: "Spread across 3 servers: if one stops, the
+others keep answering".
+
+- **Each server runs its own share of the replicas**, with the app's Cloudflare connector beside
+  them. Visitors reach every server.
+- **A server that stops does not take the app down.** The others were already answering.
+
+### When they stay on one server
+
+| The setting says | Why |
+| --- | --- |
+| "Its replicas stay on one server: without a Cloudflare domain, visitors reach only that one." | Any other address points at one server, so a spread would get no traffic. See [Addresses and Cloudflare](/operations/clusters/addresses) |
+| "Its replicas stay on one server until every server agent in the cluster is up to date. Deplo updates them on its own." | Nothing to do: wait |
+
+A Compose app that sets `deploy.replicas` itself is not spread. It stays on one server.
+
+### A deploy goes one server at a time
+
+Every new replica on a server is ready before an old one there stops.
+
+If a server fails the deploy, **it keeps the previous version and the app keeps answering**. The
+deployment is marked failed and its log says: "server-c kept the previous release, so web is
+still answering: server-a, server-b run this one. Deploy again to finish."
+
+Lowering the replica count removes the app from a server left with none: "Removed the replicas
+server-c no longer runs." in the deploy log.
+
+### When a server stops
+
+Its replicas start on the other servers after about 81 seconds, where there is room. Activity, by
+Deplo: `Started a replica of web on server-a: server-c stopped answering`.
+
+**With no room for all of them**:
+
+- the app's page and the Replicas setting read **2 of 3 replicas running · waiting for room**
+- Activity: `web: 2 of 3 replicas running · waiting for room. server-c stopped answering and no
+  other server has room for the rest yet`
+- the alert **Apps waiting for room after a failover** carries the same title
+- Deplo tries again every 30 seconds
+
+When the server comes back, it stops the replicas that now run elsewhere. Replicas return to an
+even spread at the next deploy. See
+[When a server comes back](/operations/clusters/failover#when-a-server-comes-back).
+
+## Mix ARM and x86 servers [#mix-arm-and-x86-servers]
+
+A cluster can mix ARM and x86 servers. There is nothing to configure: Deplo knows each server's
+kind and only moves an app or a database to a server its image runs on.
+
+| What runs | Where it can run |
+| --- | --- |
+| An app **Deplo built** | On the kind of server it was built on. Those are also the only servers its image is copied to |
+| An app or database from a **pulled image** | Wherever the image is published for. The official database images are published for both |
+| An image Deplo cannot read about (a private registry, or no way out to the internet) | On the kind of server it runs on now |
+| A Compose app with **several images** | On the kind of server it runs on now |
+
+Deplo reads what a pulled image is published for from public registries, once a day at most, when
+the app is placed or deployed. It never builds one image for both kinds.
+
+**The same rule covers everything**: the first placement, a failover, the replicas of an app,
+emptying a server, and a database's standby copy.
+
+### What the app's page says
+
+**Settings -> General -> Server**, only on a cluster that mixes both kinds, and only when the app
+cannot use every server:
+
+- **"Fails over to x86 servers only (2 of 3)"**: 2 of the cluster's 3 servers can run it.
+- **"If server-a stops, web has nowhere to go. It is the only x86 server in eu."** Add a second
+  server of that kind.
+
+An app that can use every server shows no line.
+
+### Refusals name the kind
+
+On a mixed cluster, creating, moving, emptying or a standby copy can answer:
+
+- "No x86 server in cluster eu has 256 MB free. Add an x86 server to it or lower web's memory."
+- "web runs on ARM servers only, and none in cluster eu can take it. Add an ARM server."
+
+And after a server stops, Activity says: `web is waiting for room in eu: server-a stopped
+answering and no other x86 server has room yet`.
+
+The words are always **x86** and **ARM**.

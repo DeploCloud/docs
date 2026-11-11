@@ -1,0 +1,154 @@
+---
+title: The leader
+description: The part of a cluster that moves apps off a server that stopped - where it runs, how to move it, and how it is updated.
+---
+
+Every [cluster](/operations/clusters) has a **leader**: it decides which server runs what, and it
+is what moves apps off a server that stopped. You never install or update it by hand.
+
+- **It starts on Deplo's own machine**, the moment the cluster is created.
+- **Failover works while Deplo is down only if the leader runs somewhere else.** With the leader
+  on Deplo's machine and that machine down, nothing fails over.
+
+## Reading the card
+
+The cluster's card always says where the leader runs and whether it answers: **Leader runs on
+server-b**, then one of:
+
+| Badge | Meaning |
+| --- | --- |
+| **Answering** | Failover works |
+| **Not running**, **Not started** | **Try again** starts it |
+| **Not reachable** | Deplo cannot reach the server the leader runs on |
+| **Can't start** | Deplo's own machine is not connected as a server yet |
+| **Needs an update** | "This leader is older than this Deplo accepts. Deplo updates it on its own." |
+
+## Run the leader on another server [#run-the-leader-on-another-server]
+
+**Why**: so that failover keeps working while Deplo's own machine is down.
+
+<Steps>
+<Step>
+
+### Open the dialog
+
+**Settings -> Servers**, the cluster's card, the **Leader runs on** row, **Run on another
+server**.
+
+</Step>
+<Step>
+
+### Pick the server
+
+The dialog, **Run the leader on another server**, has one field, **Server**. Deplo's own machine
+is listed as "(Deplo's own machine)", and the current one as "(runs here now)".
+
+Any server can take it, a server of the cluster included. An offline one is listed but cannot be
+picked: "server-b is offline. Bring it back online first." A server whose agent is too old is
+refused when picked.
+
+</Step>
+<Step>
+
+### Move
+
+There is no command to run: that server installs the leader on its own. Toast: "The leader now
+runs on server-b". Activity: `Moved the leader of cluster eu to server-b`.
+
+</Step>
+</Steps>
+
+To move it back, pick Deplo's own machine in the same dialog. Instance admins only.
+
+### Pick a server that answers on port 443
+
+A server that runs Deplo's proxy (it answers on 443) also runs a second **cluster relay** beside
+the leader. Every server of the cluster connects to it too, so the leader reaches them without
+Deplo's machine.
+
+A server with no proxy runs the leader alone. **Failover then still needs Deplo's machine.**
+
+### When the leader's server stops answering
+
+Deplo's own machine leads in its place, on its own, within about half a minute.
+
+- The card says: "Deplo's own machine leads this cluster until server-b answers again."
+- Activity: `server-b stopped answering, so Deplo's machine leads cluster eu until it answers
+  again`, then `server-b answers again, so it leads cluster eu again`.
+- **Nothing runs twice during a change of hands**, and a change of hands never causes a failover
+  by itself: a leader that takes over waits to hear a server silent for about 81 seconds itself
+  before it moves anything.
+- For a server it has **not heard from at all**, it waits 6 minutes 21 seconds before it starts
+  that server's databases and apps with a Volume elsewhere. See
+  [The slower case](/operations/clusters/failover#the-slower-case).
+
+<Callout type="warn">
+  **The limit.** With the leader's server offline **and** Deplo's machine down at the same time,
+  nothing fails over. Apps keep running where they are. A server that stops in that window is not
+  replaced until either one is back.
+</Callout>
+
+## When Deplo's own server is in the cluster [#when-deplos-own-server-is-in-the-cluster]
+
+Deplo's own server can be a member of a cluster like any server: it is in the **Add server** list,
+its apps and databases come along, and it can be emptied and removed. This is how a first cluster
+starts with one rented server.
+
+**Deplo itself, its database and its proxy are never part of the cluster.** Nothing places,
+moves, stops or empties them.
+
+While Deplo's own server is a member **and** the leader runs on it, the card warns:
+
+> If Deplo's own server stops, its Apps cannot move. Run the leader on another server to fix this.
+
+The leader is what moves apps off a server that stopped, and here it stops with that server. The
+button beside the warning opens the same dialog. Picking any other server, a member included,
+makes the warning go away.
+
+Emptying or removing Deplo's own server leaves the leader and the relay running there.
+
+## Updates [#updates]
+
+**Nobody updates a leader or a relay by hand.** After a Deplo update, Deplo brings each one to the
+version it ships with, on its own: one server at a time, a leader on another server first, Deplo's
+own machine last. It only ever moves forward.
+
+- **A leader update costs no failover.** Before it restarts, the leader gives every server of its
+  clusters five more minutes, so nothing stops and nothing moves while it is away. Five minutes is
+  the most a server ever accepts.
+- **A server whose agent is still being updated** gets that update first, then the leader's.
+- Activity, by Deplo: `Updated the cluster leader and relay on server-b to v0.3.0`.
+
+### When an update fails
+
+Deplo tries again on its own, waiting 1, 2, 4 and up to 60 minutes between tries. Until it works,
+the card shows "Deplo could not update the leader on server-b to v0.3.0:", then the reason, then
+"It retries on its own."
+
+Two reasons you can meet:
+
+- "A server of cluster eu is not answering, and a leader is not restarted while its Apps may be
+  moving." Deplo waits until that server answers, or 45 minutes have passed.
+- "It took the new version but did not start on it. The other servers wait until it does." No
+  other leader is updated until this one runs again.
+
+### A leader too old for this Deplo
+
+The badge reads **Needs an update**. When that leader runs on another server, Deplo's own machine
+leads the cluster meanwhile, and the card says: "Deplo's own machine leads this cluster until
+server-b is updated."
+
+There is no update button, and none is needed. **Try again** is only offered for a leader that is
+not running.
+
+## Good to know
+
+- **A server that runs a cluster's leader cannot be removed from Deplo**: "Move the leader of
+  cluster eu to another server first."
+- **After [moving Deplo](/operations/move-deplo) to another machine**, the new machine starts its
+  own leader, and a leader on another server keeps leading.
+- **What each leader needs to restart an app** (its last deployed version and variables) is kept
+  sealed for that leader alone. Moving the leader hands it over to the new one.
+- **Deleting the last cluster** removes the leader and the relay from Deplo's own machine.
+- **Over the API**: `moveClusterLeader(id, serverId)`, `Cluster.leader` and
+  `Cluster.leaderChoices`, instance admin only. There is no MCP tool for it.

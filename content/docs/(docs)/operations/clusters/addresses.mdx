@@ -1,0 +1,111 @@
+---
+title: Addresses and Cloudflare
+description: On a cluster, a domain on Cloudflare keeps one address through a failover. Every other address changes.
+---
+
+An app on a [cluster](/operations/clusters) can end up on another server. Whether its address
+follows it depends on where the domain lives.
+
+| The app is reached at | After a failover |
+| --- | --- |
+| A domain in a Cloudflare zone connected for [automatic DNS](/guides/networking/automatic-dns) | **Same address.** Nothing to do |
+| A generated `deplo.site` address | Deplo gives the app a **new address** for the new server |
+| A domain of your own that is not on Cloudflare | **Stops answering** until you point its DNS at the new server |
+
+Deplo says so before you rely on it:
+
+> This App's address changes when it fails over to another server. A domain on Cloudflare keeps
+> one address.
+
+The warning has a **Connect Cloudflare** link and shows:
+
+- **before placing**: in the **Move** dialog and on the new app page under **Deploy to**, once a
+  cluster is picked
+- **after**: at the top of the app's **Overview** and of its **Domains** page
+
+It goes away once one of the app's domains is in a connected Cloudflare zone.
+
+## Keep one address with Cloudflare
+
+**Nothing to set up beyond connecting the domain to Cloudflare** under **Settings -> DNS**, the
+way [automatic DNS](/guides/networking/automatic-dns#connect-a-domain) already asks. The API token
+needs the tunnel permission that **Use Cloudflare Tunnel** already asks for.
+
+What Deplo then does for each app on a cluster with such a domain:
+
+1. **The app gets its own Cloudflare Tunnel.**
+2. **The tunnel's connector runs beside the app**, wherever the app runs, and starts only once
+   the app is ready.
+3. **The DNS record becomes a proxied CNAME to the tunnel**, and does not change again.
+
+Cloudflare hands each hostname to the server's own proxy, so
+[basic auth, headers, path routing and redirects](/guides/networking/domains-and-https) work as
+before.
+
+**No certificate to manage.** The domain editor hides the HTTPS fields and says: "Cloudflare
+serves this domain through a tunnel, HTTPS included: it needs no certificate of its own."
+
+## When an app joins a cluster
+
+Placing an app on a cluster switches its Cloudflare domains to the tunnel. **The hostname stays
+the same.**
+
+- **Nothing is offline in between.** DNS switches only once the connector has connected.
+- **Deplo retries on its own** every 10 minutes.
+- **A domain added later** to an app that is already on a cluster uses the tunnel from the start.
+- **An app whose server joined a cluster** is switched by the same 10-minute check, with no
+  redeploy.
+
+## When an app leaves a cluster
+
+Moving the app to a server outside the cluster:
+
+- points each domain back at that server: an address record, or the server's tunnel if the domain
+  used one before
+- deletes the app's tunnel
+
+Deleting the app deletes the tunnel and the records Deplo made. Deleting the cluster does the
+same as leaving it. After leaving, the domain's certificate choice goes back to the default for
+its DNS.
+
+## Limits
+
+- **One tunnel per app lives in one Cloudflare account.** A domain in a zone of another
+  Cloudflare account keeps an address that changes.
+- **A hostname shared with another app** (one app on `/`, another on `/api`) is not switched.
+- **A record Deplo did not make is never replaced.** If the hostname already has a record that
+  does not point at one of your servers, delete it in Cloudflare or pick another name.
+- **A pull request preview** is not served through the app's tunnel.
+- **DNS failover for a domain that is not on Cloudflare does not exist.** Deplo does not rewrite
+  records at another DNS provider when an app moves.
+
+## A generated address
+
+A `deplo.site` address names the server the app runs on. After a failover Deplo makes a new one
+as soon as it sees the app running on the new server, and Activity says:
+
+`web moved to another server of its cluster, so its generated address is now
+web-calm-fox-cb007118.deplo.site`
+
+If the new server refuses the new routes, Activity says `web runs on server-b, but its generated
+address could not be updated yet`, followed by the reason, and Deplo tries again on its own.
+
+## What Activity says
+
+| Entry | Meaning |
+| --- | --- |
+| `Gave web its own Cloudflare Tunnel. Its domains switch to it once it is running on the cluster` | The app joined. It adds `; 1 in another Cloudflare account keep an address that changes` when that applies |
+| `Switched app.example.com to web's Cloudflare Tunnel: the address stays the same wherever it runs` | Done |
+| `Could not switch these to web's Cloudflare Tunnel, so they stop answering when it fails over: app.example.com (This App's Cloudflare Tunnel is in another Cloudflare account, so this domain cannot use it)` | Each domain with its reason, said once per reason. Fix the reason; Deplo retries |
+| `Pointed app.example.com back at web's server` | The app left the cluster |
+| `Could not point these back at web's server, so they still use its Cloudflare Tunnel` | Leaving did not finish for the domains it lists, each with its reason |
+| `Could not set up this App's Cloudflare Tunnel, so its domains keep their address` | The tunnel could not be made, for the reason it gives. The move still went through |
+
+## Good to know
+
+- **The tunnel's token is a secret.** It is never shown, it is masked wherever Deplo displays the
+  app's stack, and it is deleted with the tunnel.
+- **A server whose agent is too old refuses the deploy**: "this server's agent is too old to start
+  the App's tunnel once it is ready - Deplo updates the agent on its own".
+- **How fast Cloudflare stops sending visitors to a server that lost power is Cloudflare's to
+  decide.** Deplo has not measured it and promises no figure.

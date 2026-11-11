@@ -1,0 +1,175 @@
+---
+title: Clusters
+description: Several servers that act as one. When one stops, its apps move to another, with no click from anyone.
+---
+
+A **cluster** is several servers that act as one. If one stops, its apps move to another. Nothing
+of Kubernetes is involved.
+
+- **You place an app or a database on the cluster**, never on one of its servers. The cluster
+  picks the server.
+- **When a server stops answering, the cluster moves its work** to another server. That is a
+  **failover**. It needs no click, and it keeps working while Deplo itself is down.
+- **Opt-in, and for experts.** An app on a single server works exactly as before.
+
+Creating and changing a cluster is for **instance admins**, under **Settings -> Servers**. Using
+one needs nothing new: the capability that places an app on a server places it on a cluster.
+
+## What a cluster gives you
+
+| You get | How | Read |
+| --- | --- | --- |
+| Apps that come back on another server | The cluster's leader moves them about 81 seconds after a server went silent | [When a server stops](/operations/clusters/failover) |
+| A domain that keeps its address | A domain on Cloudflare follows the app wherever it runs | [Addresses and Cloudflare](/operations/clusters/addresses) |
+| A database with a recent backup elsewhere | Every 15 minutes, on another server, set up for you | [Databases](/operations/clusters/databases) |
+| Replicas on several servers | An app with a Cloudflare domain spreads its replicas | [Replicas and mixed servers](/operations/clusters/replicas-and-architectures) |
+
+## Create a cluster
+
+<Steps>
+<Step>
+
+### Open the Add dialog
+
+**Settings -> Servers -> Add**, then pick **Cluster** ("Several servers as one") next to
+**Server**.
+
+</Step>
+<Step>
+
+### Name it and choose who can use it
+
+A short name such as `eu`, up to 60 characters, unique on this Deplo. Then pick the teams, see
+[below](#let-teams-use-it).
+
+</Step>
+<Step>
+
+### Add cluster
+
+The cluster gets its card on the Servers page, and its **leader** starts on Deplo's own machine
+without being asked. There is nothing to install.
+
+</Step>
+</Steps>
+
+A cluster of one server is allowed. Its card says **"Failover starts at two servers."**, and
+turns to the **Failover on** badge with the second one.
+
+## Let teams use it
+
+A cluster is shared the way a server is: **All teams**, or **Specific teams** you tick. That is
+the list of teams allowed to place apps and databases on it.
+
+- **Change it later** from the card's menu, **Manage**: the name and the teams, then **Save**.
+- **A team the cluster is not shared with does not see it** in any picker, and is refused by the
+  API: "That cluster isn't available to this team."
+- **No new capability.** Placing an app needs **Create apps**, moving one needs **Configure apps**.
+  A database needs **Create databases**, or **Configure databases** to move it.
+- **Nobody can place anything on one server of a cluster.** Its servers leave every picker, and the
+  API answers: "That server is a member of cluster eu, so nothing can be placed on it directly."
+
+## Add a server
+
+On the cluster's card, **Add server**, pick one, **Add**.
+
+**"Its Apps and databases stay where they run, without a restart."** Joining moves nothing and
+changes no address: the apps and databases already on that server now belong to the cluster.
+Activity records `Added server server-b to cluster eu with 2 apps and 1 database`, and the
+server's own page shows **Member of cluster eu**.
+
+A server that cannot join is listed in the dialog with the reason:
+
+| The dialog says | What to do |
+| --- | --- |
+| "server-b is offline. Bring it back online first." | Wait for it, or fix it |
+| "The Deplo agent on server-b is too old to join a cluster. Update it first." | Let its agent [update](/operations/update) |
+| "server-b is already in cluster us. A server is in at most one cluster." | [Remove it](/operations/clusters/manage-servers#remove-a-server) from the other one first |
+| "server-b only keeps backups, so it can't run Apps." | Pick a server that runs apps. The same goes for one that only builds images |
+| "server-b runs work of Acme, which eu is not shared with. Share the cluster with them first." | Share the cluster with that team, or move its apps away |
+
+**Deplo's own server can join too**, so a first cluster needs only one more machine. Read
+[what that means for the leader](/operations/clusters/leader#when-deplos-own-server-is-in-the-cluster)
+first.
+
+## Put an app or a database on it
+
+Every place that picks where something runs lists clusters next to servers, with a **Cluster**
+badge.
+
+| What | Where |
+| --- | --- |
+| A new app | The new app page, **Deploy to** |
+| An app you already have | **Settings -> General -> Server -> Move**, then pick the cluster |
+| A new database | **Create database**, the **Server** field |
+| A database you already have | Its **Settings -> General -> Server -> Move** |
+
+Moving onto a cluster is an ordinary [server move](/guides/data/persistent-storage#move-an-app-to-another-server):
+the app is redeployed on the server the cluster picked and its data is copied across.
+
+The Server card then reads **Runs on eu · now on server-b**. To get an app off the cluster and
+onto one machine you choose, **Move** it to a server.
+
+### How the cluster picks a server
+
+Among the servers that are online, not being emptied, able to run the app's image and with room
+for it, the cluster prefers, in this order:
+
+1. a server already running a database of the app's environment
+2. a server running none of the app's other replicas
+3. the server with the most memory left
+4. the server running the fewest things
+
+**Room** is the app's or database's [memory limit](/advanced/resource-limits). Without a limit it
+is its memory peak of the last 24 hours, and never less than 256 MB. Nobody can pin an app to one
+server of a cluster.
+
+### When there is no room
+
+The move or deploy is refused **before anything stops**:
+
+- "No server in cluster eu has 512 MB free. Add a server to it or lower web's memory."
+- "No server in cluster eu is online and ready right now, so web has nowhere to run. Bring a
+  server back or add one."
+
+## The cluster's card
+
+One card per cluster on **Settings -> Servers**:
+
+- **The servers**, each with its status. **Not responding** means the cluster has not heard from
+  that server in a while; after a minute without an answer, that server has stopped its databases
+  and its apps with files, so none of them can run twice.
+- **Failover on**, from two servers.
+- **Waiting for room**: what found no server after a failover. See
+  [Waiting for room](/operations/clusters/failover#waiting-for-room).
+- **Apps whose latest version is still being copied** to the other servers: "Failover is not
+  ready for these Apps yet. Their latest version is still being copied.", with `web: on 2 of 3
+  servers`. An app Deplo built is copied to the other servers after each build; an app that runs
+  a pulled image needs no copy.
+- **Leader runs on**, with whether it answers. See [The leader](/operations/clusters/leader).
+
+## What a cluster does not do
+
+- **Deplo itself does not fail over.** If Deplo's own machine is lost, see
+  [Disaster recovery](/operations/disaster-recovery). The apps on the other servers keep running.
+- **A domain that is not on Cloudflare does not follow the app.** See
+  [Addresses and Cloudflare](/operations/clusters/addresses).
+- **A pull request preview never fails over.**
+- **Replicas are not added under load**, and an image is not built for both ARM and x86.
+- **Clusters cannot be changed over MCP.** An AI agent can read them (`list_clusters`,
+  `get_cluster`) and place an app or a database on one (`move_app_to_cluster`,
+  `move_database_to_cluster`).
+
+## In this section
+
+<Cards>
+  <Card title="Failover: when a server stops" description="What moves, how long it takes, and what happens when the server comes back" href="/operations/clusters/failover" />
+  <Card title="Addresses and Cloudflare" description="A domain that keeps one address, and the ones that change" href="/operations/clusters/addresses" />
+  <Card title="Databases" description="The two promises, the 15-minute backup, names across servers" href="/operations/clusters/databases" />
+  <Card title="Standby copy" description="A second copy that takes over in place of a restore" href="/operations/clusters/standby-copy" />
+  <Card title="Apps with stored data" description="Why an app with a volume waits for its server" href="/operations/clusters/apps-with-stored-data" />
+  <Card title="Replicas and mixed servers" description="Replicas across servers, ARM next to x86" href="/operations/clusters/replicas-and-architectures" />
+  <Card title="Logs, metrics, cron jobs and previews" description="What changes when an app runs on several servers" href="/operations/clusters/logs-metrics-and-previews" />
+  <Card title="Empty or remove a server, delete a cluster" description="Retire a server, or take a cluster apart" href="/operations/clusters/manage-servers" />
+  <Card title="The leader" description="Where it runs, how to move it, how it is updated" href="/operations/clusters/leader" />
+</Cards>
