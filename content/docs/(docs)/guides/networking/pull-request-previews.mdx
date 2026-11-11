@@ -61,7 +61,7 @@ A **Pull requests** tab appears on the app.
 | --- | --- | --- |
 | **Preview domain** | none | A base like `preview.example.com`, with one wildcard DNS record pointing at the server. Unlocks HTTPS |
 | **HTTPS** | off | A certificate per preview. Locked until a preview domain is set |
-| **Rebuild on every commit** | on | Off, a new commit is only recorded, and **Redeploy** builds the latest one |
+| **Rebuild on every commit** | on | Off, a new commit is only recorded, and **Redeploy preview** builds the latest one |
 | **Live previews** | 3 | How many run at once, 1 to 50 |
 | **Port** | the app's | The port a preview answers on, and `PORT` inside it |
 | **Only pull requests labelled** | none | One label per line. Only pull requests carrying one get a preview; removing the label destroys it |
@@ -69,7 +69,7 @@ A **Pull requests** tab appears on the app.
 | **Comment on the pull request** | on | Posts the URL as one comment, kept up to date. Needs Pull requests: write on your GitHub App |
 | **Destroy after** | 3 days | Days without activity before a preview is destroyed, 1 to 365. A new commit resets the clock |
 | **Fork pull requests** | Wait for approval | Or **Ignore them**, or **Build them automatically** |
-| **Server** | Same as the app | Where previews run, often a cheaper machine. Changing it stops the running previews; **Redeploy** starts each one there |
+| **Server** | Same as the app | Where previews run, often a cheaper machine. Changing it stops the running previews; **Redeploy preview** starts each one there |
 
 **Only pull requests labelled** and every row after it are under **Advanced**.
 
@@ -79,7 +79,7 @@ server for each preview. See
 
 ## Day to day
 
-The **Pull requests** tab lists every preview, with **Redeploy**, **Destroy preview** and **Open
+The **Pull requests** tab lists every preview, with **Redeploy preview**, **Destroy preview** and **Open
 pull request** on each row. **New preview** deploys one on demand, drafts included.
 
 <Image
@@ -117,7 +117,7 @@ setting, or while a compose file kept in Deplo carries variable values inline.
 
 At the **Live previews** maximum, a new preview stops the one with the oldest activity. The stopped
 row stays, grey, with the same hostname, and the pull request comment says **Stopped**. Only
-**Redeploy** brings it back, never a push.
+**Redeploy preview** brings it back, never a push.
 
 <Callout type="warn" title="Limits and gotchas">
 - **Turning previews off destroys every live preview** and its data, after a confirmation.
