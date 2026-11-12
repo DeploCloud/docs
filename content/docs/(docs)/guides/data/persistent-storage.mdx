@@ -137,8 +137,10 @@ server). Pick the new server and confirm.
 - **Apps it reached by name stay behind.** The dialog names them before you confirm.
 - **A volume missing on the old server is named in the deploy log**, and the old server's volumes
   are kept in case the data lives under another name.
-- **A cluster is in the same list**, with a **Cluster** badge. An app with a volume then waits for
-  its server when it stops. See [Apps with stored data](/operations/clusters/apps-with-stored-data).
+- **A cluster is in the same list**, as a group: **Any server** lets it pick, or pick one of its
+  servers. An app with a volume then waits for its server when it stops. See
+  [Move to one server of a cluster](/operations/clusters/manage-servers#move-to-one-server) and
+  [Apps with stored data](/operations/clusters/apps-with-stored-data).
 - **What does not move:** a Bind, an `external:` volume, and a Compose app's `./` folders in the
   repository's copy on the old server. The deploy log lists them.
 

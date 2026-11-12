@@ -1,94 +1,116 @@
 ---
-title: Empty or remove a server, delete a cluster
-description: Retire a server of a cluster without downtime, remove it, or delete the cluster and keep everything running.
+title: Move work between servers, remove a server, delete a cluster
+description: Put an app or database on one server of a cluster, take a server out of a cluster without downtime, or delete the cluster and keep everything running.
 ---
 
-Three actions for **instance admins**, all on the cluster's card under **Settings -> Servers**.
-None of them is offered over MCP.
+Moving an app or database is for anyone who can configure it. Removing a server and deleting a
+cluster are for **instance admins**, on the cluster's card under **Settings -> Servers**.
 
 | You want to | Do this |
 | --- | --- |
-| Retire a server | [Empty](#empty-a-server) it, then [Remove](#remove-a-server) it |
+| Run an app or database on one server of a cluster | [Move](#move-to-one-server) it there |
+| Take a server out of a cluster | [Remove](#remove-a-server) it |
 | Take a cluster apart and keep everything running | [Delete](#delete-a-cluster) it |
 
-## Empty a server [#empty-a-server]
+## Move to one server of a cluster [#move-to-one-server]
 
-Emptying moves a server's apps and databases to the cluster's other servers, **one at a time**.
-Nothing new is placed on it meanwhile.
+**Settings -> General**, then **Move** on the **Server** card of the app or database. The list
+has your servers first, then a group per cluster:
 
-On the server's row, **Empty**. The dialog, **Empty this server**, says: "Its Apps and databases
-move to the other servers, one at a time. Anything with stored data pauses while it is copied."
+| In the group **Cluster eu** | What it does |
+| --- | --- |
+| **Any server** | The cluster picks the server. Not shown when it already runs on eu |
+| **server-a**, **server-b** | It moves to that server and stays on the cluster |
+| **Runs here now** | The server it is on. Cannot be picked |
+
+- **It is an ordinary move**: deployed on the new server, then its data is copied from the old
+  one. An app with a Volume, or a database, is offline during the copy.
+- **A failover still moves it.** When its server stops, the cluster puts it on another one, and
+  it stays there when the server comes back.
+- **A server that cannot take it is greyed out**, with the reason:
+  - "server-b is offline, so web cannot move there now."
+  - "server-b has 180 MB free and web needs 256 MB."
+  - "web runs on ARM servers only, and server-b is not one."
+  - "server-b is being removed from cluster eu."
+  - "web runs 2 replicas, and cluster eu spreads them over its servers." An app with replicas
+    only offers **Any server**.
+
+Room is the memory limit (256 MB when none is set) against what the server's other apps and
+databases need.
+
+## Remove a server [#remove-a-server]
+
+On the server's row, **Remove**. The dialog, **Remove this server**, says: "server-a leaves eu
+and stays one of your servers." With two servers it warns: "With one server left, eu stops
+failing over."
+
+A server that runs nothing leaves at once. One that still runs apps or databases asks what
+happens to them:
+
+| Choice | What happens |
+| --- | --- |
+| **Move its Apps to the other servers** (default) | They move one at a time, then the server leaves. See [below](#while-it-is-being-removed) |
+| **Keep its Apps on this server** | It leaves at once. Its apps and databases keep running there as ordinary ones that nothing fails over |
+
+Either way **the server stays in Deplo**: it only leaves the cluster.
+
+- **Leaving cuts it off at once.** The cluster stops naming it and its server agent is told to
+  leave. A renewed or re-issued server certificate cuts the old one off the same way.
+- **An offline server that runs nothing can be removed.** Deplo tells it that it left as soon as
+  it answers again. One that still runs work and does not answer is refused: "server-a does not
+  answer, and 1 App still runs on it. Bring it back online before removing it from eu."
+- **A server that runs the cluster's leader cannot be removed from Deplo**: "Move the leader of
+  cluster eu to another server first." See [The leader](/operations/clusters/leader).
+
+### While it is being removed [#while-it-is-being-removed]
+
+With **Move its Apps to the other servers**:
 
 - **Order**: databases first, then apps, oldest first. The cluster picks where each one lands.
-- **Each move is an ordinary server move**: the app is deployed on the new server, then its
-  stored data is copied from the old one. So the server being emptied must be online.
+- **Nothing new is placed on the server** in the meantime.
 - **An app without stored data is up on the new server before the old copy is removed.** An app
-  with a Volume, or a database, is stopped for the length of the copy.
-- It starts within about 15 seconds of the click, and goes on if Deplo restarts. While Deplo is
+  with a Volume, or a database, is stopped for the length of the copy, so the server must be
+  online.
+- It starts within about 15 seconds of the click and goes on if Deplo restarts. While Deplo is
   being [moved to another machine](/operations/move-deplo) nothing moves; it goes on afterwards.
 
-### Refused before anything moves
-
-When the other servers cannot take everything, in the cluster's own words:
+Refused before anything moves when the other servers cannot take everything:
 
 - "No server in cluster eu has 512 MB free. Add a server to it or lower web's memory."
 - "No server in cluster eu is online and ready right now, so web has nowhere to run. Bring a
   server back or add one."
 
-Room is each app's or database's memory limit (256 MB when none is set), added up for everything
-on the server.
-
-### Progress, and when it stops
-
 | The row shows | Meaning |
 | --- | --- |
-| **Emptying**, "2 of 5 moved, moving web" | It is going. The card refreshes on its own |
-| **Emptying stopped**, with a reason, **Continue** and **Stop emptying** | Something could not move. Nothing is retried on its own |
-| **Empty**, with **Use again** and **Remove** | It holds nothing. It takes no new work until **Use again** |
+| **Removing**, "2 of 5 moved, moving web" | It is going. The card refreshes on its own |
+| **Removal stopped**, with a reason, **Continue** and **Cancel** | Something could not move. Nothing is retried on its own |
 
-The reasons you can meet when it stops:
+The reasons it can stop with:
 
 - one of the two room sentences above
 - "web could not be moved, so it is still on this server. Its last deployment says why."
 - "web did not finish moving to its new server. Its last deployment says why."
 - the cluster's leader not answering
 
-**Continue** tries again from where it stopped.
+**Continue** tries again from where it stopped. **Cancel** works at any time: the server stays in
+the cluster and takes work again, whatever is moving right now finishes its move, and what
+already moved stays where it is.
 
-**Stop emptying** works at any time: the server takes work again, whatever is moving right now
-finishes its move, and what already moved stays where it is. Nothing moves back.
+Activity records the start ("Started removing server server-a from cluster eu: 3 to move
+first"), every move ("Moved web to server-b: server-a is being removed from cluster eu", in the
+team that owns the app) and the end ("Removed server server-a from cluster eu: everything it ran
+moved to the other servers").
 
-Activity records the start, every move ("Moved web to server-b: server-a is being emptied", in
-the team that owns the app) and the end ("Emptied server server-a of cluster eu").
+### Keeping its apps
 
-## Remove a server [#remove-a-server]
-
-**Remove** shows on a server's row once the server holds nothing, and always on the last server
-of a cluster.
-
-The dialog, **Remove this server**, says: "server-a leaves eu at once and is an ordinary server
-again." With two servers it warns: "With one server left, eu stops failing over."
-
-- **It is cut off at once.** The cluster stops naming it and its server agent is told to leave. A
-  renewed or re-issued server certificate cuts the old one off the same way.
-- **A server that still runs work is refused**: "server-a still runs 2 Apps and 1 database. Empty
-  it first."
-- **An offline server can be removed when it holds nothing.** Deplo tells it that it left as soon
-  as it answers again. One that still runs work and does not answer is refused: "server-a does not
-  answer, and 1 App still runs on it. Bring it back online, or empty it, before removing it from
-  eu."
-- **A server that runs the cluster's leader cannot be removed from Deplo**: "Move the leader of
-  cluster eu to another server first." See [The leader](/operations/clusters/leader).
-
-### The last server
-
-The last server shows no **Empty**: there is nowhere to move its work. Its dialog says: "It is
-the last server of eu, so its Apps have nowhere to move." and offers a checkbox:
-
-**Keep its Apps on this server** - "Its Apps and databases keep running here. Nothing restarts."
-
-They stay on that server as ordinary apps and databases. The cluster stays, empty. Activity:
+With **Keep its Apps on this server**, Activity says:
 `Removed server server-a from cluster eu, keeping 1 App and 1 database on it`.
+
+- **An app with replicas on other servers too cannot stay behind alone**: "web also runs
+  replicas on other servers of eu, so it cannot stay on server-a alone. Choose "Move its Apps",
+  or lower its replicas to 1 first."
+- **The last server of a cluster can only keep them**: there is nowhere to move them. The cluster
+  stays, empty.
 
 ## Delete a cluster [#delete-a-cluster]
 
@@ -121,14 +143,16 @@ What changes for what ran on it:
 last server kept with its apps.
 
 **Refused while a server that still runs work does not answer**: "server-a does not answer, and 1
-App still runs on it. Bring it back online, or empty it, before deleting eu."
+App still runs on it. Bring it back online before deleting eu."
 
 Activity: `Deleted cluster eu: this team's 1 App and 1 database stay where they run and no longer
 fail over`. Every other team with work on the cluster gets the same line with its own count.
 
 ## Over the API
 
-`emptyClusterMember(clusterId, serverId)` (also continues), `stopEmptyingClusterMember`,
-`removeClusterMember(clusterId, serverId, keepWorkloads)`, `deleteCluster(id)` and
-`clusterDeletion(id)` for the list. All need an instance admin. `get_cluster` over MCP shows how
-far an emptying has got.
+`moveAppToCluster(id, clusterId, serverId)` and `moveDatabaseToCluster(id, clusterId, serverId)`
+(leave `serverId` out to let the cluster pick), `removeClusterMember(clusterId, serverId,
+keepWorkloads)` (also continues a removal that stopped), `cancelClusterMemberRemoval`,
+`deleteCluster(id)` and `clusterDeletion(id)` for the list. Removing and deleting need an
+instance admin. Over MCP, `move_app_to_cluster` and `move_database_to_cluster` take a `serverId`,
+and `get_cluster` shows how far a removal has got.

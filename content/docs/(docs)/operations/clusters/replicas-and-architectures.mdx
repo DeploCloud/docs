@@ -13,7 +13,7 @@ replica **spreads them across the servers**, from its next deploy. There is noth
 
 **Settings -> Advanced -> Replicas** then says: "Spread across 3 servers: if one stops, the
 others keep answering". Before the first deploy the number counts only the servers that could
-take a replica: not one being emptied, not one of another processor kind. When only one server
+take a replica: not one being removed, not one of another processor kind. When only one server
 could, the line is not shown.
 
 - **Each server runs its own share of the replicas**, with the app's Cloudflare connector beside
@@ -75,7 +75,7 @@ Deplo reads what a pulled image is published for from public registries, once a 
 the app is placed or deployed. It never builds one image for both kinds.
 
 **The same rule covers everything**: the first placement, a failover, the replicas of an app,
-emptying a server, and a database's standby copy.
+removing a server, and a database's standby copy.
 
 ### What the app's page says
 
@@ -93,7 +93,7 @@ Server**: "If server-a stops, main has nowhere to go. It is the only x86 server 
 
 ### Refusals name the kind
 
-On a mixed cluster, creating, moving, emptying or a standby copy can answer:
+On a mixed cluster, creating, moving, removing a server or a standby copy can answer:
 
 - "No x86 server in cluster eu has 256 MB free. Add an x86 server to it or lower web's memory."
 - "web runs on ARM servers only, and none in cluster eu can take it. Add an ARM server."

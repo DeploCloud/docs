@@ -81,7 +81,7 @@ A server that has not heard from the cluster for 60 seconds stops every cron job
 and starts none until it is back in touch. A job asked of it meanwhile fails with: "This server
 lost touch with its cluster, so it runs no cron jobs until it is back."
 
-A run that is still going when its app moves for another reason (emptying a server, a move you
+A run that is still going when its app moves for another reason (removing a server, a move you
 asked for) is **not** lost: it finishes on the server it started on.
 
 ## Pull request previews [#pull-request-previews]
@@ -107,7 +107,7 @@ It stays that way, even after the server is back, until the **next push** to the
 
 - The copy left on the old server is removed once that server answers.
 - Otherwise a preview stays on its server from one push to the next, while that server is in the
-  cluster, answering and not being emptied.
+  cluster, answering and not being removed.
 
 ### Its address
 
@@ -132,12 +132,13 @@ A team the cluster is not shared with does not see its name and gets no new prev
 The pull request's deploy is refused with the same sentences as an app: "No server in cluster eu
 has 256 MB free. Add a server to it or lower web's memory."
 
-### When a server is emptied or removed
+### When a server is removed
 
-- **Empty**: every preview on it is deployed again on another server of the cluster. One that no
-  other server can take is taken down and reads **Offline: its server was emptied**. Activity:
+- **Remove**: every preview on it is deployed again on another server of the cluster, as soon as
+  the removal starts. One that no other server can take is taken down and reads **Offline: its
+  server was removed from the cluster**. Activity:
   `Took down the preview for pull request #7 of web on server-b:`, followed by the refusal.
-- **Remove** from the cluster does the same for the previews it still ran.
+- **Keep its Apps on this server** leaves its previews where they run.
 - **Delete** the cluster leaves each preview where it runs. The next push or **Redeploy preview**
   brings it to the app's own server.
 - **Removing the server from Deplo altogether** leaves its previews **Offline: its server stopped**

@@ -116,7 +116,7 @@ server stopped answering.
 ## When Deplo's own server is in the cluster [#when-deplos-own-server-is-in-the-cluster]
 
 Deplo's own server can be a member of a cluster like any server: it is in the **Add server** list,
-its apps and databases come along, and it can be emptied and removed. This is how a first cluster
+its apps and databases come along, and it can be removed. This is how a first cluster
 starts with one rented server.
 
 **Deplo itself, its database and its proxy are never part of the cluster.** Nothing places,
@@ -136,7 +136,7 @@ alone does not fix it:
 > If Deplo's own server stops, its Apps cannot move. Fixing this takes three servers, with the
 > leader on another one.
 
-Emptying or removing Deplo's own server leaves the leader and the relay running there.
+Removing Deplo's own server leaves the leader and the relay running there.
 
 ## Updates [#updates]
 
