@@ -33,10 +33,22 @@ them somewhere else. That is the first promise, **"Never two writers"**.
 
 <Callout type="info">
   81 seconds is when moving **starts**, not when visitors are served again. That also takes the
-  app's own start, a restore for anything with data, and, for a domain on Cloudflare, the time
-  Cloudflare needs to stop sending visitors to the server that stopped. Deplo does not promise a
-  figure for the whole.
+  app's own start and a restore for anything with data. See [How long it takes](#how-long-it-takes).
 </Callout>
+
+### How long it takes [#how-long-it-takes]
+
+Measured on a cluster of two servers, counting from the moment one of them lost its power:
+
+| What ran on the stopped server | Measured |
+| --- | --- |
+| Replicas of an app on a Cloudflare domain, spread over both servers | **No downtime.** Cloudflare stopped sending visitors to the stopped server within about 5 seconds: one request in that time failed |
+| An app on a Cloudflare domain, on that server only | Visitors served again after **about 105 seconds** |
+| A database with a 4 MB backup | Running on the other server after **about 100 seconds**, the restore itself 17 to 24 seconds of it |
+| The server comes back | About 20 seconds after it answers, its old copies stop, and what its database still held is saved as a backup |
+
+A bigger database takes longer to restore. Its card says how long, from the speed of its last
+restore. See [Databases](/operations/clusters/databases).
 
 ## What moves, and what waits
 
