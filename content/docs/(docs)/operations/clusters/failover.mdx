@@ -7,6 +7,8 @@ When a server of a [cluster](/operations/clusters) stops answering, its apps sta
 server of the cluster. Nobody clicks anything.
 
 - **Failover starts at two servers.** On a cluster of one, nothing moves.
+- **It is on by default.** An admin can [turn it off](/operations/clusters#turn-failover-off) per
+  cluster: then everything waits for its own server to come back.
 - **With two servers, failover works only while Deplo is up.**
 - **With three or more, it also works while Deplo is down**, as long as more than half of the
   cluster's servers are up and the [leader](/operations/clusters/leader) runs on one of them.
@@ -17,7 +19,7 @@ See [When a cluster is cut in two](#when-a-cluster-is-cut-in-two) for what that 
 
 | After | What happens |
 | --- | --- |
-| 15 seconds of silence | The cluster's card shows the server as **Not responding** |
+| About 10 seconds of silence | The server reads **Offline** on the Servers page, and its apps read **Offline** too |
 | 60 seconds | The silent server has stopped, by itself, everything that must never run twice: its databases, its apps with stored data and its running cron jobs |
 | About 81 seconds | The cluster's leader starts moving that server's work to the other servers |
 
@@ -86,9 +88,10 @@ Activity says why, once a day, until it is fixed:
 
 What finds no server waits, and Deplo tries again **every 30 seconds**.
 
-- The app's header, its **Settings -> General -> Server** card and the cluster's card all say
-  **Waiting for room in eu**. A database says it on its **Failover** card.
-- The cluster's card lists what waits, with "Deplo tries again every 30 seconds."
+- The app's header and its **Settings -> General -> Server** card say **Waiting for room in
+  eu**. A database says it on its **Failover** card.
+- Inside the cluster on the Servers page, the banner **2 Apps waiting for room** lists them, with
+  "Deplo tries again every 30 seconds."
 - **The fix**: add a server to the cluster, or lower the app's memory.
 
 **One alert per failover that left something waiting**, on by default:
@@ -179,14 +182,12 @@ servers. When the sides are equal, it is the side Deplo is on.
 | Both sides | Apps without a Volume keep running. The server that was cut off removes its copy when it is back |
 
 When the leader is on the larger side and Deplo on the smaller one, Deplo shows its own side's
-servers as not responding and cannot see the other side until the split heals.
+servers as offline and cannot see the other side until the split heals.
 
 ### What you read meanwhile
 
-- **On the leader's row**, the badge **Too few servers answer** and "Only 1 of 3 servers answers
-  this leader, so nothing moves. Failover works again once 2 do."
-- **Under a server's name**: "This server stopped its databases and Apps with files, so none of
-  them can run twice."
+- **Inside the cluster**, the banner **Failover is not working right now**: "Only 1 of 3 servers
+  answers this leader, so nothing moves. Failover works again once 2 do."
 - **Activity, one silent server**: `server-b is not responding in cluster eu.`, then `server-b has
   not responded for a minute in cluster eu, so it stopped the databases and Apps with files that
   must never run twice.`

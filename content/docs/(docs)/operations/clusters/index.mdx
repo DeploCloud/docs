@@ -49,14 +49,14 @@ A short name such as `eu`, up to 60 characters, unique on this Deplo. Then pick 
 
 ### Add cluster
 
-The cluster gets its card on the Servers page, and its **leader** starts on Deplo's own machine
-without being asked. There is nothing to install.
+The cluster shows on the Servers page as a folder, and its **leader** starts on Deplo's own
+machine without being asked. There is nothing to install.
 
 </Step>
 </Steps>
 
-A cluster of one server is allowed. Its card says **"Failover starts at two servers."**, and
-turns to the **Failover on** badge with the second one.
+A cluster of one server is allowed. Inside it, a banner says **Failover needs a second server**:
+"With one server there is nowhere to move an App to. Drag another server onto this cluster."
 
 ## How many servers [#how-many-servers]
 
@@ -68,8 +68,8 @@ turns to the **Failover on** badge with the second one.
 | 2 | **Only while Deplo is up** |
 | 3 or more | Also while Deplo is down, as long as **more than half of the servers are up** and the [leader runs on one of them](/operations/clusters/leader#run-the-leader-on-another-server). One of three may stop, two of five |
 
-A cluster of exactly two servers says so on its card: "With two servers, failover works only
-while Deplo is up. With three, and the leader on one of them, it also works while Deplo is down."
+When the second server joins, the toast says so: "Failover is on. With two servers it works only
+while Deplo is up."
 
 <Callout type="warn">
   **If more than half of a cluster's servers are lost at once**, the servers that are left stop
@@ -84,7 +84,7 @@ while Deplo is up. With three, and the leader on one of them, it also works whil
 A cluster is shared the way a server is: **All teams**, or **Specific teams** you tick. That is
 the list of teams allowed to place apps and databases on it.
 
-- **Change it later** from the card's menu, **Manage**: the name and the teams, then **Save**.
+- **Change it later** from the cluster's menu, **Manage**: the name and the teams, then **Save**.
 - **A team the cluster is not shared with does not see it** in any picker, and is refused by the
   API: "That cluster isn't available to this team."
 - **A team that still uses the cluster cannot be taken off the list**: "These teams still have
@@ -95,21 +95,44 @@ the list of teams allowed to place apps and databases on it.
 - **Nobody can place anything on one server of a cluster.** Its servers leave every picker, and the
   API answers: "That server is a member of cluster eu, so nothing can be placed on it directly."
 
+## Turn failover off [#turn-failover-off]
+
+Failover is **on** for every new cluster. To keep everything where it is when a server stops,
+turn it off:
+
+- **Inside the cluster**, the **Failover** switch beside its name.
+- **On the Servers page**, the cluster's menu, **Turn failover off**.
+
+The toast says `Failover off for eu`, and Activity records `Turned failover off for cluster eu`.
+Instance admins only.
+
+**Off, nothing moves.** A server that stops keeps its apps and databases until it comes back. The
+leader keeps nothing it could start them with, and the banners about failover go away. Apps
+waiting for room are still listed.
+
+Turning it back on hands the leader everything again, with no redeploy.
+
 ## Add a server
 
-On the cluster's card, **Add server**, pick one, **Add**.
+**Drag the server onto the cluster's folder** on the Servers page. Or, in the server's menu,
+**Move to cluster**, then the cluster's name.
 
-**"Its Apps and databases stay where they run, without a restart."** Joining moves nothing and
-changes no address: the apps and databases already on that server now belong to the cluster.
-Activity records `Added server server-b to cluster eu with 2 apps and 1 database`, and the
-server's own page shows **Member of cluster eu**.
+A server that runs nothing joins at once: "server-b joined eu". One that runs apps or databases
+asks first, **Move server-b into eu?**: "2 Apps and 1 database on it move into the cluster too.
+They keep running without a restart." Then **Move**.
 
-When the second server joins, the toast says: "Failover is on. With two servers it works only
-while Deplo is up."
+Joining moves nothing and changes no address: the apps and databases already on that server now
+belong to the cluster. Activity records `Added server server-b to cluster eu with 2 apps and 1
+database`.
 
-A server that cannot join is listed in the dialog with the reason:
+**A server that just joined reads Provisioning** until the cluster's leader answers for it,
+usually within seconds. It takes no work until then. The cluster's folder counts it:
+"2 servers · 1 provisioning".
 
-| The dialog says | What to do |
+A server that cannot join is greyed out in **Move to cluster**, and dropping it on the folder
+shows the reason:
+
+| It says | What to do |
 | --- | --- |
 | "server-b is offline. Bring it back online first." | Wait for it, or fix it |
 | "The server agent on server-b is too old to join a cluster. Deplo updates it on its own." | Nothing to do: try again in a few minutes |
@@ -162,22 +185,37 @@ The move or deploy is refused **before anything stops**:
 - "No server in cluster eu is online and ready right now, so web has nowhere to run. Bring a
   server back or add one."
 
-## The cluster's card
+## On the Servers page [#on-the-servers-page]
 
-One card per cluster on **Settings -> Servers**:
+**Settings -> Servers** shows each cluster as a folder, next to the servers that are in no
+cluster. A server of a cluster is found inside its folder.
 
-- **The servers**, each with its status. **Not responding** means the cluster has not heard from
-  that server in a while. After a minute without an answer the row adds, under the server's name:
-  "This server stopped its databases and Apps with files, so none of them can run twice."
-- **Failover on**, from two servers, with the two-server sentence [above](#how-many-servers).
-- **Waiting for room**: what found no server after a failover. See
-  [Waiting for room](/operations/clusters/failover#waiting-for-room).
-- **Apps whose latest version is still being copied** to the other servers: "Failover is not
-  ready for these Apps yet. Their latest version is still being copied.", with `web: on 2 of 3
-  servers`. An app Deplo built is copied to the other servers after each build; an app that runs
-  a pulled image needs no copy.
-- **Leader runs on**, with whether it answers and whether enough servers answer it: "Failover
-  would work right now." See [The leader](/operations/clusters/leader#reading-the-card).
+The folder shows the cluster's name, how many servers it has ("2 servers · 1 provisioning") and
+a warning sign when a banner inside needs you. Its menu has **Open**, **Manage**, **Turn failover
+off** and **Delete**.
+
+**Open it** to see its servers. The top line reads **Servers / eu**, with the **Failover** switch
+and a menu with **Manage** and **Delete**. Each server shows its status, and **Leader** on the one
+the leader runs on.
+
+### The banners [#the-banners]
+
+Above the servers, one banner per thing to know. Deplo checks the leader every 30 seconds in the
+background, so the page never waits on a server.
+
+| Banner | It says |
+| --- | --- |
+| **2 Apps waiting for room** | "web, api. Deplo tries again every 30 seconds." See [Waiting for room](/operations/clusters/failover#waiting-for-room) |
+| **Failover needs a second server** | Shown with one server |
+| **Failover is not working right now** | The leader does not run, or too few servers answer it. See [The leader](/operations/clusters/leader#reading-the-banners) |
+| **Deplo's own machine leads this cluster** | "Until server-b answers again." See [When the leader's server stops answering](/operations/clusters/leader#when-the-leaders-server-stops-answering) |
+| **Failover may stop working** | A leader update that failed, a [refused Cloudflare token](/operations/clusters/leader#when-cloudflare-refuses-deplos-token), or the leader on Deplo's own server |
+| **Failover is not ready for 1 App yet** | "Their latest version is still being copied: web on 2 of 3 servers." |
+
+An app Deplo built is copied to the other servers after each build; an app that runs a pulled
+image needs no copy. A copy that failed while a server was away is retried every 2 minutes.
+
+With failover off, only the first banner is shown.
 
 ## What a cluster does not do
 

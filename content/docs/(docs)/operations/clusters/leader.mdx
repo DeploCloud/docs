@@ -14,26 +14,30 @@ is what moves apps off a server that stopped. You never install or update it by 
   cluster's servers, or exactly half of them and Deplo itself. Otherwise it moves nothing. See
   [When a cluster is cut in two](/operations/clusters/failover#when-a-cluster-is-cut-in-two).
 
-## Reading the card
+## Reading the banners [#reading-the-banners]
 
-The cluster's card always says where the leader runs and whether it answers: **Leader runs on
-server-b**, then one of:
+Open the cluster under **Settings -> Servers**. The server the leader runs on shows **Leader**.
+When the leader runs on Deplo's own machine, no server shows it.
 
-| Badge | Meaning |
+**No banner means the leader runs and enough servers answer it.** Otherwise the banner
+**Failover is not working right now** says why:
+
+| It says | What to do |
 | --- | --- |
-| **Answering** | The leader runs. With enough servers answering it, the line below reads "Failover would work right now." |
-| **Too few servers answer** | The leader runs but hears too few servers to move anything: "Only 1 of 3 servers answers this leader, so nothing moves. Failover works again once 2 do." |
-| **Not running**, **Not started** | **Try again** starts it |
-| **Not reachable** | Deplo cannot reach the server the leader runs on |
-| **Can't start** | Deplo's own machine is not connected as a server yet |
-| **Needs an update** | "This leader is older than this Deplo accepts. Deplo updates it on its own." |
+| "Only 1 of 3 servers answers this leader, so nothing moves. Failover works again once 2 do." | Bring the servers back. See [When a cluster is cut in two](/operations/clusters/failover#when-a-cluster-is-cut-in-two) |
+| "The leader is installed but not running." or "The leader is not installed yet." | **Try again** starts it |
+| "Deplo could not reach the server the leader runs on." | **Try again**, or bring that server back |
+| "Deplo's own machine is not connected as a server yet, so there is nowhere to start the leader." | Connect Deplo's own machine as a server |
+| "This leader is older than this Deplo accepts. Deplo updates it on its own." | Nothing: wait |
+
+Deplo checks every 30 seconds, and at once after you move or start the leader.
 
 ## Run the leader on another server [#run-the-leader-on-another-server]
 
 **Why**: so that failover keeps working while Deplo's own machine is down. **That takes three
-servers or more.** The dialog says which case you are in:
+servers or more.** The confirmation says which case you are in:
 
-| Cluster | The dialog says |
+| Cluster | It says |
 | --- | --- |
 | Three servers or more | "Failover keeps working while Deplo's own machine is down." |
 | One or two servers | "Under three servers, failover still needs Deplo up wherever the leader runs." |
@@ -44,32 +48,28 @@ still reaches **more than half of the cluster's servers**.
 <Steps>
 <Step>
 
-### Open the dialog
+### Open the cluster
 
-**Settings -> Servers**, the cluster's card, the **Leader runs on** row, **Run on another
-server**.
+**Settings -> Servers**, then the cluster's folder.
 
 </Step>
 <Step>
 
-### Pick the server
+### Make leader
 
-The dialog, **Run the leader on another server**, has one field, **Server**. Deplo's own machine
-is listed as "(Deplo's own machine)", and the current one as "(runs here now)".
+In the menu of the server that should run it, **Make leader**. The confirmation reads **Run the
+leader on server-b?**
 
-Any server can take it, a server of the cluster included.
-
-- An offline one is listed but cannot be picked: "server-b is offline. Bring it back online
-  first."
+- An offline server cannot be picked: "server-b is offline. Bring it back online first."
 - A server with no proxy carries a note: "server-b has no proxy, so a leader there still needs
   Deplo's machine up to move anything."
-- A server that cannot run a leader yet is refused when picked: "The server agent on this server
-  is too old to run a cluster leader. Deplo updates it on its own: try again in a few minutes."
+- A server that cannot run a leader yet is refused: "The server agent on this server is too old
+  to run a cluster leader. Deplo updates it on its own: try again in a few minutes."
 
 </Step>
 <Step>
 
-### Move
+### Confirm
 
 There is no command to run: that server installs the leader on its own. Toast: "The leader now
 runs on server-b". Activity: `Moved the leader of cluster eu to server-b`.
@@ -77,7 +77,9 @@ runs on server-b". Activity: `Moved the leader of cluster eu to server-b`.
 </Step>
 </Steps>
 
-To move it back, pick Deplo's own machine in the same dialog. Instance admins only.
+To move it back, open the menu of the server that shows **Leader** and pick **Move leader to
+Deplo's machine**. When Deplo's own server is in the cluster, use **Make leader** on it instead.
+Instance admins only.
 
 ### Pick a server that answers on port 443
 
@@ -86,14 +88,59 @@ the leader. Every server of the cluster connects to it too, so the leader reache
 Deplo's machine.
 
 A server with no proxy runs the leader alone. **Failover then still needs Deplo's machine**, and
-the dialog says so before you pick it.
+the confirmation says so before you pick it.
 
-### When the leader's server stops answering
+### When Cloudflare refuses Deplo's token [#when-cloudflare-refuses-deplos-token]
+
+When the panel is served through [Cloudflare Tunnel](/operations/cloudflare-tunnel), servers
+reach the relay on Deplo's machine through that tunnel. Deplo adds the route to it, which takes
+the panel's Cloudflare API token.
+
+If Cloudflare refuses that token, the banner **Failover may stop working** says: "Cloudflare
+refused Deplo's change, so servers cannot reach the relay on Deplo's machine and failover stops
+when the leader's server does. Give Deplo a working Cloudflare API token:", then Cloudflare's
+reason. With a backup address on, servers still reach the relay through it, and the banner says
+so.
+
+To fix it, **Fix in Cloudflare** beside the banner:
+
+<Steps>
+<Step>
+
+### Create the token
+
+**Create the token in Cloudflare** opens Cloudflare's form with the three permissions filled
+in, and a dated name like `Deplo panel 2026-11-14`. **Continue to summary**, **Create Token**,
+then copy it.
+
+</Step>
+<Step>
+
+### Paste it and save
+
+Paste it under **New token**, then **Save**. Deplo keeps it only if Cloudflare accepts it for the
+tunnel, its DNS zone and the relay route. Otherwise it says why and keeps the old token.
+
+</Step>
+<Step>
+
+### Delete the old token
+
+Deplo now uses the new token, the route is back and the banner goes away. **Open Cloudflare
+tokens** lists your tokens: delete the **Deplo panel** token that is not the new one. Deplo does
+not delete it for you.
+
+</Step>
+</Steps>
+
+Activity: `Gave the panel's Cloudflare Tunnel a new API token`. Instance admins only.
+
+### When the leader's server stops answering [#when-the-leaders-server-stops-answering]
 
 Deplo's own machine leads in its place, on its own, **25 to 40 seconds** after the leader's
 server stopped answering.
 
-- The card says: "Deplo's own machine leads this cluster until server-b answers again."
+- The banner **Deplo's own machine leads this cluster** says: "Until server-b answers again."
 - Activity: `server-b stopped answering, so Deplo's machine leads cluster eu until it answers
   again`, then `server-b answers again, so it leads cluster eu again`.
 - **Nothing runs twice during a change of hands**, and a change of hands never causes a failover
@@ -115,20 +162,20 @@ server stopped answering.
 
 ## When Deplo's own server is in the cluster [#when-deplos-own-server-is-in-the-cluster]
 
-Deplo's own server can be a member of a cluster like any server: it is in the **Add server** list,
+Deplo's own server can be a member of a cluster like any server: drag it onto the cluster,
 its apps and databases come along, and it can be removed. This is how a first cluster
 starts with one rented server.
 
 **Deplo itself, its database and its proxy are never part of the cluster.** Nothing places,
 moves, stops or empties them.
 
-While Deplo's own server is a member **and** the leader runs on it, the card warns:
+While Deplo's own server is a member **and** the leader runs on it, the banner **Failover may
+stop working** says:
 
 > If Deplo's own server stops, its Apps cannot move. Run the leader on another server to fix this.
 
-The leader is what moves apps off a server that stopped, and here it stops with that server. The
-button beside the warning opens the same dialog. Picking any other server, a member included,
-makes the warning go away.
+The leader is what moves apps off a server that stopped, and here it stops with that server.
+**Make leader** on any other server of the cluster makes the warning go away.
 
 On a cluster of **one or two servers** the warning reads differently, because moving the leader
 alone does not fix it:
@@ -153,8 +200,8 @@ own machine last. It only ever moves forward.
 ### When an update fails
 
 Deplo tries again on its own, waiting 1, 2, 4 and up to 60 minutes between tries. Until it works,
-the card shows "Deplo could not update the leader on server-b to v0.3.0:", then the reason, then
-"It retries on its own."
+the banner **Failover may stop working** shows "Deplo could not update the leader on server-b to
+v0.3.0:", then the reason, then "It retries on its own."
 
 Two reasons you can meet:
 
@@ -165,9 +212,10 @@ Two reasons you can meet:
 
 ### A leader too old for this Deplo
 
-The badge reads **Needs an update**. When that leader runs on another server, Deplo's own machine
-leads the cluster meanwhile, and the card says: "Deplo's own machine leads this cluster until
-server-b is updated."
+The banner **Failover is not working right now** says: "This leader is older than this Deplo
+accepts. Deplo updates it on its own." When that leader runs on another server, Deplo's own
+machine leads the cluster meanwhile, and the banner **Deplo's own machine leads this cluster**
+says: "Until server-b is updated."
 
 There is no update button, and none is needed. **Try again** is only offered for a leader that is
 not running.

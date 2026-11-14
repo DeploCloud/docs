@@ -56,7 +56,7 @@ step, in Cloudflare too, and the panel stays where it was.
 | Where      | What |
 | ---------- | ---- |
 | Cloudflare | A tunnel named like `deplo-deplo.example.com-3f9a1c` |
-| Cloudflare | Its routes: `deplo.example.com/api/agent/link` for your servers, `deplo.example.com` for the panel |
+| Cloudflare | Its routes: `deplo.example.com/api/agent/link` for your servers, `deplo.example.com` for the panel, and `deplo.example.com/api/cluster/relay` once you have a [cluster](/operations/clusters/leader#pick-a-server-that-answers-on-port-443) |
 | Cloudflare | A proxied CNAME `deplo.example.com -> <tunnel id>.cfargotunnel.com` |
 | Your server | A `deplo-tunnel` container next to the panel's proxy |
 
@@ -75,6 +75,9 @@ Servers you add connect through the tunnel too, so nothing is opened on them eit
   lost its link to Cloudflare: check its internet connection.
 - **The token stays encrypted** and is never shown again. To replace it, use **Change address** with the
   same address and the new token.
+- **If Cloudflare refuses the token** while adding a cluster's route, the cluster shows **Fix in
+  Cloudflare**: create a new token, paste it, and Deplo switches to it once Cloudflare accepts it. See
+  [When Cloudflare refuses Deplo's token](/operations/clusters/leader#when-cloudflare-refuses-deplos-token).
 - **Updates keep the tunnel.**
 
 ## Turn it off

@@ -4,7 +4,7 @@ description: Put an app or database on one server of a cluster, take a server ou
 ---
 
 Moving an app or database is for anyone who can configure it. Removing a server and deleting a
-cluster are for **instance admins**, on the cluster's card under **Settings -> Servers**.
+cluster are for **instance admins**, on the cluster's folder under **Settings -> Servers**.
 
 | You want to | Do this |
 | --- | --- |
@@ -40,7 +40,9 @@ databases need.
 
 ## Remove a server [#remove-a-server]
 
-On the server's row, **Remove**. The dialog, **Remove this server**, says: "server-a leaves eu
+Open the cluster, then **Remove from cluster** in the server's menu. Or drag the server onto
+**Servers** in the top line: "Release to remove it from the cluster". The dialog, **Remove this
+server**, says: "server-a leaves eu
 and stays one of your servers." With two servers it warns: "With one server left, eu stops
 failing over."
 
@@ -80,10 +82,10 @@ Refused before anything moves when the other servers cannot take everything:
 - "No server in cluster eu is online and ready right now, so web has nowhere to run. Bring a
   server back or add one."
 
-| The row shows | Meaning |
+| The server shows | Meaning |
 | --- | --- |
-| **Removing**, "2 of 5 moved, moving web" | It is going. The card refreshes on its own |
-| **Removal stopped**, with a reason, **Continue** and **Cancel** | Something could not move. Nothing is retried on its own |
+| **Removing**, "2 of 5 moved, moving web" | It is going. The page refreshes on its own |
+| **Removal stopped**, with a reason | Something could not move. Nothing is retried on its own. Its menu has **Continue removal** and **Cancel removal** |
 
 The reasons it can stop with:
 
@@ -92,7 +94,7 @@ The reasons it can stop with:
 - "web did not finish moving to its new server. Its last deployment says why."
 - the cluster's leader not answering
 
-**Continue** tries again from where it stopped. **Cancel** works at any time: the server stays in
+**Continue removal** tries again from where it stopped. **Cancel removal** works at any time: the server stays in
 the cluster and takes work again, whatever is moving right now finishes its move, and what
 already moved stays where it is.
 
@@ -114,7 +116,7 @@ With **Keep its Apps on this server**, Activity says:
 
 ## Delete a cluster [#delete-a-cluster]
 
-**Delete** is in the card's menu, beside **Manage**. The dialog, **Delete eu**, says: "Its
+**Delete** is in the cluster's menu, on its folder or inside it. The dialog, **Delete eu**, says: "Its
 servers stay connected and everything keeps running where it is."
 
 **Nothing is stopped, redeployed or deleted.** Every app and database stays on the server it runs
@@ -125,7 +127,7 @@ The dialog lists what is on the cluster:
 - your team's apps and databases by name: "web stays on server-a"
 - every other team's as a count: "2 Apps and 1 database of Acme". An admin never reads another
   team's app names there
-- with failover on, a warning: "These stop failing over, and an App stops reaching a database on
+- with failover on (two servers or more, and not [turned off](/operations/clusters#turn-failover-off)), a warning: "These stop failing over, and an App stops reaching a database on
   another server by name. If a server stops, what runs on it stays down."
 - an empty cluster: "Nothing runs on it."
 
