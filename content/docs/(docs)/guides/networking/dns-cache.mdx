@@ -1,0 +1,76 @@
+---
+title: DNS cache
+description: Deplo runs a small DNS cache on every server so container lookups are answered locally instead of hitting a public resolver on every name.
+---
+
+Each container on a Deplo server resolves names through Docker, which forwards every lookup it
+cannot answer itself to the host's upstream resolvers. A busy server does thousands of these: one
+per wildcard app hostname (`app-name.deplo.site`), per image pull, per health check. Repeated names
+leave and come back on every request, and a slow or rate-limited resolver turns each timeout into a
+retry.
+
+Deplo puts a cache in front. Repeated names are answered from memory, the timeouts and retries stop,
+and container startups that waited on DNS get faster.
+
+## What it is
+
+A [CoreDNS](https://coredns.io) container, `deplo-dns-cache`, that forwards to the resolvers the
+server already used and caches the answers.
+
+| Piece | Value |
+| --- | --- |
+| Container | `deplo-dns-cache` (`coredns/coredns:1.15.0`), `restart: unless-stopped` |
+| Listens on | `10.201.0.1:53`, a dedicated address on the `deplo-dns0` interface |
+| Interface unit | `deplo-dns-iface.service` brings `deplo-dns0` up before Docker |
+| Host resolver | `/etc/resolv.conf` points at `10.201.0.1`; the previous file is kept as `/etc/resolv.conf.deplo-bak` and its resolvers become the cache's upstream |
+| Config | `/var/lib/deplo-agent/dns-cache/Corefile` and `docker-compose.yml` |
+
+The cache binds `10.201.0.1`, not `127.0.0.1`: Docker discards a loopback-only `/etc/resolv.conf`
+for containers and sends them to a public resolver instead, which would bypass the cache. A routable
+address on its own interface is reachable from every container.
+
+<Callout type="info">
+Containers created after the cache is in place use it. Containers already running keep the resolvers
+they started with until their next deploy.
+</Callout>
+
+## Where it is skipped
+
+The cache is added by the server installer wherever Deplo can own `/etc/resolv.conf` as a plain
+file. It is skipped, and the server's DNS is left exactly as it was, when:
+
+- `/etc/resolv.conf` is managed by **systemd-resolved** or **resolvconf**. There the file Docker
+  reads is a loopback stub, so a cache behind it would be bypassed for containers.
+- The server is **IPv6-only**. Its resolvers run through [NAT64](/guides/networking), which the
+  installer sets up separately.
+- The host is a **migration source**, which Deplo never reconfigures.
+
+## Check it
+
+```bash
+# the cache is running
+docker ps --filter name=deplo-dns-cache
+
+# the host resolves through it
+cat /etc/resolv.conf        # nameserver 10.201.0.1
+
+# what it is answering
+docker logs --tail 50 deplo-dns-cache
+```
+
+If the cache ever fails to answer at install time, the installer puts the previous resolvers straight
+back and the server keeps resolving normally.
+
+## Turn it off
+
+[Uninstalling the agent](/reference/installers/uninstall) removes the container and the interface and
+restores `/etc/resolv.conf` from `/etc/resolv.conf.deplo-bak`. To remove only the cache and send DNS
+straight to the upstream resolvers again:
+
+```bash
+docker rm -f deplo-dns-cache
+systemctl disable --now deplo-dns-iface
+rm -f /etc/systemd/system/deplo-dns-iface.service /usr/local/sbin/deplo-dns-iface
+ip link del deplo-dns0
+mv /etc/resolv.conf.deplo-bak /etc/resolv.conf
+```
