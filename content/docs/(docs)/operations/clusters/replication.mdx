@@ -46,8 +46,9 @@ paused.
 
 ### Each other server keeps a copy
 
-The change goes straight from server to server through the cluster's relay, so it keeps
-following **while Deplo itself is down**. The copy is kept apart: it is never the app's live data.
+The change goes straight from server to server over the cluster's
+[private network](/operations/clusters/private-network), so it keeps following **while Deplo
+itself is down**. The copy is kept apart: it is never the app's live data.
 
 </Step>
 <Step>

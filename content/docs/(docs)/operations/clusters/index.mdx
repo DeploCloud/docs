@@ -22,6 +22,7 @@ one needs nothing new: the capability that places an app on a server places it o
 | You get | How | Read |
 | --- | --- | --- |
 | Apps that come back on another server | The cluster's leader moves them about 81 seconds after a server went silent | [When a server stops](/operations/clusters/failover) |
+| Apps that reach each other by name on any server | The servers share a private network, set up on their own, that keeps working while Deplo is down | [Private network](/operations/clusters/private-network) |
 | A domain that keeps its address | A domain on Cloudflare follows the app wherever it runs | [Addresses and Cloudflare](/operations/clusters/addresses) |
 | A database with a recent backup elsewhere | Every 15 minutes, on another server, set up for you | [Databases](/operations/clusters/databases) |
 | Replicas on several servers | An app with a Cloudflare domain spreads its replicas | [Replicas and mixed servers](/operations/clusters/replicas-and-architectures) |

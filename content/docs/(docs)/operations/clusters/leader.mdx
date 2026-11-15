@@ -83,12 +83,16 @@ Instance admins only.
 
 ### Pick a server that answers on port 443
 
-A server that runs Deplo's proxy (it answers on 443) also runs a second **cluster relay** beside
-the leader. Every server of the cluster connects to it too, so the leader reaches them without
-Deplo's machine.
+The leader reaches the other servers over the cluster's
+[private network](/operations/clusters/private-network), directly wherever two servers can reach
+each other, so it keeps leading without Deplo's machine.
 
-A server with no proxy runs the leader alone. **Failover then still needs Deplo's machine**, and
-the confirmation says so before you pick it.
+A server that runs Deplo's proxy (it answers on 443) also runs a second **cluster relay** beside
+the leader, for the pairs of servers that cannot reach each other directly. Every server connects
+to it too.
+
+A server with no proxy runs the leader alone. **A pair that can only meet through a relay then
+still needs Deplo's machine**, and the confirmation says so before you pick it.
 
 ### When Cloudflare refuses Deplo's token [#when-cloudflare-refuses-deplos-token]
 

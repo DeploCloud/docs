@@ -153,14 +153,14 @@ the cluster either of them runs**. No connection string changes after a move or 
 - **Names never cross environments, teams or clusters.** An app with no environment shares names
   with the team's other apps and databases that have none. See
   [Network isolation](/advanced/network-isolation).
-- **Only single-image apps and databases are reachable by name from another server.** A Compose
-  app stays on one server: it reaches its environment's names, and its own service names stay on
-  that server.
-- **Between two servers the traffic goes through Deplo's relay**, so it is slower than on one
-  server. The cluster places an app next to its environment's database when it can.
+- **Every app reaches it, whatever its kind**: a single-image app, or any service of a Compose app.
+- **Between two servers the traffic goes over the cluster's
+  [private network](/operations/clusters/private-network)**, directly when the two can reach each
+  other. The cluster still places an app next to its environment's database when it can.
 
-The database's page says when that happens: "web reaches this database through Deplo's relay. It
-is faster on the same server."
+When a pair of servers cannot reach each other directly, their traffic goes through Deplo's relay
+and the database's page says so: "web reaches this database through Deplo's relay. It is faster on
+the same server."
 
 An older server agent is named in the deploy log: "The server agent on this server is too old to
 keep names working across the servers of its cluster. Deplo updates it on its own."

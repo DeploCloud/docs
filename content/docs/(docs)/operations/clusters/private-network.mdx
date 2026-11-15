@@ -1,0 +1,81 @@
+---
+title: Private network
+description: The servers of a cluster share a private network, so every app and database reaches the others by name on any server, as if they all ran on one.
+---
+
+The servers of a [cluster](/operations/clusters) share a **private network**. Deplo sets it up the
+moment a server joins, and you configure nothing:
+
+- **Every app reaches its environment's apps and databases by name, on whichever server they run.**
+  The same names and ports as on one server: `db-shop`, `deplo-web`, or a Compose service's own
+  name like `api` or `redis`.
+- **It stays up while Deplo or the cluster's leader is down.** The servers talk to each other
+  directly; only adding or removing a server waits for Deplo.
+- **It is encrypted end to end** and only the cluster's own servers are on it.
+
+## What reaches what [#what-reaches-what]
+
+| From an app on server-a | To, in the same environment, on server-b | Reachable |
+| --- | --- | --- |
+| Any app | A database, as `db-shop` | Yes |
+| Any app | A single-image app, as `deplo-web` | Yes |
+| Any app | A service of a Compose app, as `api` (or its `hostname`) | Yes |
+| Any app | Any of those, **on any TCP port** it listens on | Yes |
+| Any app | Anything of another environment, team or cluster | No |
+
+Nothing changes in your code after a move or a failover: the name follows the app to its new
+server.
+
+<Callout type="info" title="TCP only">
+Names carry TCP connections, which is what HTTP, databases, Redis and queues use. UDP between
+two servers is not carried.
+</Callout>
+
+Two Compose apps of one environment that both have a service called `redis` share that name, as
+they would on one server: the deploy warns about it. Across servers, the other server reaches
+one of them. Give the services different names to be sure which one answers.
+
+## Direct or relayed [#direct-or-relayed]
+
+Each pair of servers connects **directly** when it can: on the same office network, on public
+addresses, and through most home routers. When two servers cannot reach each other at all, their
+traffic goes through **Deplo's relay** instead. It still works, with a little more delay.
+
+The server's card in the cluster says when that happens:
+
+| On the card | What it means |
+| --- | --- |
+| Nothing | It reaches every other server of the cluster directly |
+| **Relayed** | "Reaches eu-2 through Deplo's relay, with more delay" |
+| **Can't reach a server** | "Cannot reach eu-2 now": both are online, yet nothing gets through |
+
+A pair switches between direct and relayed on its own, without dropping open connections. A
+relayed pair needs Deplo's machine to be up; a direct one does not.
+
+<Callout type="info" title="Making a relayed pair direct">
+Servers connect directly over UDP port **51820**. When a firewall between two servers blocks it,
+let UDP 51820 through between them and the card clears within a few minutes. Nothing else needs
+opening, and the port answers no one who is not a server of the cluster.
+</Callout>
+
+## The database page [#the-database-page]
+
+A database whose apps run on another server says so only when that pair is relayed: "web reaches
+this database through Deplo's relay. It is faster on the same server."
+
+## Older servers [#older-servers]
+
+A server whose agent is too old for the private network stays off it, and its traffic goes
+through Deplo's relay as before. Deplo updates every agent on its own. Until then, a Compose app's
+services on that server are reachable by name from its own server only.
+
+## Over the API
+
+`ClusterMember.network { relayed unreachable }` lists the servers a member reaches only through the
+relay, or not at all. Over MCP, `get_cluster` returns the same field for each server.
+
+<Cards>
+  <Card title="Network isolation" href="/advanced/network-isolation" />
+  <Card title="Databases on a cluster" href="/operations/clusters/databases" />
+  <Card title="The cluster's leader" href="/operations/clusters/leader" />
+</Cards>

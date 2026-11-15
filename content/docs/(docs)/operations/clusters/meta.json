@@ -3,6 +3,7 @@
   "pages": [
     "failover",
     "addresses",
+    "private-network",
     "databases",
     "standby-copy",
     "apps-with-stored-data",

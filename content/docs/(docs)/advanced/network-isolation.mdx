@@ -25,7 +25,8 @@ Deplo derives the network from where the app lives. You never create or pick one
 | A service in a stack | Another service in the same stack | Yes |
 | An app | Another app in the same environment, **same server** | Yes |
 | An app | A database in the same environment, **same server** | Yes |
-| An app | Anything in the same environment on **another server** | No |
+| An app | Anything in the same environment on **another server of its cluster** | Yes - see [Private network](/operations/clusters/private-network) |
+| An app | Anything in the same environment on **another server, outside a cluster** | No |
 | An app in Production | An app in Staging, same project | No |
 | An app | An app in another project | No |
 | An app | Anything of another team | No |
@@ -160,7 +161,9 @@ address.
 
 The ways out, best first:
 
-1. **Same environment, same server.** Move the app or the database.
+1. **Same environment, same server.** Move the app or the database. Or put both servers in a
+   [cluster](/operations/clusters/private-network): its servers share one network, and names reach
+   across them.
 2. **A managed database** created in the environment that needs it. Deplo writes the
    connection string.
 3. **A published port**, only if the two must stay apart. Point at the server's address, and
