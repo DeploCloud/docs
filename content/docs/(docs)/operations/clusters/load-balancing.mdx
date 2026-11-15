@@ -1,0 +1,101 @@
+---
+title: Load balancing
+description: Run each app on every server of a cluster and send each visitor to the nearest server, or to the one with the most room.
+---
+
+**Load balancing** runs an app on every server of a [cluster](/operations/clusters) and shares its
+visitors between them. You choose where each visitor goes:
+
+| Mode | Every visitor goes to |
+| --- | --- |
+| **Nearest server** (the default) | The server closest to them |
+| **Most available server** | The server with the most free memory and processor |
+
+- **It needs [replication](/operations/clusters/replication) on.** Otherwise the switch is
+  refused: "Turn on replication first: load balancing needs it."
+- **Off by default.** An instance admin turns it on per cluster.
+
+## Turn it on
+
+<Steps>
+<Step>
+
+### Open the cluster
+
+**Settings -> Servers**, then the cluster's folder.
+
+</Step>
+<Step>
+
+### Switch on Load balancing
+
+Beside **Failover** and **Replication**. The toast says `Load balancing on for eu`.
+
+</Step>
+<Step>
+
+### Pick where visitors go
+
+**Nearest server** or **Most available server**, in the list beside the switch. Change it any
+time: `eu sends visitors to the most available server`.
+
+</Step>
+</Steps>
+
+Activity records it: `Turned load balancing on for cluster eu: visitors go to the nearest server`.
+
+## Which apps it reaches
+
+An app is load balanced when **all** of these are true:
+
+- it has a **Cloudflare domain**. Visitors reach every server only through Cloudflare. See
+  [Addresses and Cloudflare](/operations/clusters/addresses)
+- it keeps **no data on its server**: no Volume, no File, no published port
+- it is **not a Compose app**
+
+From its **next deploy**, such an app runs on every server of the cluster: at least one
+[replica](/advanced/replicas) on each, more if its replica count is higher. **Settings ->
+Advanced -> Replicas** says: "Load balancing runs it on 3 servers: visitors are shared between
+them".
+
+<Callout type="info">
+  **An app with stored data stays on one server.** Its data has one writer: two servers writing
+  the same files would lose one's changes. Replication keeps that data ready on the other servers
+  for a failover.
+</Callout>
+
+## Nearest server
+
+Each server runs the app beside its own Cloudflare connector, and **Cloudflare sends each visitor
+to the server closest to them**. When a server stops, its visitors go to the next closest at once:
+the others were already answering.
+
+## Most available server
+
+The app still runs on every server, ready to take over, but **only one server takes its visitors**:
+the one with the most room.
+
+- Deplo looks at each server's free memory and processor **every 30 seconds**.
+- It changes server only when another one has **clearly more room**, so visitors do not bounce
+  between two that are about the same.
+- The new server starts taking visitors **before** the old one stops, so none are dropped.
+- If that server stops, another one takes the visitors within about 30 seconds.
+
+## Turn it off
+
+The same switch. With **Most available server**, every server takes visitors again at once. Apps
+go back to their own replica count at their next deploy.
+
+Turning [replication](/operations/clusters/replication#turn-it-on) off turns load balancing off
+too.
+
+**Over the API**: `setClusterLoadBalancing`, `Cluster.loadBalancingEnabled` and
+`Cluster.loadBalancingMode`. Over MCP: `set_cluster_load_balancing`.
+
+## See also
+
+<Cards>
+  <Card title="Replication" description="Stored data copied to every server, needed for load balancing" href="/operations/clusters/replication" />
+  <Card title="Replicas and mixed servers" description="How replicas spread across servers" href="/operations/clusters/replicas-and-architectures" />
+  <Card title="Addresses and Cloudflare" description="Why a domain on Cloudflare reaches every server" href="/operations/clusters/addresses" />
+</Cards>

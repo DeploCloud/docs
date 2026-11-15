@@ -20,6 +20,10 @@ could, the line is not shown.
   them. Visitors reach every server.
 - **A server that stops does not take the app down.** The others were already answering.
 
+With [load balancing](/operations/clusters/load-balancing) on, an app of one replica spreads too:
+it runs on every server, and the setting says "Load balancing runs it on 3 servers: visitors are
+shared between them".
+
 ### When they stay on one server
 
 | The setting says | Why |

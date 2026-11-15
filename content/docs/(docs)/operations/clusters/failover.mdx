@@ -61,7 +61,7 @@ Order: **databases first, then apps with a domain, then the rest**, oldest first
 | An app with no stored data | Starts on another server, exactly as its last deploy left it: same version, variables, files, ready check and automatic restart |
 | Replicas of an app | Start on the other servers. See [Replicas across servers](/operations/clusters/replicas-and-architectures#replicas-across-servers) |
 | A database | Restored on another server from its latest backup, or its standby copy takes over. See [Databases](/operations/clusters/databases) |
-| An app with a Volume or Files | **Waits for its server** unless you chose otherwise. See [Apps with stored data](/operations/clusters/apps-with-stored-data) |
+| An app with a Volume or Files | With [replication](/operations/clusters/replication) on, starts on another server with the copy of its data kept there. Otherwise it **waits for its server**. See [Apps with stored data](/operations/clusters/apps-with-stored-data) |
 | An app with a Bind | Never moves: the folder lives on that one machine |
 | A pull request preview | Never moves. See [Pull request previews](/operations/clusters/logs-metrics-and-previews#pull-request-previews) |
 | A cron job that was running | Marked **Lost: its server stopped**, and never run again on its own. See [Cron jobs](/operations/clusters/logs-metrics-and-previews#cron-jobs) |
@@ -120,6 +120,7 @@ Every entry is **by Deplo**, in the team that owns the app or database:
 | `Moved web to server-b: server-a stopped answering` | An app moved |
 | `Started a replica of web on server-b: server-c stopped answering` | A lost replica was replaced |
 | `Restored db on server-b from the backup of 14:15` | A database came back from a backup |
+| `Moved web to server-b with its data replicated there: server-a stopped answering` | An app with stored data moved with its replicated copy |
 | `web is waiting for room in eu: server-a stopped answering and no other server has room yet` | Nothing had room. See [Waiting for room](#waiting-for-room) for the other reasons |
 | `web moved to another server of its cluster, so its generated address is now web-calm-fox-cb007118.deplo.site` | Its `deplo.site` address changed |
 

@@ -6,7 +6,9 @@
     "databases",
     "standby-copy",
     "apps-with-stored-data",
+    "replication",
     "replicas-and-architectures",
+    "load-balancing",
     "logs-metrics-and-previews",
     "manage-servers",
     "leader"

@@ -25,6 +25,8 @@ one needs nothing new: the capability that places an app on a server places it o
 | A domain that keeps its address | A domain on Cloudflare follows the app wherever it runs | [Addresses and Cloudflare](/operations/clusters/addresses) |
 | A database with a recent backup elsewhere | Every 15 minutes, on another server, set up for you | [Databases](/operations/clusters/databases) |
 | Replicas on several servers | An app with a Cloudflare domain spreads its replicas | [Replicas and mixed servers](/operations/clusters/replicas-and-architectures) |
+| Apps with a Volume that fail over too | **Replication** streams their data, and each database's changes, to the other servers as they happen | [Replication](/operations/clusters/replication) |
+| Visitors shared between the servers | **Load balancing** sends each one to the nearest server, or the one with the most room | [Load balancing](/operations/clusters/load-balancing) |
 
 ## Create a cluster
 
@@ -192,11 +194,11 @@ cluster. A server of a cluster is found inside its folder.
 
 The folder shows the cluster's name, how many servers it has ("2 servers · 1 provisioning") and
 a warning sign when a banner inside needs you. Its menu has **Open**, **Manage**, **Turn failover
-off** and **Delete**.
+off**, **Turn replication on** and **Delete**.
 
-**Open it** to see its servers. The top line reads **Servers / eu**, with the **Failover** switch
-and a menu with **Manage** and **Delete**. Each server shows its status, and **Leader** on the one
-the leader runs on.
+**Open it** to see its servers. The top line reads **Servers / eu**, with the **Failover**,
+**Replication** and **Load balancing** switches and a menu with **Manage** and **Delete**. Each
+server shows its status, and **Leader** on the one the leader runs on.
 
 ### The banners [#the-banners]
 
@@ -211,9 +213,13 @@ background, so the page never waits on a server.
 | **Deplo's own machine leads this cluster** | "Until server-b answers again." See [When the leader's server stops answering](/operations/clusters/leader#when-the-leaders-server-stops-answering) |
 | **Failover may stop working** | A leader update that failed, a [refused Cloudflare token](/operations/clusters/leader#when-cloudflare-refuses-deplos-token), or the leader on Deplo's own server |
 | **Failover is not ready for 1 App yet** | "Their latest version is still being copied: web on 2 of 3 servers." |
+| **Replication is not ready for 1 App yet** | No whole copy of its data is on another server yet. See [Replication](/operations/clusters/replication#the-banners) |
+| **Replication is behind for 1 App** | A server's copy stopped following, and why |
 
-An app Deplo built is copied to the other servers after each build; an app that runs a pulled
-image needs no copy. A copy that failed while a server was away is retried every 2 minutes.
+These **version copies** are made on their own: an app Deplo built is copied to the other servers
+after each build, so any of them can start it; an app that runs a pulled image needs no copy. A
+copy that failed while a server was away is retried every 2 minutes. They copy what an app runs,
+not what it stores: that is [replication](/operations/clusters/replication).
 
 With failover off, only the first banner is shown.
 
@@ -225,7 +231,9 @@ With failover off, only the first banner is shown.
   [Addresses and Cloudflare](/operations/clusters/addresses).
 - **A pull request preview never fails over.**
 - **Replicas are not added under load**, and an image is not built for both ARM and x86.
-- **Clusters cannot be changed over MCP.** An AI agent can read them (`list_clusters`,
+- **Over MCP, a cluster's replication and load balancing are the only things that change.** An
+  instance admin's AI agent turns them on or off (`set_cluster_replication`,
+  `set_cluster_load_balancing`). Any agent can read clusters (`list_clusters`,
   `get_cluster`) and place an app or a database on one (`move_app_to_cluster`,
   `move_database_to_cluster`, and `clusterId` on `create_app_from_template`).
 
@@ -236,7 +244,9 @@ With failover off, only the first banner is shown.
   <Card title="Addresses and Cloudflare" description="A domain that keeps one address, and the ones that change" href="/operations/clusters/addresses" />
   <Card title="Databases" description="The two promises, the 15-minute backup, names across servers" href="/operations/clusters/databases" />
   <Card title="Standby copy" description="A second copy that takes over in place of a restore" href="/operations/clusters/standby-copy" />
-  <Card title="Apps with stored data" description="Why an app with a volume waits for its server" href="/operations/clusters/apps-with-stored-data" />
+  <Card title="Apps with stored data" description="When an app with a volume moves, and when it waits" href="/operations/clusters/apps-with-stored-data" />
+  <Card title="Replication" description="Stored data copied to every server, so those apps fail over" href="/operations/clusters/replication" />
+  <Card title="Load balancing" description="Visitors sent to the nearest server, or the most available one" href="/operations/clusters/load-balancing" />
   <Card title="Replicas and mixed servers" description="Replicas across servers, ARM next to x86" href="/operations/clusters/replicas-and-architectures" />
   <Card title="Logs, metrics, cron jobs and previews" description="What changes when an app runs on several servers" href="/operations/clusters/logs-metrics-and-previews" />
   <Card title="Move work, remove a server, delete a cluster" description="Pick a server, retire one, or take a cluster apart" href="/operations/clusters/manage-servers" />

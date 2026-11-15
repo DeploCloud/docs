@@ -8,6 +8,8 @@ A **standby copy** is a second copy of a database, on another server of the
 copy takes over. No backup is restored.
 
 - **For experts, off by default.** It costs the database's memory and disk a second time.
+- **On by itself on a cluster that [replicates](/operations/clusters/replication#databases).**
+  Its switch then reads "Cluster eu replicates its databases, so it keeps this copy."
 - **Nothing reads from it.** It is not a replica and it serves no queries.
 - **Only on a cluster.** Off a cluster the switch is not shown.
 

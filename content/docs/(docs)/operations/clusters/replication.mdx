@@ -1,0 +1,148 @@
+---
+title: Replication
+description: Stream every change of a cluster's apps and databases to its other servers as it happens, so an app with a Volume fails over too, with almost nothing lost.
+---
+
+**Replication** keeps a copy of everything a [cluster](/operations/clusters) stores on its other
+servers, **as it changes**:
+
+| What | How it follows |
+| --- | --- |
+| An app's **Volumes** and **Files** | Every file that changes is sent to the other servers within about half a second |
+| A **database** | Its engine's own log streams to a [standby copy](/operations/clusters/standby-copy) on another server |
+
+- **It is the only way an app with stored data fails over.** Without it, such an app
+  [waits for its server](/operations/clusters/apps-with-stored-data).
+- **Off by default.** An instance admin turns it on per cluster, like [failover](/operations/clusters#turn-failover-off).
+- **It is asynchronous**: a failover loses what had not reached the copy yet, usually under a second.
+
+## Turn it on [#turn-it-on]
+
+- **Inside the cluster**, the **Replication** switch beside **Failover**.
+- **On the Servers page**, the cluster's menu, **Turn replication on**.
+
+The toast says `Replication on for eu`, and Activity records `Turned replication on for cluster
+eu`. Instance admins only.
+
+Each app's data is copied whole once, then every change follows. When the first whole copy is on
+another server, Activity, by Deplo:
+
+```
+Replicated web's data to server-b and server-c: it can fail over now
+```
+
+## How an app's data follows
+
+<Steps>
+<Step>
+
+### The server the app runs on watches its data
+
+Every file written, renamed or removed in its Volumes and Files is noticed at once. Nothing is
+paused.
+
+</Step>
+<Step>
+
+### Each other server keeps a copy
+
+The change goes straight from server to server through the cluster's relay, so it keeps
+following **while Deplo itself is down**. The copy is kept apart: it is never the app's live data.
+
+</Step>
+<Step>
+
+### A failover puts the copy in place
+
+The server that takes the app over stops following, puts its copy where the app keeps its data,
+and starts it. A server that never held a whole copy refuses, and the cluster picks the next.
+
+</Step>
+</Steps>
+
+A server that comes back after a failover holds its old copy of the app as its own data: what it
+still held is [saved as a backup](/operations/clusters/failover#data-left-on-the-server), and only
+then does it follow again, from the server the app runs on now.
+
+## What is replicated
+
+| The app keeps | Replicated |
+| --- | --- |
+| A **Volume** | Yes |
+| A **File** written in Storage | Yes |
+| A Compose app's own volume | Yes |
+| A **Bind** | Never: the folder lives on one machine. See [An app with a Bind](/operations/clusters/apps-with-stored-data#an-app-with-a-bind-never-fails-over) |
+| A **database** | Through its standby copy, see below |
+
+## Databases [#databases]
+
+With replication on, **every database of the cluster keeps a standby copy**, made by Deplo:
+Postgres streams its write-ahead log, MySQL and MariaDB their binary log, MongoDB runs as a replica
+set and Redis follows its primary. A failover promotes the copy, losing about a second of writes.
+See [Standby copy](/operations/clusters/standby-copy).
+
+- Activity: `Keeps a standby copy of main on server-b: cluster eu replicates its databases`.
+- The database's **Keep a standby copy** switch reads "Cluster eu replicates its databases, so it
+  keeps this copy." and cannot be turned off while replication is on.
+- A database whose engine or version cannot keep one still fails over from its
+  [15-minute backup](/operations/clusters/databases#the-failover-backup).
+
+## What the app's page says
+
+The **Failover** card on the app's **Overview**:
+
+| Replication | The card says |
+| --- | --- |
+| On, a whole copy elsewhere | "web moves to another server on its own if its server stops, with its data replicated there as it changes." Then **Replicated to 2 servers, up to date 1 second ago.** |
+| On, first copy under way | "web fails over once a whole copy of its data is on another server. Deplo is making it now." |
+| Off | "web waits for server-a if it stops: cluster eu does not copy its data. You can bring it back on another server from its latest backup." |
+
+When it moves, Activity says: `Moved web to server-b with its data replicated there: server-a
+stopped answering`.
+
+## The banners
+
+Inside the cluster, on the Servers page:
+
+| Banner | It says |
+| --- | --- |
+| **Replication is not ready for 1 App yet** | "A whole copy of their data is not on another server yet: web. Until it is, they wait for their own server." |
+| **Replication is behind for 1 App** | Why a server's copy does not follow, such as "web: This server's agent is too old to keep a copy. Deplo updates it on its own." |
+
+A copy that heard nothing from the app's server for 30 seconds counts as behind.
+
+## Turn it off
+
+The same switch, or **Turn replication off** in the cluster's menu. Then:
+
+- every server removes its copies of the apps' data
+- apps with stored data wait for their server again
+- the standby copies replication made are removed; one a person turned on stays
+- [load balancing](/operations/clusters/load-balancing) is turned off too: `Turned replication off
+  for cluster eu, and load balancing with it`
+
+## What it costs
+
+- **Disk**: each server keeps a full copy of every other server's apps with data, and of each
+  database it holds the standby copy of.
+- **Memory**: a standby copy of a database takes as much as the database.
+- **Network**: every change travels to every other server, and only the part of a file that
+  changed travels: a few bytes written into a 10 GB file send about a hundred kilobytes, not
+  10 GB. A file the app copies sends almost nothing, since the copy already holds its bytes.
+
+<Callout type="info">
+  Replication is not the same as the **version copies** a cluster always makes: after each
+  deploy, every server gets the app's latest version so it can start it. Replication copies what
+  the app **stores**.
+</Callout>
+
+**Over the API**: `setClusterReplication`, `Cluster.replicationEnabled` and `Cluster.replication`,
+and `App.failover.replicatedTo`. Over MCP: `set_cluster_replication` and `get_cluster`.
+
+## See also
+
+<Cards>
+  <Card title="Apps with stored data" description="What waits, and how to bring it back from a backup" href="/operations/clusters/apps-with-stored-data" />
+  <Card title="Standby copy" description="How a database's copy follows and takes over" href="/operations/clusters/standby-copy" />
+  <Card title="Load balancing" description="Visitors shared between the servers, once replication is on" href="/operations/clusters/load-balancing" />
+</Cards>
