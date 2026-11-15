@@ -106,8 +106,11 @@ removed.
 
 - **Health is a cache, not a gate.** Past a staleness window the page shows **Unknown** rather than a
   stale green. Deploys check the server live.
-- **Changing the address moves nothing.** Generated addresses follow at once; your own domain keeps
-  pointing at the old IP until you change its DNS record.
+- **Changing the address moves nothing.** Generated addresses are renamed for the new IP at once:
+  `web-calm-fox-cb00710a.deplo.site` becomes `web-calm-fox-cb00710b.deplo.site` for `203.0.113.11`.
+  Each app answers on its new name after its next deploy, and the old name stops working. Your own
+  domain keeps pointing at the old IP until you change its DNS record.
+- **On a cluster, the other servers reach it at the new address straight away.**
 
 ## Troubleshooting
 
