@@ -19,13 +19,15 @@ See [When a cluster is cut in two](#when-a-cluster-is-cut-in-two) for what that 
 
 | After | What happens |
 | --- | --- |
-| About 10 seconds of silence | The server reads **Offline** on the Servers page, and its apps read **Offline** too |
-| 60 seconds | The silent server has stopped, by itself, everything that must never run twice: its databases, its apps with stored data and its running cron jobs |
-| About 81 seconds | The cluster's leader starts moving that server's work to the other servers |
+| About 5 seconds of silence | The cluster's leader starts moving that server's apps without stored data |
+| About 10 seconds | The server reads **Offline** on the Servers page, and its apps read **Offline** too |
+| About 25 seconds | The silent server has stopped, by itself, everything that must never run twice: its databases, its apps with stored data and its running cron jobs. The leader starts moving those |
 
-**Nothing moves earlier than that**, on purpose. A server that is only cut off from the network is
-still running. The leader waits until that server has stopped its own databases before it starts
-them somewhere else. That is the first promise, **"Never two writers"**.
+**Nothing that keeps data moves earlier than that**, on purpose. A server that is only cut off from
+the network is still running. The leader waits until that server has stopped its own databases
+before it starts them somewhere else. That is the first promise, **"Never two writers"**. Apps
+without stored data do not wait: two copies of those harm nothing, and the server removes its own
+when it is back.
 
 **Nothing moves at all** when the trouble looks like the cluster's own, not the server's:
 
@@ -34,8 +36,8 @@ them somewhere else. That is the first promise, **"Never two writers"**.
   answers too. See [When a cluster is cut in two](#when-a-cluster-is-cut-in-two)
 
 <Callout type="info">
-  81 seconds is when moving **starts**, not when visitors are served again. That also takes the
-  app's own start and a restore for anything with data. See [How long it takes](#how-long-it-takes).
+  25 seconds is when moving **starts** for anything with data, not when visitors are served again.
+  That also takes the app's own start and a restore. See [How long it takes](#how-long-it-takes).
 </Callout>
 
 ### How long it takes [#how-long-it-takes]
@@ -45,8 +47,9 @@ Measured on a cluster of two servers, counting from the moment one of them lost 
 | What ran on the stopped server | Measured |
 | --- | --- |
 | Replicas of an app on a Cloudflare domain, spread over both servers | **No downtime.** Cloudflare stopped sending visitors to the stopped server within about 5 seconds: one request in that time failed |
-| An app on a Cloudflare domain, on that server only | Visitors served again after **about 105 seconds** |
-| A database with a 4 MB backup | Running on the other server after **about 100 seconds**, the restore itself 17 to 24 seconds of it |
+| An app without stored data, on that server only | Running on the other server after **about 10 seconds** |
+| An app with a Volume, with [replication](/operations/clusters/replication) on | Visitors served again after **about 46 seconds**, putting its copy in place included |
+| A database with a 4 MB backup | Its restore took 17 to 24 seconds, on top of the wait |
 | The server comes back | About 20 seconds after it answers, its old copies stop, and what its database still held is saved as a backup |
 
 A bigger database takes longer to restore. Its card says how long, from the speed of its last
@@ -129,22 +132,26 @@ new address and the alert.
 
 ## The slower case [#the-slower-case]
 
-81 seconds is the usual case. One case is slower, and it is worth knowing before it happens.
-
-It applies when the server that stopped is one the current leader **has not heard from since it
-started leading**. Most often: the leader ran on that same server, so Deplo's own machine took
-over as leader (see [The leader](/operations/clusters/leader)).
+The times above are for a leader that was already leading. When **the leader ran on the server
+that stopped**, Deplo's own machine first takes over as leader, in 25 to 40 seconds (see
+[The leader](/operations/clusters/leader)). Then the same waits apply:
 
 | What ran on it | Starts elsewhere after |
 | --- | --- |
-| Apps without stored data | About 2 minutes: 25 to 40 seconds for Deplo's machine to take over, then 81 seconds |
-| Databases, and apps with a Volume | **6 minutes 21 seconds** after the new leader started leading, about 7 minutes in all |
+| Apps without stored data | About 40 seconds: Deplo's machine takes over, then 5 seconds |
+| Databases, and apps with a Volume | About a minute, then the restore. Measured: an app with a Volume and replication on was served again **82 seconds** after its server lost its power |
 
-Why: just before a planned update, a leader gives every server 5 more minutes. A leader that
-takes over cannot know whether that happened. So it waits those 5 minutes instead of risking the
-same database running on two servers. "Bring it back" from a backup is refused for the same time.
+**About 7 minutes in two cases.** Just before a planned update, a leader gives every server 5 more
+minutes, and tells every server first. The leader that takes over asks the servers that are left
+whether that happened. It waits those 5 minutes, instead of risking the same database running on
+two servers, when:
 
-A server that has answered the new leader even once is back on the usual 81 seconds.
+- the leader had given those 5 minutes, and its server never came back
+- the servers that are left cannot tell yet: they joined the cluster, or got a server agent that
+  keeps count, less than about 6 minutes before. Deplo updates the server agent on its own
+
+"Bring it back" from a backup is refused for the same time. A server that has answered the new
+leader even once is back on the usual times.
 
 ## When a cluster is cut in two [#when-a-cluster-is-cut-in-two]
 
@@ -157,7 +164,7 @@ reach, so **only one side may go on**. That is how nothing ever runs twice.
 - **exactly half** of them **and Deplo itself**
 
 Otherwise it moves nothing, and the servers it still reaches stop their databases and their apps
-with a Volume after about a minute. The side that goes on is the one with more than half of the
+with a Volume within about half a minute. The side that goes on is the one with more than half of the
 servers. When the sides are equal, it is the side Deplo is on.
 
 ### What it means for your cluster
@@ -165,9 +172,9 @@ servers. When the sides are equal, it is the side Deplo is on.
 | Cluster | What to expect |
 | --- | --- |
 | One server | Nothing changes |
-| Two servers | **Failover needs Deplo up.** If one server stops while Deplo is down too, or restarting for longer than about a minute and a half, the other server's databases and apps with a Volume stop as well. They start again by themselves within seconds of Deplo being back, and the stopped server's work moves then |
+| Two servers | **Failover needs Deplo up.** If one server stops while Deplo is down too, or restarting for longer than about 25 seconds, the other server's databases and apps with a Volume stop as well. They start again by themselves within seconds of Deplo being back, and the stopped server's work moves then |
 | Three servers or more | Failover works with Deplo down as long as more than half of the servers are up: one of three may stop, two of five |
-| More than half of the servers lost at once (two of three) | With Deplo up or not, the servers that are left stop their databases and apps with a Volume after about a minute, until one of the others is back. If they are gone for good, the rest start again once those servers are [removed from the cluster](/operations/clusters/manage-servers#remove-a-server) |
+| More than half of the servers lost at once (two of three) | With Deplo up or not, the servers that are left stop their databases and apps with a Volume within about half a minute, until one of the others is back. If they are gone for good, the rest start again once those servers are [removed from the cluster](/operations/clusters/manage-servers#remove-a-server) |
 
 **Apps without a Volume keep running the whole time**, in every row.
 
@@ -177,9 +184,9 @@ servers. When the sides are equal, it is the side Deplo is on.
 
 | Where | What happens |
 | --- | --- |
-| The smaller side | Its servers stop their databases and apps with a Volume about a minute in |
-| The larger side, its leader already leading | Brings them up from the latest backup, or promotes the standby copy, after **81 seconds** |
-| The larger side, when Deplo's machine had to take over as leader first | The same after **6 minutes 21 seconds**, about 7 minutes in all |
+| The smaller side | Its servers stop their databases and apps with a Volume within about half a minute |
+| The larger side, its leader already leading | Brings them up from the latest backup, or promotes the standby copy, after about **25 seconds** |
+| The larger side, when Deplo's machine had to take over as leader first | The same about **25 seconds** after Deplo's machine started leading, except in the cases of [The slower case](#the-slower-case) |
 | Both sides | Apps without a Volume keep running. The server that was cut off removes its copy when it is back |
 
 When the leader is on the larger side and Deplo on the smaller one, Deplo shows its own side's

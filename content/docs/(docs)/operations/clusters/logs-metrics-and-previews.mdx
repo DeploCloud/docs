@@ -77,7 +77,7 @@ own, whatever the job's **attempts** setting says: the command may be half done.
 - **Run now** on that row starts a new run on the server running the app now.
 - The alert **Cron job lost with its server** goes out once per lost run, on by default.
 
-A server that has not heard from the cluster for 60 seconds stops every cron job it is running
+A server that has not heard from the cluster for 5 seconds stops every cron job it is running
 and starts none until it is back in touch. A job asked of it meanwhile fails with: "This server
 lost touch with its cluster, so it runs no cron jobs until it is back."
 

@@ -21,7 +21,7 @@ one needs nothing new: the capability that places an app on a server places it o
 
 | You get | How | Read |
 | --- | --- | --- |
-| Apps that come back on another server | The cluster's leader moves them about 81 seconds after a server went silent | [When a server stops](/operations/clusters/failover) |
+| Apps that come back on another server | The cluster's leader moves them after about 5 seconds of silence, and those with data after about 25 seconds | [When a server stops](/operations/clusters/failover) |
 | Apps that reach each other by name on any server | The servers share a private network, set up on their own, that keeps working while Deplo is down | [Private network](/operations/clusters/private-network) |
 | A domain that keeps its address | A domain on Cloudflare follows the app wherever it runs | [Addresses and Cloudflare](/operations/clusters/addresses) |
 | A database with a recent backup elsewhere | Every 15 minutes, on another server, set up for you | [Databases](/operations/clusters/databases) |
@@ -76,7 +76,7 @@ while Deplo is up."
 
 <Callout type="warn">
   **If more than half of a cluster's servers are lost at once**, the servers that are left stop
-  their databases and their apps with a Volume after about a minute, with Deplo up or not. Two
+  their databases and their apps with a Volume within about half a minute, with Deplo up or not. Two
   copies of a database must never write at once, and the servers that are left cannot tell a
   stopped server from one they only cannot reach. See
   [When a cluster is cut in two](/operations/clusters/failover#when-a-cluster-is-cut-in-two).
