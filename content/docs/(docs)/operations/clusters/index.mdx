@@ -10,8 +10,8 @@ of Kubernetes is involved.
   picks the server.
 - **When a server stops answering, the cluster moves its work** to another server. That is a
   **failover**. It needs no click.
-- **Failover that does not depend on Deplo being up takes three servers or more.** See
-  [How many servers](#how-many-servers).
+- **Failover that does not depend on Deplo being up takes three servers or more.** It survives
+  losing Deplo or the leader's server, not both at once. See [How many servers](#how-many-servers).
 - **Opt-in, and for experts.** An app on a single server works exactly as before.
 
 Creating and changing a cluster is for **instance admins**, under **Settings -> Servers**. Using
@@ -69,7 +69,7 @@ A cluster of one server is allowed. Inside it, a banner says **Failover needs a 
 | --- | --- |
 | 1 | Never: there is nowhere to move to |
 | 2 | **Only while Deplo is up** |
-| 3 or more | Also while Deplo is down, as long as **more than half of the servers are up** and the [leader runs on one of them](/operations/clusters/leader#run-the-leader-on-another-server). One of three may stop, two of five |
+| 3 or more | Also while Deplo is down, as long as **more than half of the servers are up** and the [leader runs on one of them](/operations/clusters/leader#run-the-leader-on-another-server). One of three may stop, two of five, but **not the leader's server while Deplo is down too**: then nothing moves until one of them is back |
 
 When the second server joins, the toast says so: "Failover is on. With two servers it works only
 while Deplo is up."

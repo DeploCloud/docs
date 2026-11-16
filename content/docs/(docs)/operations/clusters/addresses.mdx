@@ -9,7 +9,7 @@ follows it depends on where the domain lives.
 | The app is reached at | After a failover |
 | --- | --- |
 | A domain in a Cloudflare zone connected for [automatic DNS](/guides/networking/automatic-dns) | **Same address.** Nothing to do |
-| A generated `deplo.site` address | Deplo gives the app a **new address** for the new server |
+| A generated `deplo.site` address | Deplo gives the app a **new address** for the new server. **While Deplo is down, the moved app answers at none**, see [A generated address](#a-generated-address) |
 | A domain of your own that is not on Cloudflare | **Stops answering** until you point its DNS at the new server |
 
 Deplo says so before you rely on it:
@@ -94,6 +94,14 @@ web-calm-fox-cb007118.deplo.site`
 
 If the new server refuses the new routes, Activity says `web runs on server-b, but its generated
 address could not be updated yet`, followed by the reason, and Deplo tries again on its own.
+
+**A generated address follows a moved app only while Deplo is up.** Only Deplo makes the new one,
+and the old one names the server the app left.
+
+- **With Deplo down**, the app runs on its new server but is not reached at any generated address.
+- Measured: it ran there about 9 seconds after its server stopped, and was served at the new
+  address **12 to 29 seconds after Deplo was back**.
+- **A domain on Cloudflare keeps answering** the whole time. That is the address to give visitors.
 
 ## What Activity says
 

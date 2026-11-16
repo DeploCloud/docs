@@ -12,6 +12,8 @@ server of the cluster. Nobody clicks anything.
 - **With two servers, failover works only while Deplo is up.**
 - **With three or more, it also works while Deplo is down**, as long as more than half of the
   cluster's servers are up and the [leader](/operations/clusters/leader) runs on one of them.
+- **It survives losing Deplo or the leader's server, not both at once.** With both down, nothing
+  moves until one of them is back.
 
 See [When a cluster is cut in two](#when-a-cluster-is-cut-in-two) for what that means.
 
@@ -130,6 +132,13 @@ Every entry is **by Deplo**, in the team that owns the app or database:
 **If Deplo was down during the failover**, it catches up when it is back: the same entries, the
 new address and the alert.
 
+- **Until then, a moved app runs but is not reached at its generated address.** Only Deplo makes
+  the new one: the old address names the server the app left.
+- Measured: the app ran on its new server about 9 seconds after the fault, and was served at its
+  new address **12 to 29 seconds after Deplo was back**.
+- **A domain on Cloudflare keeps answering** the whole time. See
+  [Addresses and Cloudflare](/operations/clusters/addresses#a-generated-address).
+
 ## The slower case [#the-slower-case]
 
 The times above are for a leader that was already leading. When **the leader ran on the server
@@ -173,12 +182,13 @@ servers. When the sides are equal, it is the side Deplo is on.
 | --- | --- |
 | One server | Nothing changes |
 | Two servers | **Failover needs Deplo up.** If one server stops while Deplo is down too, or restarting for longer than about 25 seconds, the other server's databases and apps with a Volume stop as well. They start again by themselves within seconds of Deplo being back, and the stopped server's work moves then |
-| Three servers or more | Failover works with Deplo down as long as more than half of the servers are up: one of three may stop, two of five |
+| Three servers or more | Failover works with Deplo down as long as more than half of the servers are up and the leader's server is one of them: one of three may stop, two of five. **Not the leader's server while Deplo is down too**: then nothing moves until one of them is back |
 | More than half of the servers lost at once (two of three) | With Deplo up or not, the servers that are left stop their databases and apps with a Volume within about half a minute, until one of the others is back. If they are gone for good, the rest start again once those servers are [removed from the cluster](/operations/clusters/manage-servers#remove-a-server) |
 
 **Apps without a Volume keep running the whole time**, in every row.
 
-**For failover that does not depend on Deplo being up, use three servers or more.**
+**For failover that does not depend on Deplo being up, use three servers or more**, with the
+[leader on one of them](/operations/clusters/leader#run-the-leader-on-another-server).
 
 ### What a split looks like
 
@@ -210,7 +220,7 @@ servers as offline and cannot see the other side until the split heals.
 A restart, or a network cut that healed. The server:
 
 1. **Starts nothing of the cluster's until it has heard from the leader.** Anything that started
-   by itself at boot is stopped again first.
+   by itself at boot is stopped again, a few seconds later. See the known limit below.
 2. **Stops and removes its own copy** of every app and database that moved away while it was
    gone, the app's Cloudflare connector included.
 3. **Starts again what is still its own.** Work that found no room elsewhere goes back to it.
@@ -228,10 +238,15 @@ databases:
 
 Replicas go back to an even spread at the app's next deploy, not at once.
 
-<Callout type="warn">
-  After a power loss, the old copies can run for a few seconds at boot, before the server stops
-  them. Nothing reaches the live database from there: what an old copy wrote in that window stays
-  with the data described below.
+<Callout type="warn" title="Known limit: old copies run for a few seconds after a power loss">
+  - When a server comes back from a **power loss**, its databases and apps with a Volume start by
+    themselves at boot. They run for **2 to 4 seconds** (measured) before the server stops them,
+    while the copies that moved are live on another server.
+  - **A visitor who reaches that server in those seconds can be served by the old copy**, for
+    example at the app's old generated address.
+  - What the old copy writes then never reaches the live database. It is kept only in the backup
+    labelled **Left on server-a**, described below.
+  - After a **network cut** this does not happen: the server had already stopped its copies itself.
 </Callout>
 
 ## Data left on the server [#data-left-on-the-server]
