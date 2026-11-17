@@ -1,0 +1,64 @@
+---
+title: Experiments
+description: Turn on the features that are still new, for every team at once.
+---
+
+**Settings -> Deplo -> Experiments**, instance admins only.
+
+Some features are still new. Each one has a switch here, off until an instance admin turns it on.
+On, it is offered to every team. Off, nobody sees it.
+
+| Experiment | What it adds | Where it shows up |
+| --- | --- | --- |
+| [Cron jobs](/guides/observability/cron-jobs) | A command on a schedule inside an app or a database | **Settings -> Advanced** of each app and database |
+| [Zero-downtime deploys](/concepts/what-happens-on-a-deploy#zero-downtime-deploys) | The old version stays online until the new one is ready | **Settings -> Advanced** of each app |
+| [Pull requests](/guides/networking/pull-request-previews) | A deploy and a URL for every pull request | **Settings -> Pull requests** of each GitHub app |
+| [Server clusters](/operations/clusters) | Several servers that act as one | **Settings -> Servers -> Add** |
+| [Tunnels](/operations/cloudflare-tunnel) | The panel and domains served through Cloudflare Tunnel | **Panel access**, and **Add domain** |
+
+## Turn one on
+
+- **On is for every team.** Each app still opts in on its own: turning on Cron jobs shows the
+  switch on every app, and starts no job.
+- **Each row says what uses it now**, like `2 apps, 5 jobs`.
+- **Activity records who** turned it on or off, and when.
+
+## Turn one off
+
+**Cron jobs, Zero-downtime deploys and Pull requests pause.** Nothing is deleted, and each app keeps
+its own switch, so turning the experiment back on picks up where it left off.
+
+| Experiment | While it is off |
+| --- | --- |
+| Cron jobs | No job runs, on any app or database |
+| Zero-downtime deploys | A deploy replaces the running version in place, with a short gap |
+| Pull requests | New pull requests and new pushes are ignored. A live preview stays until its pull request closes |
+
+Turning one off while something uses it asks first, and says what stops.
+
+**Server clusters and Tunnels can't be turned off while one exists.** The switch says what is left:
+delete the cluster, turn off the panel's tunnel under **Advanced**, or remove the domains served
+through a tunnel.
+
+## After an update
+
+The update that adds Experiments turns on every experiment the instance already uses:
+
+| Experiment | On after the update when |
+| --- | --- |
+| Cron jobs | An app or a database has Cron jobs on |
+| Zero-downtime deploys | An app has it on |
+| Pull requests | An app has previews on, or a preview is live |
+| Server clusters | A cluster exists |
+| Tunnels | The panel or a domain is served through a tunnel |
+
+A new install starts with all five off.
+
+## Good to know
+
+- **Off, a feature is hidden everywhere:** menus, settings and search. A link to one of its pages
+  says it is not turned on, and shows an admin the way here.
+- **The API and MCP follow the same switch.** A call that would turn on or create something is
+  refused with a message that names this page. MCP has `list_experiments` and `set_experiment`.
+- **A migration brings cron jobs and previews across paused** while their experiment is off.
+- **An app on a cluster gets its own tunnel from Server clusters**, not from Tunnels.

@@ -3,6 +3,7 @@
   "icon": "Server",
   "pages": [
     "instance-administration",
+    "experiments",
     "servers",
     "clusters",
     "update",
