@@ -8,6 +8,8 @@ instance admins; container registries are the exception, being per team.
 
 Every action here goes through that server's agent. The control plane never opens a shell on a host.
 
+Each server's card shows its CPU, memory and disk, from its latest reading.
+
 A server's page has these tabs:
 
 - **Overview**: CPU, memory, disk and Docker; the **Server agent** card with its version, where its
@@ -37,6 +39,24 @@ ticked is refused.
 
 Several servers can act as one: when one stops, its apps move to another. A cluster is added from
 the same **Add** dialog and has its own card on this page. See [Clusters](/operations/clusters).
+
+## Select several servers [#select-several-servers]
+
+**Ctrl+click** a server's card (**Cmd+click** on a Mac), or drag a box around several. A bar opens
+at the bottom:
+
+| Action | What it does |
+| --- | --- |
+| **Check status** | Asks each picked server how it is, now |
+| **Copy addresses** | Copies their IP addresses, one per line |
+| **Move to cluster** | Moves them all into one cluster. Shown once a cluster exists |
+| **Remove from cluster** | Inside a cluster: takes the ticked servers out of it |
+
+- **Dragging one picked card moves them all** onto the cluster you drop it on.
+- **A server that cannot join stays out**, and the confirmation names it and why:
+  "server-c stays out: in us". The others join, one at a time.
+- **Only servers can be picked**, never a cluster.
+- `Ctrl+A` picks every server shown, `Esc` clears the selection.
 
 ## Server operations
 

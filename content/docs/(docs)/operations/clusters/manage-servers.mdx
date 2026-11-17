@@ -4,7 +4,7 @@ description: Put an app or database on one server of a cluster, take a server ou
 ---
 
 Moving an app or database is for anyone who can configure it. Removing a server and deleting a
-cluster are for **instance admins**, on the cluster's folder under **Settings -> Servers**.
+cluster are for **instance admins**, inside the cluster under **Settings -> Servers**.
 
 | You want to | Do this |
 | --- | --- |
@@ -40,11 +40,13 @@ databases need.
 
 ## Remove a server [#remove-a-server]
 
-Open the cluster, then **Remove from cluster** in the server's menu. Or drag the server onto
-**Servers** in the top line: "Release to remove it from the cluster". The dialog, **Remove this
-server**, says: "server-a leaves eu
-and stays one of your servers." With two servers it warns: "With one server left, eu stops
-failing over."
+Open the cluster, then **Remove from cluster** in the server's menu. The dialog, **Remove this
+server**, says: "server-a leaves eu and stays one of your servers." With two servers it warns:
+"With one server left, eu stops failing over."
+
+To remove several, tick their rows and click **Remove from cluster** in the bar. **Remove 2
+servers** asks the question below once, for all of them. Moving their apps is greyed out when you
+tick every server of the cluster: there would be nowhere to move them.
 
 A server that runs nothing leaves at once. One that still runs apps or databases asks what
 happens to them:
@@ -116,7 +118,7 @@ With **Keep its Apps on this server**, Activity says:
 
 ## Delete a cluster [#delete-a-cluster]
 
-**Delete** is in the cluster's menu, on its folder or inside it. The dialog, **Delete eu**, says: "Its
+**Delete** is in the cluster's menu, on its card or inside it. The dialog, **Delete eu**, says: "Its
 servers stay connected and everything keeps running where it is."
 
 **Nothing is stopped, redeployed or deleted.** Every app and database stays on the server it runs

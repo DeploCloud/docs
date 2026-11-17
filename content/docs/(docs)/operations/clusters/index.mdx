@@ -57,14 +57,14 @@ A short name such as `eu`, up to 60 characters, unique on this Deplo. Then pick 
 
 ### Add cluster
 
-The cluster shows on the Servers page as a folder, and its **leader** starts on Deplo's own
+The cluster shows on the Servers page as a card, and its **leader** starts on Deplo's own
 machine without being asked. There is nothing to install.
 
 </Step>
 </Steps>
 
 A cluster of one server is allowed. Inside it, a banner says **Failover needs a second server**:
-"With one server there is nowhere to move an App to. Drag another server onto this cluster."
+"With one server there is nowhere to move an App to. Add another one with Add server."
 
 ## How many servers [#how-many-servers]
 
@@ -108,7 +108,7 @@ the list of teams allowed to place apps and databases on it.
 Failover is **on** for every new cluster. To keep everything where it is when a server stops,
 turn it off:
 
-- **Inside the cluster**, the **Failover** switch beside its name.
+- **Inside the cluster**, the **Failover** switch under **Settings**.
 - **On the Servers page**, the cluster's menu, **Turn failover off**.
 
 The toast says `Failover off for eu`, and Activity records `Turned failover off for cluster eu`.
@@ -122,8 +122,20 @@ Turning it back on hands the leader everything again, with no redeploy.
 
 ## Add a server
 
-**Drag the server onto the cluster's folder** on the Servers page. Or, in the server's menu,
-**Move to cluster**, then the cluster's name.
+**Drag the server onto the cluster's card** on the Servers page. Or, in the server's menu,
+**Move to cluster**, then the cluster's name. To move several at once,
+[select them](/operations/servers#select-several-servers) and use **Move to cluster** in the bar.
+
+Inside the cluster, **Add server** offers both ways:
+
+- **Install a new server**: the usual install command. The server joins the cluster on its own as
+  soon as it is installed and answers.
+- **Move an existing server into eu**: every server outside the cluster, one click each.
+
+Until a new server joins, its card reads "Joins eu once it is installed." If the cluster refuses
+it, the card says why ("Waiting to join eu: server-b is offline. Bring it back online first.")
+and Deplo asks again every minute. **Don't join
+eu** in its menu cancels it, and Activity records `server-b will not join cluster eu`.
 
 A server that runs nothing joins at once: "server-b joined eu". One that runs apps or databases
 asks first, **Move server-b into eu?**: "2 Apps and 1 database on it move into the cluster too.
@@ -134,10 +146,10 @@ belong to the cluster. Activity records `Added server server-b to cluster eu wit
 database`.
 
 **A server that just joined reads Provisioning** until the cluster's leader answers for it,
-usually within seconds. It takes no work until then. The cluster's folder counts it:
-"2 servers · 1 provisioning".
+usually within seconds. It takes no work until then. The cluster's card counts it:
+"Cluster · 1 provisioning".
 
-A server that cannot join is greyed out in **Move to cluster**, and dropping it on the folder
+A server that cannot join is greyed out in **Move to cluster**, and dropping it on the card
 shows the reason:
 
 | It says | What to do |
@@ -195,16 +207,28 @@ The move or deploy is refused **before anything stops**:
 
 ## On the Servers page [#on-the-servers-page]
 
-**Settings -> Servers** shows each cluster as a folder, next to the servers that are in no
-cluster. A server of a cluster is found inside its folder.
+**Settings -> Servers** shows each cluster as a card, next to the servers that are in no
+cluster. A server of a cluster is found inside it.
 
-The folder shows the cluster's name, how many servers it has ("2 servers · 1 provisioning") and
-a warning sign when a banner inside needs you. Its menu has **Open**, **Manage**, **Turn failover
-off**, **Turn replication on** and **Delete**.
+The card shows:
 
-**Open it** to see its servers. The top line reads **Servers / eu**, with the **Failover**,
-**Replication** and **Load balancing** switches and a menu with **Manage** and **Delete**. Each
-server shows its status, and **Leader** on the one the leader runs on.
+- **How many servers answer**: a chip such as **2/3**, and one segment per server, green while it
+  answers.
+- **Four numbers**: servers, cores, memory and apps. Cores and memory add up the servers that
+  answered, and read "-" until one has.
+- **A warning sign** when a banner inside needs you.
+
+Its menu has **Open**, **Manage**, **Turn failover off**, **Turn replication on** and **Delete**.
+In the list view the same numbers fit on one line.
+
+**Open it** to see its page. The header has **Add server** and a menu with **Manage** and
+**Delete**. Below:
+
+| Part | What it shows |
+| --- | --- |
+| **Servers** | Each server's status, CPU, memory and apps, a crown on the one the leader runs on. Tick rows to remove several at once |
+| **Capacity** | CPU, memory and disk of the whole cluster, its apps, where the leader runs and which teams can use it |
+| **Settings** | The **Failover**, **Replication** and **Load balancing** switches |
 
 ### The banners [#the-banners]
 
