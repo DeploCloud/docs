@@ -147,8 +147,18 @@ that stopped**, Deplo's own machine first takes over as leader, in 25 to 40 seco
 
 | What ran on it | Starts elsewhere after |
 | --- | --- |
-| Apps without stored data | About 40 seconds: Deplo's machine takes over, then 5 seconds |
-| Databases, and apps with a Volume | About a minute, then the restore. Measured: an app with a Volume and replication on was served again **82 seconds** after its server lost its power |
+| Apps without stored data | About 40 seconds: Deplo's machine takes over, then 5 seconds. Measured: running elsewhere after 40 to 48 seconds, served again at its generated address after 47 to 82 seconds |
+| Databases, and apps with a Volume | About a minute, then the restore. Measured: running elsewhere after 63 to 78 seconds. An app with a Volume and replication on was served again at its generated address after **108 to 165 seconds**, 113 or less in 3 runs of 5 |
+
+Measured 5 times on a cluster of three servers and Deplo's machine, with Deplo up. The server that
+lost its power ran the leader, a database with a standby copy, an app with a Volume and an app
+without stored data.
+
+- **The wait after "running elsewhere" is Deplo**, pointing each moved app's generated address at
+  its new server. It does that one app after another, and every call it makes to the stopped server
+  waits up to 10 seconds first.
+- **A domain on Cloudflare does not wait for Deplo.** See
+  [Addresses and Cloudflare](/operations/clusters/addresses).
 
 **About 7 minutes in two cases.** Just before a planned update, a leader gives every server 5 more
 minutes, and tells every server first. The leader that takes over asks the servers that are left
