@@ -89,6 +89,16 @@ Activity says why, once a day, until it is fixed:
   builds images, and they exist only on the server that built them. A compose file that names
   published images does.`
 
+<Callout type="warn" title="Known limit: failover needs the image registry">
+  - **Every start on another server downloads the app's images again**, and fails if the registry
+    refuses, even when that server already has them.
+  - So a registry that is down, a server without internet, or a pull limit **stops every move**.
+    Docker Hub allows a few downloads an hour per address to anyone not signed in: on a test cluster
+    behind one address, nothing moved after the second failover within an hour.
+  - Until it is fixed, use images from a registry Deplo is signed in to: a move uses the same
+    [registry credentials](/operations/servers/container-registries) as the app's deploy.
+</Callout>
+
 ## Waiting for room [#waiting-for-room]
 
 What finds no server waits, and Deplo tries again **every 30 seconds**.
@@ -159,6 +169,15 @@ without stored data.
   waits up to 10 seconds first.
 - **A domain on Cloudflare does not wait for Deplo.** See
   [Addresses and Cloudflare](/operations/clusters/addresses).
+
+<Callout type="warn" title="Known limit: today's leader waits about 7 minutes">
+  - The times above are for the cluster's leader at version **0.1.0-canary.4**. Deplo still
+    installs **0.1.0-canary.3**, which always waits out the 5 more minutes a planned update gives.
+  - With it, databases and apps with a Volume start elsewhere after **about 7 minutes**: 410 to
+    425 seconds in 5 runs, same cluster. Apps without stored data still move after about 40 seconds.
+  - Deplo moves to 0.1.0-canary.4 once the known limit below is fixed. See
+    [When a server comes back](#when-a-server-comes-back).
+</Callout>
 
 **About 7 minutes in two cases.** Just before a planned update, a leader gives every server 5 more
 minutes, and tells every server first. The leader that takes over asks the servers that are left
@@ -257,6 +276,19 @@ Replicas go back to an even spread at the app's next deploy, not at once.
   - What the old copy writes then never reaches the live database. It is kept only in the backup
     labelled **Left on server-a**, described below.
   - After a **network cut** this does not happen: the server had already stopped its copies itself.
+</Callout>
+
+<Callout type="warn" title="Known limit: an app can run on two servers when the leader's server comes back">
+  - When the server that ran the cluster's leader comes back **just after its apps moved away**,
+    the lead goes back to it before Deplo has seen every move. That server then starts an app with
+    a Volume again, while its new copy still runs on another server.
+  - **Both copies take writes**, and neither sees what the other wrote. Measured: **93 to 96
+    seconds** in 5 runs of 5, until the test ended, so it can last longer.
+  - With today's leader, 0.1.0-canary.3, the apps move about 7 minutes after the server stopped,
+    so a server back after about 7 minutes meets it. 0.1.0-canary.4 moves them after about a
+    minute: a server back a few minutes later can meet it too.
+  - It is fixed by an update of the cluster's leader and of the server agent. Until then, when the
+    leader's server stopped, start it again only once Deplo shows its apps on their new servers.
 </Callout>
 
 ## Data left on the server [#data-left-on-the-server]
