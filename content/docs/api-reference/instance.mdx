@@ -24,29 +24,6 @@ query {
   instanceSettings {
     panelUrl
     panelUrlSource
-    gravatarEnabled
-    logMaxDays
-    version
-  }
-}
-```
-
-### `setGravatarEnabled`
-
-Instance admin only. Returns [`InstanceSettings`](/api-reference/types/objects#instancesettings).
-
-Turn Gravatar profile pictures on or off for the whole instance. On, a person with no uploaded picture falls back to the one registered against their address, and each VIEWER's browser fetches it - the panel itself never dials out, so an instance with no egress still works. Off, no Gravatar address is emitted anywhere and nothing about anybody leaves the instance. Instance-wide because it is a property of this deployment's egress and policy, not of one team's taste.
-
-| Argument | Type | Description |
-| --- | --- | --- |
-| `enabled` | `Boolean!` |  |
-
-```graphql
-mutation {
-  setGravatarEnabled(enabled: true) {
-    panelUrl
-    panelUrlSource
-    gravatarEnabled
     logMaxDays
     version
   }
@@ -68,7 +45,6 @@ mutation {
   setLogMaxDays(days: 30) {
     panelUrl
     panelUrlSource
-    gravatarEnabled
     logMaxDays
     version
   }
@@ -227,7 +203,6 @@ mutation {
   setPanelFallback(enabled: true) {
     panelUrl
     panelUrlSource
-    gravatarEnabled
     logMaxDays
     version
   }
@@ -405,31 +380,6 @@ mutation {
 }
 ```
 
-### `setCanaryReleases`
-
-Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
-
-Offer canary (pre-release) versions of Deplo as updates, or go back to stable ones. Server agents follow the agent version the installed Deplo is pinned to, never this switch. Installs nothing: a newer version shows up as an update, and turning it off never downgrades anything already on a canary.
-
-| Argument | Type | Description |
-| --- | --- | --- |
-| `enabled` | `Boolean!` |  |
-
-```graphql
-mutation {
-  setCanaryReleases(enabled: true) {
-    current
-    latest
-    next
-    updateAvailable
-  }
-}
-```
-
-## Automatic updates
-
-On by default for stable releases: three checks an hour apart, from `hour` in `timezone`. `updateInfo.automatic` says when `next` installs itself, or why it waits.
-
 ### `setAutoUpdates`
 
 Instance admin only. Returns [`UpdateInfo`](/api-reference/types/objects#updateinfo).
@@ -524,7 +474,6 @@ mutation {
   setUsageReportsEnabled(enabled: true) {
     panelUrl
     panelUrlSource
-    gravatarEnabled
     logMaxDays
     version
   }

@@ -18,6 +18,7 @@ Try it, and share your feedback on [our GitHub](https://github.com/DeploCloud/de
 | [Pull requests](/guides/networking/pull-request-previews) | A deploy and a URL for every pull request | **Settings -> Pull requests** of each GitHub app |
 | [Server clusters](/operations/clusters) | Several servers that act as one | **Settings -> Servers -> Add** |
 | [Tunnels](/operations/cloudflare-tunnel) | The panel and domains served through Cloudflare Tunnel | **Panel access**, and **Add domain** |
+| [Canary releases](/operations/update#stable-or-canary-releases) | Every new version of Deplo, before it is marked stable | **Settings -> Deplo -> Updates** |
 
 ## Turn one on
 
@@ -37,7 +38,10 @@ its own switch, so turning the experiment back on picks up where it left off.
 | Zero-downtime deploys | A deploy replaces the running version in place, with a short gap |
 | Pull requests | New pull requests and new pushes are ignored. A live preview stays until its pull request closes |
 
-Turning one off while something uses it asks first, and says what stops.
+Turning one off while something uses it asks first, and says what stops. **Canary releases** asks
+the other way round, when you turn it on: canary versions can break the panel or a server's agent.
+Off, only stable versions show up as updates, and a canary already installed stays until the next
+stable one.
 
 **Server clusters and Tunnels can't be turned off while one exists.** The switch says what is left:
 delete the cluster, turn off the panel's tunnel under **Advanced**, or remove the domains served
@@ -54,8 +58,9 @@ The update that adds Experiments turns on every experiment the instance already 
 | Pull requests | An app has previews on, or a preview is live |
 | Server clusters | A cluster exists |
 | Tunnels | The panel or a domain is served through a tunnel |
+| Canary releases | It was on before, under **Advanced** |
 
-A new install starts with all five off.
+A new install starts with all six off.
 
 ## Good to know
 

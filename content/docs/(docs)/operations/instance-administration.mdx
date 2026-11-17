@@ -37,7 +37,7 @@ locked. See [Host access](/advanced/host-access-and-privileges) for what they op
 
 ## Instance settings
 
-**Settings -> Deplo**, in four tabs.
+**Settings -> Deplo**, in five tabs.
 
 | Tab | Setting | What it does |
 | --- | --- | --- |
@@ -45,23 +45,16 @@ locked. See [Host access](/advanced/host-access-and-privileges) for what they op
 | General | **Certificates** | The email Let's Encrypt has for every server |
 | General | **Instance owner** | Who owns the instance, and **Transfer ownership** |
 | Updates | | Installed version, available releases, servers still updating. See [Update](/operations/update) |
-| Advanced | **Canary releases** | Offer canary versions as updates. Off by default |
 | Advanced | **Log search range** | How far back a log page can reach. Default 7 days, 1 to 90 |
-| Advanced | **Gravatar pictures** | Whether people with no picture of their own fall back to Gravatar. **Off by default** |
 | Advanced | **Backup address**, **HTTPS**, **Cloudflare Tunnel** | Panel access. See [The panel's own address](/operations/panel-address-and-certificates) and [Cloudflare Tunnel](/operations/cloudflare-tunnel) |
-| Advanced | **Security updates** | Match the packages in your images against known flaws. On by default. See [Security updates](/guides/observability/security-updates) |
+| Advanced | **Security updates** | Match the packages in your images against known flaws. On by default; turning it off asks first. See [Security updates](/guides/observability/security-updates) |
 | Advanced | **Anonymous usage statistics** | One anonymous report a day. On by default. See [Anonymous usage statistics](/operations/anonymous-usage-statistics) |
 | Advanced | **Diagnostics** | The versions this instance runs, with **Copy** for a bug report |
+| Experiments | | The features still in beta, **Canary releases** included. All off on a new install. See [Experiments](/operations/experiments) |
 | About | | Version, commit, license and open source notices |
 
 **Log search range** limits what can be asked for, not what a server keeps: Docker rotates container
 logs by size, so an older window can come back empty.
-
-<Callout type="info" title="What turning Gravatar on sends">
-Deplo never calls gravatar.com itself: each **person's browser** does, with a hash of their email
-address in the URL, so their IP and that hash reach a third party. The switch only decides whether
-Gravatar is offered; each person still picks their own picture in **Settings -> Account**.
-</Callout>
 
 ## Instance owner
 

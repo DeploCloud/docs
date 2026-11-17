@@ -1424,7 +1424,7 @@ A registered user in the instance-wide Users list (no email exposed).
 | Field | Type | Description |
 | --- | --- | --- |
 | `avatarColor` | `String` |  |
-| `avatarUrl` | `String` | Resolved profile picture: uploaded image, else Gravatar, else null for the monogram. |
+| `avatarUrl` | `String` | Resolved profile picture: a chosen face or an uploaded image, else null for the monogram. |
 | `canConfigureTraefik` | `Boolean` |  |
 | `canExposePorts` | `Boolean` |  |
 | `canMountHostVolumes` | `Boolean` |  |
@@ -1471,7 +1471,6 @@ Settings that belong to this Deplo instance rather than to a team or a host: the
 | `deploHostId` | `String` |  |
 | `deploHostIp` | `String` | The IPv4 an A record for the panel's domain should point at. |
 | `deploHostName` | `String` |  |
-| `gravatarEnabled` | `Boolean` | Whether a person with no uploaded picture falls back to their Gravatar. The panel never dials gravatar.com itself - it only computes the address, and each viewer's browser fetches it. |
 | `logMaxDays` | `Int` | How far back the log viewer's time range may reach, in days. Instance-wide because the logs live on the host, which several teams share. It bounds what may be ASKED for and nothing else: docker rotates its json-file logs by size, so no setting here makes the host actually hold that much. |
 | `panelFallbackDisabled` | `Boolean` | Whether that backup address is turned off. It then routes nowhere, and a panel whose domain stops answering is reached again only with `deplo recover panel-address` on the server itself. The address above is what turning it back on would restore. |
 | `panelFallbackUrl` | `String` | The generated address the panel also answers on, over https (https://deplo-&lt;hexip>.deplo.site). On unless an instance admin turned it off: it is the way back in when the panel's domain, its DNS or its certificate stops working, and it resolves to this server with nothing to set up. Null only when Deplo cannot work out an address of its own that anyone else could reach. |
@@ -1532,7 +1531,7 @@ A user's membership in the active team (no email exposed).
 | Field | Type | Description |
 | --- | --- | --- |
 | `avatarColor` | `String` |  |
-| `avatarUrl` | `String` | Resolved profile picture: uploaded image, else Gravatar, else null for the monogram. |
+| `avatarUrl` | `String` | Resolved profile picture: a chosen face or an uploaded image, else null for the monogram. |
 | `capabilities` | [`[Capability!]`](/api-reference/types/enums#capability) |  |
 | `createdAt` | `String` |  |
 | `isInstanceAdmin` | `Boolean` |  |
@@ -2671,7 +2670,7 @@ A team that owns apps, infra and members.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `avatarUrl` | `String` | The team's picture, or null for its two-letter monogram. A team has no email, so there is no Gravatar step. |
+| `avatarUrl` | `String` | The team's picture, or null for its two-letter monogram. |
 | `createdAt` | `String` |  |
 | `id` | `ID` |  |
 | `name` | `String` |  |
@@ -2797,7 +2796,7 @@ Full per-user detail for the admin editor - the email IS included here.
 | Field | Type | Description |
 | --- | --- | --- |
 | `avatarColor` | `String` |  |
-| `avatarUrl` | `String` | Resolved profile picture: uploaded image, else Gravatar, else null for the monogram. |
+| `avatarUrl` | `String` | Resolved profile picture: a chosen face or an uploaded image, else null for the monogram. |
 | `canConfigureTraefik` | `Boolean` |  |
 | `canExposePorts` | `Boolean` |  |
 | `canMountHostVolumes` | `Boolean` |  |
@@ -2829,7 +2828,7 @@ A registered user matched by username/display name when adding members.
 | Field | Type | Description |
 | --- | --- | --- |
 | `avatarColor` | `String` |  |
-| `avatarUrl` | `String` | Resolved profile picture: uploaded image, else Gravatar, else null for the monogram. |
+| `avatarUrl` | `String` | Resolved profile picture: a chosen face or an uploaded image, else null for the monogram. |
 | `name` | `String` |  |
 | `teamAvatarUrl` | `String` |  |
 | `teamName` | `String` |  |
@@ -2877,7 +2876,7 @@ The user who created or last modified a variable. Identity only, never an email.
 | Field | Type | Description |
 | --- | --- | --- |
 | `avatarColor` | `String` |  |
-| `avatarUrl` | `String` | Resolved profile picture: uploaded image, else Gravatar, else null for the monogram. Derived server-side, so the address itself never travels. |
+| `avatarUrl` | `String` | Resolved profile picture: a chosen face or an uploaded image, else null for the monogram. |
 | `id` | `ID` |  |
 | `name` | `String` |  |
 | `username` | `String` |  |
@@ -2889,7 +2888,7 @@ The authenticated principal for the current request.
 | Field | Type | Description |
 | --- | --- | --- |
 | `avatarColor` | `String` |  |
-| `avatarUrl` | `String` | Resolved profile picture: uploaded image, else Gravatar, else null for the monogram. |
+| `avatarUrl` | `String` | Resolved profile picture: a chosen face or an uploaded image, else null for the monogram. |
 | `email` | `String` |  |
 | `id` | `ID` |  |
 | `isInstanceAdmin` | `Boolean` |  |
