@@ -83,11 +83,13 @@ changes with the product. `graphql_query` and `graphql_mutate` cover anything no
 | --- | --- | --- | --- |
 | `list_env` | List environment variables | `manage_env` | read |
 | `set_env_var` | Set an environment variable | `manage_env` | write |
+| `set_env_note` | Set an environment variable's note | `manage_env` | write |
 | `delete_env_var` | Delete an environment variable | `manage_env` | **destructive** |
 | `import_env` | Import a .env file | `manage_env` | write |
 | `list_shared_vars` | List shared variables | `manage_env` | read |
 | `list_app_shared_vars` | List the shared variables an app can use | `manage_env` | read |
 | `save_shared_var` | Create or edit a shared variable | `manage_env` | write |
+| `set_shared_var_note` | Set a shared variable's note | `manage_env` | write |
 | `link_shared_var` | Link or unlink a shared variable to an app | `manage_env` | write |
 | `delete_shared_var` | Delete a shared variable | `manage_env` | **destructive** |
 | `set_env` | Replace an app's environment variables | `manage_env` | **destructive** |

@@ -125,7 +125,9 @@ Then redeploy.
 
 - **The variable belongs to the team that created it.** Deleting that team deletes the variable
   everywhere.
-- **A secret's name and value never change.** You can still change who it is shared with.
+- **A secret's name and value never change.** You can still change who it is shared with, and
+  its [note](/guides/config/environment-variables#add-a-note).
+- **A note works as on an app's variable**, and every team the variable reaches can read it.
 - **The compose file wins.** A key it sets keeps the compose value; the row reads **Set in the
   compose file**.
 - **If everything it was offered to is deleted**, the variable stays and reads **Not shared with

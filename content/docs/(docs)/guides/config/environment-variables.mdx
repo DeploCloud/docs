@@ -27,6 +27,7 @@ When a name is set in more than one layer, the highest one wins:
 | --- | --- | --- |
 | Shown again | Yes | Never, in the panel or the API |
 | Edit or rename | Yes | No: delete it and add it again |
+| [Note](#add-a-note) | Yes | Yes, the note is the one thing you can edit |
 | Change the type | To secret: **Edit**, or **Make Secret** on selected rows | Never back to plain |
 
 **A plain name that looks like a credential gets a warning icon**: `DB_PASSWORD`, `API_TOKEN`,
@@ -64,7 +65,8 @@ A name and a value per row. Turn on **Secret** for a credential.
   className="w-full rounded-lg"
 />
 
-- **Paste a whole `.env` into the Key field** to add every line at once, as plain.
+- **Paste a whole `.env` into the Key field** to add every line at once, as plain. Its comments
+  become [notes](#add-a-note).
 - **Names** use letters, digits and underscores, and do not start with a digit.
 - **The other tabs:** **Shared** links a shared variable, **Database** a managed
   [database's connection string](/guides/data/databases#connect-an-app-to-it).
@@ -73,6 +75,45 @@ A name and a value per row. Turn on **Secret** for a credential.
 </Steps>
 
 Variables apply on the next deploy: use **Redeploy** on the **Changes not deployed yet** notice.
+
+## Add a note
+
+A note says what a variable is for, like `Public URL of the API` or `Issued by the payment
+provider, rotated every 90 days`. It shows under the name, in every list.
+
+- **When you add variables:** **Add note** under a row.
+- **On an existing one:** the pencil opens the **Note** field. On a secret it opens **Edit note**:
+  the value still can't change.
+- **Up to 280 characters**, on one line.
+- **A note is never deployed.** Changing it needs no redeploy and leaves **Modified by** as it is.
+  It still shows in **Activity**.
+- **Anyone who can see the variable can read its note.** Never put a secret in one.
+
+### Notes from a pasted .env
+
+A comment becomes the note of the line it belongs to:
+
+```bash
+# --- Database ---
+
+# Pool size for the API
+DB_POOL=10
+API_URL=https://api.acme.com  # Public base URL
+COLOR=#fff
+```
+
+| Line | Note |
+| --- | --- |
+| `DB_POOL` | Pool size for the API |
+| `API_URL` | Public base URL |
+| `COLOR` | None: with no space before it, `#fff` is the value |
+
+- **The comment right above a line counts**, and so does one after its value, which wins.
+- **A blank line breaks the link**, so a section title like `--- Database ---` is not a note.
+- **A comment over 280 characters is shortened**, and the dialog says so.
+- **A line without a comment keeps the note** the variable already has.
+- **Copy Plain** on selected rows writes the notes back as comments, so the copy pastes back the
+  same.
 
 ## Build time
 
