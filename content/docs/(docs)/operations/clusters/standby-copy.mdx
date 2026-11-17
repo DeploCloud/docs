@@ -3,6 +3,17 @@ title: Standby copy
 description: A second copy of a database on another server of the cluster. A failover promotes it in place of restoring a backup.
 ---
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
 A **standby copy** is a second copy of a database, on another server of the
 [cluster](/operations/clusters), that follows every change. When the database's server stops, the
 copy takes over. No backup is restored.

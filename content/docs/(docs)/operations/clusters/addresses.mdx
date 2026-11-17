@@ -3,6 +3,17 @@ title: Addresses and Cloudflare
 description: On a cluster, a domain on Cloudflare keeps one address through a failover. Every other address changes.
 ---
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
 An app on a [cluster](/operations/clusters) can end up on another server. Whether its address
 follows it depends on where the domain lives.
 

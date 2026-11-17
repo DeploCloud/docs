@@ -53,10 +53,13 @@ suggestions, they are the bar every doc page is reviewed against.
 - **Hyphen only, never an em dash or en dash**, in any doc content (same rule as chat).
 - **Beta callout needs the title chip too.** Any page carrying the standard
   `<Callout type="info" title="Beta">This feature is currently beta/experimental...</Callout>`
-  card must also render the `BETA` chip next to its H1. The card lives in the `.mdx` content,
-  the chip is driven separately by the `BETA_PAGES` set in
-  `app/(docs)/[[...slug]]/page.tsx`, so adding or moving a page with this callout means adding
-  or updating its URL in that set. They must never be out of sync.
+  card must also render the `BETA` chip next to its H1 and the flask in the sidebar. The card
+  lives in the `.mdx` content; the chip and the flask both read the one `BETA_PAGES` set in
+  `lib/beta-pages.ts`, so adding or moving a page with this callout means adding or updating its
+  URL there. They must never be out of sync.
+- **An experiment is beta.** A feature behind **Settings -> Deplo -> Experiments** gets the Beta
+  card and the `Experiment` card on every page it owns; a section of it inside another page says
+  **Beta** inline instead, since the card would mark the whole page.
 
 ## Search (Ctrl+K)
 

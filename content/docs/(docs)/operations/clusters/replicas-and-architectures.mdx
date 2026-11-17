@@ -3,6 +3,17 @@ title: Replicas and mixed servers
 description: On a cluster, replicas spread across the servers, and ARM servers can sit next to x86 ones.
 ---
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
 Two things decide which servers of a [cluster](/operations/clusters) run an app: how many
 [replicas](/advanced/replicas) it has, and which kind of processor its image runs on.
 

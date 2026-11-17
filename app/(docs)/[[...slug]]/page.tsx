@@ -13,24 +13,8 @@ import { pageUrl } from "@/lib/base-path";
 import { PageFeedback } from "@/components/page-feedback";
 import { ViewOptions } from "@/components/view-options";
 import { BetaChip } from "@/components/beta-chip";
+import { BETA_PAGES } from "@/lib/beta-pages";
 import { IsoHero } from "@/components/iso-hero";
-
-const BETA_PAGES = new Set([
-  "/guides/mcp-server",
-  "/reference/mcp-tools",
-  "/guides/observability/cron-jobs",
-  "/guides/networking/pull-request-previews",
-  "/guides/git-providers/git-connections",
-  "/guides/networking/automatic-dns",
-  "/advanced/build-servers",
-  "/operations/servers/container-registries",
-  "/migrations",
-  "/migrations/move-from-dokploy",
-  "/migrations/move-from-coolify",
-  "/migrations/move-from-another-deplo",
-  "/operations/move-deplo",
-  "/api-reference/mcp",
-]);
 
 export default async function Page(props: PageProps<"/[[...slug]]">) {
   const params = await props.params;

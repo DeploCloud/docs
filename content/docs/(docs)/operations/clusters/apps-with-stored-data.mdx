@@ -3,6 +3,17 @@ title: Apps with stored data
 description: On a cluster, an app with a volume moves only while the cluster replicates its data, and otherwise waits for its server or comes back from a backup.
 ---
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
 An app that keeps data on its server cannot simply start somewhere else: its files are not there.
 On a [cluster](/operations/clusters) it moves only when they already are.
 

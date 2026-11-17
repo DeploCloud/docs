@@ -3,6 +3,17 @@ title: "Failover: when a server stops"
 description: Failover on a cluster - what moves, what waits, how long it takes, and what happens when the server comes back.
 ---
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
 When a server of a [cluster](/operations/clusters) stops answering, its apps start on another
 server of the cluster. Nobody clicks anything.
 

@@ -3,6 +3,17 @@ title: The leader
 description: The part of a cluster that moves apps off a server that stopped - where it runs, how to move it, and how it is updated.
 ---
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
 Every [cluster](/operations/clusters) has a **leader**: it decides which server runs what, and it
 is what moves apps off a server that stopped. You never install or update it by hand.
 

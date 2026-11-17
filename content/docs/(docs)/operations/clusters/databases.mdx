@@ -3,6 +3,17 @@ title: Databases on a cluster
 description: The two promises, the backup every 15 minutes, how much a failover can lose, and names that work across servers.
 ---
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
 A managed database on a [cluster](/operations/clusters) comes back on another server when its
 server stops. It comes back **from a backup**, so the page is honest about what that can lose.
 

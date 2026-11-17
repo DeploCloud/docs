@@ -3,6 +3,17 @@ title: Replication
 description: Stream every change of a cluster's apps and databases to its other servers as it happens, so an app with a Volume fails over too, with almost nothing lost.
 ---
 
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
 **Replication** keeps a copy of everything a [cluster](/operations/clusters) stores on its other
 servers, **as it changes**:
 
