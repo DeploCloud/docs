@@ -40,6 +40,16 @@ ticked is refused.
 Several servers can act as one: when one stops, its apps move to another. A cluster is added from
 the same **Add** dialog and has its own card on this page. See [Clusters](/operations/clusters).
 
+## Put them in order [#put-them-in-order]
+
+**Drag a card** to give it a new place: clusters among clusters, servers among servers. Every admin
+sees the same order, and a new server or cluster joins at the end. Deplo's own server starts first
+until someone moves it.
+
+- **Dropping a server on a cluster** still moves it into that cluster. Between two cards, it only
+  takes a new place.
+- **While a search or a filter is on**, the order stays as it is.
+
 ## Select several servers [#select-several-servers]
 
 **Ctrl+click** a server's card (**Cmd+click** on a Mac), or drag a box around several. A bar opens
@@ -52,7 +62,8 @@ at the bottom:
 | **Move to cluster** | Moves them all into one cluster. Shown once a cluster exists |
 | **Remove from cluster** | Inside a cluster: takes the ticked servers out of it |
 
-- **Dragging one picked card moves them all** onto the cluster you drop it on.
+- **Dragging one picked card moves them all**: onto the cluster you drop it on, or together to a
+  new place.
 - **A server that cannot join stays out**, and the confirmation names it and why:
   "server-c stays out: in us". The others join, one at a time.
 - **Only servers can be picked**, never a cluster.
