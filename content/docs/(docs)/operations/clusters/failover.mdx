@@ -22,7 +22,9 @@ server of the cluster. Nobody clicks anything.
   cluster: then everything waits for its own server to come back.
 - **With two servers, failover works only while Deplo is up.**
 - **With three or more, it also works while Deplo is down**, as long as more than half of the
-  cluster's servers are up and the [leader](/operations/clusters/leader) runs on one of them.
+  cluster's servers are up and the [leader](/operations/clusters/leader) runs on one of them. A
+  moved app is served at its generated address only once Deplo is back. See
+  [If Deplo was down](#if-deplo-was-down).
 - **It survives losing Deplo or the leader's server, not both at once.** With both down, nothing
   moves until one of them is back.
 
@@ -61,7 +63,7 @@ Measured on a cluster of two servers, counting from the moment one of them lost 
 | --- | --- |
 | Replicas of an app on a Cloudflare domain, spread over both servers | **No downtime.** Cloudflare stopped sending visitors to the stopped server within about 5 seconds: one request in that time failed |
 | An app without stored data, on that server only | Running on the other server after **about 10 seconds** |
-| An app with a Volume, with [replication](/operations/clusters/replication) on | Visitors served again after **about 46 seconds**, putting its copy in place included |
+| An app with a Volume, with [replication](/operations/clusters/replication) on | Visitors served again after **about 46 seconds**, putting its copy in place included. With Deplo down, only once Deplo is back: see [If Deplo was down](#if-deplo-was-down) |
 | A database with a 4 MB backup | Its restore took 17 to 24 seconds, on top of the wait |
 | The server comes back | About 20 seconds after it answers, its old copies stop, and what its database still held is saved as a backup |
 
@@ -150,15 +152,25 @@ Every entry is **by Deplo**, in the team that owns the app or database:
 | `web is waiting for room in eu: server-a stopped answering and no other server has room yet` | Nothing had room. See [Waiting for room](#waiting-for-room) for the other reasons |
 | `web moved to another server of its cluster, so its generated address is now web-calm-fox-cb007118.deplo.site` | Its `deplo.site` address changed |
 
-**If Deplo was down during the failover**, it catches up when it is back: the same entries, the
-new address and the alert.
+## If Deplo was down [#if-deplo-was-down]
+
+Deplo catches up when it is back: the same Activity entries, the new address and the alert.
 
 - **Until then, a moved app runs but is not reached at its generated address.** Only Deplo makes
   the new one: the old address names the server the app left.
-- Measured: the app ran on its new server about 9 seconds after the fault, and was served at its
-  new address **12 to 29 seconds after Deplo was back**.
+- **So it is served again only after Deplo is back**, however early it started on its new server.
+  The longer Deplo is down, the longer that takes.
 - **A domain on Cloudflare keeps answering** the whole time. See
   [Addresses and Cloudflare](/operations/clusters/addresses#a-generated-address).
+
+| What moved | Running on its new server | Served at its new address, Deplo up | Served at its new address, Deplo down |
+| --- | --- | --- | --- |
+| An app without stored data | After 9 to 11 seconds | After 10 to 11 seconds | 22 to 74 seconds after Deplo was back |
+| An app with a Volume, with replication on | After 35 to 36 seconds | After 52 to 53 seconds | 43 to 54 seconds after Deplo was back: **299 to 315 seconds** after the power loss |
+
+Measured 5 times each way on a cluster of three servers. One of them lost its power, the leader ran
+on another, and Deplo on a machine of its own. "Deplo down" means Deplo stopped just before the
+power loss and started again 256 to 260 seconds after it.
 
 ## The slower case [#the-slower-case]
 
