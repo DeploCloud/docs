@@ -26,6 +26,7 @@ When a name is set in more than one layer, the highest one wins:
 | | Plain | Secret |
 | --- | --- | --- |
 | Shown again | Yes | Never, in the panel or the API |
+| Copy | Yes: the button at the end of the value, no reveal needed | No |
 | Edit or rename | Yes | No: delete it and add it again |
 | [Note](#add-a-note) | Yes | Yes, the note is the one thing you can edit |
 | Change the type | To secret: **Edit**, or **Make Secret** on selected rows | Never back to plain |
@@ -40,7 +41,7 @@ When a name is set in more than one layer, the highest one wins:
 
 ### Open Environment
 
-Open the app, then **Environment**, and click **Add**.
+Open the app, then **Environment**, and click **Add**: a new row opens at the top of the list.
 
 <Image
   src={`${basePath}/screenshots/environment-variables/01-app-variables.png`}
@@ -55,7 +56,8 @@ Open the app, then **Environment**, and click **Add**.
 
 ### Name it and set the type
 
-A name and a value per row. Turn on **Secret** for a credential.
+Type the name and the value in the row, add a note if you like, and turn on **Secret** for a
+credential. **Enter** saves, **Esc** cancels.
 
 <Image
   src={`${basePath}/screenshots/environment-variables/02-add-dialog.png`}
@@ -65,11 +67,15 @@ A name and a value per row. Turn on **Secret** for a credential.
   className="w-full rounded-lg"
 />
 
-- **Paste a whole `.env` into the Key field** to add every line at once, as plain. Its comments
-  become [notes](#add-a-note).
+- **Paste a whole `.env` into the Key field** to get one row per line, as plain. Its comments
+  become [notes](#add-a-note). **Save** in the bar at the bottom adds them all; **Discard** drops
+  them.
+- **A row says what saving it does**: **Replaces the current value** for a name the app already
+  has, **A secret has this name** for one it will skip, since a secret is never overwritten.
 - **Names** use letters, digits and underscores, and do not start with a digit.
-- **The other tabs:** **Shared** links a shared variable, **Database** a managed
+- **The arrow next to Add:** **Shared** links a shared variable, **Database** a managed
   [database's connection string](/guides/data/databases#connect-an-app-to-it).
+- **Leaving with rows not saved** asks before it drops them.
 
 </Step>
 </Steps>
@@ -79,12 +85,14 @@ Variables apply on the next deploy: use **Redeploy** on the **Changes not deploy
 ## Add a note
 
 A note says what a variable is for, like `Public URL of the API` or `Issued by the payment
-provider, rotated every 90 days`. It shows under the name, in every list.
+provider, rotated every 90 days`.
 
+- **On the app's Environment page:** a variable with a note shows a note icon. The arrow at the
+  start of the row opens it, with every line of the note.
 - **When you add variables:** **Add note** under a row.
-- **On an existing one:** the pencil opens the **Note** field. On a secret it opens **Edit note**:
-  the value still can't change.
-- **Up to 280 characters**, on one line.
+- **On an existing one:** **Edit note** in the open row, or the pencil. On a secret the pencil
+  opens **Edit note**: the value still can't change.
+- **Up to 1000 characters**, on as many lines as you like.
 - **A note is never deployed.** Changing it needs no redeploy and leaves **Modified by** as it is.
   It still shows in **Activity**.
 - **Anyone who can see the variable can read its note.** Never put a secret in one.
@@ -95,8 +103,8 @@ A comment becomes the note of the line it belongs to:
 
 ```bash
 # --- Database ---
-
-# Pool size for the API
+# Pool size for the API.
+# Keep it under the database's connection limit.
 DB_POOL=10
 API_URL=https://api.acme.com  # Public base URL
 COLOR=#fff
@@ -104,16 +112,43 @@ COLOR=#fff
 
 | Line | Note |
 | --- | --- |
-| `DB_POOL` | Pool size for the API |
+| `DB_POOL` | Pool size for the API.<br />Keep it under the database's connection limit. |
 | `API_URL` | Public base URL |
 | `COLOR` | None: with no space before it, `#fff` is the value |
 
-- **The comment right above a line counts**, and so does one after its value, which wins.
-- **A blank line breaks the link**, so a section title like `--- Database ---` is not a note.
-- **A comment over 280 characters is shortened**, and the dialog says so.
+- **The comment lines right above a line count**, each kept on its own line. One after the value
+  wins over them.
+- **A section title is never a note**: a comment that starts or ends with `---`, `===` or `***`.
+- **A comment behind a blank line is kept, with a warning** under it: check it belongs to that
+  variable, or **Remove** it.
+- **A comment over 1000 characters is shortened**, and the dialog says so.
 - **A line without a comment keeps the note** the variable already has.
 - **Copy Plain** on selected rows writes the notes back as comments, so the copy pastes back the
   same.
+
+## Variables from .env.example
+
+When the app's repository has a `.env.example` in its root directory (or a `.env.sample`, or a
+`.env.template`), Deplo reads it when the app is created and on every deploy from git:
+
+```bash
+# Postgres connection string.
+# Use the pooled URL in production.
+DATABASE_URL=
+SMTP_PORT=587
+```
+
+- **Each name with no variable yet waits at the top of the list**, with a warning icon and `-` as
+  its value. Nothing reaches the app until it has one.
+- **Open the row to fill it in.** The comment above the name is its note, and a value the file
+  gives, like `587`, waits in the field: **Save** makes it a variable. Turn on **Secret** first for
+  a credential.
+- **The bin removes a name you don't need.** It comes back only if the file drops it and lists it
+  again.
+- **A deploy never waits for them.** The app's **Deployments** page says how many still need a
+  value.
+- **A name added to the file later** shows up on the next deploy, and **Activity** says how many
+  were found.
 
 ## Build time
 
