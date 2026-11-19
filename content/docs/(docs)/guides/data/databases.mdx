@@ -122,10 +122,13 @@ private one. Without one, and always in a Compose app, the build gets the privat
 <Callout type="warn" title="Same environment, same server">
 By name, an app reaches a database only in the same environment and on the same server. Anywhere
 else the connection uses the database's public address, so turn on **Public** first. A database
-that is neither shows dimmed and cannot be connected. See
-[Network isolation](/advanced/network-isolation).
+that is neither shows dimmed; pick it to see where each one is and where the database has to be.
+See [Network isolation](/advanced/network-isolation).
 </Callout>
 
+- **A connected database keeps its environment.** While any app is connected, its **Environment**
+  is locked: click it and **Disconnect all apps** first, then pick the new one. The apps keep
+  today's value, which stops working once the database moves, so connect them again afterwards.
 - **Connect is production only.** A pull request preview does not get the variable. Point a
   preview at its own database with a
   [preview override](/guides/config/environment-variables#preview-overrides).
