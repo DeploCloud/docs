@@ -1,6 +1,6 @@
 ---
 title: Addresses and Cloudflare
-description: On a cluster, a domain on Cloudflare keeps one address through a failover. Every other address changes.
+description: On a cluster, a domain on Cloudflare, or one that answers on every server, keeps one address through a failover.
 ---
 
 <Callout type="info" title="Beta">
@@ -21,6 +21,7 @@ follows it depends on where the domain lives.
 | --- | --- |
 | A domain in a Cloudflare zone connected for [automatic DNS](/guides/networking/automatic-dns) | **Same address.** Nothing to do |
 | A generated `deplo.site` address | Deplo gives the app a **new address** for the new server. **While Deplo is down, the moved app answers at none**, see [A generated address](#a-generated-address) |
+| A domain of your own with **Answer on every server** on | **Same address.** Every server answers it, see [Answer on every server](#answer-on-every-server) |
 | A domain of your own that is not on Cloudflare | **Stops answering** until you point its DNS at the new server |
 
 Deplo says so before you rely on it:
@@ -42,6 +43,8 @@ of the app is on Cloudflare:
 > Answers only through **server-a**: if it stops, this domain stops answering until it is back,
 > even when the App moves.
 
+The row has an **Answer on every server** button next to it.
+
 ## Keep one address with Cloudflare
 
 **Nothing to set up beyond connecting the domain to Cloudflare** under **Settings -> DNS**, the
@@ -61,6 +64,99 @@ before.
 
 **No certificate to manage.** The domain editor hides the HTTPS fields and says: "Cloudflare
 serves this domain through a tunnel, HTTPS included: it needs no certificate of its own."
+
+## Answer on every server
+
+**Keeps a domain answering through a failover without Cloudflare.** Every server of the cluster
+answers the domain and passes each visitor, still encrypted, over the cluster's
+[private network](/operations/clusters/private-network) to the server that runs the app.
+
+Turn it on from the domain's row in **Domains**: **Answer on every server**. The row then says:
+
+> Answers on every server of the cluster, and keeps answering when the App moves.
+
+**Turn off** on the same row puts it back on the app's own server.
+
+### What it needs
+
+- **The app is on a cluster**, and the domain uses **HTTPS**. Over plain HTTP the app would lose
+  every visitor's address, so the switch says so and stays off.
+- **A whole hostname.** A hostname that another route serves a path of (`shop.example.com` on `/`
+  and on `/api`) cannot be split this way, and a path cannot be added to one that has it on.
+- **Not the app's Cloudflare tunnel.** A domain on the tunnel already follows the app.
+- **Not a generated `deplo.site` address**, which names one server by design.
+- **At most 200 apps per cluster.** Past that the switch says: "This cluster already has 200 Apps
+  that answer on every server, the most its servers carry. Turn it off on one of them first."
+- **No HTTP/3 on a server's proxy.** Deplo's proxy has none; a proxy edited by hand to offer it
+  stops the switch, naming the server.
+
+### The DNS records
+
+DNS must name **every healthy server**, one `A` record (and `AAAA` for IPv6) each.
+
+<Tabs items={['Domain connected to Cloudflare', 'Any other DNS']}>
+<Tab value="Domain connected to Cloudflare">
+Nothing to do. Deplo writes the records, TTL 60 s, and rewrites them when a server joins, leaves,
+stops or comes back.
+</Tab>
+<Tab value="Any other DNS">
+Add one record per server where your DNS is managed, for example:
+
+```
+shop.example.com.  60  IN  A  203.0.113.10
+shop.example.com.  60  IN  A  203.0.113.11
+shop.example.com.  60  IN  A  203.0.113.12
+```
+
+The domain's check verifies every one is there, and the row says which to add or remove when the
+cluster changes. **A server that stops stays in your records** until you remove it: a browser
+that tries it first moves on to the next address after a few seconds, on each visit.
+</Tab>
+</Tabs>
+
+### The certificate travels with the app
+
+The certificate is issued on the server that runs the app, the usual way. Deplo then copies it,
+key included, into what the cluster keeps to restart the app elsewhere, encrypted.
+
+- **After a failover the new server answers with the same certificate at once.** No new
+  certificate is ordered, so moving back and forth never runs into Let's Encrypt's limit of 5
+  identical certificates a week.
+- **The new server renews it itself** when its time comes. To take it over, that server's proxy
+  restarts once, at its quietest hour before the renewal is due (04:00 server time until it has a
+  week of traffic to go by). Open connections to that server reconnect, and Activity says:
+
+  `Deplo restarted the proxy on server-b 2026-12-20 at 04:00 UTC, its quietest hour before the
+  renewal window, so it renews the certificate of shop.example.com itself. Visitors' open
+  connections to that server reconnected.`
+
+- **Until the certificate is copied, failover is not ready**, and the row says: "Failover is not
+  ready yet: Deplo copies its certificate once the App's server has one."
+- **Turning the switch off** removes the key from what the cluster keeps.
+
+### What it costs
+
+- **One server per app.** Every server answers the domain, but every visitor reaches the one server
+  that runs the app: [load balancing](/operations/clusters/load-balancing) passes such an app by,
+  and its replicas stay on one server.
+- **Visitors per server, set in the cluster's settings** under **Visitors per server** (shown once
+  a domain of the cluster answers on every server):
+
+  | Limit | Default | What happens past it |
+  | --- | --- | --- |
+  | Connections at once, all such domains together | 2,048 | The visitor is turned away at once |
+  | Of those, waiting during a failover | a quarter (512) | The visitor is turned away at once |
+  | Waiting for one app | 128 | The visitor is turned away at once |
+
+  **Open keep-alive and WebSocket connections count** for as long as they are open. Each costs a
+  server up to 64 KB of memory, so no more than a quarter of the smallest server's memory is
+  accepted. **Activity says when a limit was reached**, within about two minutes.
+- **During a failover a visitor waits up to 30 s** for the app to answer on its new server, then the
+  connection closes. Past the waiting limit, visitors are turned away instead. Give the app a
+  [health check](/guides/observability/health-checks): without one it counts as ready 3 s after it starts,
+  and the row suggests adding one.
+- **An update of a server agent closes the connections open through it**, on that server. New
+  connections barely notice.
 
 ## When an app joins a cluster
 
@@ -92,8 +188,8 @@ its DNS.
 - **A record Deplo did not make is never replaced.** If the hostname already has a record that
   does not point at one of your servers, delete it in Cloudflare or pick another name.
 - **A pull request preview** is not served through the app's tunnel.
-- **DNS failover for a domain that is not on Cloudflare does not exist.** Deplo does not rewrite
-  records at another DNS provider when an app moves.
+- **Off Cloudflare, a domain follows the app only with [Answer on every server](#answer-on-every-server).**
+  Deplo does not rewrite records at another DNS provider when an app moves.
 
 ## A generated address
 
