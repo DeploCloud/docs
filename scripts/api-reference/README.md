@@ -4,7 +4,7 @@ The GraphQL pages under `content/docs/api-reference/` (every domain page plus `t
 
 Inputs:
 
-- `schema.graphql` - a verbatim copy of the file at the root of `DeploCloud/deplo`.
+- `schema.graphql` - a verbatim copy of `lib/graphql/schema.graphql` in `DeploCloud/deplo`.
 - `gates.json` - who may call each operation, read off the built schema with `dump-gates.ts`.
 - `pages.ts` - which operation goes on which page, the prose around it, and the example values.
 
@@ -13,7 +13,7 @@ Regenerate after a schema change:
 ```bash
 # 1. In the deplo checkout, refresh both inputs
 cd ../deplo
-cp schema.graphql ../deplo-docs/scripts/api-reference/schema.graphql
+cp lib/graphql/schema.graphql ../deplo-docs/scripts/api-reference/schema.graphql
 NODE_TEST_CONTEXT=1 node --require ./lib/test/server-only-shim.cjs --import tsx \
   ../deplo-docs/scripts/api-reference/dump-gates.ts > ../deplo-docs/scripts/api-reference/gates.json
 
