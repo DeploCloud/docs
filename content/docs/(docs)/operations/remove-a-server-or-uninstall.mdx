@@ -20,13 +20,27 @@ Migrations) also uninstalls its agent, because that role is meant to be temporar
 
 <Steps>
 <Step>
-### Move or delete what runs there
-Removal doesn't do it for you, and apps still assigned to a removed server can't deploy.
+### Open Remove server
+**Settings -> Servers**, the server, **Advanced**, then **Remove server** in the **Danger zone**.
+</Step>
+
+<Step>
+### Clear what still uses it
+The dialog lists everything that keeps the server in place, from every team, and fixes each one on the spot:
+
+| Listed | Action |
+| --- | --- |
+| **Apps** and **Databases** | **Move to** a server the owning team can use. It redeploys there and its data is copied over. |
+| **Cluster leaders** | **Move to** another online server. |
+| **Backup destinations** | **Remove**, together with its backup schedules. Tick **Also delete the backup files** to clear them from the disk. |
+
+**Remove server** stays off until the list is empty. Each move or removal lands in the
+[Activity](/guides/team/activity) of the team that owns it, under your name.
 </Step>
 
 <Step>
 ### Remove the server
-**Settings -> Servers**, the server, **Advanced**, then **Remove server** in the **Danger zone**.
+Once the list is empty, **Remove server** goes through.
 </Step>
 
 <Step>
@@ -37,6 +51,10 @@ Removal doesn't do it for you, and apps still assigned to a removed server can't
 
 - **Its containers keep running**, unmanaged, until the uninstall command stops them.
 - Pending teardowns for that server are dropped, so Deplo stops retrying what nobody can carry out.
+- **An offline server keeps its backup files.** Removing a destination still works, but nothing can
+  delete the files on a machine that does not answer.
+- **An app still copying its data off the server** is named in red. Removing the server then leaves
+  that data behind, so wait for the move to finish.
 - **The machine Deplo runs on can't be removed.**
 
 ## Uninstall the agent from a host
@@ -98,14 +116,12 @@ ending it? Use [Move Deplo](/operations/move-deplo) first.
 
 ## Decommission a machine properly
 
-1. Move its apps to another server, or delete them.
-2. Move or re-point any backup destination that lives on it.
-3. Take a final backup of anything not backed up elsewhere.
-4. Remove the server in Deplo.
-5. Run the uninstall command on the host, with `--purge-data` if the machine is handed on.
-6. Delete the machine at your provider.
+1. Take a final backup of anything not backed up elsewhere.
+2. **Remove server** in Deplo: move what it lists, then remove the server.
+3. Run the uninstall command on the host, with `--purge-data` if the machine is handed on.
+4. Delete the machine at your provider.
 
-For the machine Deplo runs on, steps 4 and 5 are one command: `uninstall.sh` without `--agent-only`.
+For the machine Deplo runs on, steps 2 and 3 are one command: `uninstall.sh` without `--agent-only`.
 Nothing in the dashboard removes the control plane: it is the thing doing the removing.
 
 **Reinstalling an agent starts from scratch.** The installer deletes the old certificate files and
