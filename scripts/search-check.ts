@@ -43,6 +43,7 @@ const CASES: [string, ...string[]][] = [
   ["github", "/guides/git-providers/github"],
   ["pull request preview", "/guides/networking/pull-request-previews"],
   ["api token", "/advanced/api-tokens-and-oauth"],
+  ["reroll token", "/advanced/api-tokens-and-oauth#reroll-a-token"],
   ["mcp", "/guides/mcp-server"],
   ["deploy hook", "/guides/releases/automatic-deployments#the-deploy-hook"],
   ["auto deploy", "/guides/releases/automatic-deployments"],
