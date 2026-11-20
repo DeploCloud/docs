@@ -32,6 +32,7 @@ that are up. Nothing to edit when one stops, with Deplo up or down.
 
 <Steps>
 <Step>
+
 ### Add the zone to the cluster
 
 An instance admin opens the cluster in **Settings -> Servers**. Under **Settings**, **DNS zone**
@@ -42,8 +43,10 @@ go.example.com
 ```
 
 A zone belongs to one cluster. A zone inside another cluster's zone is refused.
+
 </Step>
 <Step>
+
 ### Add the records where you bought the domain
 
 Click **Records**. It lists the records to add at your registrar or DNS provider, each with a copy
@@ -64,8 +67,10 @@ addresses of those name servers, which live inside the zone they serve.
 Deplo picks **at most four** name servers, the servers that joined first and can answer. The list
 stays as it is: it changes only when one of them leaves the cluster or can no longer answer, and
 Activity then says to update the records.
+
 </Step>
 <Step>
+
 ### Check
 
 In the same dialog, click **Check**. Deplo asks the domain's parent (`example.com` here) for the
@@ -75,6 +80,7 @@ add or remove:
 > Add the NS record go.example.com -> ns3.go.example.com.
 
 A registrar can take a few minutes to publish new records.
+
 </Step>
 </Steps>
 
