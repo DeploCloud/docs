@@ -3,6 +3,7 @@
   "pages": [
     "failover",
     "addresses",
+    "dns-zone",
     "private-network",
     "databases",
     "standby-copy",

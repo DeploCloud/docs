@@ -1,0 +1,199 @@
+---
+title: The cluster's own DNS
+description: Delegate a domain to a cluster once, and its servers answer its DNS themselves, naming only the healthy ones. No record to edit when a server stops.
+---
+
+<Callout type="info" title="Beta">
+This feature is currently beta/experimental and subject to change. It is
+not recommended for production. Try it out and share your feedback on
+[our GitHub](https://github.com/DeploCloud/deplo/issues).
+</Callout>
+
+<Callout type="info" title="Experiment">
+An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
+Until then, clusters stay hidden.
+</Callout>
+
+A domain that [answers on every server](/operations/clusters/addresses#answer-on-every-server)
+needs DNS to name every healthy server. Without a connected DNS provider, that means editing
+records each time a server stops or comes back.
+
+**The cluster can answer that DNS itself.** You delegate a zone to it once, where you bought the
+domain. From then on every server of the cluster answers for the zone, and names only the servers
+that are up. Nothing to edit when one stops, with Deplo up or down.
+
+| You want | Do this |
+| --- | --- |
+| `shop.example.com` to follow the app | Delegate a zone such as `go.example.com` to the cluster, then add one `CNAME` for `shop.example.com` |
+| A whole domain for the cluster's apps | Delegate the domain itself, such as `example-apps.com` |
+| The bare domain `example.com` | Delegate `example.com` itself, or use an `ALIAS` record, see [A bare domain](#a-bare-domain) |
+
+## Delegate the zone
+
+<Steps>
+<Step>
+### Add the zone to the cluster
+
+An instance admin opens the cluster in **Settings -> Servers**. Under **Settings**, **DNS zone**
+(shown once a domain of the cluster answers on every server), type the zone and click **Add**:
+
+```
+go.example.com
+```
+
+A zone belongs to one cluster. A zone inside another cluster's zone is refused.
+</Step>
+<Step>
+### Add the records where you bought the domain
+
+Click **Records**. It lists the records to add at your registrar or DNS provider, each with a copy
+button. For a cluster of three servers:
+
+```
+go.example.com.      NS    ns1.go.example.com.
+go.example.com.      NS    ns2.go.example.com.
+go.example.com.      NS    ns3.go.example.com.
+ns1.go.example.com.  A     203.0.113.10
+ns2.go.example.com.  A     203.0.113.11
+ns3.go.example.com.  A     203.0.113.12
+```
+
+The `NS` records hand the zone to the cluster. The `A` (and `AAAA`) records are the **glue**: the
+addresses of those name servers, which live inside the zone they serve.
+
+Deplo picks **at most four** name servers, the servers that joined first and can answer. The list
+stays as it is: it changes only when one of them leaves the cluster or can no longer answer, and
+Activity then says to update the records.
+</Step>
+<Step>
+### Check
+
+In the same dialog, click **Check**. Deplo asks the domain's parent (`example.com` here) for the
+delegation, and each name server for the zone. It says **delegated**, or exactly which record to
+add or remove:
+
+> Add the NS record go.example.com -> ns3.go.example.com.
+
+A registrar can take a few minutes to publish new records.
+</Step>
+</Steps>
+
+<Callout type="warn">
+**Port 53 must be open** on every server that answers, UDP and TCP, from the internet. A server
+whose port 53 is taken by another program, or blocked, is named as no name server, and **Records**
+says why.
+</Callout>
+
+## Point a domain at it
+
+In the app's **Domains**, a domain that answers on every server shows **Let the cluster answer**
+(with more than one zone, pick one). It needs the **Manage domains** capability; only adding the
+zone itself needs an instance admin.
+
+| The domain | What to add |
+| --- | --- |
+| Inside the zone: `shop.go.example.com` | Nothing. The zone answers it |
+| Outside it: `shop.example.com` | One `CNAME`, shown on the row with a copy button |
+
+For `shop.example.com` the row says:
+
+> Add a CNAME record for shop.example.com -> shop-example-com.go.example.com
+
+```
+shop.example.com.  3600  IN  CNAME  shop-example-com.go.example.com.
+```
+
+The name in the zone is the domain with its dots turned into dashes, so no two domains share one.
+The `CNAME` never changes: what changes is what the cluster answers for the name inside the zone.
+
+**Use my own records** on the row goes back to records you write yourself.
+
+A domain whose records Deplo writes at a [connected DNS provider](/guides/networking/automatic-dns)
+keeps that: the provider already keeps every server listed.
+
+## A bare domain
+
+**A `CNAME` cannot point a bare domain** (`example.com`, without anything in front) anywhere. DNS
+forbids a `CNAME` next to the `NS` and `SOA` records every bare domain has. Deplo refuses it:
+
+> example.com is a bare domain, and DNS gives no way to point one at another name. Add example.com
+> itself as a zone of the cluster, or use an ALIAS record at a DNS provider that offers one.
+
+Two ways out:
+
+- **Delegate the bare domain itself** to the cluster: add `example.com` as the zone, and its `NS`
+  records at the registrar. The cluster then answers for all of `example.com`, `www` included.
+  Records the cluster does not hold (mail `MX`, `TXT` verifications) cannot live there, so pick a
+  domain used only for the cluster's apps.
+- **Use an `ALIAS` or `ANAME` record**, at a DNS provider that offers one, pointed at the name in
+  the zone, such as `example-com.go.example.com`. The provider resolves it and answers with the
+  addresses itself.
+
+## What the servers answer
+
+Every server of the cluster answers for the zone, on its own addresses. Each name answers with
+**every healthy server**, one `A` record (and `AAAA` for IPv6) each, in a shuffled order:
+
+```
+$ dig +short shop-example-com.go.example.com @203.0.113.10
+203.0.113.12
+203.0.113.10
+203.0.113.11
+```
+
+- **Healthy** means the answering server heard it over the cluster's
+  [private network](/operations/clusters/private-network) a moment ago. Every server judges from
+  where it stands, so the answers keep working with Deplo or the leader down.
+- **A server being emptied** leaves the answers at once.
+- **Only the zone's own names** are answered: a name of no domain gets "no such name", and any other
+  domain is refused. The servers never look anything up on someone's behalf.
+
+## When servers cannot see each other
+
+Each server counts the servers of its cluster it hears, itself included.
+
+| It hears | It answers |
+| --- | --- |
+| More than half | The healthy servers |
+| Exactly half | The last set it answered while it heard more than half |
+| Fewer than half | An error (`SERVFAIL`), so resolvers ask another server |
+
+So a server cut off from the rest stops naming itself, and the others keep answering without it.
+It never answers with itself alone: it could not pass a visitor on to the server that runs the app.
+
+Two consequences to know:
+
+- **If more than half of the servers stop at once**, the ones left answer with an error until the
+  others are back, or until you [remove the stopped servers](/operations/clusters/manage-servers#remove-a-server)
+  from the cluster, which gives the smaller cluster a majority again.
+- **A cluster of two servers keeps naming a stopped one.** One server alone is exactly half, so it
+  repeats the last answer. Three servers is the smallest cluster whose answers drop a stopped one.
+
+## How fast a stopped server leaves
+
+| | Default | Range |
+| --- | --- | --- |
+| A stopped server leaves the answers after | 10 s | 5 to 60 s |
+| Resolvers keep an answer for | 30 s | 10 to 300 s |
+
+So a server that stops leaves every answer within about **40 s**. Meanwhile a browser that tries it
+moves on to the next address after a few seconds.
+
+Both are under **DNS zone -> Advanced** in the cluster's settings. A longer time means fewer
+queries, and a stopped server named for longer.
+
+## Safety
+
+- **The name server runs with none of the agent's rights.** It is a separate process, as the
+  `nobody` user, locked into an empty directory, with no way to open a connection. It cannot reach
+  Docker, the server agent's keys or anything else on the server. It only answers.
+- **No amplification.** No `ANY` answers, a rate limit per network of visitors, and an answer too
+  big for UDP is cut short so the resolver asks again over TCP.
+- **No DNSSEC.** The zone is not signed, so the delegation must have no `DS` record; **Check** says
+  so if one is there.
+
+<Cards>
+  <Card title="Addresses and Cloudflare" href="/operations/clusters/addresses" />
+  <Card title="The private network" href="/operations/clusters/private-network" />
+  <Card title="Manage servers" href="/operations/clusters/manage-servers" />
+</Cards>

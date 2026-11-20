@@ -94,10 +94,14 @@ Turn it on from the domain's row in **Domains**: **Answer on every server**. The
 
 DNS must name **every healthy server**, one `A` record (and `AAAA` for IPv6) each.
 
-<Tabs items={['Domain connected to Cloudflare', 'Any other DNS']}>
+<Tabs items={['Domain connected to Cloudflare', 'The cluster answers', 'Any other DNS']}>
 <Tab value="Domain connected to Cloudflare">
 Nothing to do. Deplo writes the records, TTL 60 s, and rewrites them when a server joins, leaves,
 stops or comes back.
+</Tab>
+<Tab value="The cluster answers">
+Delegate a zone to the cluster once, and its servers answer the domain's DNS themselves, naming only
+the healthy ones: [The cluster's own DNS](/operations/clusters/dns-zone).
 </Tab>
 <Tab value="Any other DNS">
 Add one record per server where your DNS is managed, for example:
@@ -189,7 +193,8 @@ its DNS.
   does not point at one of your servers, delete it in Cloudflare or pick another name.
 - **A pull request preview** is not served through the app's tunnel.
 - **Off Cloudflare, a domain follows the app only with [Answer on every server](#answer-on-every-server).**
-  Deplo does not rewrite records at another DNS provider when an app moves.
+  Deplo does not rewrite records at another DNS provider when an app moves; to have no records to
+  keep at all, let [the cluster answer its DNS](/operations/clusters/dns-zone).
 
 ## A generated address
 

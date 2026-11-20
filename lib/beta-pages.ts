@@ -19,6 +19,7 @@ export const BETA_PAGES = new Set([
   "/operations/clusters",
   "/operations/clusters/failover",
   "/operations/clusters/addresses",
+  "/operations/clusters/dns-zone",
   "/operations/clusters/private-network",
   "/operations/clusters/databases",
   "/operations/clusters/standby-copy",
