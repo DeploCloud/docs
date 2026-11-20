@@ -138,7 +138,9 @@ Two ways out:
 ## What the servers answer
 
 Every server of the cluster answers for the zone, on its own addresses. Each name answers with
-**every healthy server**, one `A` record (and `AAAA` for IPv6) each, in a shuffled order:
+**the healthy servers**, one `A` record (and `AAAA` for IPv6) each. Once every server has a
+location, a visitor gets the ones [nearest it](#nearest-servers-first) first; until then, every
+healthy server, in a shuffled order:
 
 ```
 $ dig +short shop-example-com.go.example.com @203.0.113.10
@@ -153,6 +155,58 @@ $ dig +short shop-example-com.go.example.com @203.0.113.10
 - **A server being emptied** leaves the answers at once.
 - **Only the zone's own names** are answered: a name of no domain gets "no such name", and any other
   domain is refused. The servers never look anything up on someone's behalf.
+
+## Nearest servers first
+
+Each visitor is answered with **the healthy servers nearest it**, the nearest first, and never
+fewer than two when two are up: a server that stops between two answers still leaves the browser
+another to try.
+
+| The visitor | Answered with |
+| --- | --- |
+| Its resolver says which network it asks for (EDNS Client Subnet; most public resolvers do) | The servers nearest that network |
+| Its resolver says nothing | The servers nearest the resolver |
+| Neither has a place in the location table | Every healthy server |
+
+For a cluster with `203.0.113.10` in Milan, `203.0.113.11` in New York and `203.0.113.12` in
+Tokyo, a visitor in Rome is answered:
+
+```
+203.0.113.10
+203.0.113.11
+```
+
+- **Health always wins.** A stopped server is never answered, however near: the visitor gets the
+  next nearest ones.
+- **Servers in about the same place share the visitors.** Every server within 500 km of the nearest
+  one is answered too.
+
+### Where each server is
+
+Deplo places each server by its own address. To correct one, an instance admin opens the cluster in
+**Settings -> Servers**, then **Server locations** -> **Change**, and types a city:
+
+```
+Frankfurt am Main, Hesse, Germany
+```
+
+- **Advanced** takes a latitude and a longitude instead, for a place no city names.
+- **Use its address** goes back to the place Deplo found.
+
+While one server has no location at all, every healthy server is answered to everyone.
+
+### The location table
+
+Deplo places visitors and servers with a location table that **ships with each release** and
+changes only when Deplo is updated. No server and no instance ever downloads it, so an install with
+no internet access has it too. **Server locations** shows the table's month, and says so once it is
+more than three months old.
+
+The table is built from **IP geolocation by [DB-IP](https://db-ip.com)**, its IP to City Lite
+database, under the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) licence.
+
+A server whose agent is too old to place visitors keeps answering every healthy server, and places
+them once its agent is updated.
 
 ## When servers cannot see each other
 
@@ -192,7 +246,8 @@ queries, and a stopped server named for longer.
 
 - **The name server runs with none of the agent's rights.** It is a separate process, as the
   `nobody` user, locked into an empty directory, with no way to open a connection. It cannot reach
-  Docker, the server agent's keys or anything else on the server. It only answers.
+  Docker, the server agent's keys or anything else on the server. It only answers, and reads the
+  location table it is handed, which it cannot change.
 - **No amplification.** No `ANY` answers, a rate limit per network of visitors, and an answer too
   big for UDP is cut short so the resolver asks again over TCP.
 - **No DNSSEC.** The zone is not signed, so the delegation must have no `DS` record; **Check** says
