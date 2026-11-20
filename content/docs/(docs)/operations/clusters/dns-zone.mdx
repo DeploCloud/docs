@@ -242,6 +242,56 @@ moves on to the next address after a few seconds.
 Both are under **DNS zone -> Advanced** in the cluster's settings. A longer time means fewer
 queries, and a stopped server named for longer.
 
+## Certificates
+
+The zone also proves the cluster owns its names, so HTTPS certificates are checked over DNS
+(DNS-01) instead of over HTTP. **No DNS provider token is involved**: the check is a `TXT` record
+the cluster's own servers answer.
+
+### One certificate for the zone
+
+When the first domain inside the zone needs HTTPS, the cluster gets **one certificate for the
+zone and every name one label below it**: `go.example.com` and `*.go.example.com`.
+
+| Domain | Certificate |
+| --- | --- |
+| `go.example.com` | The zone's |
+| `shop.go.example.com`, `blog.go.example.com` | The zone's, nothing ordered for them |
+| `a.b.go.example.com` (two labels below) | Its own, checked over DNS |
+
+- **Ordered once, never per server.** One server of the cluster orders and renews it. Every other
+  server gets it from Deplo and serves it.
+- **A server that stops does not stop renewals.** After 10 minutes without it, another server
+  takes renewals over, with the certificate it already holds. Nothing new is ordered while it is
+  valid.
+- **An empty zone orders nothing.**
+
+The cluster's settings show it under **DNS zone**: the names it serves, valid until, which server
+renews it, and why the last order failed when one did:
+
+> The certificate authority could not look the zone up. Check that the records above are added
+> where the domain was bought.
+
+**DNS zone -> Advanced -> One certificate per zone** turns it off: each name in the zone then gets
+a certificate of its own, still checked over DNS.
+
+### A name outside the zone
+
+A domain outside the zone, such as `shop.example.com`, keeps its HTTP check. The row in **Domains**
+offers one optional record that moves it to DNS too:
+
+```
+_acme-challenge.shop.example.com.  3600  IN  CNAME  _acme-challenge.shop-example-com.go.example.com.
+```
+
+Add it where `shop.example.com` lives, then **Check**. Without it, nothing changes.
+
+<Callout type="info" title="Who can set a check">
+Only the server's own proxy can ask its server agent for a `TXT` record, and only for an
+`_acme-challenge` name of a domain of that cluster, inside its zone. No app, and nothing else on
+the network, can set one. The certificate's key is never shown in the panel or written to a log.
+</Callout>
+
 ## Safety
 
 - **The name server runs with none of the agent's rights.** It is a separate process, as the
