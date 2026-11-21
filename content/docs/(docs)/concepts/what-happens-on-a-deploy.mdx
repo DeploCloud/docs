@@ -215,7 +215,8 @@ Good to know:
 - **The new version starts twice**, once as the copy and once as the container. A migration that
   runs at startup runs twice, and the old version is still serving while it runs.
 - **Without a health check of its own**, the app gets one that checks its port is open. The proxy
-  sends traffic only to a container whose check passes.
+  sends traffic only to a container whose check passes. The check is run by the server agent's own
+  program, so it works in any image, one with no shell (`scratch`, distroless) included.
 - **A second or two** of errors is still possible while a stopped container leaves the proxy.
 
 ## A rollback is much shorter
