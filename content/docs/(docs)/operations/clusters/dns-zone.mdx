@@ -289,6 +289,11 @@ _acme-challenge.shop.example.com.  3600  IN  CNAME  _acme-challenge.shop-example
 
 Add it where `shop.example.com` lives, then **Check**. Without it, nothing changes.
 
+A certificate the name already has keeps working, and **its next renewal is checked over DNS**.
+To switch it, that server's proxy restarts once, at its quietest hour before the renewal is due,
+and Activity says so. Removing the record moves it back to the HTTP check the same way, and so
+does turning **One certificate per zone** off or on for a name in the zone.
+
 <Callout type="info" title="Who can set a check">
 Only the server's own proxy can ask its server agent for a `TXT` record, and only for an
 `_acme-challenge` name of a domain of that cluster, inside its zone. No app, and nothing else on
