@@ -109,9 +109,9 @@ version did not start, so the old one is still online:", then the reason.
 </Callout>
 
 **Visitors only reach a replica once it listens.** A service with a domain and no `healthcheck:`
-of its own gets a small check from Deplo, which waits for the service's port to open. That check
-needs a shell (`sh`) in the image. For an image without one, write your own `healthcheck:` on the
-service, or `healthcheck: {disable: true}` to do without the wait.
+of its own gets a small check from Deplo, which waits for the service's port to open. The check is
+the server agent's own program, mounted read-only into the container, so it needs nothing from the
+image: one with no shell (`scratch`, distroless, `traefik/whoami`) passes it like any other.
 
 ### When the stack goes offline briefly instead
 
