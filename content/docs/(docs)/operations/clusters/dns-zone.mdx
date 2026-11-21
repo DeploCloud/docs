@@ -263,6 +263,10 @@ Two consequences to know:
 So a server that stops leaves every answer within about **40 s**. Meanwhile a browser that tries it
 moves on to the next address after a few seconds.
 
+**A server that comes back is named again after it has been up for the same 10 s**, by the other
+servers and by itself: its proxy needs a moment to serve the domains after it starts. Until then the
+other servers answer for it, so no visitor meets it while it is still starting.
+
 Both are under **DNS zone -> Advanced** in the cluster's settings. A longer time means fewer
 queries, and a stopped server named for longer.
 
