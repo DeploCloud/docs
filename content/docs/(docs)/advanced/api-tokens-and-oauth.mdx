@@ -153,13 +153,14 @@ lost, or expired.
 
 - **Where**: **Settings -> API tokens**, open the token, then **Reroll token**.
 - **The new secret is shown once**, under **Token rerolled**. Copy it then. Name, permissions,
-  scope and history stay the same.
+  scope and activity history stay the same; **Last used** starts over.
 - **The old secret stops working at once**, on the API, MCP and deploy hooks. There is no overlap,
   so update every place that uses it.
 - **Pick a new expiry** in the dialog: **In 30 days**, **In 90 days** (the default), **In a year**
   or **Never**. It counts from the reroll, so an expired token works again.
-- **A token rerolled with a token** can reroll only itself, and cannot pick an expiry later than
+- **Over the API**, a token can reroll only itself, and cannot pick an expiry later than
   its own.
+- **An Instance admin token** can be rerolled only by someone who is still an instance admin.
 
 <Callout type="warn">
   A token created by connecting an AI client has no **Reroll token**. Disconnect the client and
