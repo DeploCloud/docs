@@ -134,6 +134,9 @@ key included, into what the cluster keeps to restart the app elsewhere, encrypte
   renewal window, so it renews the certificate of shop.example.com itself. Visitors' open
   connections to that server reconnected.`
 
+- **The server the app left orders nothing when it comes back**, after a power cut or weeks away.
+  Before its proxy starts, the app's certificate is set aside: it is still served, never renewed,
+  and goes away once the cluster says the app runs elsewhere.
 - **Until the certificate is copied, failover is not ready**, and the row says: "Failover is not
   ready yet: Deplo copies its certificate once the App's server has one."
 - **Turning the switch off** removes the key from what the cluster keeps.

@@ -264,6 +264,9 @@ zone and every name one label below it**: `go.example.com` and `*.go.example.com
 - **A server that stops does not stop renewals.** After 10 minutes without it, another server
   takes renewals over, with the certificate it already holds. Nothing new is ordered while it is
   valid.
+- **A server back from a power cut, or after weeks away, orders nothing.** Before its proxy
+  starts, the certificates the cluster may have handed to another server are set aside: it keeps
+  serving them, renews none, and takes back only those Deplo still gives it.
 - **An empty zone orders nothing.**
 
 The cluster's settings show it under **DNS zone**: the names it serves, valid until, which server
