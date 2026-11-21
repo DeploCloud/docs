@@ -74,7 +74,7 @@ stop. Past that update it is **unusable**, with its apps still running. Its page
 | Chip | Means | Fix |
 | --- | --- | --- |
 | **Degraded** | `The agent is up but Docker is unreachable` | `systemctl status docker` on the host |
-| **Error** | The agent's certificate is untrusted or expired, it speaks an unsupported protocol, or it answered with an error. The tooltip says which | Reissue the install command and run it; for a protocol error, update the agent |
+| **Error** | The agent's key is not the one Deplo trusts, it speaks an unsupported protocol, or it answered with an error. The tooltip says which. A certificate past its date is not an error: the server gets a new key when it connects | Reissue the install command and run it; for a protocol error, update the agent |
 | **Unknown** | The stored reading is stale | **Refresh** on the Servers list |
 
 Health is a stored reading, while a deploy does a live handshake: a green chip and a failing deploy

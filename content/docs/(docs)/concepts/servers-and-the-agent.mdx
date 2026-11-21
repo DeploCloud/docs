@@ -33,8 +33,8 @@ server cannot build from a repository.
 ### The agent gets its certificate
 
 The agent creates its own private key and sends a certificate request with the token. The
-control plane signs it and **pins its fingerprint**: from now on only that certificate is
-trusted, and the server turns **Online**.
+control plane signs it and **pins the agent's key**: from now on only a machine holding that key
+is this server, and the server turns **Online**.
 </Step>
 </Steps>
 
@@ -54,6 +54,23 @@ older one cannot reach Deplo, and Deplo cannot reach it to update it: the server
 until its agent is
 [reinstalled](/troubleshooting/servers-and-agents#a-server-agent-needs-to-be-reinstalled). Its
 apps keep running, and its apps and settings stay in Deplo.
+
+## How a server is known
+
+**By its agent's key, never by its address.** Addresses change, and two machines behind one router
+share one, so Deplo never uses an address to tell servers apart.
+
+- **The key changes every 30 days**, over the connection the agent already has. The private key is
+  made on the server and never leaves it. Nobody has to do anything.
+- **A certificate's date never locks a server out.** A server that was off for months connects again
+  and gets a new key at once. No reinstall.
+- **A copy is refused.** A virtual machine copied with the agent inside holds the same key. While
+  the original is connected, the copy is refused, and an alert says
+  `Two machines are using the identity of eu-west-1`. A copy that was off while the original got its
+  new key is refused for good, with the same alert. On the copy, run the install command of a new
+  server.
+- **The machine Deplo runs on** is the server its installer enrolled, wherever its address points.
+  Behind NAT, it is still recognised, and it still connects over the machine's own loopback.
 
 ## What a server can be used for
 
