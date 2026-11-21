@@ -278,6 +278,22 @@ renews it, and why the last order failed when one did:
 **DNS zone -> Advanced -> One certificate per zone** turns it off: each name in the zone then gets
 a certificate of its own, still checked over DNS.
 
+### A name's own certificate
+
+A name two labels down, every name when **One certificate per zone** is off, and a name outside
+the zone with its record (below) get a certificate of their own, **the same way as the zone's**:
+
+- **One server renews it**, at first the server its app runs on. Every other server gets it from
+  Deplo and serves it.
+- **After 10 minutes without that server**, another one takes renewals over, with the certificate
+  it already holds.
+- Activity says it: `Every server of eu now holds the certificate of shop.example.com, valid until
+  2027-02-19`.
+
+So every server can serve the app, and
+[load balancing](/operations/clusters/load-balancing#without-cloudflare) can run it on all of
+them.
+
 ### A name outside the zone
 
 A domain outside the zone, such as `shop.example.com`, keeps its HTTP check. The row in **Domains**
