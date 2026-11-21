@@ -22,7 +22,8 @@ browser. They live in **Settings -> API tokens**, under **Account**.
 - **A token is personal.** Only the person who created it can see, edit or revoke it: not a
   team admin, not an instance admin.
 - **It has its own capabilities**, which you can change later without reissuing it.
-- **The secret is shown once**, and only its hash is stored. Lost it? Revoke and create a new one.
+- **The secret is shown once**, and only its hash is stored. Lost it? [Reroll it](#reroll-a-token)
+  to get a new secret.
 
 What a token can do is checked live, on every request:
 
@@ -81,8 +82,8 @@ powerful first:
 - **Expires**: see [Expiry](#expiry).
 - **Scope**: tick whole teams, projects, folders (subfolders included) or single apps. Nothing
   ticked reaches every team where you may use API tokens, including ones you join later.
-- **Advanced -> Instance admin**, for instance admins only: the token may administer the whole
-  instance. Never combined with a scope, and never on unless you turn it on.
+- **Instance admin**, under **Expires** and for instance admins only: the token may administer
+  the whole instance. Never combined with a scope, and never on unless you turn it on.
 
 </Step>
 <Step>
@@ -133,6 +134,8 @@ server for it. Approving the consent screen **creates an ordinary API token**:
 - The token shows in **Settings -> API tokens** under the client's name. Edit or revoke it
   there; revoking stops the client in every team.
 - It expires in 90 days, like any new token. Connecting the same client again replaces it.
+- It has no **Reroll token**. To give the client a new credential, disconnect it and connect it
+  again.
 - The OAuth scopes the client asks for decide nothing. The token's capabilities do.
 
 ## Expiry
@@ -140,8 +143,30 @@ server for it. Approving the consent screen **creates an ordinary API token**:
 - **Expires** offers **In 30 days**, **In 90 days** (the default), **In a year** and **Never**.
   A token created over the API without a date also gets 90 days.
 - **It is checked first**, on the API, MCP and deploy hooks.
-- **An expired token stays in the list** marked **Expired**: edit it to move the date, or
-  revoke it.
+- **An expired token stays in the list** marked **Expired**: edit it to move the date, reroll
+  it, or revoke it.
+
+## Reroll a token
+
+Rerolling gives a token a new secret without rebuilding it. Use it when a secret leaked, got
+lost, or expired.
+
+- **Where**: **Settings -> API tokens**, open the token, then **Reroll token**.
+- **The new secret is shown once**, under **Token rerolled**. Copy it then. Name, permissions,
+  scope and activity history stay the same; **Last used** starts over.
+- **The old secret stops working at once**, on the API, MCP and deploy hooks. There is no overlap,
+  so update every place that uses it.
+- **Pick a new expiry** in the dialog: **In 30 days**, **In 90 days** (the default), **In a year**
+  or **Never**. It counts from the reroll, so an expired token works again.
+- **Over the API**, a token can reroll only itself, and cannot pick an expiry later than
+  its own.
+- **An Instance admin token** can be rerolled only by someone who is still an instance admin.
+
+<Callout type="warn">
+  A token created by connecting an AI client has no **Reroll token**. Disconnect the client and
+  connect it again instead. See [Connected clients and OAuth](#connected-clients-and-oauth) and
+  [MCP server](/guides/mcp-server).
+</Callout>
 
 ## Important limits
 
