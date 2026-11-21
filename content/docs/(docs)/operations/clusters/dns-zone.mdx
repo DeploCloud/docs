@@ -179,6 +179,11 @@ $ dig +short shop-example-com.go.example.com @203.0.113.10
 - **A server being emptied** leaves the answers at once.
 - **Only the zone's own names** are answered: a name of no domain gets "no such name", and any other
   domain is refused. The servers never look anything up on someone's behalf.
+- **One public address names one server.** When two servers use the same public address, the
+  usual case for virtual machines behind one router, the cluster names it once: for the server that
+  joined first, in its answers, its glue and its name servers. A router sends that address to one
+  machine only, so naming it twice would point visitors at the same machine twice. The cluster's
+  page says so: `pve-1 and pve-2 both use the public address 203.0.113.5.`
 
 ## Nearest servers first
 

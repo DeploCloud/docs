@@ -22,6 +22,21 @@ leaves that server, with one key pair per destination. Nothing in between can re
 - **An app backup** holds its Volumes, its Files, and a snapshot of its compose file and variables.
 - **A database backup** is a dump of that database alone.
 
+### A deploy and an app backup take turns
+
+To copy an app's Volumes consistently, the backup pauses the containers that use them, usually for
+a few seconds. A deploy of that same app never runs into the pause:
+
+- **A deploy that starts during the pause waits for it**, and for the app's health checks to pass
+  again. Its log says so:
+  `A backup of this app has paused it to copy its data, so the deploy waits until it runs again (10 minutes at most).`
+  then `Waited 3.6s for the backup to finish.`
+- **A backup that starts during a deploy waits for the deploy** before it pauses anything. Its log
+  says `A deploy of this app is under way, so the backup waits for it to finish before pausing the app (10 minutes at most).`
+- **Neither waits more than 10 minutes.** A deploy still waiting then fails with
+  `This app was still paused by a backup after 10 minutes`, and you deploy again. A backup still
+  waiting fails, and its next scheduled run tries again.
+
 <BackupDiagram />
 
 ## Add a destination

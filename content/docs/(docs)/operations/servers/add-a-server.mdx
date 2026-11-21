@@ -31,10 +31,10 @@ Instance admins only.
 </Step>
 
 <Step>
-### Name it and set the address
-A **Display name**, then **Host or IP**: the address your apps on this server are reached at, like
-`203.0.113.24`. Their generated addresses and DNS checks use it; Deplo never connects to it. A private
-IP like `10.0.0.7` works, but generated addresses then answer only inside that network.
+### Name it
+A **Display name**, like `eu-west-1`. There is no address to type: a server is known by its
+agent's key, and Deplo learns its address when it connects. See
+[Where it connects from](#where-it-connects-from).
 </Step>
 
 <Step>
@@ -79,6 +79,26 @@ refuses to start without it. If Deplo can't read that certificate from its own a
 is refused with the reason. Make the panel's address reachable from the panel itself, then try again.
 </Callout>
 
+## Where it connects from
+
+Once the agent connects, the server's page shows two facts:
+
+| Fact | Example | What it is |
+| --- | --- | --- |
+| Its address | `203.0.113.24` | The address the agent reads from the machine itself. Your apps' generated addresses and DNS checks use it. You can change it under **Advanced -> Address** |
+| **Connected from** | `Connected from 198.51.100.20` | Where its connection to Deplo came from, as Deplo's own proxy saw it. Information only, never the server's identity |
+
+When the two differ, the machine is behind a router, and its page says so:
+
+> This server connects to Deplo from 198.51.100.20, which is not one of its own addresses, so it is
+> behind a router. Its Apps answer on 198.51.100.20 only if the router forwards ports 80 and 443 to it.
+
+- **Several machines behind one router are fine.** Three virtual machines on one Proxmox host, with one
+  public address, are three servers. Add each one and run its own command.
+- **Apps on a machine with no public address of its own** have none until you set one under
+  **Advanced -> Address**, for example the router's address once it forwards `80` and `443` to that
+  machine.
+
 ## Ports for your apps
 
 Deplo needs no open port: the agent connects to the panel. Only your apps do:
@@ -105,6 +125,15 @@ could not be evaluated, which is not a pass. Nothing gates on it: it is for you.
   restart and tells you to do it in a maintenance window.
 
 ## Troubleshooting
+
+- **`This machine is already connected to Deplo as a server.`**: the installer stopped, because
+  installing a new server there would disconnect the one it already is. To reinstall that server's
+  agent, use the install command from that server's page (**Advanced -> Install command**). If the
+  machine is a copy of another server, re-run the command with `--force`.
+- **An alert says `Two machines are using the identity of eu-west-1`**: a virtual machine was copied
+  with Deplo's agent inside. Deplo keeps the machine that was connected first and refuses the other.
+  On the copy, run the install command of a new server: it gives that machine its own identity, with
+  no `--force`, because the copy already knows it was refused.
 
 - **Stuck on Provisioning**: the agent never called home. On the server, check
   `systemctl status deplo-agent` and `journalctl -u deplo-agent -f`.
