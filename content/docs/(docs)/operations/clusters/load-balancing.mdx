@@ -109,6 +109,23 @@ Without Cloudflare, the cluster's [DNS zone](/operations/clusters/dns-zone#neare
 does the same: it names the servers nearest each visitor, and stops naming a server within about
 10 seconds of it stopping.
 
+## A server that comes back
+
+When a server stops, its copy starts on another server, beside the one already running there, and
+its visitors are served by the others meanwhile.
+
+**Once the server is back and has stayed up for 2 minutes**, Deplo starts its copy there again:
+
+- **only on that server**. No other copy restarts, so no visitor notices
+- **visitors there are passed to the other servers until its copy is ready**, then served from it
+- the extra copy the failover started stays where it is until the app's next deploy
+
+A server that stops again within those 2 minutes gets nothing back, and its wait starts over the
+next time it is back. Activity says it:
+`eu-1 runs its own copy of web again: it has been back for 2 minutes`.
+
+An app with stored data is not load balanced, so it stays where the failover put it.
+
 ## Most available server
 
 It applies to apps on a Cloudflare domain. An app reached through domains that answer on every
