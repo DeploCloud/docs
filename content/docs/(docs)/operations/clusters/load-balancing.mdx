@@ -119,6 +119,9 @@ its visitors are served by the others meanwhile.
 - **only on that server**. No other copy restarts, so no visitor notices
 - **visitors there are passed to the other servers until its copy is ready**, then served from it
 - the extra copy the failover started stays where it is until the app's next deploy
+- the app's generated address (`web-albatross-0a000038.deplo.site`) names one server: it does not
+  answer while that server is away, and works again once it is back. Your own domains answer from
+  every server the whole time
 
 A server that stops again within those 2 minutes gets nothing back, and its wait starts over the
 next time it is back. Activity says it:
