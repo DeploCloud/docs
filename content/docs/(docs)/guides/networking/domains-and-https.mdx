@@ -51,13 +51,17 @@ the record when you add the domain.
 | --- | --- | --- |
 | `valid` | The hostname resolves to this app's server | yes |
 | `cloudflare` | It resolves to Cloudflare's proxy, so the real origin cannot be checked. The row gets a **Cloudflare** badge | yes |
-| `pending` | Nothing resolves yet. The row shows the exact A record to create, and the AAAA when the server has IPv6 | no |
-| `misconfigured` | It resolves elsewhere, or one A or AAAA record points at another machine. The row names that record | no |
+| `pending` | Nothing resolves yet. The row shows the exact A record to create, and the AAAA when the server has IPv6 | no, unless it already served |
+| `misconfigured` | It resolves elsewhere, or one A or AAAA record points at another machine. The row names that record | no, unless it already served |
 
 - **A CDN or proxy Deplo does not recognise:** turn on **Behind a proxy** under **Advanced
   settings -> Proxy**. The domain is then routed without a DNS check.
 - **Twice a day Deplo re-checks every `valid` domain.** One that no longer points here leaves
   `valid` and fires the **Domain points elsewhere** alert.
+- **A check never takes a serving domain offline.** Once a domain has served, it stays routed
+  whatever a later check says: `pending`, `misconfigured`, or a lookup that failed. The row shows
+  the warning and says **It keeps answering meanwhile**. Only removing the domain, or renaming it,
+  takes it off.
 
 ### IPv6 and AAAA records
 
