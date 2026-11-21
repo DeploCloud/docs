@@ -135,6 +135,30 @@ Two ways out:
   the zone, such as `example-com.go.example.com`. The provider resolves it and answers with the
   addresses itself.
 
+## DNS at Cloudflare
+
+When the domain's DNS is at Cloudflare, three things differ.
+
+- **Delegate a subdomain inside the Cloudflare zone.** In Cloudflare's DNS for `example.com`, add
+  the `NS` records and the `A` (and `AAAA`) records **Records** lists for `go.example.com`, each
+  one **DNS only**. Nothing changes at the registrar.
+- **Set the `CNAME` to DNS only (grey cloud).** Cloudflare proxies a new record by default. A
+  proxied `CNAME` puts Cloudflare in the cluster's place: visitors reach Cloudflare, never the
+  nearest server, and the domain stays `misconfigured`. The row says:
+
+  > Cloudflare answers for shop.example.com in the cluster's place: in Cloudflare, set its record
+  > to DNS only (grey cloud).
+
+  ```
+  shop.example.com.  CNAME  shop-example-com.go.example.com.   DNS only
+  ```
+
+- **A bare domain** works through Cloudflare's CNAME flattening: a `CNAME` on `example.com` to
+  `example-com.go.example.com`, DNS only. Cloudflare asks the cluster and answers with the
+  addresses itself, so the answer still names only healthy servers. It loses the geography:
+  Cloudflare asks in the visitor's place, so the servers are the nearest to Cloudflare, not to the
+  visitor.
+
 ## What the servers answer
 
 Every server of the cluster answers for the zone, on its own addresses. Each name answers with
