@@ -143,9 +143,12 @@ key included, into what the cluster keeps to restart the app elsewhere, encrypte
 
 ### What it costs
 
-- **One server per app.** Every server answers the domain, but every visitor reaches the one server
-  that runs the app: [load balancing](/operations/clusters/load-balancing) passes such an app by,
-  and its replicas stay on one server.
+- **One server per app, unless every server holds the certificate.** Every server answers the
+  domain. With a certificate checked over HTTP, every visitor reaches the one server that runs the
+  app, and its replicas stay there. Checked through the cluster's
+  [DNS zone](/operations/clusters/dns-zone#certificates), every server holds it, and
+  [load balancing](/operations/clusters/load-balancing#without-cloudflare) runs the app on all of
+  them, with no Cloudflare.
 - **Visitors per server, set in the cluster's settings** under **Visitors per server** (shown once
   a domain of the cluster answers on every server):
 

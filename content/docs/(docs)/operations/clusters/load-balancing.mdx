@@ -59,8 +59,9 @@ Activity records it: `Turned load balancing on for cluster eu: visitors go to th
 
 An app is load balanced when **all** of these are true:
 
-- it has a **Cloudflare domain**. Visitors reach every server only through Cloudflare. See
-  [Addresses and Cloudflare](/operations/clusters/addresses)
+- visitors can reach every server: it has a **Cloudflare domain**, or a domain that
+  [answers on every server](/operations/clusters/addresses#answer-on-every-server) and whose
+  certificate every server holds (below)
 - it keeps **no data on its server**: no Volume, no File, no published port
 - it is **not a Compose app**
 
@@ -68,6 +69,29 @@ From its **next deploy**, such an app runs on every server of the cluster: at le
 [replica](/advanced/replicas) on each, more if its replica count is higher. **Settings ->
 Advanced -> Replicas** says: "Load balancing runs it on 3 servers: visitors are shared between
 them".
+
+### Without Cloudflare
+
+A domain that answers on every server needs no Cloudflare, once **every server holds its
+certificate**. That is the case when its certificate is checked through the cluster's
+[DNS zone](/operations/clusters/dns-zone#certificates):
+
+| Domain | Every server holds its certificate |
+| --- | --- |
+| `shop.go.example.com`, inside the zone | Yes: the zone's certificate |
+| `a.b.go.example.com`, two labels down | Yes: its own, renewed by one server |
+| `shop.example.com` with its `_acme-challenge` record | Yes: its own, renewed by one server |
+| `shop.example.com` without that record | No: checked over HTTP, on one server |
+
+One name checked over HTTP keeps the app on one server, and **Settings -> Advanced -> Replicas**
+says which one and how to lift it:
+
+> It runs on one server: shop.example.com has its certificate on that server only. Add the
+> _acme-challenge record its domain offers, and from its next deploy it runs on every server.
+
+Each server serves its visitors from **its own copy** of the app. With
+[nearest servers first](/operations/clusters/dns-zone#nearest-servers-first), a visitor lands on
+the server closest to them and is served there.
 
 <Callout type="info">
   **An app with stored data stays on one server.** Its data has one writer: two servers writing
@@ -81,7 +105,15 @@ Each server runs the app beside its own Cloudflare connector, and **Cloudflare s
 to the server closest to them**. When a server stops, its visitors go to the next closest at once:
 the others were already answering.
 
+Without Cloudflare, the cluster's [DNS zone](/operations/clusters/dns-zone#nearest-servers-first)
+does the same: it names the servers nearest each visitor, and stops naming a server within about
+10 seconds of it stopping.
+
 ## Most available server
+
+It applies to apps on a Cloudflare domain. An app reached through domains that answer on every
+server is shared out by the cluster's DNS answers instead.
+
 
 The app still runs on every server, ready to take over, but **only one server takes its visitors**:
 the one with the most room.
