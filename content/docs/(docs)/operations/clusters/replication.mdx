@@ -101,13 +101,26 @@ See [Standby copy](/operations/clusters/standby-copy).
 
 ## What the app's page says
 
+**The first copy starts the moment the app first runs on the cluster.** Until a server holds an
+up-to-date copy, the app cannot move there.
+
 The **Failover** card on the app's **Overview**:
 
 | Replication | The card says |
 | --- | --- |
-| On, a whole copy elsewhere | "web moves to another server on its own if its server stops, with its data replicated there as it changes." Then **Replicated to 2 servers, up to date 1 second ago.** |
+| On, a whole copy elsewhere | "web moves to another server on its own if its server stops, with its data replicated there as it changes." Then **Copies: 2 of 2 up to date** |
 | On, first copy under way | "web fails over once a whole copy of its data is on another server. Deplo is making it now." |
 | Off | "web waits for server-a if it stops: cluster eu does not copy its data. You can bring it back on another server from its latest backup." |
+
+The copies line reads one of:
+
+- **Copies: 2 of 2 up to date**
+- **Copying to server-b and server-c**
+- **Not copied yet: this App cannot move if server-a goes off**
+
+Under **Advanced**, one row per server: its state (Up to date, Copying, Behind, Not copied), its
+last copy, how far behind it is and its size. Activity uses the same words:
+`web: Copies: 2 of 2 up to date. It can move if server-a goes off.`
 
 When it moves, Activity says: `Moved web to server-b with its data replicated there: server-a
 stopped answering`.

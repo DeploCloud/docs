@@ -73,7 +73,8 @@ share one, so Deplo never uses an address to tell servers apart.
   the original is connected, the copy is refused, an alert says
   `Two machines are using the identity of eu-west-1`, and the original gets a new key at once,
   even while another server of its cluster is off. From then on the copy is refused for good, even
-  when the original is off. A cluster server that was off then reaches the original again once
+  when the original is off. The original also gets a **new key for the cluster's private network**,
+  and the other servers are handed it in the same pass, so the copy is heard by none of them. A cluster server that was off then reaches the original again once
   Deplo hands it the new key, within 2 minutes of connecting; back while Deplo is down, it waits for
   Deplo. A copy that was off while the
   original got its new key is refused for good too, with the same alert. On the copy, run the
