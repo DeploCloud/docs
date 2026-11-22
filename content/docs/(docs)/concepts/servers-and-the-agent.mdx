@@ -65,13 +65,17 @@ share one, so Deplo never uses an address to tell servers apart.
 - **In a cluster, a server's key changes only once every other server of the cluster knows the new
   one.** A server that is off holds the others' new keys back until it is on again, so it never
   misses one: back while Deplo itself is down, it still reaches every other server. A key 30 days
-  from its certificate's date changes anyway.
+  from its certificate's date changes anyway, and so does the key of a server whose copy was caught
+  (below).
 - **A certificate's date never locks a server out.** A server that was off for months connects again
   and gets a new key at once. No reinstall.
 - **A copy is refused.** A virtual machine copied with the agent inside holds the same key. While
   the original is connected, the copy is refused, an alert says
-  `Two machines are using the identity of eu-west-1`, and the original gets a new key at once. From
-  then on the copy is refused for good, even when the original is off. A copy that was off while the
+  `Two machines are using the identity of eu-west-1`, and the original gets a new key at once,
+  even while another server of its cluster is off. From then on the copy is refused for good, even
+  when the original is off. A cluster server that was off then reaches the original again once
+  Deplo hands it the new key, within 2 minutes of connecting; back while Deplo is down, it waits for
+  Deplo. A copy that was off while the
   original got its new key is refused for good too, with the same alert. On the copy, run the
   install command of a new server.
 - **The machine Deplo runs on** is the server its installer enrolled, wherever its address points.

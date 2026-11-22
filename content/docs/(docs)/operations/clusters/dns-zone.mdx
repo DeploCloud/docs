@@ -392,6 +392,25 @@ other servers answer for it, so no visitor meets it while it is still starting.
 Both are under **DNS zone -> Advanced** in the cluster's settings. A longer time means fewer
 queries, and a stopped server named for longer.
 
+## When Deplo restarts a proxy
+
+Some changes restart a server's proxy: a new proxy version with a Deplo update, a certificate
+setting, **Restart proxy** on the server's page. On a cluster, Deplo restarts **one server's proxy
+at a time**:
+
+1. That server leaves every answer of the zone, and Deplo waits until resolvers have forgotten it
+   (30 s by default, what resolvers keep an answer for).
+2. Its proxy restarts.
+3. Once it answers again on 443, and on 53 for a name server, it is named again.
+4. Only then does the next server's proxy restart.
+
+So an app [load balanced](/operations/clusters/load-balancing) on every server never shows an
+error. An app that runs on one server is still unreachable for the few seconds its own server's
+proxy restarts. A server in no cluster restarts its proxy at once, as before.
+
+A proxy that does not answer within 2 minutes is named again anyway, and the cluster's Activity
+says: `The proxy on eu-1 did not answer within 2 minutes of its restart.`
+
 ## Certificates
 
 The zone also proves the cluster owns its names, so HTTPS certificates are checked over DNS
