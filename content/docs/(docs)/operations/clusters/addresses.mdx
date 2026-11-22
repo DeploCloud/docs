@@ -197,7 +197,7 @@ the same.**
 Moving the app to a server outside the cluster:
 
 - points each domain back at that server: an address record, or the server's tunnel if the domain
-  used one before
+  used one before. A domain the cluster answered gets an address record too
 - deletes the app's tunnel
 
 Deleting the app deletes the tunnel and the records Deplo made. Deleting the cluster does the
