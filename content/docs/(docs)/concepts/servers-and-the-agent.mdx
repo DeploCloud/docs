@@ -62,6 +62,10 @@ share one, so Deplo never uses an address to tell servers apart.
 
 - **The key changes every 30 days**, over the connection the agent already has. The private key is
   made on the server and never leaves it. Nobody has to do anything.
+- **In a cluster, a server's key changes only once every other server of the cluster knows the new
+  one.** A server that is off holds the others' new keys back until it is on again, so it never
+  misses one: back while Deplo itself is down, it still reaches every other server. A key 30 days
+  from its certificate's date changes anyway.
 - **A certificate's date never locks a server out.** A server that was off for months connects again
   and gets a new key at once. No reinstall.
 - **A copy is refused.** A virtual machine copied with the agent inside holds the same key. While
