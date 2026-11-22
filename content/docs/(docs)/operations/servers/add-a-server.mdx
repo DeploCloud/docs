@@ -116,6 +116,28 @@ and groups the results as **Agent**, **Docker**, **Routing**, **Host capacity**,
 **Deplo configuration**, and counts them as failed, warnings, skipped and passed. Skipped means it
 could not be evaluated, which is not a pass. Nothing gates on it: it is for you.
 
+## A machine that ran another Deplo
+
+A server belongs to one Deplo. When you add a machine whose agent served another Deplo before, the
+agent sets aside what that Deplo left and never uses it again:
+
+- its clusters, the private network's key and peers, its cluster leader and relay, and the names its
+  servers answered
+- the address the agent linked to
+- in the proxy, the certificate authority that Deplo pointed it at: every server orders its
+  certificates from Let's Encrypt, so a test authority left on the machine issues nothing
+
+Nothing is deleted. It moves to one dated folder on the machine, for example
+`/var/lib/deplo-agent/set-aside/20261122T180300Z`, and the server's page says **Set aside what
+another Deplo left on this machine**.
+
+The other Deplo's Apps are not touched: their containers and volumes keep running or stay stopped as
+they were. The server's page lists them, for example `notes, volw, web`, and a cleanup leaves their
+data alone. Remove them yourself once you know you no longer need them.
+
+This happens by itself on install, on a reinstall, and when the agent updates on a machine that
+joined before this check existed.
+
 ## Before you add more servers
 
 - **An app and its database must be on the same server to reach each other by name.** The `deplo`
