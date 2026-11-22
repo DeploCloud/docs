@@ -1,6 +1,6 @@
 ---
 title: Maintenance and advanced
-description: Restarts, the server's role, the host clock, the server's address, and removing a server.
+description: Restarts, the server's role, the host clock, the server's addresses, and removing a server.
 ---
 
 import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
@@ -43,11 +43,11 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
       description:
         "Compiles for apps whose own build server is down, when they have the same CPU architecture.",
     },
-    "Generated addresses": {
+    "Addresses": {
       type: "select",
       default: "Automatic",
       description:
-        "Whether the free .deplo.site addresses of apps here point at the server's IPv4 or IPv6. See below. Beta, Everything servers only.",
+        "The addresses Deplo found for this server, whether each reaches it, and which family it uses: Automatic, IPv6 only or IPv4 only. See below. Everything servers only.",
     },
     "Host details": {
       type: "read-only",
@@ -63,10 +63,6 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
       description:
         "A fresh one-time command, to finish a server still provisioning or to reinstall its agent.",
     },
-    "Change address": {
-      type: "text",
-      description: "In the Danger zone. Where this server's apps are reached, for when its IP changes. Beta.",
-    },
     "Remove server": {
       type: "danger",
       description: "In the Danger zone. See below.",
@@ -77,7 +73,35 @@ import { RotateCcw, ArrowLeftRight, AlertTriangle } from "lucide-react";
 A server installed as **Backups** has no Docker: to give it another role, re-run the install command
 on the host. One moved from **Build** to **Everything** has no proxy until you do the same.
 
-## Generated addresses
+## Addresses
+
+**Nobody types a server's address.** Deplo finds them and uses one only once it proves it reaches the
+server:
+
+- **Where they come from**: the addresses on the machine itself, and, per family, the one its traffic
+  leaves from, for example a router's public IPv4.
+- **The check**: every 2 minutes Deplo connects to each one on port `443` (and `53` for a cluster's
+  name server) and compares what answers with what only this server presents.
+- **What uses them**: generated names, a cluster's DNS records and glue, and every record a screen
+  shows. Nothing else is ever published.
+
+Each address shows its state, and updates by itself:
+
+| State | What it means |
+| --- | --- |
+| **In use** | It reaches the server. |
+| **Failing** | It reached the server before and fails now. It leaves after failing **30 minutes** without a break, counted down under it. A check that flaps renames nothing. |
+| **Checking** | Found, not checked yet. |
+| **Not checked** | Deplo has no route to that family, so it cannot check. It keeps its place. |
+| **Not used** | It does not reach the server. One line says why, for example `130.78.60.1 does not reach eu-1: the router sends port 443 elsewhere`. |
+
+An address the machine no longer has (a new IPv6 prefix from the ISP) leaves at its first failed check,
+and the new one takes its place everywhere: no step for you.
+
+**Use** is the one choice: **Automatic** (every address in use), **IPv6 only** or **IPv4 only**.
+Changing it asks first, because the generated names move.
+
+### Generated addresses
 
 Every app gets a free address that needs no DNS, built from its server's address:
 
@@ -85,14 +109,14 @@ Every app gets a free address that needs no DNS, built from its server's address
 | --------- | --------------------------------------------- | --------------- |
 | IPv4      | `web-calm-fox-cb00710a.deplo.site`            | `203.0.113.10`  |
 | IPv6      | `web-calm-fox-v6-2001-db8--10.deplo.site`     | `2001:db8::10`  |
-| Automatic | IPv4 when the server has one, IPv6 otherwise  |                 |
+| Automatic | IPv4 when one is in use, IPv6 otherwise        |                 |
 
 On the machine Deplo runs on, **Automatic** follows the installer's `--ipv4` or `--ipv6`.
 
-Pick IPv6 when visitors reach the server over IPv6 only. Changing it renames every generated address on
-the server, keeping its words: `web-calm-fox-cb00710a.deplo.site` becomes
-`web-calm-fox-v6-2001-db8--10.deplo.site`. Each app answers on its new name after its next deploy.
-Your own domains are not touched. A kind the server has no address for is greyed out.
+Changing **Use** renames every generated address on the server, keeping its words:
+`web-calm-fox-cb00710a.deplo.site` becomes `web-calm-fox-v6-2001-db8--10.deplo.site`. Each app answers
+on its new name after its next deploy. Your own domains are not touched. A family with no address in
+use is greyed out.
 
 ## Removing a server
 
@@ -106,10 +130,10 @@ removed.
 
 - **Health is a cache, not a gate.** Past a staleness window the page shows **Unknown** rather than a
   stale green. Deploys check the server live.
-- **Changing the address moves nothing.** Generated addresses are renamed for the new IP at once:
+- **A new address moves nothing but names.** Generated addresses are renamed for it at once:
   `web-calm-fox-cb00710a.deplo.site` becomes `web-calm-fox-cb00710b.deplo.site` for `203.0.113.11`.
-  Each app answers on its new name after its next deploy, and the old name stops working. Your own
-  domain keeps pointing at the old IP until you change its DNS record.
+  Your own domain keeps pointing at the old IP until you change its DNS record, unless a cluster's DNS
+  answers it.
 - **On a cluster, the other servers reach it at the new address straight away.**
 
 ## Troubleshooting

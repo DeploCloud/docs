@@ -85,7 +85,7 @@ Once the agent connects, the server's page shows two facts:
 
 | Fact | Example | What it is |
 | --- | --- | --- |
-| Its address | `203.0.113.24` | The address the agent reads from the machine itself. Your apps' generated addresses and DNS checks use it. You can change it under **Advanced -> Address** |
+| Its addresses | `203.0.113.24` | Found by Deplo and used once it proves each reaches the machine: see [Addresses](/operations/servers/maintenance-and-advanced#addresses). Nobody types one |
 | **Connected from** | `Connected from 198.51.100.20` | Where its connection to Deplo came from, as Deplo's own proxy saw it. Information only, never the server's identity |
 
 When the two differ, the machine is behind a router, and its page says so:
@@ -95,9 +95,8 @@ When the two differ, the machine is behind a router, and its page says so:
 
 - **Several machines behind one router are fine.** Three virtual machines on one Proxmox host, with one
   public address, are three servers. Add each one and run its own command.
-- **Apps on a machine with no public address of its own** have none until you set one under
-  **Advanced -> Address**, for example the router's address once it forwards `80` and `443` to that
-  machine.
+- **Apps on a machine with no public address of its own** get the router's address once the router
+  forwards `80` and `443` to it: Deplo finds it, checks it, and uses it by itself.
 
 ## Ports for your apps
 
