@@ -1,6 +1,6 @@
 ---
 title: Automatic DNS
-description: Connect your domain on Cloudflare once, and Deplo creates the DNS record of every domain you add to an app. Optionally through a Cloudflare Tunnel.
+description: Connect your domain on Cloudflare once, and Deplo creates the DNS record of every domain you add to an app. Straight to the server, proxied, or through a Cloudflare Tunnel.
 ---
 
 import { Globe, Cloud, Users } from "lucide-react";
@@ -64,31 +64,46 @@ token, and an API token or an AI agent cannot connect or change one.
 ## Add a domain
 
 Open the app, **Domains -> Add Domain**, and type a name under a connected domain, like
-`app.example.com`. The dialog says **Deplo creates the DNS record in example.com**.
+`app.example.com`. The dialog says **Deplo manages the DNS record in example.com**, with two
+switches, both off:
 
-**Add domain** creates an `A` record pointing at the app's server (`AAAA` on an IPv6-only
-server), not proxied, so the certificate is issued as usual. If Cloudflare already has a record on
-that name:
+| Switch | Off (default) | On |
+| --- | --- | --- |
+| **Use Cloudflare Tunnel** | The record points at the server | [Cloudflare Tunnel](#cloudflare-tunnel) |
+| **Proxy through Cloudflare** | DNS only | [Cloudflare's proxy](#cloudflare-proxy) |
+
+**Add domain** with both off creates an `A` record pointing straight at the app's server (`AAAA`
+on an IPv6-only server), DNS only, so the certificate is issued as usual. If Cloudflare already has
+a record on that name:
 
 - **It points at the app's server:** Deplo uses it and never deletes it.
 - **It points somewhere else:** Deplo refuses and names the record. Delete it in Cloudflare, or pick
   another name.
 
+## Cloudflare proxy
+
+**Proxy through Cloudflare** turns on the orange cloud of the same `A` record: visitors reach
+Cloudflare first, and the server's address stays hidden.
+
+- **It replaces Behind a proxy.** In a connected domain the switch sits next to the tunnel, not
+  under **Advanced settings**.
+- **The certificate follows Cloudflare's SSL mode**, as for any [proxied domain](/guides/networking/domains-and-https).
+- **The row's Edit switches it.** Deplo turns the proxy on or off on the record it keeps.
+  A record you turned orange in Cloudflare yourself opens with the switch on.
+
 ## Cloudflare Tunnel
 
-<Callout type="info" title="Experiment">
-An instance admin turns them on for every team in [Settings -> Deplo -> Experiments](/operations/experiments).
-Until then, tunnels stay hidden.
-</Callout>
+**Use Cloudflare Tunnel** makes Cloudflare reach the server over a connection the server opens
+itself: no port to open, and HTTPS is Cloudflare's.
 
-The same dialog shows **Use Cloudflare Tunnel**. Cloudflare then reaches the server over a
-connection the server opens itself: no port to open, and HTTPS is Cloudflare's.
-
-- **The HTTPS group, Behind a proxy and the www redirect are hidden.** The tunnel decides them.
+- **The HTTPS group and the www redirect are hidden, and the proxy stays on.** The tunnel decides
+  them.
 - **The row shows a Cloudflare Tunnel badge.**
 - **The first tunnel domain on a server restarts its proxy for a few seconds.**
-- **The tunnel is chosen when the domain is added.** To switch, remove the domain and add it again.
-  On a cluster, **Let the cluster answer** on its row moves it instead.
+- **The row's Edit switches it.** On, Deplo replaces the `A` record with the tunnel's `CNAME`. Off,
+  it points the record back at the server, with the proxy as its switch says. On a cluster,
+  **Let the cluster answer** on its row moves it instead.
+- **Only a record Deplo keeps is switched.** A record that was already in Cloudflare stays as it is.
 
 | Where | What |
 | --- | --- |
@@ -131,6 +146,7 @@ Only the records it created. A record that was already there is never touched.
 | --- | --- |
 | Remove the domain | Deletes its record |
 | Rename it | Deletes the old record, creates the new one |
+| Switch the tunnel | Replaces its record: the tunnel's `CNAME` or the server's `A` |
 | Delete the app or the team | Deletes the records of all its domains |
 | **Disconnect** the domain | Deletes its tunnels and their CNAME records. `A` records stay, so those sites keep working |
 | Remove a domain the cluster answers | Deletes its two `CNAME` records |

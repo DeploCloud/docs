@@ -55,7 +55,9 @@ the record when you add the domain.
 | `misconfigured` | It resolves elsewhere, or one A or AAAA record points at another machine. The row names that record | no, unless it already served |
 
 - **A CDN or proxy Deplo does not recognise:** turn on **Behind a proxy** under **Advanced
-  settings -> Proxy**. The domain is then routed without a DNS check.
+  settings -> Proxy**. The domain is then routed without a DNS check. In a domain connected for
+  [automatic DNS](/guides/networking/automatic-dns#cloudflare-proxy) it is **Proxy through
+  Cloudflare** instead.
 - **Twice a day Deplo re-checks every `valid` domain.** One that no longer points here leaves
   `valid` and fires the **Domain points elsewhere** alert.
 - **A check never takes a serving domain offline.** Once a domain has served, it stays routed
