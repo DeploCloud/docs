@@ -15,12 +15,17 @@ Until then, clusters stay hidden.
 </Callout>
 
 A domain that [answers on every server](/operations/clusters/addresses#answer-on-every-server)
-needs DNS to name every healthy server. Without a connected DNS provider, that means editing
-records each time a server stops or comes back.
+needs DNS to name every healthy server. Kept by hand, that means editing records each time a server
+stops or comes back.
 
-**The cluster can answer that DNS itself.** You delegate a zone to it once, where you bought the
-domain. From then on every server of the cluster answers for the zone, and names only the servers
-that are up. Nothing to edit when one stops, with Deplo up or down.
+**The cluster can answer that DNS itself.** A zone is delegated to it once. From then on every
+server of the cluster answers for the zone, and names only the servers that are up. Nothing to edit
+when one stops, with Deplo up or down.
+
+| Your domain | What you do |
+| --- | --- |
+| Connected to Deplo for [Automatic DNS](/guides/networking/automatic-dns) | Add it to the app and keep **Let the cluster answer**. Deplo makes the zone and writes every record, see [A domain connected to Deplo](#a-domain-connected-to-deplo) |
+| Anywhere else | Delegate a zone once and add one record per domain, as below |
 
 | You want | Do this |
 | --- | --- |
@@ -42,15 +47,17 @@ An instance admin opens the cluster in **Settings -> Servers**. Under **Settings
 go.example.com
 ```
 
-A zone belongs to one cluster. A zone inside another cluster's zone is refused.
+A zone belongs to one cluster. A zone inside another cluster's zone is refused. Under a domain
+connected to Deplo, Deplo writes its records itself and the next step is done for you.
 
 </Step>
 <Step>
 
 ### Add the records where you bought the domain
 
-Click **Records**. It lists the records to add at your registrar or DNS provider, each with a copy
-button. For a cluster of three servers:
+The zone's row says **Add its records where you bought the domain: open Records, then Check**, and
+**Records** opens on its own once the zone is added. It lists the records to add at your registrar
+or DNS provider, each with a copy button. For a cluster of three servers:
 
 ```
 go.example.com.      NS    ns1.go.example.com.
@@ -114,8 +121,19 @@ The `CNAME` never changes: what changes is what the cluster answers for the name
 
 **Use my own records** on the row goes back to records you write yourself.
 
-A domain whose records Deplo writes at a [connected DNS provider](/guides/networking/automatic-dns)
-keeps that: the provider already keeps every server listed.
+A domain connected to Deplo needs none of this: Deplo writes its `CNAME` in Cloudflare and the row
+says **Deplo keeps its records in Cloudflare, pointed at the cluster's zone go.example.com.**
+
+### Rename the zone
+
+**Rename**, on the zone's row in the cluster's settings, gives it another name. Its domains follow:
+
+- **Records Deplo keeps in Cloudflare are rewritten** for you, the zone's own included.
+- **Records you typed** must point at the new name. Activity lists them, and each row shows its new
+  `CNAME`.
+
+A name inside the old zone (`shop.go.example.com`) cannot follow: remove it first. **Remove** waits
+for the domains whose records Deplo keeps: remove them first, or rename the zone instead.
 
 ## A bare domain
 
@@ -137,7 +155,83 @@ Two ways out:
 
 ## DNS at Cloudflare
 
-When the domain's DNS is at Cloudflare, three things differ.
+### A domain connected to Deplo
+
+With `example.com` connected for [Automatic DNS](/guides/networking/automatic-dns), **Add Domain**
+on an app of the cluster offers two choices for `app.example.com`:
+
+| Choice | Who answers |
+| --- | --- |
+| **Let the cluster answer** (default) | Every server of the cluster, nearest first. Nothing to type |
+| **Cloudflare Tunnel** | Cloudflare, through the [app's own tunnel](/operations/clusters/addresses#keep-one-address-with-cloudflare) |
+
+With **Let the cluster answer**, the first domain sets everything up:
+
+<Steps>
+<Step>
+
+#### Deplo makes the cluster's zone
+
+The first name under `example.com` that nothing in Cloudflare uses: `cluster.example.com`, else
+`cluster-2.example.com`, and so on. Its records go in Cloudflare, **DNS only**, and the name
+servers start:
+
+```
+cluster.example.com.      NS  ns1.cluster.example.com.
+ns1.cluster.example.com.  A   203.0.113.10
+```
+
+The zone shows in the cluster's settings, where **Rename** changes it.
+
+</Step>
+<Step>
+
+#### Deplo checks that the cluster answers
+
+The same check as **Check** above, a few times over about ten seconds while Cloudflare publishes
+the records.
+
+</Step>
+<Step>
+
+#### Deplo points the domain at it
+
+Two records in Cloudflare, **DNS only**, and **Answer on every server** turned on:
+
+```
+app.example.com.                  CNAME  app-example-com.cluster.example.com.
+_acme-challenge.app.example.com.  CNAME  _acme-challenge.app-example-com.cluster.example.com.
+```
+
+The second one gets its [certificate](#certificates) through the zone, so every server holds it.
+
+</Step>
+</Steps>
+
+Every later domain reuses the zone: only the last step.
+
+- **Making the zone takes an instance admin.** For anyone else, until it exists, the default is the
+  tunnel, and **Let the cluster answer** says: "an instance admin has to add the cluster's DNS zone
+  first."
+- **A domain is never left unanswered.** When the check fails, the domain goes on the tunnel and
+  its row says why:
+
+  > On the Cloudflare Tunnel for now: server-c (203.0.113.12) does not answer for
+  > cluster.example.com: open port 53, UDP and TCP, on that server. Once fixed, let the cluster
+  > answer it.
+
+  Once fixed, **Let the cluster answer** on that row moves it. The same button moves any tunnel
+  domain of the app. Visitors whose DNS still points at Cloudflare may see errors for up to five
+  minutes.
+- **A name inside the zone**, like `shop.cluster.example.com`, is always answered by the zone, never
+  by a tunnel. Nothing is written for it in Cloudflare.
+- **When a name server changes**, Deplo rewrites the zone's records in Cloudflare on its own.
+- **An instance admin adding a zone** in the cluster's settings under `example.com` gets the same:
+  Deplo writes its records in Cloudflare.
+
+### A domain not connected to Deplo
+
+When the domain's DNS is at Cloudflare but not connected to Deplo, add the records yourself:
 
 - **Delegate a subdomain inside the Cloudflare zone.** In Cloudflare's DNS for `example.com`, add
   the `NS` records and the `A` (and `AAAA`) records **Records** lists for `go.example.com`, each
@@ -184,6 +278,18 @@ $ dig +short shop-example-com.go.example.com @203.0.113.10
   joined first, in its answers, its glue and its name servers. A router sends that address to one
   machine only, so naming it twice would point visitors at the same machine twice. The cluster's
   page says so: `pve-1 and pve-2 both use the public address 203.0.113.5.`
+
+## Its app's server first
+
+**An app that runs on one server at a time** (it keeps data, or the cluster does not load-balance
+it) is answered with **that server first**, then the other healthy servers nearest first. A visitor
+then reaches the app directly, not through another server.
+
+- **It follows the app.** When the app moves to another server, Deplo tells every server at once.
+- **Health still wins.** A stopped server is never answered, its app's server included.
+- **Deplo down during a failover** leaves the old server first for a while. It still answers and
+  passes visitors on to the new one: one more hop, never an error.
+- **A load-balanced app** runs on every server, so it is answered nearest first, as below.
 
 ## Nearest servers first
 
