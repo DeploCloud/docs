@@ -88,6 +88,7 @@ connection the server opens itself: no port to open, and HTTPS is Cloudflare's.
 - **The row shows a Cloudflare Tunnel badge.**
 - **The first tunnel domain on a server restarts its proxy for a few seconds.**
 - **The tunnel is chosen when the domain is added.** To switch, remove the domain and add it again.
+  On a cluster, **Let the cluster answer** on its row moves it instead.
 
 | Where | What |
 | --- | --- |
@@ -103,9 +104,24 @@ within ten minutes.
 "Cloudflare serves this domain through a tunnel, HTTPS included: it needs no certificate of its
 own."
 
-**On a cluster, each app with a domain in a connected zone gets a tunnel of its own**, with or
-without this switch, so the domain keeps one address when the app moves to another server. See
-[Addresses and Cloudflare](/operations/clusters/addresses).
+## An app on a cluster
+
+For an app on a [cluster](/operations/clusters), **Add Domain** offers two choices instead of the
+switch, so the domain keeps one address when the app moves to another server:
+
+| Choice | Who answers |
+| --- | --- |
+| **Let the cluster answer** (default) | Every server of the cluster, the app's own first. Deplo makes the cluster's DNS zone the first time, under your domain, and writes every record in Cloudflare, DNS only |
+| **Cloudflare Tunnel** | Cloudflare, through a tunnel of the app's own |
+
+- **Making the cluster's zone takes an instance admin.** For anyone else, until it exists, the
+  default is the tunnel.
+- **If the cluster cannot answer yet** (port 53 closed on a server, for example), the domain goes on
+  the tunnel, and its row says why and offers **Let the cluster answer** for when it is fixed.
+- **A name inside the cluster's zone** is always answered by the cluster.
+
+The details: [A domain connected to Deplo](/operations/clusters/dns-zone#a-domain-connected-to-deplo)
+and [Addresses and Cloudflare](/operations/clusters/addresses).
 
 ## What Deplo deletes
 
@@ -117,6 +133,8 @@ Only the records it created. A record that was already there is never touched.
 | Rename it | Deletes the old record, creates the new one |
 | Delete the app or the team | Deletes the records of all its domains |
 | **Disconnect** the domain | Deletes its tunnels and their CNAME records. `A` records stay, so those sites keep working |
+| Remove a domain the cluster answers | Deletes its two `CNAME` records |
+| Rename or remove the cluster's zone | Moves or deletes its `NS` and glue records |
 
 A record still used by another row on the same name, like `app.example.com` and
 `app.example.com/api`, stays until the last one is removed.

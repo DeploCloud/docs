@@ -19,7 +19,7 @@ follows it depends on where the domain lives.
 
 | The app is reached at | After a failover |
 | --- | --- |
-| A domain in a Cloudflare zone connected for [automatic DNS](/guides/networking/automatic-dns) | **Same address.** Nothing to do |
+| A domain in a Cloudflare zone connected for [automatic DNS](/guides/networking/automatic-dns) | **Same address.** Nothing to do: the cluster answers it, or the app's tunnel |
 | A generated `deplo.site` address | Deplo gives the app a **new address** for the new server. **While Deplo is down, the moved app answers at none**, see [A generated address](#a-generated-address) |
 | A domain of your own with **Answer on every server** on | **Same address.** Every server answers it, see [Answer on every server](#answer-on-every-server) |
 | A domain of your own that is not on Cloudflare | **Stops answering** until you point its DNS at the new server |
@@ -47,11 +47,21 @@ The row has an **Answer on every server** button next to it.
 
 ## Keep one address with Cloudflare
 
-**Nothing to set up beyond connecting the domain to Cloudflare** under **Settings -> DNS**, the
-way [automatic DNS](/guides/networking/automatic-dns#connect-a-domain) already asks. The API token
-needs the tunnel permission that **Use Cloudflare Tunnel** already asks for.
+**Nothing to set up beyond connecting the domain to Cloudflare**, the way
+[automatic DNS](/guides/networking/automatic-dns#connect-a-domain) already asks. **Add Domain** then
+offers two choices:
 
-What Deplo then does for each app on a cluster with such a domain:
+| Choice | Who answers | Needs |
+| --- | --- | --- |
+| **Let the cluster answer** (default) | Every server of the cluster, its app's server first | Port 53 open on the servers. The first domain needs an instance admin, who makes the cluster's zone |
+| **Cloudflare Tunnel** | Cloudflare, through the app's own tunnel | The tunnel permission on the API token |
+
+**Let the cluster answer** is [The cluster's own DNS](/operations/clusters/dns-zone#a-domain-connected-to-deplo),
+made and kept in Cloudflare by Deplo: two records, DNS only, and
+[Answer on every server](#answer-on-every-server) on. If the cluster cannot answer yet, the domain
+goes on the tunnel and its row says why. **Let the cluster answer** on the row moves it once fixed.
+
+What Deplo does for each app on a cluster with a tunnel domain:
 
 1. **The app gets its own Cloudflare Tunnel.**
 2. **The tunnel's connector runs beside the app**, wherever the app runs, and starts only once
@@ -94,17 +104,19 @@ Turn it on from the domain's row in **Domains**: **Answer on every server**. The
 
 DNS must name **every healthy server**, one `A` record (and `AAAA` for IPv6) each.
 
-<Tabs items={['Domain connected to Cloudflare', 'The cluster answers', 'Any other DNS']}>
-<Tab value="Domain connected to Cloudflare">
-Nothing to do. Deplo writes the records, TTL 60 s, and rewrites them when a server joins, leaves,
-stops or comes back.
+<Tabs items={['Domain connected to Deplo', 'The cluster answers', 'Any other DNS']}>
+<Tab value="Domain connected to Deplo">
+Nothing to do. Deplo makes the cluster's own DNS zone and points the domain at it, so the servers
+answer it themselves, naming only the healthy ones:
+[A domain connected to Deplo](/operations/clusters/dns-zone#a-domain-connected-to-deplo).
 </Tab>
 <Tab value="The cluster answers">
 Delegate a zone to the cluster once, and its servers answer the domain's DNS themselves, naming only
 the healthy ones: [The cluster's own DNS](/operations/clusters/dns-zone).
 </Tab>
 <Tab value="Any other DNS">
-Add one record per server where your DNS is managed, for example:
+Add one record per server where your DNS is managed. The domain's row lists them, each with a copy
+button, for example:
 
 ```
 shop.example.com.  60  IN  A  203.0.113.10
@@ -175,7 +187,9 @@ the same.**
 
 - **Nothing is offline in between.** DNS switches only once the connector has connected.
 - **Deplo retries on its own** every 10 minutes.
-- **A domain added later** to an app that is already on a cluster uses the tunnel from the start.
+- **A domain added later** to an app that is already on a cluster is answered by the cluster by
+  default, or by the tunnel if you pick it, see [Keep one address with Cloudflare](#keep-one-address-with-cloudflare).
+- **A domain on the tunnel** moves to the cluster with **Let the cluster answer** on its row.
 - **An app whose server joined a cluster** is switched right away, with no redeploy.
 
 ## When an app leaves a cluster
