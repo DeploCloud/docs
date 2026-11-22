@@ -182,8 +182,9 @@ key included, into what the cluster keeps to restart the app elsewhere, encrypte
 
 ## When an app joins a cluster
 
-Placing an app on a cluster switches its Cloudflare domains to the tunnel. **The hostname stays
-the same.**
+Placing an app on a cluster gives its Cloudflare domains the same answer as **Add domain**: the
+cluster's own DNS answers each one when its zone is delegated and you may use it, and the rest move to
+the tunnel, with the reason on the row. Nothing makes a zone for it. **The hostname stays the same.**
 
 - **Nothing is offline in between.** DNS switches only once the connector has connected.
 - **Deplo retries on its own** every 10 minutes.
@@ -191,6 +192,9 @@ the same.**
   default, or by the tunnel if you pick it, see [Keep one address with Cloudflare](#keep-one-address-with-cloudflare).
 - **A domain on the tunnel** moves to the cluster with **Let the cluster answer** on its row.
 - **An app whose server joined a cluster** is switched right away, with no redeploy.
+- **Domains of apps already on the cluster** stay where they are.
+- **A change of domain re-applies routes only.** Adding, removing or editing a domain recreates only the
+  container whose route changed, never its database or any other service.
 
 ## When an app leaves a cluster
 

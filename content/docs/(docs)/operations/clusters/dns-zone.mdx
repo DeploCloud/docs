@@ -81,7 +81,8 @@ Activity then says to update the records.
 ### Check
 
 In the same dialog, click **Check**. Deplo asks the domain's parent (`example.com` here) for the
-delegation, and each name server for the zone. It says **delegated**, or exactly which record to
+delegation, and each name server for the zone. Under the zone, its steps (**Created**,
+**Answering**, **Certificate**) move on by themselves as each one is done. It says **delegated**, or exactly which record to
 add or remove:
 
 > Add the NS record go.example.com -> ns3.go.example.com.
@@ -221,8 +222,10 @@ Every later domain reuses the zone: only the last step.
   > answer it.
 
   Once fixed, **Let the cluster answer** on that row moves it. The same button moves any tunnel
-  domain of the app. Visitors whose DNS still points at Cloudflare may see errors for up to five
-  minutes.
+  domain of the app. Resolvers may keep the tunnel's record for up to five minutes: the row counts
+  that down, and its steps (record, caches, certificate, failover) move on by themselves.
+- **The check reads the domain's own name servers**, Cloudflare's here and then the cluster's, never
+  a resolver's cache, so it never asks for a grey cloud Cloudflare already serves.
 - **A name inside the zone**, like `shop.cluster.example.com`, is always answered by the zone, never
   by a tunnel. Nothing is written for it in Cloudflare.
 - **When a name server changes**, Deplo rewrites the zone's records in Cloudflare on its own.
@@ -267,6 +270,9 @@ $ dig +short shop-example-com.go.example.com @203.0.113.10
 203.0.113.11
 ```
 
+- **Only addresses Deplo proved reach a server** are named, in answers and glue: see
+  [Addresses](/operations/servers/maintenance-and-advanced#addresses). A router's address whose `443`
+  goes to another machine is never named.
 - **Healthy** means the answering server heard it over the cluster's
   [private network](/operations/clusters/private-network) a moment ago. Every server judges from
   where it stands, so the answers keep working with Deplo or the leader down.
@@ -356,6 +362,11 @@ Each server counts the servers of its cluster it hears, itself included.
 So a server cut off from the rest stops naming itself, and the others keep answering without it.
 It never answers with itself alone: it could not pass a visitor on to the server that runs the app.
 
+**Any two of three that are up hear each other and answer**, whatever the third does, and a change
+of a server's address (a new IPv6 prefix, say) never makes one answer `SERVFAIL`. The cluster's
+**DNS zone** settings show each name server live: `eu-2 Answers, hearing 3 of 3`, or **Offline** with
+the 10 s counted down until the others leave it out.
+
 Two consequences to know:
 
 - **If more than half of the servers stop at once**, the ones left answer with an error until the
@@ -385,7 +396,9 @@ queries, and a stopped server named for longer.
 
 The zone also proves the cluster owns its names, so HTTPS certificates are checked over DNS
 (DNS-01) instead of over HTTP. **No DNS provider token is involved**: the check is a `TXT` record
-the cluster's own servers answer.
+the cluster's own servers answer. **They come from Let's Encrypt**, whatever authority a server's
+proxy was pointed at for its other domains; an order sent anywhere else is named on the domain's
+row.
 
 ### One certificate for the zone
 

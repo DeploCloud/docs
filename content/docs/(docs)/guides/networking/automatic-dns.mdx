@@ -134,6 +134,13 @@ switch, so the domain keeps one address when the app moves to another server:
 - **If the cluster cannot answer yet** (port 53 closed on a server, for example), the domain goes on
   the tunnel, and its row says why and offers **Let the cluster answer** for when it is fixed.
 - **A name inside the cluster's zone** is always answered by the cluster.
+- **An app moved onto a cluster** follows the same rule for the domains it already has: the cluster
+  answers each one when its zone is delegated and you may use it, the tunnel the rest, with the reason
+  on the row.
+- **The DNS check reads Cloudflare's own name servers**, never a cache. Right after a domain moves off
+  the tunnel, its row counts down the five minutes resolvers may still hold the old record.
+- **The waiting box gives the record the domain needs**: for one the cluster answers, its `CNAME`
+  into the zone, never an address of one server.
 
 The details: [A domain connected to Deplo](/operations/clusters/dns-zone#a-domain-connected-to-deplo)
 and [Addresses and Cloudflare](/operations/clusters/addresses).
