@@ -69,10 +69,11 @@ share one, so Deplo never uses an address to tell servers apart.
 - **A certificate's date never locks a server out.** A server that was off for months connects again
   and gets a new key at once. No reinstall.
 - **A copy is refused.** A virtual machine copied with the agent inside holds the same key. While
-  the original is connected, the copy is refused, and an alert says
-  `Two machines are using the identity of eu-west-1`. A copy that was off while the original got its
-  new key is refused for good, with the same alert. On the copy, run the install command of a new
-  server.
+  the original is connected, the copy is refused, an alert says
+  `Two machines are using the identity of eu-west-1`, and the original gets a new key at once. From
+  then on the copy is refused for good, even when the original is off. A copy that was off while the
+  original got its new key is refused for good too, with the same alert. On the copy, run the
+  install command of a new server.
 - **The machine Deplo runs on** is the server its installer enrolled, wherever its address points.
   Behind NAT, it is still recognised, and it still connects over the machine's own loopback.
 
