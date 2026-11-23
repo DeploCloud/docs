@@ -36,6 +36,10 @@ has your servers first, then a group per cluster:
 
 - **It is an ordinary move**: deployed on the new server, then its data is copied from the old
   one. An app with a Volume, or a database, is offline during the copy.
+- **The cluster's leader is told first.** Deplo hands it the new server and waits until it holds
+  it, then deploys there. The old server stops its copy, and the new one is never stopped as if it
+  belonged elsewhere, so the deploy does not end in an error. Before Deplo 0.8.2-canary.74 it
+  deployed first: the new copy was stopped for about 10 seconds and the deploy read **Error**.
 - **A failover still moves it.** When its server stops, the cluster puts it on another one, and
   it stays there when the server comes back.
 - **A server that cannot take it is greyed out**, with the reason:
