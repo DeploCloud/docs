@@ -219,6 +219,9 @@ server stopped answering Deplo, and only once the servers no longer hear it eith
 - Activity: `server-b stopped answering Deplo, so Deplo's machine leads cluster eu once its servers
   stop hearing server-b too, until it answers again`, then `server-b answers again, so it leads
   cluster eu again`.
+- **What server-b did meanwhile is said too**, at the time it did it: a cut between it and Deplo
+  does not stop it leading the others. See
+  [If Deplo was down](/operations/clusters/failover#if-deplo-was-down).
 - **Nothing runs twice during a change of hands**, and a change of hands never causes a failover
   by itself: a leader that takes over moves nothing of a server that answers it.
 - For a server it has **not heard from at all**, it starts that server's databases and apps with a

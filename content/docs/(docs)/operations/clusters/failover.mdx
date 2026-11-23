@@ -183,6 +183,13 @@ Every entry is **by Deplo**, in the team that owns the app or database:
 
 Deplo catches up when it is back: the same Activity entries, the new address and the alert.
 
+- **Each entry carries the time it happened**, not the time Deplo read it. A server that stopped at
+  05:45 and came back at 05:54 reads `server-c is not responding in cluster eu.` at 05:45 and
+  `server-c answers again in cluster eu.` at 05:54, even when Deplo only came back at 05:55.
+- **Nothing that happened meanwhile is skipped.** While its own machine stood in for the leader,
+  Deplo remembers the last event it read from that leader. When it hands the cluster back, it
+  reads on from there: every server that stopped or came back, every move, every copy set aside.
+
 - **Until then, a moved app runs but is not reached at its generated address.** Only Deplo makes
   the new one: the old address names the server the app left.
 - **So it is served again only after Deplo is back**, however early it started on its new server.
@@ -199,6 +206,26 @@ Measured 3 times each way on a cluster of three servers. One of them lost its po
 on another, and Deplo on a machine of its own. "Deplo down" means Deplo stopped just before the
 power loss and started again 254 to 256 seconds after it. **A database with a standby copy took
 writes again after 25 to 26 seconds either way**: it does not wait for Deplo.
+
+### While Deplo cannot reach the cluster [#while-deplo-cannot-reach-the-cluster]
+
+When **no server of the cluster answers Deplo**, Deplo does not know what they decide. It says so
+and shows the last state it knew, with its time:
+
+| Where | What it reads |
+| --- | --- |
+| The cluster, on top | **Deplo cannot reach this cluster since 05:32 UTC: its servers decide on their own**, then "What this page shows is how the cluster stood at 05:32 UTC." |
+| An app's status | `Offline: Deplo cannot reach its cluster since 05:32 UTC` |
+| An app's **Failover** card | "Deplo cannot reach this cluster since 05:32 UTC: its servers decide on their own. This is how web stood then." The copies read as they stood at 05:32 |
+| Activity | Once: `Deplo cannot reach cluster eu since 05:32 UTC: its servers decide on their own. What Deplo shows of it is how it stood then.` Back: `Deplo reaches cluster eu again`, then what happened meanwhile |
+
+- **Meanwhile Deplo writes no guess.** No server reads "not responding", no app reads "Not copied
+  yet" and nothing reads "cannot fail over yet" because of the silence alone.
+- **The servers go on without Deplo.** The leader keeps renewing them and moves what a stopped
+  server ran, as long as more than half of them answer it. See
+  [When a cluster is cut in two](#when-a-cluster-is-cut-in-two).
+- **The time is when Deplo last heard any of them.** A server that is really off and one Deplo
+  cannot reach look the same from Deplo.
 
 ## The slower case [#the-slower-case]
 
