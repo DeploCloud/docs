@@ -54,6 +54,9 @@ removes it from Deplo and keeps retrying the teardown on that host.
 - **The workload is not running.** Backups read from the live target.
 - `This server is offline.`: it lost its connection to Deplo during the run. Bring it back online,
   then run the backup again.
+- `Deplo cannot reach cluster eu since 08:22 UTC, so it could not take this backup`: no server of
+  the cluster answers Deplo, though they keep running. The next scheduled run takes it once Deplo
+  reaches them again, or run it by hand then.
 
 ## The app's data was not in the backup
 
