@@ -301,6 +301,9 @@ So with three servers, losing one and then another leaves the last one serving:
 Why 2 minutes: a server that is only cut off stops its databases within about half a minute.
 Two minutes is well past that, so it has stopped them before the others stop counting it.
 
+- **The leader's own server counts too.** When the server lost first runs the leader, the server
+  that takes over goes on from when that leader last heard each server: the 2 minutes run from
+  the moment eu-3 stopped, not from the takeover, and the next server in line learns who is gone.
 - **Two servers lost at the same moment** still stop the cluster, as below.
 - **The cost**: if Deplo is unreachable when the second server stops, there is no tie-break and
   nothing moves until a server is back.

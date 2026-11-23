@@ -103,7 +103,9 @@ move on the usual clock: about a minute for its databases.
   Activity: `eu-1 stopped answering, so Deplo gives its word to eu-3, next in line, to lead cluster eu`.
 
 Activity, by Deplo, once it hears of it, usually within 30 seconds of the leader's server stopping:
-`eu-1 stopped answering its servers, so eu-2, next in line, leads cluster eu`.
+`eu-1 stopped answering its servers, so eu-2, next in line, leads cluster eu`. The line carries the
+time eu-2 took over, also when Deplo was cut off and reads it later, and so does every event eu-2
+recorded meanwhile.
 
 A cluster with a server whose agent is too old for this has no line until Deplo has updated it:
 Deplo's own machine stands in, as before.
