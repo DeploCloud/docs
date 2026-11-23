@@ -19,7 +19,8 @@ is what moves apps off a server that stopped. You never install or update it by 
 
 - **It runs on one of the cluster's own servers.** Deplo picks the server that reaches every other
   one directly and has the most free memory, within a minute of the servers reporting their paths.
-  A cluster that was led from Deplo's own machine moves its leader there on its own.
+  A cluster that was led from Deplo's own machine moves its leader there on its own, and a leader
+  whose server comes to reach the others only through Deplo's relay moves to one that does not.
 - **Two servers stand next in line**, each with a leader of its own ready to take over. See
   [The line of succession](#the-line-of-succession).
 - **Deplo's own machine stands in last**, only when no server of the line can.
