@@ -352,6 +352,7 @@ servers as offline and cannot see the other side until the split heals.
 - **Activity, more than half of the servers silent**: `Too few servers answer in cluster eu, so
   nothing moves and server-b no longer counts as answering.`, then `Too few servers answer in
   cluster eu, so server-b stopped the databases and Apps with files that must never run twice.`
+  Said only while the leader really does not lead: one that leads has a majority.
 - **Bringing an app back from a backup** is refused meanwhile: "The cluster's leader cannot reach
   its servers right now. Try again in a minute."
 
@@ -503,6 +504,25 @@ was cut off are still somewhere.
 - **It stays until removed**, and takes room on that server's disk meanwhile.
 
 A database's dated copies are made the same way, and are not listed on its page yet.
+
+### A move never writes over a newer copy [#newest-copy-wins]
+
+When an app with a Volume moves between two servers of the cluster (you move it, a server is
+removed, or a move is continued), **its data comes before it starts** on the new server, and **the
+copy that ran last wins**:
+
+- **The old server ran it last** (the usual move): its data is copied over, and whatever the new
+  server held of the app is set aside on it first.
+- **The new server ran it since** (a move that stopped half-way and was continued): nothing is
+  copied. The old server's copy is set aside on the new one, listed with the others, and goes from
+  the old server only after. Activity: `Kept web's data on server-b, which ran it after server-a
+  did. server-a's older copy was set aside on server-b (12 MiB), never copied over it.`
+
+### Deleting the app [#set-aside-copies-delete]
+
+**Delete removes every set-aside copy** of the app on every server of the cluster, with the rest of
+its data, under the same confirmation. Activity: `Removed 2 set-aside copies of web's data: 1 on
+server-a, 1 on server-c.` A server that does not answer keeps its copies, and the line says so.
 
 **Over the API**: `appSetAsideCopies(appId)` and `removeAppSetAsideCopy(appId, serverId, volumeName)`.
 
