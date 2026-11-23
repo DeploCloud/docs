@@ -391,6 +391,8 @@ other servers answer for it, so no visitor meets it while it is still starting.
 
 **Its own name server stays silent until it hears every server, or for those 10 s.** It never
 answers with the servers it knew before it stopped: resolvers ask the other name servers meanwhile.
+**It never answers with only itself** either, a new server included: while it hears the others only
+as just back, it stays silent too.
 
 Both are under **DNS zone -> Advanced** in the cluster's settings. A longer time means fewer
 queries, and a stopped server named for longer.

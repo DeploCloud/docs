@@ -98,6 +98,9 @@ move on the usual clock: about a minute for its databases.
   move, as for any server cut off.
 - **A planned leader restart** (an update) is not taken over: the servers' time is extended first.
 - **The rule for leading is unchanged**: more than half of the servers, or exactly half and Deplo.
+- **Exactly half left** (the leader's server and the heir's both stopped): the next server in line
+  asks, and **Deplo gives it its word**, so it leads with half. Deplo's own machine does not stand in.
+  Activity: `eu-1 stopped answering, so Deplo gives its word to eu-3, next in line, to lead cluster eu`.
 
 Activity, by Deplo, once it hears of it: `eu-1 stopped answering its servers, so eu-2, next in
 line, leads cluster eu`.
@@ -213,12 +216,16 @@ Activity: `Gave the panel's Cloudflare Tunnel a new API token`. Instance admins 
 ### When no server of the line can lead [#when-the-leaders-server-stops-answering]
 
 Deplo's own machine leads in its place, on its own, **25 to 40 seconds** after the leader's
-server stopped answering Deplo, and only once the servers no longer hear it either.
+server stopped answering Deplo, and only once the servers no longer hear it either. **It stands in
+only when no server of the line answers Deplo**: a server of the line that answers either asks to
+lead, and gets Deplo's word, or is still led by the leader.
 
 - The banner **Deplo's own machine leads this cluster** says: "Until server-b answers again."
 - Activity: `server-b stopped answering Deplo, so Deplo's machine leads cluster eu once its servers
   stop hearing server-b too, until it answers again`, then `server-b answers again, so it leads
   cluster eu again`.
+- **Servers it does not hear** are said as it sees them: `Deplo's machine, standing in as the leader
+  of cluster eu, hears server-c: server-a is off, or cut off from it.` It cannot tell the two apart.
 - **What server-b did meanwhile is said too**, at the time it did it: a cut between it and Deplo
   does not stop it leading the others. See
   [If Deplo was down](/operations/clusters/failover#if-deplo-was-down).
