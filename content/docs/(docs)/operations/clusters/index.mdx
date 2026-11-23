@@ -22,7 +22,7 @@ of Kubernetes is involved.
 - **When a server stops answering, the cluster moves its work** to another server. That is a
   **failover**. It needs no click.
 - **Failover that does not depend on Deplo being up takes three servers or more.** It survives
-  losing Deplo or the leader's server, not both at once. See [How many servers](#how-many-servers).
+  losing Deplo and any one server of three, the leader's own included. See [How many servers](#how-many-servers).
 - **Opt-in, and for experts.** An app on a single server works exactly as before.
 
 Creating and changing a cluster is for **instance admins**, under **Settings -> Servers**. Using
@@ -63,8 +63,9 @@ A short name such as `eu`, up to 60 characters, unique on this Deplo. Then pick 
 
 ### Add cluster
 
-The cluster shows on the Servers page as a card, and its **leader** starts on Deplo's own
-machine without being asked. There is nothing to install.
+The cluster shows on the Servers page as a card. Its **leader** starts on Deplo's own machine
+and moves onto one of the cluster's servers on its own once they are added. There is nothing to
+install.
 
 </Step>
 </Steps>
@@ -80,7 +81,7 @@ A cluster of one server is allowed. Inside it, a banner says **Failover needs a 
 | --- | --- |
 | 1 | Never: there is nowhere to move to |
 | 2 | **Only while Deplo is up** |
-| 3 or more | Also while Deplo is down, as long as **more than half of the servers are up** and the [leader runs on one of them](/operations/clusters/leader#run-the-leader-on-another-server). One of three may stop, two of five, but **not the leader's server while Deplo is down too**: then nothing moves until one of them is back |
+| 3 or more | Also while Deplo is down, as long as **more than half of the servers are up**. One of three may stop, two of five, the [leader's own server](/operations/clusters/leader#the-line-of-succession) included: the server next in line takes over |
 
 When the second server joins, the toast says so: "Failover is on. With two servers it works only
 while Deplo is up."
@@ -248,6 +249,7 @@ background, so the page never waits on a server.
 | **Failover is not working right now** | The leader does not run, or too few servers answer it. See [The leader](/operations/clusters/leader#reading-the-banners) |
 | **Deplo's own machine leads this cluster** | "Until server-b answers again." See [When the leader's server stops answering](/operations/clusters/leader#when-the-leaders-server-stops-answering) |
 | **Failover may stop working** | A leader update that failed, a [refused Cloudflare token](/operations/clusters/leader#when-cloudflare-refuses-deplos-token), or the leader on Deplo's own server |
+| **Not OK for production** | Fewer than half of the servers reach each other directly. See [Servers that need the relay](/operations/clusters/private-network#servers-that-need-the-relay) |
 | **Failover is not ready for 1 App yet** | "Their latest version is still being copied: web on 2 of 3 servers." |
 | **Replication is not ready for 1 App yet** | No whole copy of its data is on another server yet. See [Replication](/operations/clusters/replication#the-banners) |
 | **Replication is behind for 1 App** | A server's copy stopped following, and why |
@@ -286,5 +288,5 @@ With failover off, only the first banner is shown.
   <Card title="Replicas and mixed servers" description="Replicas across servers, ARM next to x86" href="/operations/clusters/replicas-and-architectures" />
   <Card title="Logs, metrics, cron jobs and previews" description="What changes when an app runs on several servers" href="/operations/clusters/logs-metrics-and-previews" />
   <Card title="Move work, remove a server, delete a cluster" description="Pick a server, retire one, or take a cluster apart" href="/operations/clusters/manage-servers" />
-  <Card title="The leader" description="Where it runs, how to move it, how it is updated" href="/operations/clusters/leader" />
+  <Card title="The leader" description="Where it runs, who leads after it, how it is updated" href="/operations/clusters/leader" />
 </Cards>

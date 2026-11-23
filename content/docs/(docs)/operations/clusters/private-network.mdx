@@ -69,6 +69,33 @@ let UDP 51820 through between them and the card clears within a few minutes. Not
 opening, and the port answers no one who is not a server of the cluster.
 </Callout>
 
+## Servers that need the relay [#servers-that-need-the-relay]
+
+**A server that needs the relay is never refused.** Deplo says what it costs, in two levels:
+
+| Level | When | What you see |
+| --- | --- | --- |
+| One server or a few | Without the relayed pairs, more than half of the servers still reach each other directly | A warning icon on each server outside that group, on its row and its page (**Needs Deplo's relay**). Nothing on the cluster |
+| The whole cluster | No such majority is left | The cluster itself: **Not OK for production** |
+
+The icon says: "eu-3 reaches some servers of its cluster only through Deplo's relay. If Deplo's
+machine stops, eu-3 stops as if its power were cut." Its apps then move to the others, as for a
+server that stopped.
+
+The cluster's warning says: "Fewer than half of this cluster's servers reach each other directly:
+the rest only through Deplo's relay. If Deplo's machine stops, every App and database of this
+cluster stops. To fix it, give the servers a direct path to each other, or a second relay on
+another network."
+
+- **Add server** shows the same warning before you add anything.
+- **Activity**, by Deplo: `Cluster eu is not OK for production: fewer than half of its servers
+  reach each other directly, so if Deplo's machine stops, every App and database of it stops`, and
+  `Cluster eu is OK for production again` once the pairs are direct.
+- **The leader and the servers next in line** are always picked among the servers that reach each
+  other directly. See [The line of succession](/operations/clusters/leader#the-line-of-succession).
+
+To clear a warning, make the pairs direct (below). Both go on their own within a few minutes.
+
 ## The database page [#the-database-page]
 
 A database whose apps run on another server says so only when that pair is relayed: "web reaches
@@ -83,7 +110,8 @@ services on that server are reachable by name from its own server only.
 ## Over the API
 
 `ClusterMember.network { relayed unreachable }` lists the servers a member reaches only through the
-relay, or not at all. Over MCP, `get_cluster` returns the same field for each server.
+relay, or not at all, and `ClusterMember.relayWarning` is the icon's sentence. Over MCP,
+`get_cluster` returns the same fields for each server.
 
 <Cards>
   <Card title="Network isolation" href="/advanced/network-isolation" />
