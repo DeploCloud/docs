@@ -490,15 +490,15 @@ An app with only a Bind, and an app that keeps nothing, have nothing to save.
 ## Set-aside copies [#set-aside-copies]
 
 **The returning server never deletes what it held.** Before its copy of a database or an app with
-a Volume goes, it copies each volume to a **dated copy on itself**, with or without a backup, so
-writes the [replication copy](/operations/clusters/replication) had not received yet when the server
-was cut off are still somewhere.
+a Volume goes, it copies each volume, and the app's **Files**, to a **dated copy on itself**, with
+or without a backup, so writes the [replication copy](/operations/clusters/replication) had not
+received yet when the server was cut off are still somewhere.
 
 - **Nothing runs from it**, and Deplo never puts it back on its own.
 - **Activity** says it on the return: `server-a kept a dated copy of what it held of web (12 MiB),
   with any writes its copy had not sent yet: it is listed on web's page until an admin removes it.`
 - **The app's Settings -> Storage** lists each copy under **Set-aside copies**: when it was made, on
-  which server, the volume and its size.
+  which server, the volume (or **Files**) and its size.
 - **Remove** deletes one for good. It needs **Delete backups**. Activity:
   `Removed the copy of web's data that server-a set aside on 2026-11-23 04:05 UTC (12 MiB)`.
 - **It stays until removed**, and takes room on that server's disk meanwhile.
@@ -517,6 +517,17 @@ copy that ran last wins**:
   copied. The old server's copy is set aside on the new one, listed with the others, and goes from
   the old server only after. Activity: `Kept web's data on server-b, which ran it after server-a
   did. server-a's older copy was set aside on server-b (12 MiB), never copied over it.`
+
+### Deploy anyway [#set-aside-copies-deploy-anyway]
+
+**Deploy anyway** on an app whose move is held (its old server could not be reached to copy the
+data) starts it on empty storage, and **sets the old server's copy aside instead of deleting it**:
+
+- **The old server answers:** its copy, Files included, is set aside on the server the app runs on,
+  listed with the others, and goes from the old server only after. Activity: `What server-a held of
+  web was set aside on server-b (12 MiB).`
+- **It does not answer:** Deplo deletes nothing there. Once back, it sets its copy aside itself, as
+  any returning server does, and Activity says so.
 
 ### Deleting the app [#set-aside-copies-delete]
 

@@ -162,7 +162,8 @@ server). Pick the new server and confirm.
 - **Deplo redeploys the app there and copies its data first.** The app is offline during the copy.
 - **If the copy fails, the app goes back to its old server.** If the old server cannot be reached,
   the app is kept **stopped** on the new one: redeploy when the old server is back, or press
-  **Deploy anyway** to start without the data.
+  **Deploy anyway** to start without the data. In a cluster the old server's copy is then
+  [set aside](/operations/clusters/failover#set-aside-copies-deploy-anyway), never deleted.
 - **Apps it reached by name stay behind.** The dialog names them before you confirm.
 - **A volume missing on the old server is named in the deploy log**, and the old server's volumes
   are kept in case the data lives under another name.
