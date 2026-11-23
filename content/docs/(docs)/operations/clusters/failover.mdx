@@ -218,6 +218,7 @@ and shows the last state it knew, with its time:
 | An app's status | `Offline: Deplo cannot reach its cluster since 05:32 UTC` |
 | An app's **Failover** card | "Deplo cannot reach this cluster since 05:32 UTC: its servers decide on their own. This is how web stood then." The copies read as they stood at 05:32 |
 | Activity | Once: `Deplo cannot reach cluster eu since 05:32 UTC: its servers decide on their own. What Deplo shows of it is how it stood then.` Back: `Deplo reaches cluster eu again`, then what happened meanwhile |
+| A backup, or anything else Deplo asks a server of the cluster | `Deplo cannot reach cluster eu since 05:32 UTC, so it could not take this backup: its servers keep running without Deplo`, never "This server is offline" |
 
 - **Meanwhile Deplo writes no guess.** No server reads "not responding", no app reads "Not copied
   yet" and nothing reads "cannot fail over yet" because of the silence alone.
@@ -226,6 +227,8 @@ and shows the last state it knew, with its time:
   [When a cluster is cut in two](#when-a-cluster-is-cut-in-two).
 - **The time is when Deplo last heard any of them.** A server that is really off and one Deplo
   cannot reach look the same from Deplo.
+- **Deplo coming back changes nothing that runs.** No app is paused, restarted or moved because
+  Deplo reaches the cluster again.
 
 ## The slower case [#the-slower-case]
 
@@ -269,6 +272,10 @@ two servers, when:
 
 "Bring it back" from a backup is refused for the same time. A server that has answered the new
 leader even once is back on the usual times.
+
+**The 5 minutes end with the update.** Once the updated leader has renewed every server again,
+about a second after it is back, it tells them the extra time is over: a server lost after that
+moves on the usual times. While a server of the cluster is off, the extra time runs out on its own.
 
 ## When a cluster is cut in two [#when-a-cluster-is-cut-in-two]
 
