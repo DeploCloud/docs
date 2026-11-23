@@ -290,6 +290,14 @@ Two minutes is well past that, so it has stopped them before the others stop cou
 
 **Apps without a Volume keep running the whole time**, in every row.
 
+**What a server stopped comes back by itself.** Once the others are back and it is part of a majority
+again, it starts the databases and apps it stopped, whatever their restart setting. One that moved to
+another server meanwhile stays stopped there, and its copy is cleaned up as below.
+
+**On a cluster, a container with no restart setting is kept up**, so it starts again after a crash or
+a power cut like the others. One whose compose file says `restart: "no"`, and a step another
+container waits to finish, run as their file says.
+
 **For failover that does not depend on Deplo being up, use three servers or more**, with the
 [leader on one of them](/operations/clusters/leader#run-the-leader-on-another-server).
 

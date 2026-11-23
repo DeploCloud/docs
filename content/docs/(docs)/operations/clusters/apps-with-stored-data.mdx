@@ -24,6 +24,9 @@ On a [cluster](/operations/clusters) it moves only when they already are.
 | The same, **with replication off** (the default) | **It waits for its server**. You can [bring it back from a backup](#bring-it-back-from-a-backup) |
 | A **Bind** | It never moves |
 
+A place the image keeps its data in (`/var/lib/postgresql/data` of `postgres:17`) is a Volume too:
+Deplo adds it at the deploy. See [Volumes the image declares](/guides/data/persistent-storage#volumes-the-image-declares).
+
 The app's **Overview** has a **Failover** card that says which one applies.
 
 ## With replication on

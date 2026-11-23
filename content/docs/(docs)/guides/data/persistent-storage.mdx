@@ -108,6 +108,30 @@ have Storage rows.
   anything else (`./data`, `./conf.d`) an empty folder.
 - **A service name the compose file lacks is an error**, never a silent remount.
 
+## Volumes the image declares [#volumes-the-image-declares]
+
+Some images keep their data in a place they name themselves. `postgres:17` does: its data lives in
+`/var/lib/postgresql/data`. Docker would give that place a volume with no name, and a new container
+would start empty.
+
+**Deplo keeps every such place as a Volume, at the deploy**, so its data is like any other:
+
+- **A place the image declares** that the app does not mount itself. Storage marks it **Declared by
+  the image**, with the container it belongs to: `/var/lib/postgresql/data` of `db`.
+- **A volume with no name in a Compose file** (`- /data`). Storage marks it **Unnamed in the compose
+  file**.
+
+It survives a redeploy, moves with the app to another server and, on a
+[cluster](/operations/clusters/apps-with-stored-data), is replicated and never runs twice.
+
+**An app deployed before keeps its data.** The first deploy that adds the Volume copies what the old
+unnamed one held into it before the new container starts, once. The old one is left as it was.
+
+<Callout type="info" title="What Deplo does not read">
+An image Deplo builds from your code, and a private image whose registry Deplo cannot read, keep
+their unnamed places as before. Add a Volume in Storage for the path to keep its data.
+</Callout>
+
 ## What deleting the app removes
 
 | Kind | When you delete the app |
