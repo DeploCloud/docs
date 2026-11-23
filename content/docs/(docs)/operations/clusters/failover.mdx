@@ -203,8 +203,10 @@ writes again after 25 to 26 seconds either way**: it does not wait for Deplo.
 ## The slower case [#the-slower-case]
 
 The times above are for a leader that was already leading. When **the leader ran on the server
-that stopped**, Deplo's own machine first takes over as leader, in 25 to 40 seconds (see
-[The leader](/operations/clusters/leader)). Then the same waits apply:
+that stopped**, the server next in line takes over first, about 10 to 15 seconds after it stopped
+(see [The line of succession](/operations/clusters/leader#the-line-of-succession)), or Deplo's own
+machine in 25 to 40 seconds when no server of the line can. Then the same waits apply. The
+measurements below are from Deplo's machine taking over:
 
 | What ran on it | Starts elsewhere after |
 | --- | --- |
@@ -457,6 +459,28 @@ server is gone.
 
 An app with only a Bind, and an app that keeps nothing, have nothing to save.
 
-**Over the API**: `App.placementNote`, `Cluster.waiting`, `BackupRun.leftAt` and
+## Set-aside copies [#set-aside-copies]
+
+**The returning server never deletes what it held.** Before its copy of a database or an app with
+a Volume goes, it copies each volume to a **dated copy on itself**, with or without a backup, so
+writes the [replication copy](/operations/clusters/replication) had not received yet when the server
+was cut off are still somewhere.
+
+- **Nothing runs from it**, and Deplo never puts it back on its own.
+- **Activity** says it on the return: `server-a kept a dated copy of what it held of web (12 MiB),
+  with any writes its copy had not sent yet: it is listed on web's page until an admin removes it.`
+- **The app's Settings -> Storage** lists each copy under **Set-aside copies**: when it was made, on
+  which server, the volume and its size.
+- **Remove** deletes one for good. It needs **Delete backups**. Activity:
+  `Removed the copy of web's data that server-a set aside on 2026-11-23 04:05 UTC (12 MiB)`.
+- **It stays until removed**, and takes room on that server's disk meanwhile.
+
+A database's dated copies are made the same way, and are not listed on its page yet.
+
+**Over the API**: `appSetAsideCopies(appId)` and `removeAppSetAsideCopy(appId, serverId, volumeName)`.
+
+## Over the API [#data-left-over-the-api]
+
+`App.placementNote`, `Cluster.waiting`, `BackupRun.leftAt` and
 `BackupRun.leftOnServer`. Over MCP: `get_app`, `get_cluster` and `list_backup_runs` return the
 same.

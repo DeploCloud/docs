@@ -25,7 +25,7 @@ One line per term, spelled the way the dashboard and these docs spell it.
 | **Capability** | One action a member may take. There are 46, and `view` is the always-on floor. Never called a permission, a scope or a grant. |
 | **Certificate provider** | Where a domain's TLS certificate comes from: none, Let's Encrypt, Cloudflare, or one installed on the server. |
 | **Cluster** | Several servers that act as one. An app or database is placed on the cluster, never on one of its servers, and the cluster decides which server runs it. See [Clusters](/operations/clusters). |
-| **Cluster leader** | The part of a cluster that decides which server runs what and orders a failover. It runs on Deplo's own machine unless an admin runs it on another server. |
+| **Cluster leader** | The part of a cluster that decides which server runs what and orders a failover. It runs on one of the cluster's servers, with two more next in line and Deplo's own machine last. |
 | **Connected client** | A web AI application that reached Deplo through the OAuth consent screen. |
 | **Control plane** | The panel: the dashboard, the API, the database and the rendering. It never runs Docker. |
 | **Cloudflare Tunnel** | An optional way in to the panel for a machine that cannot accept incoming connections, set up under **Settings -> Deplo -> Advanced**. |

@@ -127,10 +127,15 @@ It survives a redeploy, moves with the app to another server and, on a
 **An app deployed before keeps its data.** The first deploy that adds the Volume copies what the old
 unnamed one held into it before the new container starts, once. The old one is left as it was.
 
-<Callout type="info" title="What Deplo does not read">
-An image Deplo builds from your code, and a private image whose registry Deplo cannot read, keep
-their unnamed places as before. Add a Volume in Storage for the path to keep its data.
-</Callout>
+**Every image counts**, including:
+
+- **An image Deplo builds from your code.** The server that built it reads what it declares (a
+  `VOLUME /var/lib/app` line in your Dockerfile, or one in its base image). The first deploy that
+  finds such a place keeps it as a Volume and starts the app again on it at once, in the same
+  deployment. The log says: "Kept /var/lib/app as a Volume: the image declares no name for it, so
+  the data would not have survived a new container."
+- **A private image.** Deplo reads it with the login you gave it under
+  [Container registries](/operations/servers/container-registries), the same login the deploy pulls it with.
 
 ## What deleting the app removes
 
@@ -176,6 +181,9 @@ server). Pick the new server and confirm.
 - **Do not put a database's data in a Bind.** A managed [database](/guides/data/databases) already
   has its own volume.
 - **An app backup includes its Volumes and Files**, not a Bind and not its databases.
+- **On a cluster, Storage may list Set-aside copies**: what a server kept of the app's Volumes when
+  it came back after the app moved. See
+  [Set-aside copies](/operations/clusters/failover#set-aside-copies).
 
 ## Troubleshooting
 

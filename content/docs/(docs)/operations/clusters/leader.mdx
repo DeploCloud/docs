@@ -1,6 +1,6 @@
 ---
 title: The leader
-description: The part of a cluster that moves apps off a server that stopped - where it runs, how to move it, and how it is updated.
+description: The part of a cluster that moves apps off a server that stopped - where it runs, who leads after it, and how it is updated.
 ---
 
 <Callout type="info" title="Beta">
@@ -17,18 +17,24 @@ Until then, clusters stay hidden.
 Every [cluster](/operations/clusters) has a **leader**: it decides which server runs what, and it
 is what moves apps off a server that stopped. You never install or update it by hand.
 
-- **It starts on Deplo's own machine**, the moment the cluster is created.
-- **With the leader on Deplo's machine and that machine down, nothing fails over.**
-- **Failover works while Deplo is down only when both hold**: the leader runs on a server of the
-  cluster, and the cluster has **three servers or more**, more than half of them up.
+- **It runs on one of the cluster's own servers.** Deplo picks the server that reaches every other
+  one directly and has the most free memory, within a minute of the servers reporting their paths.
+  A cluster that was led from Deplo's own machine moves its leader there on its own, and a leader
+  whose server comes to reach the others only through Deplo's relay moves to one that does not.
+- **Two servers stand next in line**, each with a leader of its own ready to take over. See
+  [The line of succession](#the-line-of-succession).
+- **Deplo's own machine stands in last**, only when no server of the line can.
+- **Failover works while Deplo is down** when the cluster has **three servers or more**, more than
+  half of them up.
 - **The leader keeps leading only while enough servers answer it**: more than half of the
   cluster's servers, or exactly half of them and Deplo itself. Otherwise it moves nothing. See
   [When a cluster is cut in two](/operations/clusters/failover#when-a-cluster-is-cut-in-two).
 
 ## Reading the banners [#reading-the-banners]
 
-Open the cluster under **Settings -> Servers**. The server the leader runs on shows **Leader**.
-When the leader runs on Deplo's own machine, no server shows it.
+Open the cluster under **Settings -> Servers**. The server the leader runs on shows a crown; the
+servers next in line show a grey one, whose tip says **Next in line** or **Second in line**. Their
+pages carry the same words. When the leader runs on Deplo's own machine, no server shows it.
 
 **No banner means the leader runs and enough servers answer it.** Otherwise the banner
 **Failover is not working right now** says why:
@@ -43,10 +49,66 @@ When the leader runs on Deplo's own machine, no server shows it.
 
 Deplo checks every 30 seconds, and at once after you move or start the leader.
 
-## Run the leader on another server [#run-the-leader-on-another-server]
+## The line of succession [#the-line-of-succession]
 
-**Why**: so that failover keeps working while Deplo's own machine is down. **That takes three
-servers or more.** The confirmation says which case you are in:
+Every order the leader sends names who leads after it: **the heir first, then the next server,
+Deplo's own machine last.** Every server of the cluster always knows it.
+
+- **Only servers that reach every other one directly** are in the line, at most two.
+- **Each holds a leader of its own**, standing by, and the sealed copy of what a failover needs.
+- **A server the leader stops hearing leaves the line** at the next order, a second or so later,
+  and the next one moves up. Back, it rejoins at the end of the line, as an ordinary server.
+
+### When the leader's server stops [#when-the-leaders-server-stops]
+
+**The heir takes over on its own, with or without Deplo.**
+
+<Steps>
+<Step>
+
+#### The servers stop hearing the leader
+
+After 5 seconds each server stops its databases and apps with a Volume, as it does whenever its
+leader is silent.
+
+</Step>
+<Step>
+
+#### The heir asks
+
+10 seconds after the leader's last order, the heir asks the others whether they would follow it.
+The next server in line asks 5 seconds later, only if the heir did not.
+
+</Step>
+<Step>
+
+#### More than half say yes
+
+The heir leads. The servers start what they stopped again, and the leader's own server's apps
+move on the usual clock: about a minute for its databases.
+
+</Step>
+</Steps>
+
+**A server says no while it still hears the leader.** So:
+
+- **A cut between the leader and the heir only** changes nothing: the others still hear the leader,
+  and the next order names another heir.
+- **The heir cut off alone** takes nothing over. Its own databases and apps with a Volume stop and
+  move, as for any server cut off.
+- **A planned leader restart** (an update) is not taken over: the servers' time is extended first.
+- **The rule for leading is unchanged**: more than half of the servers, or exactly half and Deplo.
+
+Activity, by Deplo, once it hears of it: `eu-1 stopped answering its servers, so eu-2, next in
+line, leads cluster eu`.
+
+A cluster with a server whose agent is too old for this has no line until Deplo has updated it:
+Deplo's own machine stands in, as before.
+
+## Move the leader to another server [#run-the-leader-on-another-server]
+
+**Why**: to pick the server yourself. **Failover without Deplo takes three servers or more.** The
+picker offers the cluster's own servers only. The confirmation says which case you are in:
 
 | Cluster | It says |
 | --- | --- |
@@ -88,9 +150,7 @@ runs on server-b". Activity: `Moved the leader of cluster eu to server-b`.
 </Step>
 </Steps>
 
-To move it back, open the menu of the server that shows **Leader** and pick **Move leader to
-Deplo's machine**. When Deplo's own server is in the cluster, use **Make leader** on it instead.
-Instance admins only.
+Instance admins only. Deplo's own machine is offered only when it is a server of the cluster.
 
 ### Pick a server that answers on port 443
 
@@ -150,14 +210,15 @@ not delete it for you.
 
 Activity: `Gave the panel's Cloudflare Tunnel a new API token`. Instance admins only.
 
-### When the leader's server stops answering [#when-the-leaders-server-stops-answering]
+### When no server of the line can lead [#when-the-leaders-server-stops-answering]
 
 Deplo's own machine leads in its place, on its own, **25 to 40 seconds** after the leader's
-server stopped answering.
+server stopped answering Deplo, and only once the servers no longer hear it either.
 
 - The banner **Deplo's own machine leads this cluster** says: "Until server-b answers again."
-- Activity: `server-b stopped answering, so Deplo's machine leads cluster eu until it answers
-  again`, then `server-b answers again, so it leads cluster eu again`.
+- Activity: `server-b stopped answering Deplo, so Deplo's machine leads cluster eu once its servers
+  stop hearing server-b too, until it answers again`, then `server-b answers again, so it leads
+  cluster eu again`.
 - **Nothing runs twice during a change of hands**, and a change of hands never causes a failover
   by itself: a leader that takes over moves nothing of a server that answers it.
 - For a server it has **not heard from at all**, it starts that server's databases and apps with a
@@ -243,10 +304,13 @@ not running.
 - **After [moving Deplo](/operations/move-deplo) to another machine**, the new machine starts its
   own leader, and a leader on another server keeps leading.
 - **What each leader needs to restart an app** (its last deployed version and variables) is kept
-  sealed for that leader alone. Moving the leader hands it over to the new one.
+  sealed for the leader, the servers next in line and Deplo's machine, each with its own key.
+  Moving the leader hands it over to the new one.
 - **Deleting the last cluster** removes the leader and the relay from Deplo's own machine.
 - **A leader left on a server that was offline** when its cluster was deleted, or when the leader
   moved away, is removed as soon as that server answers.
-- **A server of a cluster takes orders only from the leader Deplo named for that cluster.**
-- **Over the API**: `moveClusterLeader(id, serverId)`, `Cluster.leader` and
-  `Cluster.leaderChoices`, instance admin only. There is no MCP tool for it.
+- **A server of a cluster takes orders only from the leaders Deplo named for that cluster**: the
+  leader, the servers next in line and Deplo's machine, and from one of them at a time.
+- **Over the API**: `moveClusterLeader(id, serverId)`, `Cluster.leader`, `Cluster.leaderChoices`
+  and `ClusterMember.nextInLine`, instance admin only. Over MCP, `get_cluster` says each server's
+  place in the line.
