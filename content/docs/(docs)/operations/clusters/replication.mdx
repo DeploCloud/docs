@@ -149,7 +149,11 @@ The same switch, or **Turn replication off** in the cluster's menu. Then:
 ## What it costs
 
 - **Disk**: each server keeps a full copy of every other server's apps with data, and of each
-  database it holds the standby copy of.
+  database it holds the standby copy of. A copy starts only if it leaves a tenth of the server's
+  disk free, the dated copies already on it counted. Until there is room, the server shows a warning
+  on its row and its page, for example
+  `eu-1 has 1.2 GB free, too little for a copy of shop (about 2.8 GB) and a tenth of its disk free. Free some space on it, and the copy starts.`
+  A copy a server already holds whole is never held back.
 - **Memory**: a standby copy of a database takes as much as the database.
 - **Network**: every change travels to every other server, and only the part of a file that
   changed travels: a few bytes written into a 10 GB file send about a hundred kilobytes, not

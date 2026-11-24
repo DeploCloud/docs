@@ -25,7 +25,8 @@ leaves that server, with one key pair per destination. Nothing in between can re
 ### A deploy and an app backup take turns
 
 To copy an app's Volumes consistently, the backup pauses the containers that use them, usually for
-a few seconds. A deploy of that same app never runs into the pause:
+well under a second. The app keeps its address meanwhile: a visitor's request waits for the pause
+instead of failing. A deploy of that same app never runs into the pause:
 
 - **A deploy that starts during the pause waits for it**, and for the app's health checks to pass
   again. Its log says so:

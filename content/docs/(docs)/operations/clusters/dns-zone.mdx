@@ -389,8 +389,10 @@ moves on to the next address after a few seconds.
 servers and by itself: its proxy needs a moment to serve the domains after it starts. Until then the
 other servers answer for it, so no visitor meets it while it is still starting.
 
-**Its own name server stays silent until it hears every server, or for those 10 s.** It never
-answers with the servers it knew before it stopped: resolvers ask the other name servers meanwhile.
+**Its own name server stays silent until it hears more than half of the servers**, itself included,
+or for those 10 s. It then names only the servers it hears, never the ones it knew before it
+stopped: resolvers ask the other name servers meanwhile. One server it cannot reach yet does not
+keep it silent.
 **It never answers with only itself** either, a new server included: while it hears the others only
 as just back, it stays silent too.
 
