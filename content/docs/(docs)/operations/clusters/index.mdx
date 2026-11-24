@@ -32,7 +32,7 @@ one needs nothing new: the capability that places an app on a server places it o
 
 | You get | How | Read |
 | --- | --- | --- |
-| Apps that come back on another server | The cluster's leader moves them after about 5 seconds of silence, and those with data after about 25 seconds | [When a server stops](/operations/clusters/failover) |
+| Apps that come back on another server | The cluster's leader moves them after about 5 seconds of silence, and those with data after about 18 seconds | [When a server stops](/operations/clusters/failover) |
 | Apps that reach each other by name on any server | The servers share a private network, set up on their own, that keeps working while Deplo is down | [Private network](/operations/clusters/private-network) |
 | A domain that keeps its address | A domain on Cloudflare follows the app wherever it runs | [Addresses and Cloudflare](/operations/clusters/addresses) |
 | A database with a recent backup elsewhere | Every 15 minutes, on another server, set up for you | [Databases](/operations/clusters/databases) |
@@ -249,7 +249,7 @@ background, so the page never waits on a server.
 | **Failover is not working right now** | The leader does not run, or too few servers answer it. See [The leader](/operations/clusters/leader#reading-the-banners) |
 | **Deplo's own machine leads this cluster** | "Until server-b answers again." See [When the leader's server stops answering](/operations/clusters/leader#when-the-leaders-server-stops-answering) |
 | **Failover may stop working** | A leader update that failed, a [refused Cloudflare token](/operations/clusters/leader#when-cloudflare-refuses-deplos-token), or the leader on Deplo's own server |
-| **Not OK for production** | Fewer than half of the servers reach each other directly. See [Servers that need the relay](/operations/clusters/private-network#servers-that-need-the-relay) |
+| **Not OK for production** | Fewer than half of the servers reach each other directly. See [Servers that need the relay](/operations/clusters/private-network#servers-that-need-the-relay). Once they do again, the warning stays until the leader names the servers that lead after it; Activity then says `Cluster eu is OK for production again: more than half of its servers reach each other directly, and eu-2 then eu-1 lead it next if its leader's server stops` |
 | **Failover is not ready for 1 App yet** | "Their latest version is still being copied: web on 2 of 3 servers." |
 | **Replication is not ready for 1 App yet** | No whole copy of its data is on another server yet. See [Replication](/operations/clusters/replication#the-banners) |
 | **Replication is behind for 1 App** | A server's copy stopped following, and why |

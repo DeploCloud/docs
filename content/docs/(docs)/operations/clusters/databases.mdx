@@ -114,7 +114,7 @@ leaving stops it. Every other engine restores its latest backup only.
 
 Databases come back **first**, before the apps:
 
-1. The leader waits about 25 seconds, until that server has stopped the database itself. See
+1. The leader waits about 18 seconds (25 with a server agent older than 0.5.3-canary.43), until that server has stopped the database itself. See
    [When a server stops](/operations/clusters/failover).
 2. It restores the database on another server from the newest finished backup that server can
    read.

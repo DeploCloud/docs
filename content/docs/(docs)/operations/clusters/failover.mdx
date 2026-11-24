@@ -36,7 +36,7 @@ See [When a cluster is cut in two](#when-a-cluster-is-cut-in-two) for what that 
 | --- | --- |
 | About 5 seconds of silence | The cluster's leader starts moving that server's apps without stored data |
 | About 10 seconds | The server reads **Offline** on the Servers page. Its apps read **Moving to server-b** from the moment the leader decides to move them, or say why they cannot move yet |
-| About 25 seconds | The silent server has stopped, by itself, everything that must never run twice: its databases, its apps with stored data and its running cron jobs. The leader starts moving those |
+| About 18 seconds | The silent server has stopped, by itself, everything that must never run twice: its databases, its apps with stored data and its running cron jobs. The leader starts moving those, each app with data on its own, so a slow one holds none of the others. 25 seconds for a server whose agent is older than 0.5.3-canary.43 |
 
 **Nothing that keeps data moves earlier than that**, on purpose. A server that is only cut off from
 the network is still running. The leader waits until that server has stopped its own databases
@@ -51,7 +51,7 @@ when it is back.
   answers too. See [When a cluster is cut in two](#when-a-cluster-is-cut-in-two)
 
 <Callout type="info">
-  25 seconds is when moving **starts** for anything with data, not when visitors are served again.
+  18 seconds is when moving **starts** for anything with data, not when visitors are served again.
   That also takes the app's own start and a restore. See [How long it takes](#how-long-it-takes).
 </Callout>
 
@@ -233,10 +233,14 @@ and shows the last state it knew, with its time:
 ## The slower case [#the-slower-case]
 
 The times above are for a leader that was already leading. When **the leader ran on the server
-that stopped**, the server next in line takes over first, about 10 to 15 seconds after it stopped
+that stopped**, the server next in line takes over first, about 10 to 13 seconds after it stopped
 (see [The line of succession](/operations/clusters/leader#the-line-of-succession)), or Deplo's own
-machine in 25 to 40 seconds when no server of the line can. Then the same waits apply. The
-measurements below are from Deplo's machine taking over:
+machine in 25 to 40 seconds when no server of the line can. Then the same waits apply.
+
+With the line, measured on a cluster of three with a power cut (Deplo 0.8.2-canary.80): the app
+with a Volume and a slow start (fise) was served again after 40 to 55 seconds, a small one with a
+Volume after 30 to 40, and an app on a server that stayed up, stopped while nobody led, after 9 to
+31 seconds. The measurements below are from Deplo's machine taking over:
 
 | What ran on it | Starts elsewhere after |
 | --- | --- |
@@ -323,7 +327,7 @@ Two minutes is well past that, so it has stopped them before the others stop cou
 | Cluster | What to expect |
 | --- | --- |
 | One server | Nothing changes |
-| Two servers | **Failover needs Deplo up.** If one server stops while Deplo is down too, or restarting for longer than about 25 seconds, the other server's databases and apps with a Volume stop as well. They start again by themselves within seconds of Deplo being back, and the stopped server's work moves then |
+| Two servers | **Failover needs Deplo up.** If one server stops while Deplo is down too, or restarting for longer than about 8 seconds (Deplo's word holds 8 seconds since Deplo 0.8.2-canary.80, 20 before), the other server's databases and apps with a Volume stop as well. They start again by themselves within seconds of Deplo being back, and the stopped server's work moves then |
 | Three servers or more | Failover works with Deplo down as long as more than half of the servers are up and the leader's server is one of them: one of three may stop, two of five. **Not the leader's server while Deplo is down too**: then nothing moves until one of them is back |
 | More than half of the servers lost at once (two of three at the same moment; one after another, see [above](#servers-lost-one-after-another)) | With Deplo up or not, the servers that are left stop their databases and apps with a Volume within about half a minute, until one of the others is back. If they are gone for good, the rest start again once those servers are [removed from the cluster](/operations/clusters/manage-servers#remove-a-server) |
 
@@ -345,8 +349,8 @@ container waits to finish, run as their file says.
 | Where | What happens |
 | --- | --- |
 | The smaller side | Its servers stop their databases and apps with a Volume within about half a minute |
-| The larger side, its leader already leading | Brings them up from the latest backup, or promotes the standby copy, after about **25 seconds** |
-| The larger side, when Deplo's machine had to take over as leader first | The same about **25 seconds** after Deplo's machine started leading, except in the cases of [The slower case](#the-slower-case) |
+| The larger side, its leader already leading | Brings them up from the latest backup, or promotes the standby copy, after about **18 seconds** (25 with a server agent older than 0.5.3-canary.43) |
+| The larger side, when Deplo's machine had to take over as leader first | The same about **18 seconds** after Deplo's machine started leading, except in the cases of [The slower case](#the-slower-case) |
 | Both sides | Apps without a Volume keep running. The server that was cut off removes its copy when it is back |
 
 When the leader is on the larger side and Deplo on the smaller one, Deplo shows its own side's
@@ -531,13 +535,23 @@ copy that ran last wins**:
 ### Deploy anyway [#set-aside-copies-deploy-anyway]
 
 **Deploy anyway** on an app whose move is held (its old server could not be reached to copy the
-data) starts it on empty storage, and **sets the old server's copy aside instead of deleting it**:
+data) **deploys it at once** on empty storage, and **sets the old server's copy aside instead of
+deleting it**. Activity, in order:
+
+1. `Accepted that web starts without the data its previous server still holds: Deplo sets that copy aside, never deletes it`
+2. `Deploying web`, as soon as the old copy is stopped, or at once when its server does not answer
+3. `Deployed web without the data its previous server still holds`, only once that deploy is ready
+
+Where the old copy goes:
 
 - **The old server answers:** its copy, Files included, is set aside on the server the app runs on,
   listed with the others, and goes from the old server only after. Activity: `What server-a held of
   web was set aside on server-b (12 MiB).`
-- **It does not answer:** Deplo deletes nothing there. Once back, it sets its copy aside itself, as
-  any returning server does, and Activity says so.
+- **It does not answer:** Deplo deletes nothing there, and says only what it knows:
+  `server-a does not answer, so what it holds of web stays on it for now: Activity says where it is kept once server-a answers again.`
+  Once back, it sets its copy aside itself, as any returning server does, and Activity says so.
+
+Measured on canary.80: the app answered again 13 seconds after the click, with its old server off.
 
 ### Deleting the app [#set-aside-copies-delete]
 
