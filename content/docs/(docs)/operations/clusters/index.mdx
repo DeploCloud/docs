@@ -190,6 +190,10 @@ The Server card then reads **Runs on eu · now on server-b**. To get an app off 
 onto one machine you choose, **Move** it to a server. When the cluster is the only place your team
 can put the app, the line is still there, without a **Move** button.
 
+**A move between two servers of the cluster copies the data from server to server**, over the
+cluster's own network, never through Deplo; Deplo carries it only when no path joins the two
+servers. Activity says which: `Moved web's data from eu-1 to eu-3, server to server`.
+
 ### How the cluster picks a server
 
 Among the servers that are online, not being removed, able to run the app's image and with room
@@ -208,6 +212,10 @@ server of a cluster.
 data would leave less than a tenth of the disk free, and a server already under a tenth free takes
 nothing new. A server that already holds a whole [copy](/operations/clusters/replication) of the app
 needs no more room for it.
+
+**A new app or database goes where it can grow.** Nobody knows yet how much it will store, so the
+cluster puts it on the server with the most free disk, and never on one over 80% full while another
+server is under that.
 
 ### When there is no room
 
