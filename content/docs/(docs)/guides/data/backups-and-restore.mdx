@@ -57,6 +57,9 @@ again. The backup is sent to its destination from that copy, which is removed af
   A backup that grows past that room while it is written stops there too, and nothing of it is kept.
 - **Canceling a running backup stops it at once**, on the app's server and on the destination, and
   nothing it had written is kept. A scheduled backup stops the same way as one started by hand.
+- **Between two servers of one [cluster](/operations/clusters), a backup goes from server to server**
+  over the cluster's own network, never through Deplo. Deplo carries it only when no path joins the
+  two servers. Each backup in the list says which: `sent server to server` or `sent through Deplo`.
 - **A backup is kept only when it arrived whole.** A backup sent to another server is checked there
   against its own size and fingerprint: a send cut midway (a server switched off, a network that
   drops) leaves nothing behind, and the next backup starts over. A server switched off in the middle

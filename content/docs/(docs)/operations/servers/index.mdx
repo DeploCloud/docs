@@ -10,6 +10,12 @@ Every action here goes through that server's agent. The control plane never open
 
 Each server's card shows its CPU, memory and disk, from its latest reading.
 
+**A disk over 90% full** shows a warning on the server's card and row and a **Disk almost full** badge
+on its page, whatever filled it, an app's own files included. It names what takes the most room,
+for example `eu-4's disk is 92% full. Biggest: shop (1.6 GB), a copy of web (48.0 MB). Free some
+space on it, or Apps there cannot write.` Activity says it once; it says it again only if the disk
+went back under 88% in between.
+
 A server's page has these tabs:
 
 - **Overview**: CPU, memory, disk and Docker; the **Server agent** card with its version, where its

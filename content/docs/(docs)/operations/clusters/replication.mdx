@@ -119,7 +119,8 @@ The copies line reads one of:
 - **Not copied yet: this App cannot move if server-a goes off**
 
 Under **Advanced**, one row per server: its state (Up to date, Copying, Behind, Not copied), its
-last copy, how far behind it is and its size. Activity uses the same words:
+last copy, how far behind it is, its size on that server's disk, and how it travels: `sent server to
+server`, or `sent through Deplo` when no direct path joins the two servers. Activity uses the same words:
 `web: Copies: 2 of 2 up to date. It can move if server-a goes off.`
 
 When it moves, Activity says: `Moved web to server-b with its data replicated there: server-a
@@ -158,10 +159,17 @@ The same switch, or **Turn replication off** in the cluster's menu. Then:
   again only with a fifth more room than it takes, so it never starts and stops over and over.
   Free space is what a copy may write: the part of the disk the system keeps for itself does not count.
   A copy a server already holds whole is never held back.
+- **A big file that changes counts twice.** A changed file is rebuilt beside the old one, which goes
+  only once the new one is whole, so for a moment the copy holds both. A copy starts only if a tenth
+  of the disk stays free with the app's biggest file held twice, and a rebuild starts only if the old
+  and the new file fit; otherwise it waits with the same warning.
 - **A backup that does not fit shows there too**: a server whose disk holds backups shows the warning
   for the latest backup of an app that was refused or stopped for room, for example
   `Backup of shop: eu-2 has 1.2 GB free, too little for this backup (about 2.0 GB) and a tenth of its disk free, so it did not start.`
 - **Memory**: a standby copy of a database takes as much as the database.
+- **CPU and disk of the server**: copies, backups, restores and moves run last. While an app on the
+  server waits for the CPU or the disk, or a visitor's request crosses it, a copy steps aside, so the
+  apps there keep answering; the copy takes longer instead.
 - **Network**: every change travels to every other server, and only the part of a file that
   changed travels: a few bytes written into a 10 GB file send about a hundred kilobytes, not
   10 GB. A file the app copies sends almost nothing, since the copy already holds its bytes.

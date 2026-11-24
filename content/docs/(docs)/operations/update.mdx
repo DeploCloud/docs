@@ -152,6 +152,10 @@ machine Deplo runs on last, one at a time. Each one is held **a minute** on the 
 next one starts: it must keep answering on it, and a cluster's server must keep being renewed by its
 leader. **Activity** records each one under the name of whoever clicked **Update**.
 
+**Each server downloads its new agent from Deplo itself**, at the address it already reaches, not from
+GitHub, and checks it against the release's own checksum. A server on a slow link gets up to 10
+minutes for the download before the update counts as failed.
+
 A failure on one server does not hold up the others. Its line on the Updates tab says why:
 
 - `Waiting for a deploy to finish, retrying in 4 min`: updating restarts the agent, which would drop the build.
