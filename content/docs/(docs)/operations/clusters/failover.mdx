@@ -507,7 +507,8 @@ An app with only a Bind, and an app that keeps nothing, have nothing to save.
 ## Set-aside copies [#set-aside-copies]
 
 **The returning server never deletes what it held.** Before its copy of a database or an app with
-a Volume goes, it copies each volume, and the app's **Files**, to a **dated copy on itself**, with
+a Volume goes, it moves each volume, and the app's **Files**, to a **dated copy on itself** (on the
+same disk this is instant whatever the size: 2.9 GB in 0.3 s on a test cluster), with
 or without a backup, so writes the [replication copy](/operations/clusters/replication) had not
 received yet when the server was cut off are still somewhere.
 
@@ -560,7 +561,10 @@ Measured on canary.80: the app answered again 13 seconds after the click, with i
 
 **Delete removes every set-aside copy** of the app on every server of the cluster, with the rest of
 its data, under the same confirmation. Activity: `Removed 2 set-aside copies of web's data: 1 on
-server-a, 1 on server-c.` A server that does not answer keeps its copies, and the line says so.
+server-a, 1 on server-c.` A server that does not answer has the app, its data and its copies
+removed as soon as it answers again, usually within a minute, and the line says so:
+`server-a did not answer: what it holds of it goes once it answers.` Activity then says
+`Finished the teardown of web on server-a`.
 
 **Over the API**: `appSetAsideCopies(appId)` and `removeAppSetAsideCopy(appId, serverId, volumeName)`.
 
