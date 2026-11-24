@@ -54,11 +54,15 @@ again. The backup is sent to its destination from that copy, which is removed af
 - **A backup never fills a disk.** It starts only when what it writes leaves a tenth of its
   destination server's disk free. Otherwise it does not start, and Activity says why:
   `Backup of web failed: eu-2 has 2.0 GB free, too little for this backup (about 2.0 GB) and a tenth of its disk free, so it did not start`.
+  A backup that grows past that room while it is written stops there too, and nothing of it is kept.
 - **Canceling a running backup stops it at once**, on the app's server and on the destination, and
   nothing it had written is kept. A scheduled backup stops the same way as one started by hand.
 - **A backup is kept only when it arrived whole.** A backup sent to another server is checked there
   against its own size and fingerprint: a send cut midway (a server switched off, a network that
-  drops) leaves nothing behind, and the next backup starts over.
+  drops) leaves nothing behind, and the next backup starts over. A server switched off in the middle
+  of one removes what was half written as soon as it is back, before it takes the next one.
+- **A backup that ends after its app or database was deleted is removed**, never listed. Deleting an
+  app or a database stops its running backups first.
 - **A failed backup says which server is offline**, and whether it is the one the app runs on or the
   one the backup is kept on: `Backup of memos failed: eu-1, this backup's destination, is offline.`
 - **A copy that stalls ends.** If the destination takes nothing for a minute, the copy stops, the

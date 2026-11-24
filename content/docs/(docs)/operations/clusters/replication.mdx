@@ -153,7 +153,14 @@ The same switch, or **Turn replication off** in the cluster's menu. Then:
   disk free, the dated copies already on it counted. Until there is room, the server shows a warning
   on its row and its page, for example
   `eu-1 has 1.2 GB free, too little for a copy of shop (about 2.8 GB) and a tenth of its disk free. Free some space on it, and the copy starts.`
+  Activity says it once, in the app's team. A copy that grows past that room while it is made (the app
+  writes more meanwhile) stops at a tenth free and shows the same warning. Once held back, it starts
+  again only with a fifth more room than it takes, so it never starts and stops over and over.
+  Free space is what a copy may write: the part of the disk the system keeps for itself does not count.
   A copy a server already holds whole is never held back.
+- **A backup that does not fit shows there too**: a server whose disk holds backups shows the warning
+  for the latest backup of an app that was refused or stopped for room, for example
+  `Backup of shop: eu-2 has 1.2 GB free, too little for this backup (about 2.0 GB) and a tenth of its disk free, so it did not start.`
 - **Memory**: a standby copy of a database takes as much as the database.
 - **Network**: every change travels to every other server, and only the part of a file that
   changed travels: a few bytes written into a 10 GB file send about a hundred kilobytes, not
