@@ -84,8 +84,9 @@ The next server in line asks 5 seconds later, only if the heir did not.
 
 #### More than half say yes
 
-The heir leads. The servers start what they stopped again, and the leader's own server's apps
-move on the usual clock: about a minute for its databases.
+The heir leads, about 12 seconds after the leader's server stopped. The servers start what they
+stopped again, and the leader's own server's apps move on the usual clock: their apps with data
+about 30 seconds after the stop, then their own start.
 
 </Step>
 </Steps>
@@ -99,10 +100,21 @@ move on the usual clock: about a minute for its databases.
 - **A planned leader restart** (an update) is not taken over: the servers' time is extended first.
 - **The rule for leading is unchanged**: more than half of the servers, or exactly half and Deplo.
 - **Exactly half left** (the leader's server and the heir's both stopped): the next server in line
-  asks, and **Deplo gives it its word**, so it leads with half. Deplo's own machine does not stand in.
+  asks, and **Deplo gives it its word**, so it leads with half, about 20 seconds after the stop.
+  Deplo's own machine does not stand in.
   Activity: `eu-1 stopped answering, so Deplo gives its word to eu-3, next in line, to lead cluster eu`.
 
-Activity, by Deplo, once it hears of it, usually within 30 seconds of the leader's server stopping:
+Measured on a cluster of three (Deplo 0.8.2-canary.80, server agent 0.5.3-canary.43, leader
+0.1.0-canary.18), with a power cut:
+
+| Case | The next leader leads | Every app served again |
+| --- | --- | --- |
+| The leader's server stops | After 13 seconds | After 44 seconds at most |
+| Then the heir's server stops too, half left | After 20 seconds, on Deplo's word | After 55 seconds at most |
+| The leader's server stops while Deplo is cut off | After 12 seconds | After about 41 seconds |
+| The leader's server stops right after **OK for production again** | After 10 seconds | After 40 seconds |
+
+Activity, by Deplo, once it hears of it, usually within 15 seconds of the leader's server stopping:
 `eu-1 stopped answering its servers, so eu-2, next in line, leads cluster eu`. The line carries the
 time eu-2 took over, also when Deplo was cut off and reads it later, and so does every event eu-2
 recorded meanwhile.
@@ -234,7 +246,7 @@ lead, and gets Deplo's word, or is still led by the leader.
 - **Nothing runs twice during a change of hands**, and a change of hands never causes a failover
   by itself: a leader that takes over moves nothing of a server that answers it.
 - For a server it has **not heard from at all**, it starts that server's databases and apps with a
-  Volume elsewhere about 25 seconds after it started leading, once the servers that are left say
+  Volume elsewhere about 17 seconds after it started leading (24 with a server agent older than 0.5.3-canary.43), once the servers that are left say
   no extra time it was given can still be running. In two cases it waits about 6 minutes 21
   seconds instead. See
   [The slower case](/operations/clusters/failover#the-slower-case).

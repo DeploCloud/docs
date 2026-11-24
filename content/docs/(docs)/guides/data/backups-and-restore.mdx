@@ -37,8 +37,13 @@ a few seconds. A deploy of that same app never runs into the pause:
   `This app was still paused by a backup after 10 minutes`, and you deploy again. A backup still
   waiting fails, and its next scheduled run tries again.
 
-The pause lasts as long as the copy takes to reach its destination: about 20 seconds for 200 MB
-sent to another server of a cluster.
+The pause lasts only while the app's data is copied on its own server's disk: about 1 second for
+200 MB, about 20 to 45 seconds for 2 GB, depending on the disk. The app then runs again, and the
+backup is sent to its destination from that copy, which is removed after.
+
+- **Without room for that copy** (the data, a fifth more and 512 MiB must stay free), the app stays
+  paused until the backup reaches its destination, as before, and Activity says why, for example:
+  `Backed up web (2.0 GB). It was paused for the whole copy (9 min 26 s): the server has 1.2 GB free, too little to copy 2.0 GB of data on its own disk first`.
 
 - **The app keeps its address through the pause.** It answers again, on every server, the moment
   the copy ends.

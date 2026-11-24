@@ -71,7 +71,7 @@ then by Deplo `Restored web on server-b from the backup of 14:15`.
 
 | It says | Why |
 | --- | --- |
-| "web's server may still be running it. Deplo never starts a second copy next to one that could be writing: try again in a minute." | About 25 seconds have not passed since the server went quiet. In [the slower case](/operations/clusters/failover#the-slower-case) it is longer |
+| "web's server may still be running it. Deplo never starts a second copy next to one that could be writing: try again in a minute." | About 18 seconds (25 with a server agent older than 0.5.3-canary.43) have not passed since the server went quiet. In [the slower case](/operations/clusters/failover#the-slower-case) it is longer |
 | "web has no backup or copy another server can read." | Its backups are on its own server, or on a server outside the cluster |
 | "No other server of the cluster has room for web." | Add a server or lower its memory |
 | "No other server of the cluster is online to take web." | Bring one back |
