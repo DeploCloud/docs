@@ -148,8 +148,9 @@ update itself** shows the command to run: see [If the panel cannot update itself
 ## The agents follow on their own
 
 Once the panel is back, Deplo updates each server's agent by itself: remote servers first, the
-machine Deplo runs on last, one at a time. **Activity** records each one under the name of whoever
-clicked **Update**.
+machine Deplo runs on last, one at a time. Each one is held **a minute** on the new version before the
+next one starts: it must keep answering on it, and a cluster's server must keep being renewed by its
+leader. **Activity** records each one under the name of whoever clicked **Update**.
 
 A failure on one server does not hold up the others. Its line on the Updates tab says why:
 
@@ -159,9 +160,16 @@ A failure on one server does not hold up the others. Its line on the Updates tab
 Deplo retries after 1 minute, then 2, 4, 8, up to once an hour, for **24 hours** from the first
 failure (`Update failed (gave up after 24 h)`).
 
-If a server takes the new agent and **does not come back**, Deplo stops there:
-`Waiting for edge-2 to recover before updating the rest.` A broken agent release reaches one server,
-not all of them.
+If a server **does not stay up on the new agent**, Deplo stops there and updates no other server:
+`Updates stopped at edge-2: its new server agent did not stay up, so the other servers keep the version they run.`
+Its line reads `Update stopped: the new server agent did not stay up`, and Deplo never tries that
+version on it again by itself: **Retry now** does, or the next version Deplo pins. A broken agent
+release reaches one server, not all of them.
+
+**A server never stays without its agent.** Whatever stops the agent, it starts again a second
+later. An update keeps the agent it replaces: if the new one does not answer within 30 s, the server
+goes back to it by itself, and Activity says so:
+`Could not update the server agent on edge-2: Its new server agent v0.5.3-canary.50 did not answer within 30 seconds, so it runs v0.5.3-canary.49 again. Deplo stopped updating the other servers.`
 
 A server that hasn't connected to Deplo, or can't, gets no update and holds up nobody. See
 [When a server is unusable](#when-a-server-is-unusable).
@@ -178,6 +186,7 @@ Updates tab. Instance admins only.
 
 - It tries at once, in place of the scheduled retry, and never while an attempt runs.
 - If it fails, the automatic retries carry on. The 24 hours do not start again.
+- After an update that stopped, it is the only way to try that version on the server again.
 - After the 24 hours it is the only way to retry, except for a server that was offline: it gets one
   more automatic attempt when it comes back.
 
