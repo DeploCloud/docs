@@ -28,7 +28,7 @@ export async function GithubBadge() {
       href={`https://github.com/${REPO}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="interact flex items-center gap-2 rounded-md border border-white/15 bg-black px-3 py-1.5 text-sm text-white"
+      className="interact flex items-center gap-2 rounded-full border border-white/15 bg-black px-3 py-1.5 text-sm text-white"
     >
       <GithubIcon className="size-4" />
       <span>{stars === null ? "-" : formatStars(stars)}</span>

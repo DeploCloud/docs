@@ -8,9 +8,8 @@ import { socialIcons } from "@/components/social-icons";
 /** deplo.build's footer, under every docs page. */
 export function SiteFooter() {
   return (
-    <footer className="site-footer overflow-hidden">
-      <div className="relative mx-auto w-full max-w-[97rem] px-6 pt-20 md:px-10">
-        <span aria-hidden className="rail-marks top-[-5px] max-md:hidden" />
+    <footer className="site-footer overflow-x-clip">
+      <div className="rail-ticks relative mx-auto w-full max-w-(--fd-layout-width) px-6 pt-20 md:px-10">
         <div className="flex flex-col justify-between gap-12 md:flex-row">
           <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
             <a href={SITE} className="interact">
@@ -26,7 +25,7 @@ export function SiteFooter() {
                     key={platform}
                     href={href}
                     aria-label={label}
-                    className="interact flex size-10 items-center justify-center rounded-md border border-white/15 bg-black"
+                    className="interact flex size-10 items-center justify-center rounded-full border border-white/15 bg-black"
                   >
                     <Icon className="size-4" />
                   </SiteLink>

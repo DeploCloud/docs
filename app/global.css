@@ -6,16 +6,34 @@
   --font-sans: var(--font-funnel-sans);
 }
 
-/* Buttons are rounded-md; every other box stays square. */
-@theme {
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0.375rem;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
+/* Sized for a 1920px screen: the layout fills it, the rails get roomier past 1536px. */
+:root {
+  --fd-layout-width: 120rem;
+  --sidebar-w: 268px;
+  --toc-w: 268px;
+}
+
+@media (width >= 96rem) {
+  :root {
+    --sidebar-w: 300px;
+    --toc-w: 300px;
+  }
+}
+
+@media (width >= 48rem) {
+  #nd-docs-layout:has(> [data-sidebar-placeholder]) {
+    --fd-sidebar-width: var(--sidebar-w);
+  }
+}
+
+@media (width >= 80rem) {
+  #nd-docs-layout:has(> #nd-toc, > #nd-toc-placeholder) {
+    --fd-toc-width: var(--toc-w);
+  }
+}
+
+#nd-page:not([data-full="true"]) {
+  max-width: 62.5rem;
 }
 
 /* Deplo e' un brand monocromatico: nero puro, bianco, grigio muto. Niente
@@ -103,10 +121,10 @@ img {
   -webkit-user-drag: none;
 }
 
-/* Flush with the #000 page, its edge a dashed rail like the site's guides. */
+/* Flush with the #000 page, its edge one of the site's rails. */
 #nd-sidebar {
-  border-inline-end: 0;
-  background: var(--dash-y) right top / 1px 100% no-repeat var(--color-fd-background);
+  border-inline-end-color: var(--rule);
+  background-color: var(--color-fd-background);
 }
 
 /* containing block for the active-page indicator below */
@@ -129,7 +147,7 @@ img {
   width: 0;
   height: 0;
   z-index: -1;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background-color: color-mix(in srgb, var(--color-fd-primary) 10%, transparent);
   opacity: 0;
   pointer-events: none;
@@ -188,26 +206,6 @@ summary,
   cursor: pointer;
 }
 
-/* Buttons at the body weight, rounded-md. fumadocs bakes the radius and
-   font-medium into buttonVariants, so the class signature is the only hook it
-   leaves. The tree picker is a control too. */
-.inline-flex.items-center.justify-center.rounded-md,
-.inline-flex.items-center.justify-center.rounded-lg,
-#nd-sidebar button.rounded-lg.border {
-  border-radius: var(--radius-md);
-  font-weight: 400;
-}
-
-/* Sidebar rows (links, folder triggers) */
-#nd-sidebar [data-radix-scroll-area-viewport] .rounded-lg,
-#nd-sidebar-mobile [data-radix-scroll-area-viewport] .rounded-lg {
-  border-radius: var(--radius-md);
-}
-
-.inline-flex.items-center.justify-center.bg-fd-primary {
-  font-weight: 600;
-}
-
 /* Same fonts as deplo.build: Funnel Sans ships 400/500 only, so never let the
    browser fake a bolder cut (the blurry halo), and headings use Funnel Display. */
 html {
@@ -226,15 +224,13 @@ html {
 }
 
 /* ------------------------------------------------------------------ */
-/* deplo.build's blueprint: dashed guides, crosses where they meet, the
-   isometric grid behind a hero, L marks on the corners of every card. */
+/* deplo.build's blueprint: solid rails, a tick where a line meets one, the
+   isometric grid behind a hero, rounded boxes. */
 /* ------------------------------------------------------------------ */
 
 :root {
-  --line: #2b2b2b;
-  --dash-x: repeating-linear-gradient(to right, var(--line) 0 4px, transparent 4px 8px);
-  --dash-y: repeating-linear-gradient(to bottom, var(--line) 0 4px, transparent 4px 8px);
-  --cross: linear-gradient(#a2a2a2, #a2a2a2);
+  --rule: #1a1a1a;
+  --tick: #4d4d4d;
 }
 
 ::-webkit-scrollbar {
@@ -277,85 +273,57 @@ html {
   .tile {
     position: relative;
     border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: var(--radius-xl);
     background-color: rgb(255 255 255 / 0.05);
   }
 }
 
-/* Fumadocs' own boxes, by class signature: they have no hook of their own. */
-[data-card].border,
-.rounded-xl.border.bg-fd-card.p-3.ps-1,
-.flex.flex-col.overflow-hidden.rounded-xl.border.bg-fd-secondary,
-.rounded-2xl.border.bg-fd-card,
-.divide-y.rounded-lg.border.bg-fd-card,
-.flex.flex-col.gap-2.rounded-lg.border.p-4,
-[data-radix-popper-content-wrapper] > .border {
-  position: relative;
-}
-
-.tile::after,
-[data-card].border::after,
-figure.shiki:not(.bg-fd-secondary)::after,
-.rounded-xl.border.bg-fd-card.p-3.ps-1::after,
-.flex.flex-col.overflow-hidden.rounded-xl.border.bg-fd-secondary::after,
-.rounded-2xl.border.bg-fd-card::after,
-.divide-y.rounded-lg.border.bg-fd-card::after,
-.flex.flex-col.gap-2.rounded-lg.border.p-4::after,
-[data-radix-popper-content-wrapper] > .border::after,
-[role="dialog"].fixed.border::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  --c: #a2a2a2;
-  background:
-    linear-gradient(var(--c), var(--c)) left top / 10px 1px no-repeat,
-    linear-gradient(var(--c), var(--c)) left top / 1px 10px no-repeat,
-    linear-gradient(var(--c), var(--c)) right top / 10px 1px no-repeat,
-    linear-gradient(var(--c), var(--c)) right top / 1px 10px no-repeat,
-    linear-gradient(var(--c), var(--c)) left bottom / 10px 1px no-repeat,
-    linear-gradient(var(--c), var(--c)) left bottom / 1px 10px no-repeat,
-    linear-gradient(var(--c), var(--c)) right bottom / 10px 1px no-repeat,
-    linear-gradient(var(--c), var(--c)) right bottom / 1px 10px no-repeat;
-}
-
-/* The guides: under the mobile bar, along the sidebar and the TOC, above the footer. */
+/* The rails: under the mobile bar, along the sidebar and the TOC, above the footer. */
 #nd-subnav {
-  border-bottom-color: transparent;
-  background-image: var(--dash-x);
-  background-position: left bottom;
-  background-size: 100% 1px;
-  background-repeat: no-repeat;
+  border-bottom-color: var(--rule);
 }
 
 #nd-toc {
-  background: var(--dash-y) left top / 1px 100% no-repeat;
+  border-inline-start: 1px solid var(--rule);
   padding-inline-start: 1.5rem;
 }
 
 .site-footer {
-  background: var(--dash-x) left top / 100% 1px no-repeat;
+  border-top: 1px solid var(--rule);
 }
 
-/* A cross where a guide meets the sidebar's rail (268px in) and, on xl, the TOC's. */
-.rail-marks {
+/* A tick where a line meets a rail, pointing inward: the sidebar's from md, the TOC's on xl. */
+.rail-ticks::before,
+.rail-ticks::after {
+  content: "";
   position: absolute;
-  inset-inline: 0;
-  height: 11px;
+  top: var(--tick-top, -6px);
+  bottom: var(--tick-bottom, auto);
+  display: none;
+  border: 5px solid transparent;
   pointer-events: none;
-  background:
-    var(--cross) 262px 5px / 11px 1px no-repeat,
-    var(--cross) 267px 0 / 1px 11px no-repeat;
 }
 
-/* The right one only where a TOC draws its rail: a page without one has no guide there. */
+.rail-ticks::before {
+  left: var(--tick-left, var(--sidebar-w));
+  border-left-color: var(--tick);
+}
+
+.rail-ticks::after {
+  right: var(--tick-right, var(--toc-w));
+  border-right-color: var(--tick);
+}
+
+@media (width >= 48rem) {
+  .rail-ticks::before {
+    display: block;
+  }
+}
+
+/* Only where a TOC draws its rail: a page without one has no rail there. */
 @media (width >= 80rem) {
-  body:has(#nd-toc) .rail-marks {
-    background:
-      var(--cross) 262px 5px / 11px 1px no-repeat,
-      var(--cross) 267px 0 / 1px 11px no-repeat,
-      var(--cross) right 262px top 5px / 11px 1px no-repeat,
-      var(--cross) right 267px top 0 / 1px 11px no-repeat;
+  body:has(#nd-toc) .rail-ticks::after {
+    display: block;
   }
 }
 
@@ -373,7 +341,11 @@ main[data-layout-main] {
   position: relative;
   margin-inline: calc((100% - 100cqw) / 2);
   padding: 2.5rem calc((100cqw - 100%) / 2);
-  background: var(--dash-x) left bottom / 100% 1px no-repeat;
+  border-bottom: 1px solid var(--rule);
+  --tick-top: auto;
+  --tick-bottom: -6px;
+  --tick-left: 0;
+  --tick-right: 0;
 }
 
 @media (width >= 80rem) {
@@ -392,35 +364,6 @@ main[data-layout-main] {
 
 .iso-hero > :not(.iso-hero-grid) {
   position: relative;
-}
-
-/* Above the sidebar (z-20), so the left cross is whole. */
-.iso-hero::after {
-  content: "";
-  position: absolute;
-  inset-inline: -6px;
-  bottom: -5px;
-  height: 11px;
-  z-index: 21;
-  pointer-events: none;
-}
-
-@media (width >= 48rem) {
-  .iso-hero::after {
-    background:
-      var(--cross) left 0 top 5px / 11px 1px no-repeat,
-      var(--cross) left 5px top 0 / 1px 11px no-repeat;
-  }
-}
-
-@media (width >= 80rem) {
-  body:has(#nd-toc) .iso-hero::after {
-    background:
-      var(--cross) left 0 top 5px / 11px 1px no-repeat,
-      var(--cross) left 5px top 0 / 1px 11px no-repeat,
-      var(--cross) right 0 top 5px / 11px 1px no-repeat,
-      var(--cross) right 5px top 0 / 1px 11px no-repeat;
-  }
 }
 
 /* The giant wordmark at the bottom of the footer, cropped like the site's. */
@@ -606,11 +549,8 @@ main[data-layout-main] {
   padding: 5px;
 }
 
-/* A rule in the docs is the site's dashed guide, not a solid line. */
 .prose hr {
-  height: 1px;
-  border: 0;
-  background: var(--dash-x);
+  border-color: var(--rule);
 }
 
 /* The site's panels are solid black, not frosted. */

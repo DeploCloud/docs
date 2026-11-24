@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -110,20 +110,23 @@ committed until the user asks for it explicitly.
 
 - **Fonts match deplo.build exactly.** Funnel Sans 400/500/600, Funnel Display
   500/600/700 for headings, `antialiased`, and `font-synthesis-weight: none` so a
-  missing cut never renders as a fake bold halo. The site's two buttons
-  (`lib/button-styles.ts`) are 500, the primary one 600; Fumadocs' own buttons
-  are 400 except the primary (600), set in `app/global.css`. Do not set a weight
-  at a call site.
+  missing cut never renders as a fake bold halo. Every button is 500, the site's
+  two (`lib/button-styles.ts`) and Fumadocs' own alike. Do not set a weight at a
+  call site.
 - Headings, chips and table headers are free to stay bold. The rule is about
   buttons only.
-- **The docs look like deplo.build.** Three shapes only: `rounded-full` for the
-  site's two buttons (`lib/button-styles.ts`, primary and secondary, plus the
-  404 one), `rounded-md` for every other button (and the tree picker) and square corners for everything else, because
-  `app/global.css` sets every `--radius-*` to 0 except `--radius-md`. Cards,
-  callouts, code blocks and popovers carry the site's L marks on the corners: a
-  new box gets the `tile` class, Fumadocs' own are matched by class signature.
-- **The blueprint is the site's:** dashed guides along the sidebar and the TOC, a cross where two meet, and the isometric grid behind
-  every page title (`IsoHero`, also used by the home hero in `index.mdx`).
+- **The docs look like deplo.build.** Pills (`rounded-full`) for the site's two
+  buttons (`lib/button-styles.ts`, plus the 404 one), the GitHub badge, the
+  socials and every chip. Every box is rounded (`rounded-xl`, Fumadocs' own
+  radii): a new one gets the `tile` class. No L marks on corners, no eyebrow
+  above a title: a label goes next to it, as in `CtaCard`.
+- **The blueprint is the site's:** solid `#1a1a1a` rails along the sidebar and
+  the TOC, an inward tick (`rail-ticks`) where a line meets one, and the
+  isometric grid behind every page title (`IsoHero`, also used by the home hero
+  in `index.mdx`). Never a dashed rail.
+- **Sized for a 1920px screen.** `--fd-layout-width` is 120rem, the sidebar and
+  TOC grow to 300px past 1536px, the article is 1000px. All set at the top of
+  `app/global.css`; the footer and the ticks read the same variables.
 - **The footer mirrors the site's** (`SiteFooter`, links in `lib/site.ts`). The
   header stays Fumadocs' own navbar, not the site's. The site's copy lives in its
   CMS: when its footer changes, update `lib/site.ts` by hand. Buttons come from `lib/button-styles.ts`,

@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
-/** deplo.build's hero ground: the isometric grid from the header down to a dashed line, across the whole column. */
+/** deplo.build's hero ground: the isometric grid from the header down to a solid line, across the whole column. */
 export function IsoHero({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`iso-hero not-prose ${className}`}>
+    <div className={`iso-hero rail-ticks not-prose ${className}`}>
       <svg aria-hidden className="iso-hero-grid">
         <defs>
           <pattern id="iso-grid" width="96" height="55.4256" patternUnits="userSpaceOnUse">
