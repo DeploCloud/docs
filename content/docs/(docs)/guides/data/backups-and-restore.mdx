@@ -37,6 +37,16 @@ a few seconds. A deploy of that same app never runs into the pause:
   `This app was still paused by a backup after 10 minutes`, and you deploy again. A backup still
   waiting fails, and its next scheduled run tries again.
 
+The pause lasts as long as the copy takes to reach its destination: about 20 seconds for 200 MB
+sent to another server of a cluster.
+
+- **The app keeps its address through the pause.** It answers again, on every server, the moment
+  the copy ends.
+- **A copy that stalls ends.** If the destination takes nothing for a minute, the copy stops, the
+  app runs again and the backup fails with
+  `the control plane stopped taking the backup for a minute, so the copy stopped and the app runs again`.
+  The next scheduled run tries again.
+
 <BackupDiagram />
 
 ## Add a destination
