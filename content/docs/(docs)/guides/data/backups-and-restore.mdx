@@ -37,16 +37,24 @@ a few seconds. A deploy of that same app never runs into the pause:
   `This app was still paused by a backup after 10 minutes`, and you deploy again. A backup still
   waiting fails, and its next scheduled run tries again.
 
-The pause lasts only while the app's data is copied on its own server's disk: about 1 second for
-200 MB, about 20 to 45 seconds for 2 GB, depending on the disk. The app then runs again, and the
-backup is sent to its destination from that copy, which is removed after.
+The pause lasts only for what changed. The app's data is first copied on its own server's disk while
+the app runs, gently, so the server keeps up with everything else; the pause then copies only what
+changed since, usually well under a second (0.2 s for a 2 GB app on a test cluster), and the app runs
+again. The backup is sent to its destination from that copy, which is removed after.
 
-- **Without room for that copy** (the data, a fifth more and 512 MiB must stay free), the app stays
-  paused until the backup reaches its destination, as before, and Activity says why, for example:
-  `Backed up web (2.0 GB). It was paused for the whole copy (9 min 26 s): the server has 1.2 GB free, too little to copy 2.0 GB of data on its own disk first`.
+- **Without room for that copy** (the data and a fifth more must leave a tenth of the disk free), the
+  app stays paused until the backup reaches its destination, as before, and Activity says why, for example:
+  `Backed up web (2.0 GB). It was paused for the whole copy (9 min 26 s): the server has 1.2 GB free, too little to copy 2.0 GB of data on its own disk first and keep a tenth of it free`.
+- **When most of the data changes while it is copied**, the pause is as long as one whole copy, and
+  Activity says so: `... the copy made while it was paused (1.9 GB) was no smaller than the first`.
 
 - **The app keeps its address through the pause.** It answers again, on every server, the moment
   the copy ends.
+- **A backup never fills a disk.** It starts only when what it writes leaves a tenth of its
+  destination server's disk free. Otherwise it does not start, and Activity says why:
+  `Backup of web failed: eu-2 has 2.0 GB free, too little for this backup (about 2.0 GB) and a tenth of its disk free, so it did not start`.
+- **Canceling a running backup stops it at once**, on the app's server and on the destination, and
+  nothing it had written is kept.
 - **A copy that stalls ends.** If the destination takes nothing for a minute, the copy stops, the
   app runs again and the backup fails with
   `the control plane stopped taking the backup for a minute, so the copy stopped and the app runs again`.

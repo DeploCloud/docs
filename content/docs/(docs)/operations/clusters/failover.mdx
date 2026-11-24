@@ -85,6 +85,9 @@ rows are 3 runs on three servers, with the server agent at 0.5.3-canary.13 and t
 A bigger database takes longer to restore. Its card says how long, from the speed of its last
 restore. See [Databases](/operations/clusters/databases).
 
+A bigger app does not: its copy is moved into place, never copied again. An app with 2 GB in its
+Volume was served again 32 seconds after its server lost power (server agent 0.5.3-canary.46).
+
 ## What moves, and what waits
 
 Order: **databases first, then apps with a domain, then the rest**, oldest first.
