@@ -204,6 +204,11 @@ for it, the cluster prefers, in this order:
 is its memory peak of the last 24 hours, and never less than 256 MB. Nobody can pin an app to one
 server of a cluster.
 
+**Room on the disk counts too.** An app is never placed, moved or failed over to a server where its
+data would leave less than a tenth of the disk free, and a server already under a tenth free takes
+nothing new. A server that already holds a whole [copy](/operations/clusters/replication) of the app
+needs no more room for it.
+
 ### When there is no room
 
 The move or deploy is refused **before anything stops**:
@@ -211,6 +216,13 @@ The move or deploy is refused **before anything stops**:
 - "No server in cluster eu has 512 MB free. Add a server to it or lower web's memory."
 - "No server in cluster eu is online and ready right now, so web has nowhere to run. Bring a
   server back or add one."
+- "No server in cluster eu has room for web's data (about 2.0 GB) and a tenth of its disk free.
+  Free some space on one, or add a server."
+
+A move to one server you pick says the same of that server:
+"eu-1 has 1.2 GB free, too little for web's data (about 2.0 GB) and a tenth of its disk free."
+A failover with no server that has the room leaves the app where it was, and Activity says it is
+waiting for room.
 
 ## On the Servers page [#on-the-servers-page]
 
