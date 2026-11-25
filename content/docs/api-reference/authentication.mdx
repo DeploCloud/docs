@@ -18,7 +18,7 @@ curl https://deplo.example.com/api/graphql \
   -d '{"query":"{ viewerTeam { slug } apps { slug status } }"}'
 ```
 
-**Picking the team.** `X-Deplo-Team` takes a team id or slug. Without it, the first team in the token's scope is used. A team the token does not hold is ignored, not honoured. `myTeams` lists the ones it may switch between.
+**Picking the team.** `X-Deplo-Team` takes a team id or slug. Without it, the first team in the token's scope is used. A team the token cannot act in is refused with **403** and a message naming it (its user is not a member of it, or the token was not given it); nothing runs in another team instead. `myTeams` lists the ones it may switch between.
 
 **What it can do.** The capabilities chosen at creation, capped by what its owner can still do in that team. A token that names no capabilities is view-only. The full lifecycle is on [API tokens](/api-reference/api-tokens).
 
@@ -47,7 +47,7 @@ curl https://deplo.example.com/api/graphql \
 
 Discovery starts from the MCP endpoint's `401`, which carries `WWW-Authenticate: Bearer resource_metadata="<url>"`. The documents are `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`.
 
-The team is fixed at consent time: `X-Deplo-Team` cannot move a connection. One consent can grant several teams. Connections are listed and revoked under **Settings -> AI agents**, and `revokeToken` on the minted token ends the credential everywhere it reached.
+The team is fixed at consent time: `X-Deplo-Team` cannot move a connection, and naming a team it was not granted is refused with **403**. One consent can grant several teams. Connections are listed and revoked under **Settings -> AI agents**, and `revokeToken` on the minted token ends the credential everywhere it reached.
 
 </Tab>
 </Tabs>
