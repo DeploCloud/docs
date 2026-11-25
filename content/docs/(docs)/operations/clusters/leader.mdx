@@ -68,8 +68,9 @@ Deplo's own machine last.** Every server of the cluster always knows it.
 
 #### The servers stop hearing the leader
 
-After 5 seconds each server stops its databases and apps with a Volume, as it does whenever its
-leader is silent.
+Each server keeps running everything for **20 seconds** without its leader's word, long enough for
+the heir to take over first. Only a server still unheard after that stops its databases and apps
+with a Volume.
 
 </Step>
 <Step>
@@ -84,9 +85,9 @@ The next server in line asks 5 seconds later, only if the heir did not.
 
 #### More than half say yes
 
-The heir leads, about 12 seconds after the leader's server stopped. The servers start what they
-stopped again, and the leader's own server's apps move on the usual clock: their apps with data
-about 30 seconds after the stop, then their own start.
+The heir leads, about 11 seconds after the leader's server stopped, and every server hears it before
+its 20 seconds are up: **no app on another server stops**. The leader's own server's apps move on
+the usual clock: their apps with data about 31 seconds after the stop, then their own start.
 
 </Step>
 </Steps>
@@ -104,8 +105,11 @@ about 30 seconds after the stop, then their own start.
   Deplo's own machine does not stand in.
   Activity: `eu-1 stopped answering, so Deplo gives its word to eu-3, next in line, to lead cluster eu`.
 
-Measured on a cluster of three (Deplo 0.8.2-canary.80, server agent 0.5.3-canary.43, leader
-0.1.0-canary.18), with a power cut:
+Measured on a cluster of three (Deplo 0.8.2-canary.97, server agent 0.5.3-canary.57, leader
+0.1.0-canary.23), with a power cut of the leader's server: the next leader led after **10 seconds**,
+no app on another server stopped, and the leader's own server's apps with data were served again
+after 49 to 53 seconds. Before, with the 5 second lease (Deplo 0.8.2-canary.80, server agent
+0.5.3-canary.43, leader 0.1.0-canary.18):
 
 | Case | The next leader leads | Every app served again |
 | --- | --- | --- |

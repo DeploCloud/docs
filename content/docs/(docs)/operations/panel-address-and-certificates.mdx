@@ -92,7 +92,7 @@ a firewall, the browser gets Deplo's self-signed certificate instead and warns o
 
 The **Certificates** card holds the address Let's Encrypt uses for the ACME account and its expiry and
 revocation notices, on every server. The installer seeds it from `ACME_EMAIL`, or uses
-`admin@<panel-host>`. Changing it restarts the proxy on every server: sites blink for a few seconds.
+`admin@<panel-host>`. Changing it restarts the proxy on every server: visitors wait a few seconds, held by each server's agent (server agent 0.5.3-canary.57 or newer; older ones turn them away meanwhile).
 
 ## Troubleshooting
 
