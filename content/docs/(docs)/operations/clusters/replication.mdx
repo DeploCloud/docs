@@ -128,19 +128,21 @@ stopped answering`.
 
 ## One copy at a time on each server
 
-A server makes **one copy at a time**, sent or received, so the apps it runs keep answering. A
-first copy and a [backup](/guides/data/backups-and-restore) wait their turn while either of their two
-servers copies something else. A move never waits: its app is offline until it lands, so it goes at
-once and the others wait for it.
+A server makes **one copy at a time**, sent or received, so the apps it runs keep answering. Every
+copy that moves data counts: a first copy, one catching up on a lot the app wrote at once, and the
+data an app that was empty at its first copy writes later. A copy and a
+[backup](/guides/data/backups-and-restore) wait their turn while either of their two servers copies
+something else. A move never waits: its app is offline until it lands, so it goes at once and the
+others wait for it.
 
 - A copy that waits reads **Queued**, with what it waits for:
   `Queued: server-b is busy with a copy of shop`.
 - A backup that waits reads **Queued** on its run, with
   `Waits its turn: server-b is busy with a copy of shop`.
 
-A copy a server already holds keeps following as the app writes; while it catches up on a lot the
-app wrote at once (it reads **Behind**), it still counts as that server's copy. A copy that waits
-more than 30 minutes goes anyway.
+A copy a server already holds keeps following the app's small changes as they come. One that waits
+its turn stays whole on that server and stops following until its turn comes, so a failover can
+still use it. A copy that waits more than 30 minutes goes anyway.
 
 ## The banners
 
@@ -151,7 +153,8 @@ Inside the cluster, on the Servers page:
 | **Replication is not ready for 1 App yet** | "A whole copy of their data is not on another server yet: web. Until it is, they wait for their own server." |
 | **Replication is behind for 1 App** | Why a server's copy does not follow, such as "web: This server's agent is too old to keep a copy. Deplo updates it on its own." |
 
-A copy that heard nothing from the app's server for 30 seconds counts as behind.
+A copy that heard nothing from the app's server for 30 seconds, as its server says, counts as
+behind.
 
 ## Turn it off
 
