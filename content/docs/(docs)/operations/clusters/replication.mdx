@@ -118,13 +118,29 @@ The copies line reads one of:
 - **Copying to server-b and server-c**
 - **Not copied yet: this App cannot move if server-a goes off**
 
-Under **Advanced**, one row per server: its state (Up to date, Copying, Behind, Not copied), its
+Under **Advanced**, one row per server: its state (Up to date, Copying, Behind, Queued, Not copied), its
 last copy, how far behind it is, its size on that server's disk, and how it travels: `sent server to
 server`, or `sent through Deplo` when no direct path joins the two servers. Activity uses the same words:
 `web: Copies: 2 of 2 up to date. It can move if server-a goes off.`
 
 When it moves, Activity says: `Moved web to server-b with its data replicated there: server-a
 stopped answering`.
+
+## One copy at a time on each server
+
+A server makes **one copy at a time**, sent or received, so the apps it runs keep answering. A
+first copy and a [backup](/guides/data/backups-and-restore) wait their turn while either of their two
+servers copies something else. A move never waits: its app is offline until it lands, so it goes at
+once and the others wait for it.
+
+- A copy that waits reads **Queued**, with what it waits for:
+  `Queued: server-b is busy with a copy of shop`.
+- A backup that waits reads **Queued** on its run, with
+  `Waits its turn: server-b is busy with a copy of shop`.
+
+A copy a server already holds keeps following as the app writes; while it catches up on a lot the
+app wrote at once (it reads **Behind**), it still counts as that server's copy. A copy that waits
+more than 30 minutes goes anyway.
 
 ## The banners
 
