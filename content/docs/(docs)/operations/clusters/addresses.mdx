@@ -87,6 +87,11 @@ Turn it on from the domain's row in **Domains**: **Answer on every server**. The
 
 **Turn off** on the same row puts it back on the app's own server.
 
+- **A visitor never sees a page not found** for an app that exists. A connection still open when the
+  app moves is closed once it runs on another server, and the browser opens a new one, to the app.
+- **A new domain answers within seconds** of the app being ready. A resolver that asked for it before
+  keeps "no such name" for 5 seconds at most.
+
 ### What it needs
 
 - **The app is on a cluster**, and the domain uses **HTTPS**. Over plain HTTP the app would lose

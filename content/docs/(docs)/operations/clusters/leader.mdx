@@ -296,6 +296,10 @@ own machine last. It only ever moves forward.
   clusters five more minutes, so nothing stops and nothing moves while it is away. Five minutes is
   the most a server ever accepts.
 - **A server whose server agent is still being updated** gets that update first, then the leader's.
+- **The server agent of the leader's own server** updates after the other servers of its line. First
+  the leader moves to the next server in line, so no server waits for it while that agent restarts.
+  Activity, by Deplo: `The leader of cluster eu now runs on server-c, next in line, while server-b
+  updates its server agent`.
 - Activity, by Deplo: `Updated the cluster leader and relay on server-b to v0.3.0`.
 
 ### When an update fails

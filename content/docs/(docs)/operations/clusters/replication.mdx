@@ -132,13 +132,20 @@ A server makes **one copy at a time**, sent or received, so the apps it runs kee
 copy that moves data counts: a first copy, one catching up on a lot the app wrote at once, and the
 data an app that was empty at its first copy writes later. A copy and a
 [backup](/guides/data/backups-and-restore) wait their turn while either of their two servers copies
-something else. A move never waits: its app is offline until it lands, so it goes at once and the
-others wait for it.
+something else.
 
-- A copy that waits reads **Queued**, with what it waits for:
-  `Queued: server-b is busy with a copy of shop`.
+- **First come, first served.** Copies and backups go in the order they asked. One never loses its
+  turn to one that asked after it.
+- **A move never waits**: its app is offline until it lands, so it goes at once and the others wait
+  for it.
+- A copy that waits reads **Queued**, with its place and what it waits for:
+  `Queued: 2nd in line: server-b is busy with a copy of shop`.
 - A backup that waits reads **Queued** on its run, with
-  `Waits its turn: server-b is busy with a copy of shop`.
+  `Waits its turn, 2nd in line: server-b is busy with a copy of shop`.
+
+A copy runs after the apps of its servers: it gives way while one of them waits for the processor
+or the disk, and never runs slower than 2 MB a second, so a 300 MB backup takes at most two and a
+half minutes.
 
 A copy a server already holds keeps following the app's small changes as they come. One that waits
 its turn stays whole on that server and stops following until its turn comes, so a failover can
