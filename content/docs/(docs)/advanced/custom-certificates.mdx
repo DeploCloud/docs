@@ -13,9 +13,9 @@ HTTP challenge.
 - **It lives in that server's Traefik, and nowhere else.** Deplo keeps no copy: the list is read
   back from the host, and the private key is never shown again.
 - **It needs the Traefik Deplo installed**, and Docker Compose 2.23.1 or newer on the server.
-- **Installing restarts the proxy.** For those few seconds the server's agent holds its visitors
-  instead of turning them away, and passes a visitor of a cluster app that another server runs there
-  at once (server agent 0.5.3-canary.57 or newer).
+- **Installing restarts the proxy, and no visitor is turned away.** A second copy of the proxy
+  answers while it restarts, a cluster app's visitors and any other (server agent 0.5.3-canary.58 or
+  newer; 0.5.3-canary.57 held them for the few seconds of the restart).
 
 ## Install one
 

@@ -77,7 +77,7 @@ rows are 3 runs on three servers, with the server agent at 0.5.3-canary.13 and t
 | --- | --- |
 | Replicas of an app on a Cloudflare domain, spread over both servers | **No downtime.** Cloudflare stopped sending visitors to the stopped server within about 5 seconds: one request in that time failed |
 | An app without stored data, on that server only | Running on the other server after **about 10 seconds** |
-| An app with a Volume, with [replication](/operations/clusters/replication) on | Visitors served again after **40 to 53 seconds**, putting its copy in place included (Deplo 0.8.2-canary.97, server agent 0.5.3-canary.57, leader 0.1.0-canary.23: each server now keeps going 20 seconds without its leader, so losing the leader's server stops nothing elsewhere). A Compose app with 3.3 GB of images and a database: about 47 seconds, every image already there. With Deplo down, only once Deplo is back: see [If Deplo was down](#if-deplo-was-down) |
+| An app with a Volume, with [replication](/operations/clusters/replication) on | Visitors served again after **about 38 seconds**, putting its copy in place included; **about 50 seconds** when the server lost also ran the cluster's leader, which the next server in line takes over first (Deplo 0.8.2-canary.98, server agent 0.5.3-canary.58, leader 0.1.0-canary.23). Each server keeps going 20 seconds without its leader, so losing the leader's server stops nothing elsewhere. A Compose app with 3.3 GB of images and a database: about 47 seconds, every image already there (canary.97). With Deplo down, only once Deplo is back: see [If Deplo was down](#if-deplo-was-down) |
 | A database with a standby copy | The standby took over: writes taken again after **25 to 26 seconds** |
 | A database with a 4 MB backup | Its restore took 17 to 24 seconds, on top of the wait |
 | The server comes back | About 20 seconds after it answers, its old copies stop, and what its database still held is saved as a backup |
@@ -126,17 +126,23 @@ Deplo 0.8.2-canary.31:
 
 - A start on another server downloads only an image that server does not have yet.
 - **Every image a cluster app or database runs is already on every server of the cluster**, a
-  Compose app's too (server agent 0.5.3-canary.57 and Deplo 0.8.2-canary.96). Each server downloads
+  Compose app's too (server agent 0.5.3-canary.57 and Deplo 0.8.2-canary.96). Each server holds
   them ahead, at the deploy and whenever they change, one image at a time and only while a tenth of
-  its disk stays free, and keeps them. An image behind
-  [registry credentials](/operations/servers/container-registries) is copied over the cluster's
-  private network instead. A move then needs no registry at all.
+  its disk stays free, and keeps them. A move then needs no registry at all.
+- **A server takes a missing image from another server of the cluster**, over the cluster's private
+  network, not from the registry (server agent 0.5.3-canary.58). Only when no server has it does one
+  server, the cluster's first, download it from the registry, at 4 MB a second so the apps and the
+  name servers sharing the line keep answering; the others then take it from that server. An image
+  behind [registry credentials](/operations/servers/container-registries) is copied over the
+  private network too.
 
 <Callout type="warn" title="Known limit: a server that is new to the cluster">
   - A server that joined a moment ago, or whose disk has no room for an image, downloads it at the
     move, and a registry that refuses then stops that move.
   - Docker Hub allows a few downloads an hour per address to anyone not signed in: use images from
     a registry Deplo is signed in to.
+  - A server that asks for an image while the one holding it sends another may still download it
+    from the registry itself.
 </Callout>
 
 ## Waiting for room [#waiting-for-room]

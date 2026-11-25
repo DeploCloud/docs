@@ -170,6 +170,12 @@ Its line reads `Update stopped: the new server agent did not stay up`, and Deplo
 version on it again by itself: **Retry now** does, or the next version Deplo pins. A broken agent
 release reaches one server, not all of them.
 
+**An agent update drops none of its server's visitors** (server agent 0.5.3-canary.58 and newer;
+the update to it is the last that cannot). A visitor that arrives while the agent restarts waits
+until the new one takes it, a few seconds at most; one a cluster server passes on is held there
+meanwhile. That holds after a crash too, except for the visitors the agent was carrying at that
+moment.
+
 **A server never stays without its agent.** Whatever stops the agent, it starts again a second
 later. An update keeps the agent it replaces: if the new one does not answer within 30 s, the server
 goes back to it by itself, and Activity says so:
