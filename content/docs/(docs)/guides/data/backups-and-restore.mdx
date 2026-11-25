@@ -223,6 +223,11 @@ name, and checks the artifact's checksum first.
 - **An app** is stopped, its data cleared, the artifact unpacked, and the app started again. It
   shows `restoring` meanwhile.
 
+**Between two servers of one [cluster](/operations/clusters), a restore reads the backup from server
+to server**, never through Deplo, like the backup itself. Deplo carries it only when no path joins the
+two servers. Activity says which: `Restored web from a backup, server to server` or
+`Restored web from a backup, through Deplo`.
+
 **Back up -> Restore from file** (beta) restores a `.gz`, `.tgz` or `.age` file from your computer.
 For an encrypted one, paste the destination's recovery key.
 
