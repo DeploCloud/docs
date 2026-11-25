@@ -412,9 +412,11 @@ at a time**:
 4. Only then does the next server's proxy restart.
 
 So an app [load balanced](/operations/clusters/load-balancing) on every server never shows an
-error. An app that runs on one server waits the few seconds its own server's proxy restarts: its
-visitors are held until that proxy has read its routes, never shown a page not found, also those
-that reach the restarting server itself. A server in no cluster restarts its proxy at once, as before.
+error. **An app that runs on one server is not turned away either** (server agent 0.5.3-canary.58):
+before the proxy stops, a second copy of it starts beside it with the same routes, takes every
+visitor while the proxy restarts, and stops once the new proxy has read its routes and the last
+visitor it carried is gone. On a one-core server a visitor can wait one or two seconds while the
+new proxy starts. A server in no cluster restarts its proxy the same way.
 
 A proxy that does not answer within 2 minutes is named again anyway, and the cluster's Activity
 says: `The proxy on eu-1 did not answer within 2 minutes of its restart.`
