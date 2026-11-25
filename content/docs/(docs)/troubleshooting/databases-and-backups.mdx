@@ -58,6 +58,15 @@ removes it from Deplo and keeps retrying the teardown on that host.
   the cluster answers Deplo, though they keep running. The next scheduled run takes it once Deplo
   reaches them again, or run it by hand then.
 
+## A scheduled backup left no run
+
+- `Nothing to back up yet for <app>`: its data holds no file on its server. Nothing is kept and no
+  alert is sent; write some data and the next run backs it up.
+- `Skipped a backup of <name>: it is not running on <server> right now`: start it, and the next
+  scheduled run takes it.
+- A restore point turned **failed** with `its archive holds no file of <app>'s data, so it is not a
+  backup`: that run held nothing to restore. The runs before and after it are kept.
+
 ## The app's data was not in the backup
 
 An app's schedule does not include its databases. Schedule the databases too.
