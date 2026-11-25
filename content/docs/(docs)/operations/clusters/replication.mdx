@@ -129,18 +129,18 @@ stopped answering`.
 ## One copy at a time on each server
 
 A server makes **one copy at a time**, sent or received, so the apps it runs keep answering. A
-first copy, a [backup](/guides/data/backups-and-restore) and a move wait their turn while either of their two
-servers copies something else:
+first copy and a [backup](/guides/data/backups-and-restore) wait their turn while either of their two
+servers copies something else. A move never waits: its app is offline until it lands, so it goes at
+once and the others wait for it.
 
 - A copy that waits reads **Queued**, with what it waits for:
   `Queued: server-b is busy with a copy of shop`.
 - A backup that waits reads **Queued** on its run, with
   `Waits its turn: server-b is busy with a copy of shop`.
-- A move waits before it stops the app, and its log says
-  `Waiting for server-b to finish a backup of shop before copying.`
 
-A copy a server already holds keeps following as the app writes. A copy that waits more than 30
-minutes goes anyway.
+A copy a server already holds keeps following as the app writes; while it catches up on a lot the
+app wrote at once (it reads **Behind**), it still counts as that server's copy. A copy that waits
+more than 30 minutes goes anyway.
 
 ## The banners
 

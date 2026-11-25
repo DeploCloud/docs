@@ -40,8 +40,9 @@ has your servers first, then a group per cluster:
   it, then deploys there. The old server stops its copy, and the new one is never stopped as if it
   belonged elsewhere, so the deploy does not end in an error. Before Deplo 0.8.2-canary.74 it
   deployed first: the new copy was stopped for about 10 seconds and the deploy read **Error**.
-- **It waits its turn.** A server makes [one copy at a time](/operations/clusters/replication#one-copy-at-a-time-on-each-server):
-  while the old or the new server copies something else, the move waits before it stops anything.
+- **It never waits its turn.** A server makes [one copy at a time](/operations/clusters/replication#one-copy-at-a-time-on-each-server),
+  but a move goes at once, since the app is offline until it lands: other copies on the two
+  servers wait for it.
 - **A dropped connection does not end it.** When the copy breaks because the connection to a
   server drops, the app starts again on its old server, and the move goes again by itself once
   both servers answer, up to 3 more times. Activity: `Moving web to server-b broke when a link
