@@ -184,7 +184,8 @@ The same switch, or **Turn replication off** in the cluster's menu. Then:
   writes more meanwhile) stops at a tenth free and shows the same warning. Once held back, it starts
   again only with a fifth more room than it takes, so it never starts and stops over and over.
   Free space is what a copy may write: the part of the disk the system keeps for itself does not count.
-  A copy a server already holds whole is never held back.
+  A copy a server already holds whole is held back only once its app grows past it: catching up needs
+  the same room.
 - **A big file that changes counts twice.** A changed file is rebuilt beside the old one, which goes
   only once the new one is whole, so for a moment the copy holds both. A copy starts only if a tenth
   of the disk stays free with the app's biggest file held twice, and a rebuild starts only if the old
