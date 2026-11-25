@@ -242,6 +242,13 @@ also needs `reveal_secrets`, because it contains the app's variables.
 
 - **An app schedule does not include its databases.** Schedule the database separately.
 - **A skipped hour on a DST change shows a warning.**
+- **An app whose data holds no file yet is not backed up.** Activity says `Nothing to back up yet for <app>`
+  once, with no run and no alert. The next run after a file is written backs it up as usual.
+- **A backup is taken only where the target runs.** If it is stopped on its server, Activity says
+  `Skipped a backup of <name>: it is not running on <server> right now` and no run is kept. A skipped
+  run never removes a restore point under retention.
+- **An empty archive is not a restore point.** A run whose archive holds none of the target's data is
+  marked failed, leaves **Restore points**, and Activity says it is no longer restorable.
 - **`delete_backups` is a separate capability**, because deleting runs can leave a target with no
   restore point.
 - **Deleting a schedule does not delete its backups.** They stay under **Restore points** until you

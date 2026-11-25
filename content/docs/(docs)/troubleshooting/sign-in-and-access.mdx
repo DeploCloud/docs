@@ -52,6 +52,7 @@ The token is missing, revoked, or expired. Create or rotate it in **Settings -> 
 | Its owner lacks **Use API tokens** in that team | A team admin grants it to the member |
 | The scope excludes the resource | Naming a project or an app drops every team-wide capability in that team |
 | The team requires two-factor and its owner has none | The token resolves nothing until they enroll |
+| `X-Deplo-Team` names a team the token cannot act in | The message names the team: its owner is not a member, or the token was not given it. Nothing runs in another team instead |
 | An AI agent is refused over MCP | See [the MCP server's troubleshooting](/guides/mcp-server#troubleshooting) |
 
 ## An API resource returns 404
