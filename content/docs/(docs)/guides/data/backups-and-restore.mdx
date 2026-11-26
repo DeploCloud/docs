@@ -65,7 +65,11 @@ again. The backup is sent to its destination from that copy, which is removed af
   drops) leaves nothing behind, and the next backup starts over. A server switched off in the middle
   of one removes what was half written as soon as it is back, before it takes the next one.
 - **A backup that ends after its app or database was deleted is removed**, never listed. Deleting an
-  app or a database stops its running backups first.
+  app or a database stops its running backups first: the backup fails with `This backup was
+  canceled` and nothing it had written stays on the destination.
+- **A backup left over from a deleted app or database goes too**, the first time Deplo starts and
+  then once a day, with one Activity line per team: `Deleted a backup (1.6 GB) of an App or
+  database no longer in this team`.
 - **A failed backup says which server is offline**, and whether it is the one the app runs on or the
   one the backup is kept on: `Backup of memos failed: eu-1, this backup's destination, is offline.`
 - **A copy that stalls ends.** If the destination takes nothing for a minute, the copy stops, the

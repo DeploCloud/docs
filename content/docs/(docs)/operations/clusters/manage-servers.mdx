@@ -48,14 +48,16 @@ has your servers first, then a group per cluster:
   both servers answer, up to 3 more times. Activity: `Moving web to server-b broke when a link
   dropped - it runs on server-a again, and the move goes again by itself`. Only after the last
   try does it say `Moving web to server-b failed after 4 tries - it stays on server-a`, with why.
+- **A server removed while a move towards it still waits ends that move** within seconds: `Moving
+  web did not start: server-b left cluster eu, so web stays on server-a.` web keeps running.
 - **A failover still moves it.** When its server stops, the cluster puts it on another one, and
   it stays there when the server comes back.
 - **A server that cannot take it is greyed out**, with the reason:
   - "server-b is offline, so web cannot move there now."
   - "server-b has 180 MB free and web needs 256 MB."
   - "Waiting for server-b's first metrics, to know whether web fits there." A server that just
-    joined sends its first metrics about half a minute after its agent starts. A move asked before
-    that waits for them up to 20 seconds, then stops with this sentence: ask again once they arrive.
+    joined sends its first metrics about 2 seconds after its agent connects, and a move asked
+    before that waits for them.
   - "web runs on ARM servers only, and server-b is not one."
   - "server-b is being removed from cluster eu."
   - "web runs 2 replicas, and cluster eu spreads them over its servers." An app with replicas
