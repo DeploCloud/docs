@@ -48,11 +48,23 @@ has your servers first, then a group per cluster:
   both servers answer, up to 3 more times. Activity: `Moving web to server-b broke when a link
   dropped - it runs on server-a again, and the move goes again by itself`. Only after the last
   try does it say `Moving web to server-b failed after 4 tries - it stays on server-a`, with why.
+- **A server removed while a move towards it still waits ends that move** within seconds: `Moving
+  web did not start: server-b left cluster eu, so web stays on server-a.` web keeps running.
+- **A server that has not joined yet is waited for.** A new server joins its cluster as soon as its
+  server agent connects, so a move asked right after adding it waits: `Moving web waits for
+  server-b to join cluster eu.` One that never joins ends it after 120 seconds: `server-b has not
+  joined cluster eu within 120 s, so web stays where it runs.`
+- **Several moves onto one server go one per core.** On a one-core server they run one after the
+  other. Each app keeps answering on its old server until its own start begins, and an ordinary
+  deploy on that server waits for them.
 - **A failover still moves it.** When its server stops, the cluster puts it on another one, and
   it stays there when the server comes back.
 - **A server that cannot take it is greyed out**, with the reason:
   - "server-b is offline, so web cannot move there now."
   - "server-b has 180 MB free and web needs 256 MB."
+  - "Waiting for server-b's first metrics, to know whether web fits there." A server that just
+    joined sends its first metrics about 2 seconds after its agent connects, and a move asked
+    before that waits for them.
   - "web runs on ARM servers only, and server-b is not one."
   - "server-b is being removed from cluster eu."
   - "web runs 2 replicas, and cluster eu spreads them over its servers." An app with replicas
@@ -88,6 +100,9 @@ Either way **the server stays in Deplo**: it only leaves the cluster.
   answer, and 1 App still runs on it. Bring it back online before removing it from eu."
 - **A server that runs the cluster's leader cannot be removed from Deplo**: "Move the leader of
   cluster eu to another server first." See [The leader](/operations/clusters/leader).
+- **A server that keeps backups for the cluster is removed from the cluster first**: "server-a keeps
+  2 backups of the Apps and databases of cluster eu. Remove it from the cluster first: Deplo moves
+  them to its other servers."
 
 ### While it is being removed [#while-it-is-being-removed]
 
@@ -95,6 +110,10 @@ With **Move its Apps to the other servers**:
 
 - **Order**: databases first, then apps, oldest first. The cluster picks where each one lands.
 - **Nothing new is placed on the server** in the meantime.
+- **The backups it keeps move first.** A server of the cluster can hold backups of other apps and
+  databases. They move to the other servers before it leaves, and each one still restores from
+  there. Activity: `Started removing server server-a from cluster eu: 2 backups to move first`,
+  then `Moved 2 backups of web from server-a to server-b, as server-a leaves cluster eu.`
 - **An app without stored data is up on the new server before the old copy is removed.** An app
   with a Volume, or a database, is stopped for the length of the copy, so the server must be
   online.

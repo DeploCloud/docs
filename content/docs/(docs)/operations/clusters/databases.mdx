@@ -96,8 +96,9 @@ leaving stops it. Every other engine restores its latest backup only.
 - **Its Failover backup is a base backup**, a copy of the database's files (the file name ends in
   `.base.tar.gz`), not a dump. It gets this schedule even when it already has schedules of its
   own. Those, and a backup taken by hand, stay dumps.
-- **A base backup restores from the Backups tab** like any backup, to the moment it was taken. It
-  cannot be loaded with `pg_restore`, and uploading it is refused: "That is a base backup of a
+- **A base backup restores from the Backups tab** like any backup, to the moment it was taken, and
+  is read server to server from the server that keeps it: `Restored database main from a backup,
+  server to server`. It cannot be loaded with `pg_restore`, and uploading it is refused: "That is a base backup of a
   Postgres database on a cluster, not a dump. Restore it from that database's Backups tab."
 - **The change log is kept beside the base backup it follows**, encrypted like the backups of that
   destination, and deleted with it.
