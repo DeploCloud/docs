@@ -59,6 +59,16 @@ keeping the last 8**. Activity says `Backs up db every 15 minutes to server-b`.
 2. a destination on another server of the cluster
 3. a destination on a server outside the cluster
 
+Among the servers of the cluster it takes the one with the **most free disk**, so the backups of
+several apps spread over the servers instead of filling one.
+
+- **A server more than 80% full hands its backups on** to the roomiest server, with one Activity
+  line per app: `Backs up web every 15 minutes to server-c from now on: server-b is more than 80%
+  full.`
+- **An app or database that moves onto the server keeping its backups** sends them elsewhere:
+  `Backs up web every 15 minutes to server-c from now on: web now runs on server-b, where its
+  backups were kept.`
+
 A destination whose last test failed is skipped. **With none, Deplo creates one** on another
 server of the cluster, or on Deplo's own server when the cluster has no other. **No bucket is
 needed.**

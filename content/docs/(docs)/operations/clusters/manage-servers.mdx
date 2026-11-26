@@ -34,8 +34,12 @@ has your servers first, then a group per cluster:
 | **server-a**, **server-b** | It moves to that server and stays on the cluster |
 | **Runs here now** | The server it is on. Cannot be picked |
 
-- **It is an ordinary move**: deployed on the new server, then its data is copied from the old
-  one. An app with a Volume, or a database, is offline during the copy.
+- **It takes only the last changes when it can.** With [replication](/operations/clusters/replication)
+  on, the new server already keeps an up-to-date copy: the app stops, that copy takes what changed
+  since and becomes its data, and the app starts there, offline for a few seconds. Activity:
+  `Moved web's data from server-a to server-b, its last changes only (0 B)`.
+- **Otherwise its data is copied whole**: deployed on the new server, then copied from the old one,
+  offline during the copy. Activity: `Moved web's data from server-a to server-b, server to server`.
 - **The cluster's leader is told first.** Deplo hands it the new server and waits until it holds
   it, then deploys there. The old server stops its copy, and the new one is never stopped as if it
   belonged elsewhere, so the deploy does not end in an error. Before Deplo 0.8.2-canary.74 it
@@ -53,13 +57,16 @@ has your servers first, then a group per cluster:
 - **A server that cannot take it is greyed out**, with the reason:
   - "server-b is offline, so web cannot move there now."
   - "server-b has 180 MB free and web needs 256 MB."
+  - "server-b has 2.7 GB free, too little for web's data (about 1.4 GB) and a tenth of its disk
+    free." The move is refused at once: web stays where it runs and nothing is retried.
   - "web runs on ARM servers only, and server-b is not one."
   - "server-b is being removed from cluster eu."
   - "web runs 2 replicas, and cluster eu spreads them over its servers." An app with replicas
     only offers **Any server**.
 
 Room is the memory limit (256 MB when none is set) against what the server's other apps and
-databases need.
+databases need, and a tenth of the server's disk that its data must leave free. A server that
+already holds a whole copy of the data needs no more disk for it.
 
 ## Remove a server [#remove-a-server]
 

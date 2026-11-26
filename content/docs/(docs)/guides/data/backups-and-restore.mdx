@@ -25,8 +25,16 @@ leaves that server, with one key pair per destination. Nothing in between can re
 ### A deploy and an app backup take turns
 
 To copy an app's Volumes consistently, the backup pauses the containers that use them, usually for
-well under a second. The app keeps its address meanwhile: a visitor's request waits for the pause
-instead of failing. A deploy of that same app never runs into the pause:
+well under a second and **never more than 1 second**. The app keeps its address meanwhile: a
+visitor's request waits for the pause instead of failing.
+
+When the data cannot be copied within that second, for example when the server has no room to copy
+it on its own disk first, the app runs again at once and the backup fails instead, saying why:
+`its data could not be copied within 1s of pausing it, so it runs again and this backup was not
+kept: the server has 1.9 GB free, too little to copy 1.4 GB of data on its own disk first and keep
+a tenth of it free`.
+
+A deploy of that same app never runs into the pause:
 
 - **A deploy that starts during the pause waits for it**, and for the app's health checks to pass
   again. Its log says so:
