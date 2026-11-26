@@ -101,6 +101,21 @@ To clear a warning, make the pairs direct (below). Both go on their own within a
 A database whose apps run on another server says so only when that pair is relayed: "web reaches
 this database through Deplo's relay. It is faster on the same server."
 
+## Give a server a new key [#give-a-server-a-new-key]
+
+Each server has its own key on the private network. When a key may have been seen by someone else,
+an instance admin gives that server a new one over the API:
+
+```graphql
+mutation {
+  rotateClusterNetworkKey(serverId: "srv_8f910cc44a95585b")
+}
+```
+
+- **Nothing goes down.** The server makes its next key, the other servers of its cluster learn it,
+  then it switches. Every tunnel stays up and every pair stays direct.
+- **It answers `true`** once the switch is done. Run it again at any time: each run gives a new key.
+
 ## Older servers [#older-servers]
 
 A server whose agent is too old for the private network stays off it, and its traffic goes

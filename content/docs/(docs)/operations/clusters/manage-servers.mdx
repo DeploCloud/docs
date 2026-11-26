@@ -53,6 +53,9 @@ has your servers first, then a group per cluster:
 - **A server that cannot take it is greyed out**, with the reason:
   - "server-b is offline, so web cannot move there now."
   - "server-b has 180 MB free and web needs 256 MB."
+  - "Waiting for server-b's first metrics, to know whether web fits there." A server that just
+    joined sends its first metrics about half a minute after its agent starts. A move asked before
+    that waits for them up to 20 seconds, then stops with this sentence: ask again once they arrive.
   - "web runs on ARM servers only, and server-b is not one."
   - "server-b is being removed from cluster eu."
   - "web runs 2 replicas, and cluster eu spreads them over its servers." An app with replicas
