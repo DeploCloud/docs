@@ -528,7 +528,10 @@ received yet when the server was cut off are still somewhere.
   which server, the volume (or **Files**) and its size.
 - **Remove** deletes one for good. It needs **Delete backups**. Activity:
   `Removed the copy of web's data that server-a set aside on 2026-11-23 04:05 UTC (12 MiB)`.
-- **It stays until removed**, and takes room on that server's disk meanwhile.
+- **Old copies expire on their own** at the app's next backup: the newest copy on each server
+  stays, older ones go after 7 days, or after 1 day on a disk more than 80% full. One Activity line
+  each: `Removed the copy of web's data that server-a set aside on 2026-11-24 03:22 UTC (46.5 MiB):
+  server-a is more than 80% full, and a newer copy is kept.`
 
 A database's dated copies are made the same way, and are not listed on its page yet.
 
