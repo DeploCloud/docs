@@ -367,13 +367,11 @@ main[data-layout-main] {
 }
 
 /* The giant wordmark at the bottom of the footer, cropped like the site's. */
-.footer-mark {
-  width: 100%;
-  aspect-ratio: 895 / 170;
-  background-color: #111;
-  mask-position: top center;
-  mask-size: 100% auto;
-  mask-repeat: no-repeat;
+/* Hidden until RevealGroup runs; without JS it stays visible. */
+@media (scripting: enabled) {
+  [data-reveal="children"] > * {
+    opacity: 0;
+  }
 }
 
 /* "Did this page help you" card illustration: a page with a checkmark badge

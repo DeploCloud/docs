@@ -129,7 +129,8 @@ committed until the user asks for it explicitly.
   `app/global.css`; the footer and the ticks read the same variables.
 - **The footer mirrors the site's** (`SiteFooter`, links in `lib/site.ts`). The
   header stays Fumadocs' own navbar, not the site's. The site's copy lives in its
-  CMS: when its footer changes, update `lib/site.ts` by hand. Buttons come from `lib/button-styles.ts`,
+  CMS: when its footer changes, update `lib/site.ts` by hand (competitor logos in
+  `public/competitors/`, the GitHub star threshold in `components/github-badge.tsx`). Buttons come from `lib/button-styles.ts`,
   the primary one with `CtaChevron`, the same GSAP hover as the site.
 
 ## Comments and commits
@@ -144,4 +145,5 @@ Commits are [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0
 period.** Body only when the why does not fit the title, 2-3 lines at most. Commit straight to
 `main`; never create a branch.
 
-**Never name a competitor** in a comment, a string, or page content.
+**Never name a competitor** in a comment, a string, or page content. The one exception is the
+footer's Compare column in `lib/site.ts`, a 1:1 mirror of deplo.build's.

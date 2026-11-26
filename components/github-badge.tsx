@@ -17,12 +17,19 @@ async function getStars(): Promise<number | null> {
   }
 }
 
-const formatStars = (count: number) =>
-  count < 1000 ? String(count) : `${Math.round(count / 100) / 10}k`.replace(/\.0k$/, "k");
+function formatStars(count: number) {
+  if (count < 1000) return String(count);
+  const value = count / 1000;
+  return `${value >= 10 ? Math.round(value) : Math.round(value * 10) / 10}k`;
+}
+
+// deplo.build's "Show stars from" (Header in its CMS): below it the badge just says GitHub.
+const STARS_FROM = 500;
 
 /** The star count next to the GitHub mark, as in deplo.build's footer. */
 export async function GithubBadge() {
   const stars = await getStars();
+  const count = stars !== null && stars >= STARS_FROM ? stars : null;
   return (
     <a
       href={`https://github.com/${REPO}`}
@@ -31,8 +38,14 @@ export async function GithubBadge() {
       className="interact flex items-center gap-2 rounded-full border border-white/15 bg-black px-3 py-1.5 text-sm text-white"
     >
       <GithubIcon className="size-4" />
-      <span>{stars === null ? "-" : formatStars(stars)}</span>
-      <Star className="size-4 fill-yellow-400 text-yellow-400" />
+      {count === null ? (
+        <span>GitHub</span>
+      ) : (
+        <>
+          <span>{formatStars(count)}</span>
+          <Star className="size-4 fill-yellow-400 text-yellow-400" />
+        </>
+      )}
     </a>
   );
 }
