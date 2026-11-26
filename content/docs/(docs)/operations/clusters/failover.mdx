@@ -103,6 +103,13 @@ Order: **databases first, then apps with a domain, then the rest**, oldest first
 | A pull request preview | Never moves. See [Pull request previews](/operations/clusters/logs-metrics-and-previews#pull-request-previews) |
 | A cron job that was running | Marked **Lost: its server stopped**, and never run again on its own. See [Cron jobs](/operations/clusters/logs-metrics-and-previews#cron-jobs) |
 
+**The apps of a stopped server are spread over the others.** An app with no stored data moves
+first, within about 10 seconds; the apps with a copy of their data move once the stopped server's
+lease has run out, each to the server with the fewest starts under way. A server with one core
+starts them one after the other. Measured on a cluster of three with one core per server (Deplo
+0.8.3-canary.3): four apps on the stopped server ended two on each of the other two, and each
+answered again 39 seconds after the power cut.
+
 An app keeps answering under its domain only if the domain follows it. See
 [Addresses and Cloudflare](/operations/clusters/addresses).
 

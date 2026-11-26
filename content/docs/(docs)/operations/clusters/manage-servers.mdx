@@ -52,8 +52,13 @@ has your servers first, then a group per cluster:
   web did not start: server-b left cluster eu, so web stays on server-a.` web keeps running.
 - **A server that has not joined yet is waited for.** A new server joins its cluster as soon as its
   server agent connects, so a move asked right after adding it waits: `Moving web waits for
-  server-b to join cluster eu.` One that never joins ends it after 120 seconds: `server-b has not
-  joined cluster eu within 120 s, so web stays where it runs.`
+  server-b to join cluster eu.` One that never joins ends it after 120 seconds, on Activity:
+  `Moving web did not start: server-b has not joined cluster eu within 120 s, so web stays where it runs.`
+  Activity says `Added server server-b` when you add it, `Connected server server-b` only once its
+  server agent first connects, and `Added server server-b to cluster eu` about 3 seconds after that.
+- **A move waits for the copy of its data.** On a server that has no current copy of the app's data
+  yet, the move waits for that copy, and Activity says so: `Moving web waits for its copy on
+  server-b.` It goes on by itself once the copy is made.
 - **Several moves onto one server go one per core.** On a one-core server they run one after the
   other. Each app keeps answering on its old server until its own start begins, and an ordinary
   deploy on that server waits for them.
@@ -102,7 +107,8 @@ Either way **the server stays in Deplo**: it only leaves the cluster.
   cluster eu to another server first." See [The leader](/operations/clusters/leader).
 - **A server that keeps backups for the cluster is removed from the cluster first**: "server-a keeps
   2 backups of the Apps and databases of cluster eu. Remove it from the cluster first: Deplo moves
-  them to its other servers."
+  them to its other servers." Once it has left, removing it from Deplo goes at once: its now empty
+  backup destination goes with it (`Removed backup destination server-a`).
 
 ### While it is being removed [#while-it-is-being-removed]
 
@@ -112,8 +118,8 @@ With **Move its Apps to the other servers**:
 - **Nothing new is placed on the server** in the meantime.
 - **The backups it keeps move first.** A server of the cluster can hold backups of other apps and
   databases. They move to the other servers before it leaves, and each one still restores from
-  there. Activity: `Started removing server server-a from cluster eu: 2 backups to move first`,
-  then `Moved 2 backups of web from server-a to server-b, as server-a leaves cluster eu.`
+  there. Activity names both: `Started removing server server-a from cluster eu: 1 App and 2 backups
+  to move first`, then `Moved 2 backups of web from server-a to server-b, as server-a leaves cluster eu.`
 - **An app without stored data is up on the new server before the old copy is removed.** An app
   with a Volume, or a database, is stopped for the length of the copy, so the server must be
   online.

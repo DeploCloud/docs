@@ -64,6 +64,9 @@ again. The backup is sent to its destination from that copy, which is removed af
   against its own size and fingerprint: a send cut midway (a server switched off, a network that
   drops) leaves nothing behind, and the next backup starts over. A server switched off in the middle
   of one removes what was half written as soon as it is back, before it takes the next one.
+- **A move can cancel a backup that is starting.** Moving the app to another server in the first
+  seconds of its backup stops that backup, and nothing of it is kept: `Backup of web failed:
+  canceled by the move of web to server-b`. A backup already past that point finishes.
 - **A backup that ends after its app or database was deleted is removed**, never listed. Deleting an
   app or a database stops its running backups first: the backup fails with `This backup was
   canceled` and nothing it had written stays on the destination.
