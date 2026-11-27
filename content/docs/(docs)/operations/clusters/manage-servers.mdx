@@ -55,10 +55,12 @@ has your servers first, then a group per cluster:
   server-b to join cluster eu.` One that never joins ends it after 120 seconds, on Activity:
   `Moving web did not start: server-b has not joined cluster eu within 120 s, so web stays where it runs.`
   Activity says `Added server server-b` when you add it, `Connected server server-b` only once its
-  server agent first connects, and `Added server server-b to cluster eu` about 3 seconds after that.
+  server agent first connects, and `Added server server-b to cluster eu` a few seconds after that.
 - **A move waits for the copy of its data.** On a server that has no current copy of the app's data
   yet, the move waits for that copy, and Activity says so: `Moving web waits for its copy on
-  server-b.` It goes on by itself once the copy is made.
+  server-b.` It goes on by itself once the copy is made, and then sends only the last changes.
+  When other copies are ahead of it, Activity says where it stands: `Moving web waits for its copy
+  on server-b, 1st in line: server-a is busy with a copy of web.`
 - **Several moves onto one server go one per core.** On a one-core server they run one after the
   other. Each app keeps answering on its old server until its own start begins, and an ordinary
   deploy on that server waits for them.
@@ -116,6 +118,9 @@ With **Move its Apps to the other servers**:
 
 - **Order**: databases first, then apps, oldest first. The cluster picks where each one lands.
 - **Nothing new is placed on the server** in the meantime.
+- **Its backups go elsewhere at once.** Every backup that went to it goes to another server from
+  the start, and none goes back to it: `Backs up web every hour to server-b from now on: server-a is
+  leaving cluster eu.`
 - **The backups it keeps move first.** A server of the cluster can hold backups of other apps and
   databases. They move to the other servers before it leaves, and each one still restores from
   there. Activity names both: `Started removing server server-a from cluster eu: 1 App and 2 backups

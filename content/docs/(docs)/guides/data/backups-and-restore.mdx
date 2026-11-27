@@ -239,8 +239,14 @@ two servers. Activity says which: `Restored web from a backup, server to server`
 For an encrypted one, paste the destination's recovery key.
 
 **A backup labelled "Left on server-a after the failover at 14:32"** is what a server of a
-[cluster](/operations/clusters/failover#data-left-on-the-server) still held when it came back. No
-schedule ever deletes it, and restoring it loses everything written since the failover.
+[cluster](/operations/clusters/failover#data-left-on-the-server) still held when it came back.
+Restoring it loses everything written since the failover.
+
+- **The newest one per server is always kept.** An older one is removed after 7 days, or after 1
+  day while the disk it is kept on is past 80% used.
+- **Each removal is on Activity**: `Removed the backup of web that server-a left on 2026-11-25 23:20
+  UTC (5.08 KiB): server-b is more than 80% full, and a newer one is kept.`
+- **Deplo checks a minute after it starts, then every 12 hours.**
 
 **Download** decrypts the artifact on the way out. It needs `restore_backups`; an **app** archive
 also needs `reveal_secrets`, because it contains the app's variables.
